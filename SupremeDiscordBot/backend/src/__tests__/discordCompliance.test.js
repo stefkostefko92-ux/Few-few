@@ -4,7 +4,7 @@
 // нещо, картата лъже (или кодът е регресирал). Правният текст на Discord е
 // сверен на 13.09.2026; при промяна на Terms/Policy се обновяват и двете.
 import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -45,10 +45,16 @@ describe("Developer Terms §5(a) — политика за поверителн�
     expect(app).toContain('path="/privacy"');
     expect(app).toContain('path="/terms"');
     // Футърите на публичната страница и на таблото (index.html е SPA обвивка).
-    for (const f of ["frontend/src/pages/Login.jsx", "frontend/src/components/Layout.jsx"]) {
+    // Публичният футър е ЕДИН компонент (LandingFooter в LandingParts.jsx,
+    // 10.10.2026) — английският и преведените лендинги го рендерират, вместо
+    // всеки да пази свое копие на правните връзки.
+    for (const f of ["frontend/src/components/LandingParts.jsx", "frontend/src/components/Layout.jsx"]) {
       const src = read(f);
       expect(src, f).toMatch(/(href|to)="\/privacy"/);
       expect(src, f).toMatch(/(href|to)="\/terms"/);
+    }
+    for (const f of ["frontend/src/pages/Login.jsx", "frontend/src/pages/LandingLocalized.jsx"]) {
+      expect(read(f), `${f} не рендерира общия футър с правните връзки`).toMatch(/<LandingFooter\b/);
     }
   });
 });
@@ -168,7 +174,18 @@ describe("docs/DISCORD_VERIFICATION.md е сверен с кода", () => {
     const m = read("bot/src/utils/permissionCheck.js").match(/INVITE_PERMISSIONS_INT = (\d+)/);
     expect(m, "INVITE_PERMISSIONS_INT липсва").toBeTruthy();
     const n = m[1];
-    expect(read("frontend/src/pages/Login.jsx")).toContain(`permissions=${n}&`);
+    // Фронтендът има ЕДНО място за числото (12.11.2026): преди беше изписано в
+    // шест файла, а гейтът гледаше само един — петте можеха да изостанат тихо.
+    expect(read("frontend/src/lib/invite.js")).toContain(`INVITE_PERMISSIONS = "${n}"`);
+    // Никъде другаде няма друго число. `permissions=8` се споменава в README
+    // само като „никога не кани с Administrator“.
+    const walk = (dir) => readdirSync(join(ROOT, dir), { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory() ? (["node_modules", "dist"].includes(e.name) ? [] : walk(join(dir, e.name))) : [join(dir, e.name)]);
+    const files = [...walk("frontend/src"), ...walk("frontend/scripts"), "frontend/index.html", "README.md"]
+      .filter((f) => /\.(jsx?|mjs|html|md)$/.test(f));
+    const stray = files.flatMap((f) => [...read(f).matchAll(/permissions=(\d+)/g)]
+      .filter((x) => x[1] !== n && x[1] !== "8").map((x) => `${f}: ${x[1]}`));
+    expect(stray, `число на поканата, различно от ${n}`).toEqual([]);
     expect(read("docs/DISCORD_VERIFICATION.md")).toContain(`permissions=${n}`);
   });
 

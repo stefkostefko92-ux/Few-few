@@ -10,12 +10,13 @@ Firefox пакетът е същият код с друг manifest (`tools/packa
 
 1. `bash tools/package.sh` → `dist/` съдържа `-firefox.zip` и `-source.zip` (изходният код от HEAD
    през `git archive` — комитни преди това).
-2. `npx web-ext@8 lint --source-dir <разархивиран -firefox.zip>` → **0 грешки** (5.5.1: 0 грешки,
-   15 предупреждения, 0 бележки). Очакваните предупреждения и какво да кажеш за тях:
+2. `npx web-ext@8 lint --source-dir <разархивиран -firefox.zip>` → **0 грешки** (6.1.1 на 23 ноември 2026:
+   0 грешки, 20 предупреждения, 0 бележки — същите като в 6.1.0; +5 спрямо 5.8.0 — същите `getMatchedRules` /
+   `onRuleMatchedDebug`, ползвани и от „Who we stopped“, който във Firefox е скрит). Очакваните предупреждения и какво да кажеш за тях:
    - `UNSUPPORTED_API` `getMatchedRules` / `onRuleMatchedDebug` — липсват във Firefox; кодът проверява
      за тях и popup-ът скрива дневника „Блокирано на тази страница“;
-   - `INCOMPATIBLE_API` `action.onUserSettingsChanged` (welcome) — слуша се само ако го има;
-     без него стъпката „Закачи“ остава обикновен съвет;
+   - `INCOMPATIBLE_API` и `ANDROID_INCOMPATIBLE_API` `action.onUserSettingsChanged` (welcome) — слуша се
+     само ако го има; без него стъпката „Закачи“ остава обикновен съвет;
    - `DANGEROUS_EVAL` в `scriptlets/main.js` — рутините `noeval` / `noeval-if` **подменят**
      `window.eval` на изброените сайтове, за да спрат техния eval; разширението никога не вика
      eval (`tools/package.sh` проверява пакета за `eval(` и `new Function(`);
@@ -25,6 +26,22 @@ Firefox пакетът е същият код с друг manifest (`tools/packa
 5. Описание: `docs/listing/en.txt` (не говори за Chrome). Категория *Privacy & Security*.
    Privacy policy URL `https://adblock.carbonstealth.eu/privacy`; support `…/support`.
 6. Бележката за ревюъра — по-долу, дословно.
+
+## Firefox за Android
+
+Пакетът декларира `browser_specific_settings.gecko_android` (минимум 128) — без този ключ AMO не
+показва добавката в Android (Extension Workshop, „Firefox version compatibility“). С него AMO заключва
+Android съвместимостта; ако на телефона нещо не работи, махни Android от **Compatibility** в AMO, вместо
+да чакаш нова версия.
+
+Не е изпробвано на Android. Преди да я оставиш видима там, провери на телефон (безплатно, начинът на
+Extension Workshop „Developing extensions for Firefox for Android“): Android Platform Tools (`adb`) на
+компютъра, USB debugging на телефона, във Firefox → Settings → **Remote debugging via USB**, после от
+разархивирания `-firefox.zip`: `npx web-ext@8 run -t firefox-android --firefox-apk org.mozilla.firefox`.
+Неподписан файл не се инсталира направо на телефона (само през `web-ext`). Какво да провериш:
+popup-ът се отваря като раздел, обикновен сайт е без реклами, YouTube в мобилния сайт, настройките.
+В Android няма десен бутон и клавишни комбинации — кодът ги вика само в `try`/`?.`, затова там просто
+липсват.
 
 ## Notes for reviewers (paste as-is)
 
@@ -38,7 +55,8 @@ Firefox пакетът е същият код с друг manifest (`tools/packa
 > `https://adblock.carbonstealth.eu/filters.json` and its Ed25519 signature, a data file (domain
 > names, CSS selectors, YouTube response field names) validated against a strict schema and never
 > executed; it can be switched off in Settings. Nothing from the network configures the MAIN-world
-> script. Data collection: none. Lists the user turns on from their authors (four regional lists)
+> script. Data collection: none. The Firefox build sets no uninstall page (that page exists only for
+> Chrome Web Store installs) and links to no other store. Lists the user turns on from their authors (four regional lists)
 > are downloaded from the author's address, as text, and converted locally.
 > Lint warnings: `DANGEROUS_EVAL` in `scriptlets/main.js` is the `noeval` routines replacing the page's
 > `window.eval` on listed sites (the extension itself never calls eval); `getMatchedRules`,

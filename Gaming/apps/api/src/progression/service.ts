@@ -1,27 +1,68 @@
 import { prisma } from "@aso/db";
+import { credit, recordLedger } from "@aso/db/ledger";
 import {
   ACHIEVEMENT_DEFS,
   activeQuests,
   achievementMet,
-  dailyReward,
+  applyXpMultiplier,
+  effectiveVipTier,
+  isoWeek,
   leaderboardKey,
   levelFromXp,
+  vipDailyReward,
+  vipPerksFor,
   type AchievementStats,
   type AchievementView,
   type GameKey,
   type LeaderboardEntry,
   type QuestPeriod,
   type QuestView,
+  type VipPerks,
 } from "@aso/shared";
 import { redis } from "../redis.js";
 import { logger } from "../logger.js";
 
 const dayKey = (d = new Date()): string => d.toISOString().slice(0, 10);
 
+type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+/** Реално активните VIP предимства (изтекъл абонамент = без предимства). */
+async function perksOf(userId: string): Promise<VipPerks> {
+  const u = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { vipTier: true, vipUntil: true },
+  });
+  return vipPerksFor(u?.vipTier, u?.vipUntil);
+}
+
+/**
+ * Начислява опит и чипове и държи колоната `level` в синхрон с `xp` в същата
+ * транзакция. Инкрементът е атомарен и заключва реда до края на транзакцията,
+ * затова нивото, сметнато от върнатия `xp`, е точно и при паралелни мачове.
+ */
+export async function grantXpAndChips(
+  tx: Tx,
+  userId: string,
+  xp: number,
+  chips: bigint = 0n,
+): Promise<{ xp: number; level: number }> {
+  const u = await tx.user.update({
+    where: { id: userId },
+    data: { xp: { increment: xp }, ...(chips !== 0n ? { chips: { increment: chips } } : {}) },
+    select: { xp: true, level: true },
+  });
+  const level = levelFromXp(u.xp).level;
+  if (level !== u.level) {
+    await tx.user.update({ where: { id: userId }, data: { level } });
+  }
+  return { xp: u.xp, level };
+}
+
 /**
  * Daily-login claim: increments the streak (resets if a day was missed), grants
- * the streak reward once per UTC day. Idempotent per day via lastSeenAt marker
- * stored in Redis (`daily:<userId>` = yyyy-mm-dd).
+ * the streak reward once per UTC day. Idempotent per day in the DATABASE
+ * (`DailyClaim` PK userId+day, same transaction as the credit); the Redis
+ * SET NX key is only a fast path against concurrent POSTs.
  */
 export async function claimDaily(userId: string): Promise<{
   claimed: boolean;
@@ -35,22 +76,45 @@ export async function claimDaily(userId: string): Promise<{
 
   // Atomic claim: only the first request for today's key wins, so concurrent
   // POSTs can't double-credit. SET NX returns null if the key already existed.
-  const won = await redis.set(`daily:claim:${userId}:${today}`, "1", "EX", 60 * 60 * 48, "NX");
+  const claimKey = `daily:claim:${userId}:${today}`;
+  const won = await redis.set(claimKey, "1", "EX", 60 * 60 * 48, "NX");
   if (won === null) {
     const streak = Number((await redis.get(streakKey)) ?? 1);
     return { claimed: false, streak, chips: 0, gems: 0 };
   }
 
-  const yesterday = dayKey(new Date(Date.now() - 86_400_000));
-  const last = await redis.get(lastKey);
-  const prevStreak = Number((await redis.get(streakKey)) ?? 0);
-  const streak = last === yesterday ? Math.min(prevStreak + 1, 7) : 1;
+  let streak = 1; // пресмята се в try; 1 = стойност по подразбиране
+  let reward: { chips: number; gems: number };
+  try {
+    const yesterday = dayKey(new Date(Date.now() - 86_400_000));
+    const last = await redis.get(lastKey);
+    const prevStreak = Number((await redis.get(streakKey)) ?? 0);
+    streak = last === yesterday ? Math.min(prevStreak + 1, 7) : 1;
 
-  const reward = dailyReward(streak);
-  await prisma.user.update({
-    where: { id: userId },
-    data: { chips: { increment: BigInt(reward.chips) }, gems: { increment: reward.gems } },
-  });
+    // VIP множителят се прилага върху чиповете само при активен абонамент.
+    reward = vipDailyReward(streak, await perksOf(userId));
+    // Денят (уникален userId+day) + кредит + ред DAILY в регистъра — атомарно.
+    // Идемпотентността е в базата: Redis ключът е само бърз път.
+    await prisma.$transaction(async (tx) => {
+      await tx.dailyClaim.create({ data: { userId, day: today } });
+      await credit(tx, userId, "CHIPS", reward.chips, "DAILY", `daily:${today}`);
+      await credit(tx, userId, "GEMS", reward.gems, "DAILY", `daily:${today}`);
+    });
+  } catch (err) {
+    const week = 60 * 60 * 24 * 8;
+    if ((err as { code?: string }).code === "P2002") {
+      // Денят вече е записан в базата (напр. предишен опит е комитнал, но
+      // потвърждението се е изгубило) → без втори бонус; Redis ключът остава.
+      await redis.set(lastKey, today, "EX", week);
+      await redis.set(streakKey, String(streak), "EX", week);
+      return { claimed: false, streak, chips: 0, gems: 0 };
+    }
+    // Друга грешка → освобождаваме деня, иначе ключът остава „заявен“ 48 ч и
+    // наградата е изгубена. Ако commit-ът все пак е минал (двусмислен), следващият
+    // опит удря уникалния ключ в базата — двоен бонус няма.
+    await redis.del(claimKey).catch((e: unknown) => logger.error({ err: e, userId }, "daily: claim release failed"));
+    throw err;
+  }
   const week = 60 * 60 * 24 * 8;
   await redis.set(lastKey, today, "EX", week);
   await redis.set(streakKey, String(streak), "EX", week);
@@ -58,12 +122,13 @@ export async function claimDaily(userId: string): Promise<{
 }
 
 /** Ensure today's/this-week's quest rows exist for a user, returning their views. */
-export async function ensureQuests(userId: string): Promise<QuestView[]> {
-  const periods: QuestPeriod[] = ["daily", "weekly"];
+export async function ensureQuests(userId: string, perks?: VipPerks): Promise<QuestView[]> {
   const periodKey = (p: QuestPeriod): string =>
     p === "daily" ? `d:${dayKey()}` : `w:${isoWeek()}`;
 
-  const defs = activeQuests(dayKey());
+  // Броят ротиращи дневни задачи следва VIP слотовете.
+  const vip = perks ?? (await perksOf(userId));
+  const defs = activeQuests(dayKey(), vip.questSlots);
   const views: QuestView[] = [];
   for (const def of defs) {
     const period = periodKey(def.period);
@@ -77,14 +142,16 @@ export async function ensureQuests(userId: string): Promise<QuestView[]> {
     views.push({
       key: def.key,
       period: def.period,
+      trigger: def.trigger,
+      ...(def.game ? { game: def.game } : {}),
       progress: row.progress,
       target: row.target,
       completed: row.completedAt !== null,
       rewardChips: def.rewardChips,
-      rewardXp: def.rewardXp,
+      // Показваме реално начисляемия опит (с VIP множителя).
+      rewardXp: applyXpMultiplier(def.rewardXp, vip),
     });
   }
-  void periods;
   return views;
 }
 
@@ -121,8 +188,9 @@ export async function recordMatchResult(opts: {
   // Update leaderboard ZSET (rating as score).
   await redis.zadd(leaderboardKey(game), rating, userId);
 
-  await ensureQuests(userId);
-  for (const def of activeQuests(dayKey())) {
+  const perks = await perksOf(userId);
+  await ensureQuests(userId, perks);
+  for (const def of activeQuests(dayKey(), perks.questSlots)) {
     if (def.trigger === "win" && !won) continue;
     if (def.game && def.game !== game) continue;
     const period = def.period === "daily" ? `d:${dayKey()}` : `w:${isoWeek()}`;
@@ -136,12 +204,10 @@ export async function recordMatchResult(opts: {
       data: { progress, completedAt: completed ? new Date() : null },
     });
     if (completed) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          chips: { increment: BigInt(def.rewardChips) },
-          xp: { increment: def.rewardXp },
-        },
+      const xp = applyXpMultiplier(def.rewardXp, perks);
+      await prisma.$transaction(async (tx) => {
+        await grantXpAndChips(tx, userId, xp, BigInt(def.rewardChips));
+        await recordLedger(tx, { userId, currency: "CHIPS", delta: def.rewardChips, reason: "QUEST", refId: row.id });
       });
     }
   }
@@ -205,9 +271,7 @@ async function evaluateAchievements(userId: string, _game: GameKey, won: boolean
       // create and rolls back, so gems are never double-granted).
       await prisma.$transaction(async (tx) => {
         await tx.achievement.create({ data: { userId, key: def.key } });
-        if (def.rewardGems > 0) {
-          await tx.user.update({ where: { id: userId }, data: { gems: { increment: def.rewardGems } } });
-        }
+        await credit(tx, userId, "GEMS", def.rewardGems, "ACHIEVEMENT", def.key);
         await tx.notification.create({
           data: { userId, type: "achievement", data: JSON.stringify({ key: def.key, title: def.title }) },
         });
@@ -246,33 +310,22 @@ export async function leaderboard(game: GameKey, limit = 20): Promise<Leaderboar
   if (ids.length === 0) return [];
   const users = await prisma.user.findMany({
     where: { id: { in: ids } },
-    select: { id: true, displayName: true },
+    select: { id: true, displayName: true, vipTier: true, vipUntil: true },
   });
-  const nameById = new Map(users.map((u) => [u.id, u.displayName]));
-  return ids.map((id, i) => ({
-    rank: i + 1,
-    userId: id,
-    displayName: nameById.get(id) ?? "—",
-    rating: scores[i] ?? 0,
-  }));
+  const byId = new Map(users.map((u) => [u.id, u]));
+  const now = new Date();
+  return ids.map((id, i) => {
+    const u = byId.get(id);
+    return {
+      rank: i + 1,
+      userId: id,
+      displayName: u?.displayName ?? "—",
+      rating: scores[i] ?? 0,
+      vipTier: effectiveVipTier(u?.vipTier, u?.vipUntil, now),
+    };
+  });
 }
 
 export function profileProgress(xp: number): ReturnType<typeof levelFromXp> {
   return levelFromXp(xp);
-}
-
-function isoWeek(d = new Date()): string {
-  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  const dayNum = (date.getUTCDay() + 6) % 7;
-  date.setUTCDate(date.getUTCDate() - dayNum + 3);
-  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
-  const week =
-    1 +
-    Math.round(
-      ((date.getTime() - firstThursday.getTime()) / 86_400_000 -
-        3 +
-        ((firstThursday.getUTCDay() + 6) % 7)) /
-        7,
-    );
-  return `${date.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }

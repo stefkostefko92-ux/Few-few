@@ -40,6 +40,8 @@ try {
 (async () => {
   const [stats, lists] = await Promise.all([send({ type: "getStats" }), send({ type: "getLists" })]);
   const features = (stats && stats.features) || {};
+  // the test page links to the Chrome Web Store: only for an install from there (like Share in the popup)
+  $("testLink").hidden = !(stats && stats.shareUrl);
   const on = new Map(((lists && lists.lists) || []).map((e) => [e.id, !!e.on]));
   for (const box of document.querySelectorAll(".quick input[type=checkbox]")) {
     const f = box.dataset.feature, id = box.dataset.list;

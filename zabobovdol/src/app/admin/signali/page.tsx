@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
-import { Mail, MapPin } from "@/components/icons";
+import { MapPin } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
+import { formatDateTimeNumeric } from "@/lib/format-date";
 import { MUNICIPALITY_EMAIL } from "@/lib/mail";
 import { setComplaintStatus, deleteComplaint } from "@/lib/admin/complaint-actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { ForwardPanel, forwardFlash } from "@/components/admin/ForwardPanel";
+import { forwardComplaint } from "@/lib/admin/forward-actions";
+import { getMailConfig } from "@/lib/mail-config";
 
 export const dynamic = "force-dynamic";
 
@@ -24,12 +28,14 @@ const STATUS_CLASS: Record<string, string> = {
 export default async function AdminSignaliPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; fwd?: string; to?: string }>;
 }) {
   await requireAdmin();
-  const { filter } = await searchParams;
+  const { filter, fwd, to } = await searchParams;
+  const flash = forwardFlash(fwd, to);
+  const mailOn = (await getMailConfig()).params !== null;
   const where =
-    filter && filter in STATUS_LABEL ? { status: filter as never } : {};
+    filter && Object.hasOwn(STATUS_LABEL, filter) ? { status: filter as never } : {};
   const items = await prisma.complaint.findMany({
     where,
     orderBy: { createdAt: "desc" },
@@ -41,10 +47,29 @@ export default async function AdminSignaliPage({
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Сигнали до общината</h1>
         <p className="text-slate-600">
-          Получените сигнали се препращат към {MUNICIPALITY_EMAIL}. Ако SMTP не е
-          конфигуриран, препратете ръчно с бутона и отбележете статуса.
+          Новите сигнали тръгват сами към {MUNICIPALITY_EMAIL}, когато пощата на сайта е
+          настроена. Всеки сигнал може да изпратите и оттук — до общината или до друга
+          институция — с „Изпрати сега“; статусът става „Препратен“ сам.
+          {!mailOn && (
+            <>
+              {" "}Пощата в момента не е настроена:{" "}
+              <Link href="/admin/poshta" className="text-brand-700 underline">
+                Поща (Brevo)
+              </Link>
+              .
+            </>
+          )}
         </p>
       </div>
+
+      {flash && (
+        <p
+          role={flash.ok ? "status" : "alert"}
+          className={"rounded-lg px-4 py-2 text-sm " + (flash.ok ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800")}
+        >
+          {flash.text}
+        </p>
+      )}
 
       <div className="flex flex-wrap gap-2 text-sm">
         <Link
@@ -93,13 +118,7 @@ export default async function AdminSignaliPage({
                     <span className="badge">{c.category}</span>
                   </div>
                   <span className="text-xs text-slate-600">
-                    {new Intl.DateTimeFormat("bg-BG", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }).format(c.createdAt)}
+                    {formatDateTimeNumeric(c.createdAt)}
                   </span>
                 </div>
 
@@ -115,12 +134,20 @@ export default async function AdminSignaliPage({
                   {c.email && <> · <a href={`mailto:${c.email}`} className="text-brand-700">{c.email}</a></>}
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
-                  <a href={mailto} className="text-sm font-medium text-brand-700 hover:underline">
-                    <Mail className="inline h-4 w-4 align-text-bottom" aria-hidden /> Препрати по имейл
-                  </a>
+                <div className="mt-4 rounded-lg bg-slate-50 p-3">
+                  <ForwardPanel
+                    compact
+                    action={forwardComplaint.bind(null, c.id)}
+                    defaultTo={c.forwardedTo || MUNICIPALITY_EMAIL}
+                    forwardedTo={c.status === "FORWARDED" ? c.forwardedTo || undefined : undefined}
+                    mailOn={mailOn}
+                    mailtoHref={mailto}
+                  />
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
                   <form action={setComplaintStatus.bind(null, c.id, "FORWARDED")}>
-                    <button className="text-sm text-slate-700 hover:underline">Отбележи „Препратен“</button>
+                    <button className="text-sm text-slate-700 hover:underline">Отбележи „Препратен“ (изпратен другаде)</button>
                   </form>
                   <form action={setComplaintStatus.bind(null, c.id, "RESOLVED")}>
                     <button className="text-sm text-green-700 hover:underline">Решен</button>

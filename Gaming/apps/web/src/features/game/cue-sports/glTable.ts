@@ -25,7 +25,7 @@ import {
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
-  PerspectiveCamera,
+  type PerspectiveCamera,
   Plane,
   Raycaster,
   RingGeometry,
@@ -37,8 +37,10 @@ import {
   Vector3,
 } from "three";
 import { TABLE, type CueVariant } from "@aso/shared";
+import { upgradeMaterial } from "../gl/baked.js";
 import { clothNormal, disposeObject, woodNormal, woodTexture } from "../gl/helpers.js";
 import { RenderCore } from "../gl/render.js";
+import { makeCueCamera, RAIL, SCENE_RATIO } from "./cueCamera.js";
 
 export interface SceneBall {
   id: number;
@@ -53,11 +55,11 @@ export interface CueScene {
   aim?: { x0: number; y0: number; x1: number; y1: number } | null;
   /** Translucent ball-in-hand preview. */
   ghost?: { x: number; y: number } | null;
+  /** 8-ball: обявеният за осмицата джоб — светещ пръстен около него. */
+  called?: { x: number; y: number } | null;
 }
 
-const RAIL = 0.085; // rail thickness (world units) — also sets the canvas aspect
 const R = TABLE.ballR;
-const SCENE_RATIO = (TABLE.h + 2 * RAIL) / (TABLE.w + 2 * RAIL); // canvas h:w
 const POCKETS: [number, number][] = [
   [0, 0],
   [TABLE.w / 2, 0],
@@ -178,6 +180,7 @@ export class GLTable {
   private fxLayer = new Group();
   private aimGroup = new Group();
   private ghostMesh: Mesh;
+  private calledMesh: Mesh;
   private ballGeo = new SphereGeometry(R, 48, 32);
   private nodes = new Map<number, { mesh: Mesh; kind: string }>();
   private sinks: { mesh: Mesh; born: number; dur: number; from: Vector3 }[] = [];
@@ -188,12 +191,7 @@ export class GLTable {
     this.fh = cssWidth / (TABLE.w + 2 * RAIL);
     this.scene.background = new Color("#0a0d1f");
 
-    this.camera = new PerspectiveCamera(34, (TABLE.w + 2 * RAIL) / (TABLE.h + 2 * RAIL), 0.05, 60);
-    // Closer + lower than before (drama: balls occupy real pixels, the phenolic
-    // clearcoat reads), gently tilted toward the near (−Z) long rail so the balls
-    // gain height/parallax while the whole table stays readable for aiming.
-    this.camera.position.set(0, 2.35, -1.5);
-    this.camera.lookAt(0, 0, 0.04);
+    this.camera = makeCueCamera();
 
     // lighting: soft fill + an overhead "billiard lamp" key for crisp shadows
     this.scene.add(new AmbientLight(0xffffff, 0.32));
@@ -217,7 +215,15 @@ export class GLTable {
     );
     this.ghostMesh.visible = false;
 
-    this.scene.add(this.staticLayer, this.ballLayer, this.fxLayer, this.aimGroup, this.ghostMesh);
+    this.calledMesh = new Mesh(
+      new RingGeometry(TABLE.pocketR * 1.3, TABLE.pocketR * 1.6, 32),
+      new MeshBasicMaterial({ color: 0xf2cf7a, transparent: true, opacity: 0.85 }),
+    );
+    this.calledMesh.rotation.x = -Math.PI / 2;
+    this.calledMesh.position.y = 0.004;
+    this.calledMesh.visible = false;
+
+    this.scene.add(this.staticLayer, this.ballLayer, this.fxLayer, this.aimGroup, this.ghostMesh, this.calledMesh);
   }
 
   static async create(canvas: HTMLCanvasElement, cssWidth: number): Promise<GLTable> {
@@ -256,6 +262,12 @@ export class GLTable {
     return { x: hit.x + TABLE.w / 2, y: hit.z + TABLE.h / 2 };
   }
 
+  /** Inverse of `toWorld`: a felt point on the ball plane → canvas client px. */
+  toClient(x: number, y: number, rect: DOMRect): { x: number; y: number } {
+    const v = new Vector3(wx(x), R, wz(y)).project(this.camera);
+    return { x: rect.left + ((v.x + 1) / 2) * rect.width, y: rect.top + ((1 - v.y) / 2) * rect.height };
+  }
+
   /* ── static table geometry (rebuilt only when cloth/variant changes) ──────── */
   private buildStatic(scene: CueScene): void {
     const key = `${scene.cloth.a}|${scene.cloth.b}|${scene.variant}`;
@@ -284,6 +296,8 @@ export class GLTable {
         sheenRoughness: 0.8,
       }),
     );
+    // Цветът на сукното идва от feltTexture (кожата на масата); изпеченото дава тъкан и грапавост.
+    upgradeMaterial(felt.material as MeshPhysicalMaterial, "felt", { repeat: [10, 5], normalScale: 0.35, onReady: () => this.core.invalidate() });
     felt.position.y = -0.02;
     felt.receiveShadow = true;
     this.staticLayer.add(felt);
@@ -300,12 +314,15 @@ export class GLTable {
       roughness: 0.42,
       metalness: 0.08,
     });
+    upgradeMaterial(woodMat, "walnut", { repeat: [4, 1], albedo: true, roughness: 0.85, normalScale: 0.7, onReady: () => this.core.invalidate() });
+    const sideMat = woodMat.clone();
+    upgradeMaterial(sideMat, "walnut", { repeat: [4, 1], rotate: true, albedo: true, roughness: 0.85, normalScale: 0.7, onReady: () => this.core.invalidate() });
     const railH = 0.07;
     const oW = W + 2 * RAIL;
     const oH = H + 2 * RAIL;
     // four rail bars
     const bar = (w: number, d: number, x: number, z: number) => {
-      const m = new Mesh(new BoxGeometry(w, railH, d), woodMat);
+      const m = new Mesh(new BoxGeometry(w, railH, d), w < d ? sideMat : woodMat);
       m.position.set(x, railH / 2 - 0.01, z);
       m.castShadow = true;
       m.receiveShadow = true;
@@ -370,6 +387,8 @@ export class GLTable {
     }
 
     // pockets: a dark well + brass rim at each of the six positions
+    const rimMat = new MeshStandardMaterial({ color: 0x8a6a34, roughness: 0.35, metalness: 0.85 });
+    upgradeMaterial(rimMat, "brass", { repeat: [3, 1], metalness: true, ao: 0.4, onReady: () => this.core.invalidate() });
     for (const [px, py] of POCKETS) {
       const g = new Group();
       g.position.set(wx(px), 0, wz(py));
@@ -388,7 +407,7 @@ export class GLTable {
       g.add(ring);
       const brass = new Mesh(
         new TorusGeometry(TABLE.pocketR * 1.12, TABLE.pocketR * 0.12, 10, 28),
-        new MeshStandardMaterial({ color: 0x8a6a34, roughness: 0.35, metalness: 0.85 }),
+        rimMat,
       );
       brass.rotation.x = -Math.PI / 2;
       brass.position.y = 0.012;
@@ -494,8 +513,21 @@ export class GLTable {
       this.ghostMesh.visible = false;
     }
 
+    // обявен джоб (8-ball)
+    if (scene.called) {
+      this.calledMesh.visible = true;
+      this.calledMesh.position.set(wx(scene.called.x), 0.004, wz(scene.called.y));
+    } else {
+      this.calledMesh.visible = false;
+    }
+
     this.renderBalls(scene);
-    this.core.render();
+    // Mark dirty; RenderCore's loop draws it on the next frame. A synchronous
+    // render here ran the whole post stack inside React's commit for EVERY
+    // re-render (one socket message alone causes several), on top of the
+    // loop's own frame — a slow GPU blocked the main thread for seconds, and
+    // the player's clock ran while the shot replay lagged.
+    this.core.invalidate();
   }
 
   /* ── potted-ball drop animation (driven by RenderCore's loop) ─────────────── */

@@ -1,7 +1,12 @@
-import type { PublicUser } from "@aso/shared";
+import { effectiveVipTier, levelFromXp, type PublicUser } from "@aso/shared";
 import type { User } from "@aso/db";
 
-/** Project a DB user into the public shape (never leaks passwordHash). */
+/**
+ * Project a DB user into the public shape (never leaks passwordHash).
+ * Нивото се смята от `xp` (източникът на истината) — така и старите акаунти,
+ * чиято колона `level` е останала 1, показват вярното ниво без миграция.
+ * VIP нивото е реално активното (изтекъл абонамент = NONE).
+ */
 export function toPublicUser(u: User): PublicUser {
   return {
     id: u.id,
@@ -13,7 +18,7 @@ export function toPublicUser(u: User): PublicUser {
     chips: u.chips.toString(), // BigInt -> string for JSON
     gems: u.gems,
     xp: u.xp,
-    level: u.level,
-    vipTier: u.vipTier,
+    level: levelFromXp(u.xp).level,
+    vipTier: effectiveVipTier(u.vipTier, u.vipUntil),
   };
 }

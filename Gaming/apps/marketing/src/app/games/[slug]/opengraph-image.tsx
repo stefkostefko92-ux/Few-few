@@ -45,7 +45,7 @@ export default function Image({ params }: { params: { slug: string } }) {
           backgroundImage:
             "radial-gradient(60% 55% at 50% 0%, rgba(217,178,95,0.20), transparent 60%), radial-gradient(90% 70% at 50% 120%, rgba(154,134,224,0.35), transparent 60%)",
           color: "#f4ead6",
-          fontFamily: "Manrope",
+          fontFamily: "Manrope, ManropeCyr",
         }}
       >
         <div
@@ -59,13 +59,13 @@ export default function Image({ params }: { params: { slug: string } }) {
             color: "#d9b25f",
           }}
         >
-          <span style={{ fontFamily: "Playfair", fontWeight: 700, letterSpacing: 2 }}>{SITE.name}</span>
+          <span style={{ fontFamily: "Playfair, PlayfairCyr", fontWeight: 700, letterSpacing: 2 }}>{SITE.name}</span>
           <span style={{ color: "#5b6183" }}>·</span>
           <span>игри на карти и маса</span>
         </div>
         <div
           style={{
-            fontFamily: "Playfair",
+            fontFamily: "Playfair, PlayfairCyr",
             fontSize: titleSize,
             fontWeight: 700,
             lineHeight: 1,
@@ -92,10 +92,13 @@ export default function Image({ params }: { params: { slug: string } }) {
     {
       ...size,
       fonts: [
-        { name: "Playfair", data: font("playfair-700-cyrillic.woff"), weight: 700, style: "normal" },
+        // Distinct family names per subset: satori keeps ONE face per
+        // name+weight, so two "Manrope" faces meant the Latin one (digits,
+        // "·", "–", "()") was dropped and those glyphs rendered as tofu.
         { name: "Playfair", data: font("playfair-700-latin.woff"), weight: 700, style: "normal" },
-        { name: "Manrope", data: font("manrope-500-cyrillic.woff"), weight: 500, style: "normal" },
+        { name: "PlayfairCyr", data: font("playfair-700-cyrillic.woff"), weight: 700, style: "normal" },
         { name: "Manrope", data: font("manrope-500-latin.woff"), weight: 500, style: "normal" },
+        { name: "ManropeCyr", data: font("manrope-500-cyrillic.woff"), weight: 500, style: "normal" },
       ],
     },
   );

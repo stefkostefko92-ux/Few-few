@@ -13,7 +13,7 @@ covers only the lists that are on for everyone.
 |------|--------|---------|----------|
 | EasyList | <https://easylist.to/easylist/easylist.txt> | GPLv3 / CC BY-SA 3.0 | ad network + cosmetic rules |
 | EasyPrivacy | <https://easylist.to/easylist/easyprivacy.txt> | GPLv3 / CC BY-SA 3.0 | tracker rules |
-| URLhaus hostfile | <https://urlhaus.abuse.ch/downloads/hostfile/> | CC0 | malware protection (on by default for new installs; warning page) |
+| URLhaus hostfile | `urlhaus-api.abuse.ch/v2/files/exports/<Auth-Key>/hostfile.txt` | условията на abuse.ch (не CC0) — виж по-долу | malware protection (on by default for new installs; warning page) |
 
 EasyList and EasyPrivacy are © The EasyList authors, dual-licensed under the
 GNU General Public License v3 and Creative Commons Attribution-ShareAlike 3.0.
@@ -22,7 +22,49 @@ declarativeNetRequest JSON (data) with no modification of intent: unsupported
 filter options are skipped, never approximated in ways that could block more
 than the original rule.
 
-URLhaus data is published by abuse.ch under CC0 (public domain).
+## URLhaus — нови условия, Auth-Key (решение на собственика, 23.10.2026)
+
+От октомври 2026 публичният `hostfile` връща **HTTP 410**; всяко сваляне от URLhaus иска Auth-Key
+(безплатен, от <https://auth.abuse.ch/>). Условията — <https://abuse.ch/terms-of-use/> (в сила от
+4 ноември 2025, последна редакция 21 октомври 2026; самият hostfile сочи <https://urlhaus.abuse.ch/api/>):
+
+- §3.1: безплатно за удостоверени потребители, **за нестопански цели**, с лимити на заявките;
+- §3.4: „без ограничения, по CC0“ важи вече само за Feodo Tracker, SSL Blacklist и YARAify — **не за URLhaus**;
+- §4.1: URLhaus за търговски цели **може да иска платен абонамент** (през Spamhaus);
+- §7.3: без изрично съгласие не се копират и не се правят производни на платформите.
+
+**Решението:** собственикът взе Auth-Key и продължава с URLhaus за безплатното разширение. Дали това е
+„нестопанска“ употреба по §3.1 — за потвърждение от юрист; при отказ — разрешение от abuse.ch/Spamhaus или
+махане на данните. Това е обща информация, не правен съвет.
+
+**Как се билдва:** ключът е тайна и живее **само** в средата на машината, която билдва —
+`ABUSECH_AUTH_KEY=<ключ> node tools/build_filters.mjs` (в облачна сесия: Secrets на средата; локално:
+`export` в профила, не във файл в репото). Кодът го чете само от `process.env`, никога не го печата
+(грешките показват `<Auth-Key>`), а `tools/lib/secret-patterns.mjs` хваща адрес на експорта с вграден
+ключ — и в комит, и в командите на агентите. Без ключ билдът запазва записаното `rules/urlhaus.json`.
+THIRD_PARTY_NOTICES.txt записва условията (`licenses/abuse.ch-URLhaus-terms.txt`) и че данните **не се
+преиздават** — затова URLhaus не се архивира в `server/sources/`. Hostfile-ът съдържа само активни адреси и
+такива от последните 48 часа: обновявай го с всеки релийз.
+
+## Изходният вид на листите (GPL/AGPL §6, MPL §3.2)
+
+Компилираните правила в пакета са производни на листите; лицензите с copyleft искат точният изходен
+текст да е достъпен там, откъдето се разпространява компилираното, докато се разпространява.
+`tools/build_filters.mjs` записва текста на всяка вградена листа точно както е свален (байтовете,
+от които е SHA-256-ът в бележките) в `server/sources/<sha256>.txt.gz`; THIRD_PARTY_NOTICES.txt сочи
+адреса `https://adblock.carbonstealth.eu/sources/<sha256>.txt.gz` под всяка листа. Деплоят копира
+папката без `--delete`, така че текстовете на по-стари версии остават на сайта; в репото са само
+текущите. `tests/rules.test.mjs` проверява, че всеки посочен файл съществува и разархивиран дава същия
+SHA-256; `tools/package.sh` — че всеки лиценз от бележките е в пакета. URLhaus не се архивира (горе).
+
+## Листи без стандартен лиценз
+
+- **Peter Lowe's list** — авторът не публикува лиценз; записаното му разрешение („Feel free to combine
+  this list with yours … and put it up on the web“, проверено 23.10.2026) е в
+  `licenses/PeterLowe-terms.txt`, заедно с реда за авторството от самата листа.
+- **EasyList Thailand** (Apache-2.0) — upstream няма файл `NOTICE` (проверени NOTICE, NOTICE.txt,
+  NOTICE.md на 23.10.2026), така че §4(d) не добавя нищо; редът за авторските права от техния LICENSE
+  („Copyright 2016-2017 EasyList Thailand“, §4(c)) е в бележките. При нов билд провери пак.
 
 ## Surrogate ресурси (resources/)
 

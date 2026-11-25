@@ -131,3 +131,133 @@ test('висящите образи НЕ заемат числото на `syste
   const spec = reclaimSpec('dangling-images', {});
   assert.deepEqual(spec.args, ['image', 'prune', '-f']);
 });
+
+// Инцидент 11.10.2026: release, от който работещ стек монтира файлове, беше изтрит като „стар“ →
+// nginx/backup на zabobovdol не тръгнаха след рестарт → 502. Тези release-и никога не се предлагат.
+test('стари releases: release на current и монтиран от контейнер не се предлагат', async () => {
+  const { protectedReleases, pickOldReleases } = await import('../src/reclaim.js');
+  const os = await import('node:os');
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'rel-'));
+  try {
+    const rel = path.join(base, 'releases');
+    const names = ['20260918-130341', '20260920-100000', '20260925-100000', '20261001-100000', '20261010-100000', '20261011-101124'];
+    for (const n of names) fs.mkdirSync(path.join(rel, n, 'few-few'), { recursive: true });
+    const current = path.join(base, 'current');
+    fs.symlinkSync(path.join(rel, '20260920-100000', 'few-few'), current);
+    const mount = path.join(rel, '20260918-130341', 'few-few', 'zabobovdol', 'nginx', 'zabobovdol.conf');
+    const fake = async (cmd, args) =>
+      args[0] === 'ps' ? { ok: true, stdout: 'aaa\nbbb\n' } : { ok: true, stdout: `${mount}\n/var/lib/docker/volumes/x/_data\n\n` };
+    const guard = await protectedReleases(rel, current, fake);
+    assert.deepEqual([...guard].sort(), ['20260918-130341', '20260920-100000']);
+    const old = pickOldReleases(fs.readdirSync(rel), 3, guard);
+    assert.deepEqual(old, ['20260925-100000'], 'само немонтиран и не-current стар release');
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
+// Преглед на PR #306 (Кодаджията, VPS-аджията — Medium): паритет с prune_releases в autodeploy.sh —
+// целта на отката на всеки продукт ($SHARED/*/last-good), release с ЕДИНСТВЕНОТО копие на .env и
+// пътища през symlink (releases/ и монтирания под current) не се предлагат за триене.
+test('стари releases: last-good, единствено .env и пътища през symlink се пазят (паритет с autodeploy)', async () => {
+  const { protectedReleases, pickOldReleases, KEEP_RELEASES } = await import('../src/reclaim.js');
+  const os = await import('node:os');
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'rel-'));
+  try {
+    const realRel = path.join(base, 'disk', 'releases');
+    const names = ['20260901-100000', '20260905-100000', '20260910-100000', '20260915-100000', '20260920-100000',
+      '20260925-100000', '20261001-100000', '20261005-100000', '20261010-100000'];
+    for (const n of names) fs.mkdirSync(path.join(realRel, n, 'few-few', 'piuma'), { recursive: true });
+    const rel = path.join(base, 'releases');
+    fs.symlinkSync(realRel, rel); // releasesDir в конфига е през symlink
+    const shared = path.join(base, 'shared');
+    fs.mkdirSync(path.join(shared, 'chatchat'), { recursive: true });
+    fs.writeFileSync(path.join(shared, 'chatchat', 'last-good'), `${path.join(realRel, names[0], 'few-few')}\n`);
+    fs.writeFileSync(path.join(realRel, names[1], 'few-few', 'piuma', '.env'), 'X=1\n'); // няма го в shared
+    fs.mkdirSync(path.join(realRel, names[2], 'few-few', 'semki'), { recursive: true });
+    fs.writeFileSync(path.join(realRel, names[2], 'few-few', 'semki', '.env'), 'Y=1\n');
+    fs.mkdirSync(path.join(shared, 'semki'), { recursive: true });
+    fs.writeFileSync(path.join(shared, 'semki', '.env'), 'Y=2\n'); // спасено → release-ът НЕ е защитен
+    const current = path.join(base, 'current');
+    fs.symlinkSync(path.join(realRel, names[8], 'few-few'), current);
+    // Монтиран през current (symlink) → трябва да се разреши до истинския release.
+    const viaCurrent = path.join(base, 'cur-old');
+    fs.symlinkSync(path.join(realRel, names[3], 'few-few'), viaCurrent);
+    const fake = async (cmd, args) =>
+      args[0] === 'ps' ? { ok: true, stdout: 'aaa\n' } : { ok: true, stdout: `${path.join(viaCurrent, 'piuma', 'x.conf')}\n` };
+    const guard = await protectedReleases(rel, current, fake, { sharedDir: shared });
+    assert.deepEqual([...guard].sort(), [names[0], names[1], names[3], names[8]].sort());
+    assert.equal(KEEP_RELEASES, 5, 'колкото KEEP_RELEASES в deploy/autodeploy.sh');
+    assert.deepEqual(pickOldReleases(fs.readdirSync(rel), KEEP_RELEASES, guard), [names[2]]);
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('стари releases: Docker не отговаря → null (не предлагаме нищо — fail closed)', async () => {
+  const { protectedReleases } = await import('../src/reclaim.js');
+  assert.equal(await protectedReleases('/opt/few-few/releases', '/nonexistent', async () => ({ ok: false, stdout: '' })), null);
+  const halfway = async (cmd, args) => (args[0] === 'ps' ? { ok: true, stdout: 'abc\n' } : { ok: false, stdout: '' });
+  assert.equal(await protectedReleases('/opt/few-few/releases', '/nonexistent', halfway), null);
+});
+
+// ── Новите категории (v1.17) ─────────────────────────────────────────────────
+import { execFileSync } from 'node:child_process';
+import { isEditorBackup, parseSnapList, CACHE_DIRS } from '../src/reclaim.js';
+
+test('чистене: всеки shell от категориите е СИНТАКТИЧНО верен (bash -n)', () => {
+  const specs = [
+    reclaimSpec('rotated-logs'),
+    reclaimSpec('crash-dumps'),
+    reclaimSpec('coredumps'),
+    reclaimSpec('old-snaps', { revs: [{ name: 'core22', rev: '1380' }, { name: 'lxd', rev: '29351' }] }),
+    reclaimSpec('file-trash', {}, { paths: { stateDir: '/var/lib/vps-dashboard' } }),
+    reclaimSpec('old-releases', { paths: ['/opt/few-few/releases/20260101-000000'] }),
+  ];
+  for (const s of specs) {
+    assert.ok(s.shell, s.title);
+    execFileSync('bash', ['-n', '-c', s.shell]);
+  }
+});
+
+test('чистене: кешовете — само ТОЧНИТЕ пътища от затворения списък', () => {
+  const s = reclaimSpec('pkg-caches', { paths: ['/root/.npm/_cacache', '/root', '/etc', '/root/.npm/_cacache/../../.ssh'] });
+  assert.deepEqual(s.args, ['-rf', '--', '/root/.npm/_cacache']);
+  assert.equal(s.cmd, 'rm');
+  assert.ok(CACHE_DIRS.every((d) => d.split('/').length >= 4), 'нито един кеш не е папка от горно ниво');
+  assert.throws(() => reclaimSpec('pkg-caches', { paths: ['/root'] }), /Няма какво/);
+});
+
+test('чистене: копията от редактора — само по точния формат и в позволените корени', () => {
+  assert.ok(isEditorBackup('/etc/nginx/nginx.conf.bak-2026-10-01T09-30-00-123Z'));
+  assert.ok(isEditorBackup('/opt/сайт/конфиг на сайта.bak-2026-10-01T09-30-00-123Z'), 'кирилица и интервал минават (rm без shell)');
+  for (const bad of [
+    '/etc/nginx/nginx.conf.bak', // чужд .bak
+    '/etc/nginx/nginx.conf.bak-20261001-093000', // формата на деплоя, не на редактора
+    '/usr/lib/x.bak-2026-10-01T09-30-00-123Z', // извън корените
+    '/etc/../usr/x.bak-2026-10-01T09-30-00-123Z',
+    '/etc/x\n.bak-2026-10-01T09-30-00-123Z',
+  ]) {
+    assert.equal(isEditorBackup(bad), false, bad);
+  }
+  const s = reclaimSpec('editor-backups', { paths: ['/etc/a.bak-2026-10-01T09-30-00-123Z', '/etc/shadow'] });
+  assert.deepEqual(s.args, ['-f', '--', '/etc/a.bak-2026-10-01T09-30-00-123Z']);
+});
+
+test('чистене: snap — само изключените ревизии, активната никога', () => {
+  const text = [
+    'Name    Version   Rev    Tracking       Publisher   Notes',
+    'core22  20240111  1122   latest/stable  canonical✓  base,disabled',
+    'core22  20240408  1380   latest/stable  canonical✓  base',
+    'lxd     5.21.1    28463  5.21/stable    canonical✓  disabled',
+    'lxd     5.21.2    29351  5.21/stable    canonical✓  -',
+  ].join('\n');
+  assert.deepEqual(parseSnapList(text), [{ name: 'core22', rev: '1122' }, { name: 'lxd', rev: '28463' }]);
+  const s = reclaimSpec('old-snaps', { revs: [{ name: 'lxd; reboot', rev: '1' }, { name: 'lxd', rev: '28463' }] });
+  assert.equal(s.shell, 'snap remove lxd --revision=28463 && echo "✔ Готово"');
+});
+
+test('чистене: прегледите на бекъпи — само файлове в restore/', () => {
+  const s = reclaimSpec('restore-previews', { paths: ['/var/lib/vps-dashboard/restore/medqr.db', '/var/lib/vps-dashboard/audit.jsonl', '/var/lib/vps-dashboard/restore/../config'] });
+  assert.deepEqual(s.args, ['-f', '--', '/var/lib/vps-dashboard/restore/medqr.db']);
+});

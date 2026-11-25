@@ -1,0 +1,9 @@
+<%#
+  Снимка на витрината (src/site/immagini.ts — нашите рендери): AVIF, после WebP, всяка с всичките си
+  ширини; `sizes` казва колко е широка на екрана, за да вземе браузърът точната. Под първия екран —
+  тегли се, когато наближи.
+%><picture class="<%= classe %>">
+  <source type="image/avif" srcset="<%= foto.avif %>" sizes="<%= sizes %>">
+  <source type="image/webp" srcset="<%= foto.webp %>" sizes="<%= sizes %>">
+  <img src="<%= foto.src %>" width="<%= foto.width %>" height="<%= foto.height %>" alt="<%= foto.alt %>" loading="lazy" decoding="async">
+</picture>

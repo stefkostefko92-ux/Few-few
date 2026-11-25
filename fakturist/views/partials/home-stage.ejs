@@ -1,0 +1,73 @@
+<%# „Живата фактура“: полетата, XML-ът и правилата. Без JavaScript е крайното състояние; движението е само CSS (с `prefers-reduced-motion` — няма), линиите между полетата и XML-а ги чертае public/js/site-home.js. Параметри: link (звеното 124). -%>
+<%
+  const rows = [
+    ['BT-1', t('site.home.doc.number'), '<span class="mono">0000000124</span>'],
+    ['BT-2', t('site.home.doc.issueDate'), '<time datetime="2026-11-12">12.11.2026</time>'],
+    ['BT-3', t('landing.stage.type'), t('landing.stage.typeValue')],
+    ['BT-5', t('site.home.doc.currency'), 'EUR'],
+    ['BT-27', t('site.home.doc.seller'), t('site.home.doc.sellerName')],
+    ['BT-44', t('site.home.doc.buyer'), t('site.home.doc.buyerName')],
+  ];
+  const sum = [
+    [null, t('site.home.doc.line'), formatEuro(100000)],
+    ['BT-110', t('site.home.doc.vat'), formatEuro(20000)],
+    ['BT-115', t('site.home.doc.total'), formatEuro(120000)],
+  ];
+  const xml = [
+    { bt: 'BT-1', i: 1, tag: 'cbc:ID', val: '0000000124' },
+    { bt: 'BT-2', i: 1, tag: 'cbc:IssueDate', val: '2026-11-12' },
+    { bt: 'BT-3', i: 1, tag: 'cbc:InvoiceTypeCode', val: '380' },
+    { bt: 'BT-5', i: 1, tag: 'cbc:DocumentCurrencyCode', val: 'EUR' },
+    { raw: '…', i: 1 },
+    { bt: 'BT-27', i: 2, tag: 'cbc:RegistrationName', val: t('site.home.doc.sellerName') },
+    { bt: 'BT-44', i: 2, tag: 'cbc:RegistrationName', val: t('site.home.doc.buyerName') },
+    { raw: '…', i: 1 },
+    { bt: 'BT-110', i: 2, tag: 'cbc:TaxAmount', val: '200.00', attr: ' currencyID="EUR"' },
+    { bt: 'BT-115', i: 2, tag: 'cbc:PayableAmount', val: '1200.00', attr: ' currencyID="EUR"' },
+  ];
+  const short = (h) => h.slice(0, 8) + '…' + h.slice(-6);
+-%>
+<figure class="stage" data-stage>
+  <div class="stage-grid">
+    <div class="inv" data-inv>
+      <p class="inv-kind"><%= t('site.home.doc.title') %></p>
+      <dl class="inv-rows">
+<% rows.forEach((r, k) => { -%>
+        <div class="fr i<%= k %>" data-bt="<%= r[0] %>"><dt><%= r[1] %></dt><dd><span class="fr-v"><%- r[2] %></span><span class="bt"><%= r[0] %></span></dd></div>
+<% }) -%>
+      </dl>
+      <table class="inv-sum">
+        <caption class="sr"><%= t('site.home.doc.total') %></caption>
+        <tbody>
+<% sum.forEach((r, k) => { -%>
+          <tr class="fr i<%= [6, 6, 7][k] %><%= k === 2 ? ' is-total' : '' %>"<% if (r[0]) { %> data-bt="<%= r[0] %>"<% } %>><th scope="row"><%= r[1] %><% if (r[0]) { %> <span class="bt"><%= r[0] %></span><% } %></th><td class="num"><%= r[2] %></td></tr>
+<% }) -%>
+        </tbody>
+      </table>
+      <p class="seal">
+        <svg class="seal-ring" viewBox="0 0 40 40" width="40" height="40" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12.5 20.5l5 5 10-11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span><span class="seal-t"><%= t('landing.stage.sealHash') %>, <%= t('landing.stage.seal', { no: link.no }) %></span><br><span class="mono seal-h"><%= short(link.hash) %></span></span>
+      </p>
+    </div>
+
+    <div class="xmlp xml" data-xml>
+      <div class="xml-bar"><span class="xml-file"><%= t('landing.stage.xmlName') %></span><span class="xml-std">UBL 2.1</span></div>
+      <div class="xml-scroll" tabindex="0" role="region" aria-label="<%= t('landing.stage.label') %>">
+        <pre class="xml-code"><code><span class="xl"><span class="xl-bt"></span><span class="xl-src i0"><span class="x-t">&lt;Invoice&nbsp;…&gt;</span></span></span><% xml.forEach((l, k) => { %><span class="xl<%= l.bt ? ' fr i' + (xml.slice(0, k).filter((x) => x.bt).length) : '' %>"<% if (l.bt) { %> data-bt="<%= l.bt %>"<% } %>><span class="xl-bt"><%= l.bt || '' %></span><span class="xl-src i<%= l.i %>"><% if (l.raw) { %><%= l.raw %><% } else { %><span class="x-t">&lt;<%= l.tag %><%= l.attr || '' %>&gt;</span><span class="x-v"><%= l.val %></span><span class="x-t">&lt;/<%= l.tag %>&gt;</span><% } %></span></span><% }) %><span class="xl"><span class="xl-bt"></span><span class="xl-src i0"><span class="x-t">&lt;/Invoice&gt;</span></span></span></code></pre>
+      </div>
+      <div class="checks">
+        <p class="checks-t"><%= t('landing.stage.rulesTitle') %></p>
+        <ul>
+<% [1, 2, 3].forEach((k) => { -%>
+          <li class="ck c<%= k %>"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr"><%= t('landing.stage.ok') %>: </span><span class="ck-id mono"><%= t('landing.stage.rule' + k + '.id') %></span><span class="ck-x"><%= t('landing.stage.rule' + k + '.text') %></span></li>
+<% }) -%>
+        </ul>
+      </div>
+    </div>
+    <svg class="wire" aria-hidden="true" focusable="false" data-wire></svg>
+  </div>
+  <figcaption class="stage-cap">
+    <span><%= t('landing.stage.caption') %></span>
+    <button type="button" class="replay" data-replay><%= t('landing.stage.replay') %></button>
+  </figcaption>
+</figure>

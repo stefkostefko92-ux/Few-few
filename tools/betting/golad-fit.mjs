@@ -7,6 +7,7 @@
 // (∂LL/∂logAtt_h = Σ w·(x−λ) и т.н. — стандартни), с ренормализация на att/def (геом. средна=1)
 // за идентифицируемост; ρ се оценява по мрежа върху τ-частта (влиянието му върху att/def е нищожно —
 // както отбелязват Dixon & Coles 1997). Итерира att/def/home ↔ ρ до сходимост.
+import { isMain } from "../lib/is-main.mjs";
 
 const tauLog = (x, y, lh, la, rho) => {
   let t = 1;
@@ -86,7 +87,7 @@ export function predictLambdas(fit, home, away) {
 // CLI: напасни от файл с резултати и предскажи мач.
 //   node tools/betting/golad-fit.mjs results.json "Home Team" "Away Team"
 // results.json = [{home,away,hg,ag,date}] (реални резултати, които ТИ вадиш и цитираш).
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const [file, home, away] = process.argv.slice(2);
   if (!file) { console.error('Употреба: node golad-fit.mjs results.json "Домакин" "Гост"'); process.exit(1); }
   const { readFileSync } = await import("node:fs");

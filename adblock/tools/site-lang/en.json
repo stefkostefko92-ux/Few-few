@@ -20,7 +20,7 @@
     ["YouTube ads at the source", "Video, feed and search ads are taken out of the player's data before the player reads it, so videos simply play."],
     ["Filter lists for your language", "EasyList, EasyPrivacy and the uBlock Origin filters are built in, plus 31 regional lists; the one for your language turns on by itself."],
     ["Sponsored posts", "Hidden in the Facebook, Instagram and Threads feeds; your friends' posts stay."],
-    ["Cookie banners", "It presses Reject for you, clears the leftover blur and scroll lock, and never presses a sign-in, OAuth or payment button."],
+    ["Cookie banners", "It presses Reject when the banner offers it, and Accept only when there is no other way to close it; it clears the leftover blur and scroll lock and never presses a sign-in, OAuth or payment button."],
     ["Trackers and pop-unders", "Trackers, tracking parameters in links and pop-up ad windows are blocked; anti-adblock walls are neutralised."],
     ["Focus mode", "Hide chat bubbles, newsletter pop-ups, notification prompts, AI pop-ups and YouTube Shorts, only if you want to."],
     ["Global Privacy Control", "Every site you visit is asked not to sell or share your data."],

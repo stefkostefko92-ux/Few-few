@@ -4,7 +4,7 @@
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Blocco annunci per YouTube e il web: annunci video, banner, pop-up, tracker, banner dei cookie («Rifiuta») e muri anti-adblock.",
+    "message": "Blocco annunci per YouTube e il web: annunci video, banner, pop-up, tracker, banner dei cookie e muri anti-adblock.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -801,5 +801,107 @@
   },
   "opt_h_capacity": {
     "message": "Capacità delle regole"
+  },
+  "helpTitle": {
+    "message": "I siti si rompono?"
+  },
+  "helpText": {
+    "message": "Basta un sito alla volta: consenti i suoi annunci per un'ora o disattiva l'occultamento degli elementi solo lì. Se ce lo segnali, lo sistemiamo per tutti."
+  },
+  "helpFix": {
+    "message": "Sistema questo sito"
+  },
+  "cardNever": {
+    "message": "Non mostrarlo più"
+  },
+  "cardClose": {
+    "message": "Chiudi"
+  },
+  "receiptTitle": {
+    "message": "I tuoi ultimi 30 giorni"
+  },
+  "receiptText": {
+    "message": "$1 richieste bloccate · $2 banner dei cookie gestiti · circa $3 di dati risparmiati (stima)"
+  },
+  "share": {
+    "message": "Condividi"
+  },
+  "shareTitle": {
+    "message": "Copia il link a Supreme AdBlock sul Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Link copiato"
+  },
+  "rep_fixed_q": {
+    "message": "Il sito ora funziona?"
+  },
+  "rep_fixed_yes": {
+    "message": "Sì, funziona"
+  },
+  "rep_fixed_no": {
+    "message": "No, è ancora rotto"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Bene. Se ce lo segnali qui sotto, la segnalazione dirà quale soluzione ha funzionato, così sistemiamo il sito per tutti."
+  },
+  "rep_fixed_next": {
+    "message": "Prova la prossima: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Allora segnalacelo qui sotto: daremo un'occhiata al sito."
+  },
+  "rep_webmail": {
+    "message": "Non hai un programma di posta? Copia la segnalazione e inviala a $1 dalla tua webmail."
+  },
+  "blk_mistake": {
+    "message": "Pensi che sia un errore? Segnalacelo"
+  },
+  "welTest": {
+    "message": "Guarda come funziona su una pagina di prova"
+  },
+  "modeHere": {
+    "message": "Protezione qui"
+  },
+  "modeBasic": {
+    "message": "Base"
+  },
+  "modeStandard": {
+    "message": "Standard"
+  },
+  "modeStrict": {
+    "message": "Rigorosa"
+  },
+  "opt_mode": {
+    "message": "Livello di protezione"
+  },
+  "opt_mode_sub": {
+    "message": "Per tutti i siti. Per dare a un sito un livello tutto suo, apri l’estensione su quel sito."
+  },
+  "modeHint": {
+    "message": "Base: solo blocco in rete. Standard: consigliata. Rigorosa: anche dentro i frame. La pagina si ricarica."
+  },
+  "modeBasicDesc": {
+    "message": "Solo blocco in rete: la più leggera, non si rompe quasi nulla. YouTube mantiene la sua protezione."
+  },
+  "modeStandardDesc": {
+    "message": "Consigliata: protezione completa sulla pagina stessa."
+  },
+  "modeStrictDesc": {
+    "message": "Anche dentro i frame incorporati: nasconde di più, usa più memoria."
+  },
+  "opt_who": {
+    "message": "Chi abbiamo fermato"
+  },
+  "opt_who_sub": {
+    "message": "Le aziende i cui server abbiamo impedito al tuo browser di contattare negli ultimi 30 giorni. Contate solo su questo dispositivo, per azienda e per giorno: niente indirizzi, niente siti."
+  },
+  "opt_who_empty": {
+    "message": "Ancora niente di contato. Naviga un po’ e torna a guardare."
+  },
+  "opt_who_row": {
+    "message": "Richieste: $1 · Giorni: $2"
+  },
+  "managedNote": {
+    "message": "Impostato dalla tua organizzazione"
   }
 }

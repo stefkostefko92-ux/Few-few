@@ -10,15 +10,21 @@
 - Приложение: `server/server.js` (`node:http`/`node:crypto`), слуша `127.0.0.1:8788`.
 - Домейн: `https://ospedalitrasparenti.it` (зад Nginx + Let's Encrypt).
 - Health: `GET /healthz` → `{"ok":true}`.
-- Потребител: `www-data` (споделен уеб потребител).
+- Потребител: `ospedali` (собствен системен потребител, без shell; създава го `deploy_ospedali`).
+  Не `www-data` — пробив в nginx не стига до тайните и състоянието на сервиза.
 
 ## Какво прави `deploy_ospedali` (автоматично, идемпотентно)
 
 1. `rsync ospedali/ → /opt/ospedali`, като **изключва** `server/.env`,
    `server/.state/` и суровите ETL данни (`data/raw/`, `data/contratti/`) — тайните
    и рънтайм състоянието оцеляват между версиите (rsync `--delete` не ги пипа).
-2. `chown -R www-data:www-data /opt/ospedali` + създава `server/.state/` (mode 700),
-   защото `ProtectSystem=strict` прави всичко извън `ReadWritePaths` само за четене.
+2. Създава потребителя `ospedali` (със собствена група), ако липсва, и подрежда правата
+   (`ospedali_perms` в `deploy/autodeploy.sh`): кодът е `root:root` — сервизът само го чете;
+   `server/.state/` е `ospedali:ospedali` 700 (единственото място, където сервизът пише —
+   брояч, видимост, админ хеш, audit log); `server/.env` е `root:ospedali` 640. Създава
+   `server/.state/` преди старт, защото `ProtectSystem=strict` прави всичко извън
+   `ReadWritePaths` само за четене. Стари инсталации (всичко на `www-data`/`ospedali`) се
+   поправят автоматично при следващия деплой.
 3. Самоинсталира systemd unit-а (`deploy/systemd/ospedali.service`) → `daemon-reload`
    → `enable` → `restart`.
 4. Health check на `http://127.0.0.1:8788/healthz`; при провал — **авто-rollback**
@@ -37,16 +43,17 @@ sudo PROJECTS="ospedali" bash /root/few-few-*/deploy/autodeploy.sh
 Насочи **A запис** (и по избор `AAAA`) на `ospedalitrasparenti.it` **и**
 `www.ospedalitrasparenti.it` към IP-то на VPS-а. TLS не се издава, докато DNS не сочи насам.
 
-### 2) Тайни в `/opt/ospedali/server/.env` (mode 600)
+### 2) Тайни в `/opt/ospedali/server/.env` (`root:ospedali`, mode 640)
 
 ```bash
-sudo install -d -o www-data -g www-data /opt/ospedali/server
+id ospedali >/dev/null 2>&1 || sudo useradd --system --user-group --home-dir /opt/ospedali --shell /usr/sbin/nologin ospedali
+sudo install -d -o root -g root /opt/ospedali/server
 sudo tee /opt/ospedali/server/.env >/dev/null <<EOF
 OSPEDALI_ADMIN_PASSWORD=$(openssl rand -base64 18)
 OSPEDALI_SESSION_SECRET=$(openssl rand -hex 32)
 EOF
-sudo chown www-data:www-data /opt/ospedali/server/.env
-sudo chmod 600 /opt/ospedali/server/.env
+sudo chown root:ospedali /opt/ospedali/server/.env
+sudo chmod 640 /opt/ospedali/server/.env
 sudo grep OSPEDALI_ADMIN_PASSWORD /opt/ospedali/server/.env   # запиши паролата в password manager
 ```
 
@@ -55,9 +62,10 @@ sudo grep OSPEDALI_ADMIN_PASSWORD /opt/ospedali/server/.env   # запиши п�
 за локална разработка (`OSPEDALI_INSECURE_COOKIES=1`). `OSPEDALI_PORT`/`OSPEDALI_HOST`
 са по избор (по подр. `127.0.0.1:8788`).
 
-Тайните се четат и от systemd (`EnvironmentFile`, като root) — затова `.env` може да е
-`root:root 600`; приложението толерира нечетим `.env` (best-effort). Ако все пак искаш
-приложението да го чете директно, дай го на `www-data` (както горе).
+Тайните се четат от systemd (`EnvironmentFile`, като root); приложението ги чете и само
+(best-effort) през групата `ospedali` — само за четене, не може да ги презапише.
+`deploy_ospedali` налага `root:ospedali 640` при всеки деплой, така че ръчно `root:root 600`
+или `ospedali:ospedali 600` се изравнява автоматично.
 
 ### Отстраняване на проблеми (наблюдавани при първи деплой)
 
@@ -65,9 +73,9 @@ sudo grep OSPEDALI_ADMIN_PASSWORD /opt/ospedali/server/.env   # запиши п�
   `@system-service` на по-стар systemd). Поправено в unit-а с `SystemCallErrorNumber=EPERM`
   (libuv пада на epoll). Ако все пак се появи на друг хост: `sudo systemctl edit ospedali`
   → добави `[Service]\nSystemCallErrorNumber=EPERM`.
-- **`EACCES … open '.env'`** — `.env` е нечетим за `www-data`. Поправено (приложението
-  толерира нечетим `.env`, тайните идват от systemd). Стар билд: `sudo chown www-data:www-data
-  /opt/ospedali/server/.env`.
+- **`EACCES … open '.env'`** — `.env` е нечетим за потребителя на сервиза (`ospedali`). Поправено (приложението
+  толерира нечетим `.env`, тайните идват от systemd). Стар билд: `sudo chown root:ospedali
+  /opt/ospedali/server/.env && sudo chmod 640 /opt/ospedali/server/.env` (или нов деплой).
 - **`nginx -t` пада с липсващ TLS сертификат** — vhost-ът има `443 ssl` блок, а сертификатът
   още не е издаден. Издай го първо с временен HTTP-only vhost (§3), после върни пълния.
 

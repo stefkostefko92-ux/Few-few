@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Isivimbi sezikhangiso se-YouTube newebhu: amabhena, ama-pop-up, abalandeleli, amakhukhi (“Nqaba”) nezindonga ze-anti-adblock."
+    "message": "Isivimbi sezikhangiso se-YouTube newebhu: amabhena, ama-pop-up, abalandeleli, amabhena amakhukhi nezindonga ze-anti-adblock."
   },
   "byCarbon": {
     "message": "ngu-Carbon Stealth"
@@ -799,5 +799,107 @@
   },
   "opt_h_capacity": {
     "message": "Umthamo wemithetho"
+  },
+  "helpTitle": {
+    "message": "Amasayithi ayonakala?"
+  },
+  "helpText": {
+    "message": "Isayithi eyodwa ngesikhathi yanele: vumela izikhangiso zayo ihora elilodwa, noma uvale ukufihla ama-elementi lapho kuphela. Uma usitshela, siyayilungisa kuwo wonke umuntu."
+  },
+  "helpFix": {
+    "message": "Lungisa le sayithi"
+  },
+  "cardNever": {
+    "message": "Ungaphinde ukubonise lokhu"
+  },
+  "cardClose": {
+    "message": "Vala"
+  },
+  "receiptTitle": {
+    "message": "Izinsuku ezingu-30 ezedlule"
+  },
+  "receiptText": {
+    "message": "Izicelo ezivinjiwe: $1 · amabhena amakhukhi aphendulwe: $2 · idatha eyongiwe: cishe $3 (kuyisilinganiso)"
+  },
+  "share": {
+    "message": "Yabelana"
+  },
+  "shareTitle": {
+    "message": "Kopisha isixhumanisi se-Chrome Web Store se-Supreme AdBlock"
+  },
+  "shareCopied": {
+    "message": "Sikopishiwe"
+  },
+  "rep_fixed_q": {
+    "message": "Ingabe kuyilungisile isayithi?"
+  },
+  "rep_fixed_yes": {
+    "message": "Yebo, iyasebenza"
+  },
+  "rep_fixed_no": {
+    "message": "Cha, ayikalungi"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Kuhle. Uma usitshela ngezansi, umbiko uzosho ukuthi yikuphi ukulungisa okusebenzile, ukuze silungise isayithi kuwo wonke umuntu."
+  },
+  "rep_fixed_next": {
+    "message": "Zama elilandelayo: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Ngakho-ke sicela usitshele ngezansi: sizoyibheka isayithi."
+  },
+  "rep_webmail": {
+    "message": "Awunayo i-app ye-imeyili? Kopisha umbiko bese uwuthumela ku-$1 usebenzisa i-webmail yakho."
+  },
+  "blk_mistake": {
+    "message": "Ucabanga ukuthi leli yiphutha? Sitshele"
+  },
+  "welTest": {
+    "message": "Yibone isebenza ekhasini lokuhlola"
+  },
+  "modeHere": {
+    "message": "Ukuvikela lapha"
+  },
+  "modeBasic": {
+    "message": "Okuyisisekelo"
+  },
+  "modeStandard": {
+    "message": "Okujwayelekile"
+  },
+  "modeStrict": {
+    "message": "Okuqinile"
+  },
+  "opt_mode": {
+    "message": "Izinga lokuvikela"
+  },
+  "opt_mode_sub": {
+    "message": "Kuwo wonke amasayithi. Ukunika isayithi elilodwa izinga lalo, vula isandiso kulelo sayithi."
+  },
+  "modeHint": {
+    "message": "Okuyisisekelo: ukuvimba kunethiwekhi kuphela. Okujwayelekile: kunconywa. Okuqinile: nangaphakathi kwamafreyimu. Ikhasi lizolayishwa kabusha."
+  },
+  "modeBasicDesc": {
+    "message": "Ukuvimba kunethiwekhi kuphela: kulula kakhulu, cishe akukho okuphukayo. I-YouTube igcina ukuvikela kwayo."
+  },
+  "modeStandardDesc": {
+    "message": "Kunconywa: ukuvikela okuphelele ekhasini uqobo."
+  },
+  "modeStrictDesc": {
+    "message": "Nangaphakathi kwamafreyimu ashumekiwe: kufihla okuningi, kusebenzisa inkumbulo eningi."
+  },
+  "opt_who": {
+    "message": "Esibavimbile"
+  },
+  "opt_who_sub": {
+    "message": "Izinkampani esivimbele isiphequluli sakho ukuthi sixhumane namaseva azo ezinsukwini ezingu-30 ezedlule. Kubalwa kule divayisi kuphela, ngenkampani nangosuku: awekho amakheli, awekho amasayithi."
+  },
+  "opt_who_empty": {
+    "message": "Akukabalwa lutho okwamanje. Phequlula isikhashana bese ubheka futhi."
+  },
+  "opt_who_row": {
+    "message": "Izicelo: $1 · Izinsuku: $2"
+  },
+  "managedNote": {
+    "message": "Kusethwe yinhlangano yakho"
   }
 }

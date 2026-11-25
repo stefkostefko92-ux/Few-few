@@ -38,20 +38,19 @@ export function catalogPage(t, locales) {
         <p class="callout">${esc(c.fallback)}</p>
       </object>
     </div>
-    <aside class="catalog-toc">
+    <div class="catalog-toc">
       <h2>${esc(c.tocTitle)}</h2>
       <ol>${toc}</ol>
       <p class="note">${esc(c.interactiveNote)}</p>
       <a class="btn btn-primary" href="${CATALOG_PDF}" download>${esc(c.download)}</a>
-    </aside>
+    </div>
   </div>
 </section>
 
 <section class="section section-tint">
   <div class="wrap">
-    <p class="kicker">${esc(c.previewKicker)}</p>
     <h2>${esc(c.previewTitle)}</h2>
-    <ul class="preview-strip">${previews}</ul>
+    <ul class="preview-strip" tabindex="0" aria-label="${esc(c.previewTitle)}">${previews}</ul>
   </div>
 </section>`;
 }
@@ -91,7 +90,7 @@ export function contactsPage(t, locales) {
         <h2>${esc(c.orderEmailTitle)}</h2>
         <p>${esc(c.orderEmailBody)}</p>
         <p class="contact-mail">${esc(c.writeUs)} <a href="mailto:${COMPANY.email}">${COMPANY.email}</a></p>
-        <a class="btn btn-primary" href="${mailHref}">${esc(t.nav.orderCta)}</a>
+        <a class="btn btn-white" href="${mailHref}">${esc(t.nav.orderCta)}</a>
       </div>
 
       <h2 class="mt">${esc(c.dataTitle)}</h2>
@@ -113,7 +112,8 @@ export function contactsPage(t, locales) {
       <h2>${esc(c.formTitle)}</h2>
       <p>${esc(c.formLead)}</p>
       <p class="note">${esc(f.requiredNote)}</p>
-      <form class="contact-form" data-contact-form novalidate>
+      <form class="contact-form" data-contact-form method="post" action="/api/contact" novalidate>
+        <input type="hidden" name="source" value="sito-${t.lang}">
         <label>${esc(f.name)}<input type="text" name="nome" autocomplete="name" required maxlength="150"></label>
         <label>${esc(f.company)}<input type="text" name="azienda" autocomplete="organization" required maxlength="150"></label>
         <div class="form-row">

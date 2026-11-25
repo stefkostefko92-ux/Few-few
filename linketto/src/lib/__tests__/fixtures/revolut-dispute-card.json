@@ -1,0 +1,25 @@
+{
+  "id": "fccc53e9-00e0-4847-9d54-6938e9cdd3ef",
+  "state": "lost",
+  "substate": "lost_accepted",
+  "created_at": "2025-03-12T07:00:00.000000Z",
+  "updated_at": "2025-03-13T10:00:00.000000Z",
+  "response_due_date": "2025-03-15T12:00:00.000000Z",
+  "reason_code": "50",
+  "reason_description": "Fraud",
+  "amount": 1500,
+  "currency": "EUR",
+  "payment": {
+    "id": "67810850-4c48-a25d-8765-d03d36ca6719",
+    "order_id": "38bd1186-a276-4b14-91b4-5da886481f85",
+    "created_at": "2025-01-02T10:00:00Z",
+    "arn": "P58PC241502Q7800000000A",
+    "amount": 3000,
+    "currency": "EUR",
+    "payment_method": {
+      "type": "card",
+      "card_brand": "visa",
+      "card_last_four": "1234"
+    }
+  }
+}

@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.5.1.zip
+bash tools/package.sh      # → dist/supreme-adblock-6.1.1.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -61,7 +61,7 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 
 - **Name:** `Supreme AdBlock – Ad Blocker` (= `extName` in `_locales/en`; bg/de/it carry one generic word after the dash, every other language stays `Supreme AdBlock`; the store takes it from the package)
 - **Summary (132 max):**
-  `Ad blocker for YouTube and the web: video ads, banners, pop-ups, trackers, cookie banners (Reject) and anti-adblock walls.` (= `extDescription` in `_locales/en`; the store takes it from the package)
+  `Ad blocker for YouTube and the web: video ads, banners, pop-ups, trackers, cookie banners and anti-adblock walls.` (= `extDescription` in `_locales/en`; the store takes it from the package)
 - **Category:** Privacy & Security (the store's category for ad and tracker blockers; the live
   listing still says *Tools* — change it in the dashboard, see §6)
 - **Language:** English
@@ -109,7 +109,10 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
   badge and, in the popup, how many requests each of our filter lists blocked on
   the page. No URL is read, stored, logged or transmitted; the breakdown is
   built on demand and discarded when the popup closes.
-- **storage** — save the user's settings and counters locally.
+- **storage** — save the user's settings and counters locally. Since 6.1.0 the manifest also declares
+  `storage.managed_schema` (`managed_schema.json`): on a browser managed by an organization, the extension
+  reads the administrator's policy for it (protection level, allowed sites, features…) from managed storage
+  and applies it locally. Nothing is sent; without a policy nothing changes.
 - **alarms** — schedule the filter-list updates and the temporary-pause timer.
 - **contextMenus** — the right-click "Block an element here" entry.
 - **scripting** — register locally-bundled MAIN-world scripts that neutralise
@@ -121,17 +124,26 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
   the user turned on (bundled files). No code is fetched or `eval`-ed at runtime, no
   personal data is read, nothing is sent.
   On YouTube only, it also registers the bundled `youtube_main.js` (MAIN world,
-  `document_start`) — see the YouTube reviewer note below. And, unless the user
+  `document_start`) and the bundled style sheet `youtube_ads.css` — see the YouTube
+  reviewer note below; on Twitch only, the bundled `twitch_main.js` (MAIN world,
+  `document_start`) — see the Twitch reviewer note. And, unless the user
   switches Global Privacy Control off, the bundled `gpc.js` (MAIN world, every
   site except allowed ones), which only defines `navigator.globalPrivacyControl = true`.
+  Since 6.0 the extension's own page scripts (`content.js`/`.css`, `cosmetic_generic.css`,
+  `cookies.js`/`.css`, `antiadblock.js`/`.css`, `picker.js`/`.css` — isolated world, the same bundled
+  files the manifest used to list) are registered here too, so the user's **protection level**
+  decides where they run: Basic — none (network blocking only), Standard (default) — the top
+  frame, Strict — every frame; globally or per site, chosen in Settings or the popup. `main.js`
+  follows the same level (top frame / every frame / none); the uBO data chunks stay in every frame.
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
 > **Reviewer note (MAIN-world scriptlets).** The extension registers MAIN-world
 > content scripts from this package only: `scriptlets/main.js` (plain, unminified,
 > commented JavaScript) and, on the hosts the uBlock Origin filters target, a
-> data chunk `scriptlets/ubo/cNN.js` placed before it (host → routine name +
-> arguments; no functions). It neutralises
+> data chunk `scriptlets/ubo/cNN.js` (host → routine name + arguments; no functions)
+> followed by `scriptlets/ubo_engine.js` — the same routines as `main.js`, built from the
+> same `scriptlets/engine.js`, which runs only that chunk's rows. It neutralises
 > anti-adblock detectors — the same mechanism established ad blockers use for
 > `##+js(...)`.
 > `main.js` contains (a) a fixed set of **39 named routines** — `set-constant`,
@@ -148,8 +160,8 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 > Both the routines and the host table are **fixed in the package** (since 5.1.4):
 > nothing downloaded can add, change or trigger a scriptlet directive, and
 > `main.js` listens to no page or extension message. The routines run only the
-> rows baked at build time; `node tools/build_scriptlets.mjs` reproduces `main.js`
-> and `ubo/*` byte for byte from `scriptlets/list.txt` and the bundled uBlock
+> rows baked at build time; `node tools/build_scriptlets.mjs` reproduces `main.js`,
+> `ubo_engine.js` and `ubo/*` byte for byte from `scriptlets/list.txt` and the bundled uBlock
 > Origin filters.
 > There is no `eval`, no `Function()`, no `<script src>`, and no code path that
 > executes a string received over the network.
@@ -162,15 +174,48 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 > requests — the strings `"adPlacements"`, `"adSlots"` and `"playerAds"` are
 > renamed in the response text before YouTube's own code parses it, so the
 > player has no ads to show. To do that it wraps `fetch`, `XMLHttpRequest`
-> (`open`/`send` and the response getters), `setTimeout` and the DOM insertion
-> methods (so a new iframe's `fetch` is covered too) in a `Proxy` of the original
-> function, and keeps `Function.prototype.toString` returning the native text,
-> because YouTube refuses playback when it detects a modified function. It reads no personal data,
-> sends nothing, makes no network request of its own and never blocks the video
-> servers. It is skipped for the whole site while the user pauses protection,
-> allowlists YouTube, or during the automatic 6-hour fallback after YouTube refuses
-> playback. The only network-supplied input are optional extra field names (plain
-> strings, validated, from the signed `filters.json`).
+> (`open`/`send` and the response getters), `setTimeout` and the iframe
+> `contentWindow`/`contentDocument` getters (so a new iframe's `fetch` is covered too)
+> in a `Proxy` of the original function, and keeps `Function.prototype.toString`
+> returning the native text, because YouTube refuses playback when it detects a
+> modified function; when an error passes through one of these wrappers, the
+> wrapper's own `chrome-extension://` line is removed from the error's stack, for
+> the same reason. Since 5.7 (also wrapping `Promise.prototype.then`, and checking
+> the player twice a second on watch pages), when YouTube's player reports an ad stitched into the
+> video ("SSAP, AD") it calls the player's own `seekTo` to the end of that ad; when
+> YouTube refuses playback (UNPLAYABLE, pointing at its ad-blocker help page) it
+> reloads the clip in place with an adjusted `/player` request body (a few fixed
+> fields, e.g. `clientScreen`, `params`); and a page callback that reacts to
+> "abnormality detected" is not run. It reads no personal data, sends nothing,
+> makes no network request of its own and never blocks the video servers — the one
+> dynamic rule it adds blocks only a decoy `videoplayback` request whose `expire`
+> time is already in the past (the rule takes values more than one to about thirteen
+> days old; the decoy YouTube sends dates from 2020). It is skipped for the whole site while the user
+> pauses protection, allowlists YouTube, or during the automatic 6-hour fallback
+> after YouTube refuses playback. The only network-supplied input are optional extra
+> field names and two on/off switches (plain strings and booleans, validated, from
+> the signed `filters.json`).
+>
+> **Reviewer note (Twitch, `twitch_main.js`, 5.7).** Twitch stitches its video ads
+> into the live HLS stream on its servers, and its player reads the playlists inside
+> a Web Worker. On `*.twitch.tv` only, the service worker registers the bundled
+> `twitch_main.js` as a MAIN-world `document_start` content script (id `sa-twitch`).
+> It wraps the page's `Worker` constructor: only for Twitch's own video worker (a
+> blob that imports `amazon-ivs-wasmworker`), it builds a new blob from **the source
+> of a function in `twitch_main.js` itself** (`twitchWorker`, plus a JSON object of
+> constants) followed by the player's own worker script, unchanged — the
+> `importScripts(…amazon-ivs-wasmworker…)` line Twitch's page put in its blob, which
+> the browser would have run anyway. Our part of the blob is all from the package.
+> Like the YouTube script, it keeps `Worker`, the worker's `fetch` and
+> `Function.prototype.toString` looking native and removes its own
+> `chrome-extension://` line from an error's stack. Inside the worker the function reads the HLS
+> playlists as text; when one lists ad segments, it asks Twitch (gql.twitch.tv,
+> usher.ttvnw.net and the `*.ttvnw.net` playlist servers — the servers the player
+> already uses; the request names the channel being watched) for the same channel as
+> another Twitch player type and returns that playlist, or else the original one with
+> the ad segments taken out. Requests go to Twitch only, carry Twitch's public web
+> client id and no cookie or account token; nothing is sent to us or anyone else. It
+> does not run while protection is paused or Twitch is allowlisted. No new permission.
 >
 > **Welcome page.** On first install only (not on updates) the extension opens
 > its own local page `welcome/welcome.html`: how to pin it, what to do if a site
@@ -197,9 +242,17 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 > file on the device and keeps only allowed sites and plain domain / `##` filter
 > lines; nothing is sent anywhere.
 >
-> **Uninstall page and the pin tip (5.5.1).** `runtime.setUninstallURL` points to a fixed,
-> static page, `https://adblock.carbonstealth.eu/bye` (help for a broken site, a reinstall
-> link, an email address), with no parameters: no version, id or reason. The welcome page
+> **Popup tips, summary and Share (5.6.0).** Two rare bottom cards, at most one per opening and never
+> instead of the review card's own rules: "Sites breaking?" (once, when the user has allowed several
+> sites, turned element hiding off on sites or paused often this week — it points to the one-site fixes)
+> and a monthly summary built from the local daily counters (the data figure is labelled an estimate).
+> Pause times are kept on the device only, without sites. "Share" copies the clean listing URL to the
+> clipboard on a click; nothing is sent. No new permission.
+>
+> **Uninstall page and the pin tip (5.5.1).** For an install from the Chrome Web Store,
+> `runtime.setUninstallURL` points to a fixed, static page,
+> `https://adblock.carbonstealth.eu/bye` (help for a broken site, a reinstall link, an email
+> address), with no parameters: no version, id or reason. Other stores get no uninstall page. The welcome page
 > reads `action.getUserSettings().isOnToolbar` only to show whether its "pin it" tip is done.
 >
 > **Review request (5.1.8).** The popup has a small ★ “Rate” link in its footer
@@ -234,7 +287,7 @@ so this is an **update of the existing item**, not a new one:
    the privacy policy with Google's Limited Use statement goes live, and `filters.json`
    (data only — no `scriptlets` key) is published with a fresh Ed25519 signature. Check
    `https://adblock.carbonstealth.eu/privacy` shows the Limited Use section before you submit.
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.5.1.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-6.1.1.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
@@ -271,7 +324,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.5.1)
+- [ ] `manifest.json` and `package.json` versions match (6.1.1)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] `PW_ROOT=$(npm root -g) npm run test:browser` is green — real Chromium, including the
       back/forward-cache check (the page is restored on Back, with the extension on)
@@ -329,3 +382,14 @@ miner domains — say so in the reviewer notes).
    Description: for AMO drop the Manifest V3 history paragraph (it is about Chrome) and any
    mention of Chrome — use the text of `docs/listing/<lang>.txt`.
 3. Privacy policy, homepage, support: as above. Data collection: none.
+
+## 10. Opera Add-ons
+
+The **same zip** as Chrome. Free account at <https://addons.opera.com/developer/>; the steps, the
+screenshot size (up to 800×600 — the kit carries `opera/screenshot-1…5.png`, 800×500) and Opera's
+acceptance criteria are in `docs/OPERA.md`.
+
+## 11. Safari
+
+Needs a paid Apple Developer Program membership — on hold by the owner's decision (6 November 2026).
+What it would take: `docs/SAFARI.md`.

@@ -67,3 +67,33 @@ test("умения: бройката и изброяването се сверя
   assert.equal(skillRosterHits("Ours (BG, vetted; 4): deploy · seed-author-x · razpit · web-vitals", skills).length, 1,
     "частично съвпадение (seed-author-x) не брои за seed-author");
 });
+
+test("ростерът се чете до „Gate:“ — дълъг списък не губи края си, име след маркера не се брои", () => {
+  const skills = ["deploy", "late-skill", "after-gate"];
+  const filler = " · ".repeat(500);
+  const long = `Ours (BG, vetted; 3): deploy${filler}late-skill. Gate: lint. Споменато после: after-gate.`;
+  assert.ok(long.indexOf("late-skill") > 1200, "фикстурата е по-дълга от стария прозорец");
+  const hits = skillRosterHits(long, skills);
+  assert.equal(hits.length, 1);
+  assert.match(hits[0].detail, /after-gate/);
+  assert.doesNotMatch(hits[0].detail, /late-skill/);
+});
+
+// Качествения, 23.11.2026: таблицата EN стигаше до „thirty-two“ — „thirty-four agents“ в README се
+// изплъзваше; броят на екипите изобщо не се сверяваше (_orchestration.md казваше 9 при 10 в _teams.json).
+import { enNumber, teamCountClaims } from "./drift-lint.mjs";
+test("enNumber: числата с думи до 59, иначе null", () => {
+  assert.equal(enNumber("thirty-four"), 34);
+  assert.equal(enNumber("Thirty-Five"), 35);
+  assert.equal(enNumber("forty"), 40);
+  assert.equal(enNumber("fifty-nine"), 59);
+  assert.equal(enNumber("twenty-one"), 21);
+  assert.equal(enNumber("sixty"), null);
+  assert.equal(enNumber("thirtyish"), null);
+});
+test("teamCountClaims: бройките на екипите в прозата", () => {
+  assert.deepEqual(teamCountClaims("агентите са разделени на **9 екипа** (`_teams.json`)"), [9]);
+  assert.deepEqual(teamCountClaims("**Teams:** 10 lean teams (`_teams.json`)"), [10]);
+  assert.deepEqual(teamCountClaims("Всеки агент е в **точно един** от 10 екипа; екипът има водач"), [10]);
+  assert.deepEqual(teamCountClaims("3 тестови задачи за екипа"), [], "„екипа“ без число пред него не е бройка");
+});

@@ -3,12 +3,15 @@
 // Changes the panel association, moves the channel to the new open category,
 // and updates support role permissions.
 
-import { SlashCommandBuilder } from "discord.js";
+import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { WARNING } from "../utils/colors.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 import { isStaffForAutocomplete } from "../utils/staffCheck.js";
+import { t, resolveLang, resolveLangForGuild } from "../i18n/index.js";
+import { moveTicketToPanel } from "../utils/ticketLifecycle.js";
+import { describeActionConflict } from "../utils/ticketErrors.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -41,21 +44,26 @@ export default {
   },
 
   async execute(interaction) {
-    await interaction.deferReply();
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    const lang = await resolveLang(interaction);
 
-    // Current ticket + panel
+    // Current ticket + panel — `by-channel` връща ПЪЛНИЯ изчистен по план панел
+    // (Т5), затова `currentPanel.id` е наличен: проверката „вече е в този панел“
+    // работи, а съобщението носи името, не „?“.
     let ticket;
     try {
       const { data } = await api.get(`/bot/ticket/by-channel/${interaction.channelId}`);
       ticket = data;
     } catch {}
-    if (!ticket) return interaction.editReply("❌ This channel is not a ticket.");
+    if (!ticket || (ticket.serverId && ticket.serverId !== interaction.guildId)) {
+      return interaction.editReply(t("tkt.notATicket", lang));
+    }
 
     // Permission: support role or ManageGuild
     const currentPanel = ticket.panel;
     const isStaff = (currentPanel?.supportRoleIds || []).some((r) => interaction.member.roles.cache.has(r))
                     || interaction.member.permissions.has("ManageGuild");
-    if (!isStaff) return interaction.editReply("❌ Only staff can escalate tickets.");
+    if (!isStaff) return interaction.editReply(t("tkt.escalateStaffOnly", lang));
 
     const targetPanelId = interaction.options.getString("panel");
     const reason = interaction.options.getString("reason") || "";
@@ -63,15 +71,15 @@ export default {
     // Load target panel
     let targetPanel;
     try {
-      const { data } = await api.get(`/bot/panel/${targetPanelId}`);
+      const { data } = await api.get(`/bot/panel/${targetPanelId}`, { params: { serverId: interaction.guildId } });
       targetPanel = data;
-    } catch { return interaction.editReply("❌ Target panel not found."); }
+    } catch { return interaction.editReply(t("tkt.escalateTargetMissing", lang)); }
 
-    if (targetPanel.id === currentPanel?.id) {
-      return interaction.editReply("❌ This ticket is already in that panel.");
+    if (targetPanel.id === currentPanel?.id || targetPanel.id === ticket.panelId) {
+      return interaction.editReply(t("tkt.escalateSamePanel", lang));
     }
 
-    // Call backend to update association
+    // Call backend to update association (премиум гейт и изолация са там)
     try {
       await api.post(`/bot/ticket/${ticket.id}/escalate`, {
         newPanelId: targetPanel.id,
@@ -79,46 +87,39 @@ export default {
         reason,
       });
     } catch (err) {
-      return interaction.editReply(friendlyError(err, interaction));
+      const code = err?.response?.data?.code;
+      return interaction.editReply(code ? describeActionConflict(code, lang) : friendlyError(err, interaction));
     }
 
-    // Move channel to new open category + update permissions
-    const newCategory = targetPanel.categoryOpenId || targetPanel.categoryId;
-    const channel = interaction.channel;
-
-    if (newCategory && channel.parent?.id !== newCategory) {
-      await channel.setParent(newCategory, { lockPermissions: false }).catch(() => {});
-    }
-
-    // Remove old support roles (if they're not also in new panel)
-    const oldRoles = new Set(currentPanel?.supportRoleIds || []);
-    const newRoles = new Set(targetPanel.supportRoleIds || []);
-    const removed = [...oldRoles].filter((r) => !newRoles.has(r));
-    const added   = [...newRoles].filter((r) => !oldRoles.has(r));
-
-    for (const roleId of removed) {
-      await channel.permissionOverwrites.delete(roleId).catch(() => {});
-    }
-    for (const roleId of added) {
-      await channel.permissionOverwrites.create(roleId, {
-        ViewChannel: true, SendMessages: true, ReadMessageHistory: true, ManageMessages: true,
-      }).catch(() => {});
+    // Т3: нишка → без setParent/permissionOverwrites (ThreadChannel ги няма);
+    // канал → нова категория + роли. Провал на Discord частта не е тих: казваме го.
+    let moved;
+    try {
+      moved = await moveTicketToPanel(interaction.channel, interaction.guild, currentPanel, targetPanel);
+    } catch (err) {
+      console.error(`[escalate] Discord step failed: ${err?.code} ${err?.message}`);
+      moved = { added: [], removed: [], warnings: ["discord"] };
     }
 
     // Post notice
-    await channel.send({
+    const gl = await resolveLangForGuild(interaction.guildId);
+    await interaction.channel.send({
       embeds: [{
-        title: "🔀 Ticket Escalated",
+        title: t("tkt.escalatedTitle", gl),
         description: [
-          `Moved from **${currentPanel?.name || "?"}** to **${targetPanel.name}** by <@${interaction.user.id}>.`,
-          reason && `**Reason**: ${reason}`,
-          (added.length || removed.length) && `_Support team updated._`,
+          t("tkt.escalatedBody", gl, {
+            from: currentPanel?.name || "—", to: targetPanel.name, user: `<@${interaction.user.id}>`,
+          }),
+          reason && t("tkt.closeReasonLine", gl, { reason }),
+          (moved.added.length || moved.removed.length) && t("tkt.escalatedTeamUpdated", gl),
         ].filter(Boolean).join("\n"),
         color: WARNING,
         timestamp: new Date().toISOString(),
       }],
-    });
+      allowedMentions: { parse: [] },
+    }).catch(() => {});
 
-    await interaction.editReply(`✅ Ticket escalated to **${targetPanel.name}**.`);
+    const warn = moved.warnings?.length ? `\n${t("tkt.closedWithWarnings", lang)}` : "";
+    await interaction.editReply(`${t("tkt.escalatedOk", lang, { panel: targetPanel.name })}${warn}`);
   },
 };
