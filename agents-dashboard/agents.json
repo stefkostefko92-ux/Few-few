@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 744
+        "lessons": 745
       },
       "evolution": [
         {
@@ -2170,9 +2170,20 @@
           "date": "2026-11-25",
           "event": "v69.6 — учене",
           "detail": "Научи: В live-run worktree tools/code/scan.sh all минава, но semgrep/opengrep, osv-scanner, sy…"
+        },
+        {
+          "version": "69.7.0",
+          "date": "2026-11-25",
+          "event": "v69.7 — учене",
+          "detail": "Научи: Пакетите pdfkit 0.21.0, @noble/ciphers 2.4.0 и @noble/hashes 2.4.0 изискват node \">= 20…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Пакетите pdfkit 0.21.0, @noble/ciphers 2.4.0 и @noble/hashes 2.4.0 изискват node \">= 20…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
