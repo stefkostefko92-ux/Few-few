@@ -14,8 +14,7 @@ const compression  = require('compression');
 const path         = require('path');
 const fs           = require('fs');
 const cookieParser = require('cookie-parser');
-const crypto       = require('crypto');
-const stripe       = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy',
+const stripe      = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy',
                        { apiVersion: '2024-04-10' }); // pin — event/object shape must not drift on account upgrade
 
 const db   = require('./lib/db');
@@ -223,6 +222,7 @@ app.use((req, res, next) => {
 // (`/product-page/<код>`, `/en/lavora-con-noi`), които търсачките още държат. Серийните котви се
 // четат от генерираната страница с продукти — единственият им източник е site/data/products.mjs.
 const { legacyTarget } = require('./lib/legacy');
+const checkout = require('./lib/checkout');
 const LEGACY_SERIES = (() => {
   try {
     const html = fs.readFileSync(path.join(__dirname, 'prodotti.html'), 'utf8');
@@ -430,8 +430,18 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
     // consumer e-commerce rules (IVA-inclusive pricing, 14-day recesso) do not
     // apply. This keeps the (currently quote-first) checkout unambiguously B2B.
     const piva = String(customerInfo?.piva || customerInfo?.partitaIva || '').replace(/\s/g, '');
-    if (!/^(IT)?[0-9]{11}$/i.test(piva)) {
+    if (!checkout.isItalianPiva(piva)) {
       return res.status(400).json({ error: 'Partita IVA obbligatoria: la vendita online è riservata ai clienti B2B.' });
+    }
+
+    // IVA 22% върху цените без ДДС (lib/checkout.js). Без проверен Tax Rate — без сесия
+    // (fail-closed): включеният checkout никога не дава цена без ДДС.
+    let ivaTaxRateId;
+    try {
+      ivaTaxRateId = await checkout.resolveIvaTaxRateId(stripe, process.env);
+    } catch (err) {
+      console.error('[checkout] IVA:', err.message);
+      return res.status(503).json({ error: 'Pagamento momentaneamente non disponibile' });
     }
 
     // Validate items against DB (don't trust client prices)
@@ -448,17 +458,12 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       if (!(p.price > 0)) {
         return res.status(400).json({ error: `Prodotto su richiesta non acquistabile online: ${p.name}` });
       }
-      lineItems.push({
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name: sanitize(p.name, 100),
-            description: sanitize(p.codice || p.category || '', 200) || undefined,
-          },
-          unit_amount: Math.round(p.price * 100),
-        },
-        quantity: qty,
-      });
+      lineItems.push(checkout.checkoutLineItem({
+        name: sanitize(p.name, 100),
+        description: sanitize(p.codice || p.category || '', 200) || undefined,
+        unitAmountCents: Math.round(p.price * 100),
+        qty,
+      }, ivaTaxRateId));
     }
 
     if (customerInfo?.email && !validateEmail(customerInfo.email)) {
@@ -482,23 +487,17 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       prodotti:        items.map(i => `${sanitize(String(i.id), 40)} x${parseInt(i.qty, 10)}`).join(', ').slice(0, 500),
     };
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      line_items: lineItems,
-      customer_email: validateEmail(safeInfo.email) ? safeInfo.email : undefined,
-      billing_address_collection: 'required',
-      tax_id_collection: { enabled: true }, // B2B — collect/validate VAT id
-      shipping_address_collection: { allowed_countries: ['IT', 'SM', 'VA'] },
-      success_url: `${BASE_URL}/contatti?ordine=ok&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${BASE_URL}/prodotti?annullato=1`,
-      payment_intent_data: { metadata },
+    const session = await stripe.checkout.sessions.create(checkout.checkoutSessionParams({
+      lineItems,
+      email: validateEmail(safeInfo.email) ? safeInfo.email : undefined,
       metadata,
-      locale: 'it',
-    }, {
+      piva,
+      baseUrl: BASE_URL,
+    }), {
       // Guard against duplicate sessions if the request is retried after a network blip.
-      idempotencyKey: 'co_' + auth.clientIp(req) + '_' + crypto.createHash('sha256')
-        .update(JSON.stringify(lineItems) + (safeInfo.email || '')).digest('hex').slice(0, 32),
+      idempotencyKey: checkout.checkoutIdempotencyKey({
+        clientIp: auth.clientIp(req), lineItems, email: safeInfo.email, piva,
+      }),
     });
 
     res.json({ url: session.url, sessionId: session.id });

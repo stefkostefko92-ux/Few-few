@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<url><loc>https://carbonstealth.eu/</loc>
+<image:image><image:loc>https://carbonstealth.eu/logo.png</image:loc><image:caption>Carbon Stealth VCC — Sviluppo Siti Web, E-commerce e Software ERP</image:caption></image:image>
+<image:image><image:loc>https://carbonstealth.eu/og/og-servizi.png</image:loc><image:caption>Servizi Carbon Stealth VCC</image:caption></image:image>
+</url>
+<url><loc>https://carbonstealth.eu/blog/</loc>
+<image:image><image:loc>https://carbonstealth.eu/og/og-blog.png</image:loc><image:caption>Blog &amp; guide Carbon Stealth</image:caption></image:image>
+</url>
+<url><loc>https://carbonstealth.eu/glossario/</loc>
+<image:image><image:loc>https://carbonstealth.eu/og/og-glossario.png</image:loc><image:caption>Glossario web e software</image:caption></image:image>
+</url>
+<url><loc>https://carbonstealth.eu/confronti/</loc>
+<image:image><image:loc>https://carbonstealth.eu/og/og-confronti.png</image:loc><image:caption>Confronti tecnologici X vs Y</image:caption></image:image>
+</url>
+<url><loc>https://carbonstealth.eu/settori/</loc>
+<image:image><image:loc>https://carbonstealth.eu/og/og-settori.png</image:loc><image:caption>Soluzioni web per settore</image:caption></image:image>
+</url>
+<url><loc>https://carbonstealth.eu/servizi-locali/</loc>
+<image:image><image:loc>https://carbonstealth.eu/og/og-geo.png</image:loc><image:caption>Servizi locali e-commerce ed ERP</image:caption></image:image>
+</url>
+<url><loc>https://carbonstealth.eu/strumenti/</loc>
+<image:image><image:loc>https://carbonstealth.eu/og/og-strumenti.png</image:loc><image:caption>Strumenti gratis: preventivo e meta tag</image:caption></image:image>
+</url>
+<url><loc>https://carbonstealth.eu/case-study/</loc>
+<image:image><image:loc>https://carbonstealth.eu/og/og-casestudy.png</image:loc><image:caption>Case study progetti reali</image:caption></image:image>
+</url>
+<url><loc>https://carbonstealth.eu/geo/</loc>
+<image:image><image:loc>https://carbonstealth.eu/og/og-geo.png</image:loc><image:caption>Aree servite in Italia e Bulgaria</image:caption></image:image>
+</url>
+</urlset>

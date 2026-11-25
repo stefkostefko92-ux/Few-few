@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { buttonStyles } from '@/components/ui/Button';
 
 // Реферален линк с копиране + share, плюс статистика на поканите.
 export function ReferralCard({
@@ -48,58 +49,58 @@ export function ReferralCard({
 
   return (
     <div>
-      <p className="text-sm text-slate-500">{labels.hint}</p>
+      <p className="text-sm text-fg-muted">{labels.hint}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <input
           readOnly
           value={url}
           onFocus={(e) => e.currentTarget.select()}
-          className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="min-w-0 flex-1 rounded-control border border-line-input px-3 py-2 text-sm"
         />
         <button
           type="button"
           onClick={onCopy}
-          className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+          className={buttonStyles()}
         >
           {copied ? labels.copied : labels.copy}
         </button>
         <button
           type="button"
           onClick={onShare}
-          className="rounded-full border border-linketto-600 px-5 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+          className={buttonStyles({ variant: 'secondary' })}
         >
           {labels.share}
         </button>
       </div>
       <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-        <div className="rounded-xl bg-slate-50 p-3">
-          <p className="text-2xl font-extrabold text-linketto-700">
+        <div className="rounded-card bg-surface-2 p-3">
+          <p className="text-2xl font-extrabold text-accent-text">
             {stats.signups}
           </p>
-          <p className="text-xs text-slate-500">{labels.signups}</p>
+          <p className="text-xs text-fg-muted">{labels.signups}</p>
         </div>
-        <div className="rounded-xl bg-slate-50 p-3">
-          <p className="text-2xl font-extrabold text-linketto-700">
+        <div className="rounded-card bg-surface-2 p-3">
+          <p className="text-2xl font-extrabold text-accent-text">
             {stats.successful}
           </p>
-          <p className="text-xs text-slate-500">{labels.successful}</p>
+          <p className="text-xs text-fg-muted">{labels.successful}</p>
         </div>
-        <div className="rounded-xl bg-slate-50 p-3">
-          <p className="text-2xl font-extrabold text-green-600">
+        <div className="rounded-card bg-surface-2 p-3">
+          <p className="text-2xl font-extrabold text-success-text">
             {stats.credit}
           </p>
-          <p className="text-xs text-slate-500">{labels.credit}</p>
+          <p className="text-xs text-fg-muted">{labels.credit}</p>
         </div>
       </div>
       {/* Прогрес към прага за теглене */}
       <div className="mt-4">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-surface-3">
           <div
-            className="h-full rounded-full bg-green-500 transition-all"
+            className="h-full rounded-full bg-success transition-all"
             style={{ width: `${payout.progressPercent}%` }}
           />
         </div>
-        <p className="mt-1.5 text-xs text-slate-500">{payout.progressLabel}</p>
+        <p className="mt-1.5 text-xs text-fg-muted">{payout.progressLabel}</p>
       </div>
     </div>
   );

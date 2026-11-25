@@ -1,0 +1,28 @@
+{
+  "id": "6852eb20-1c2d-3e4f-5a6b-7c8d9e0f1a2b",
+  "type": "refund",
+  "state": "processing",
+  "created_at": "2025-06-18T18:12:40.112233Z",
+  "updated_at": "2025-06-18T18:12:41.224466Z",
+  "amount": 100,
+  "currency": "GBP",
+  "outstanding_amount": 100,
+  "capture_mode": "automatic",
+  "authorisation_type": "final",
+  "payments": [
+    {
+      "id": "6852eb20-3f4a-5b6c-7d8e-9f0a1b2c3d4e",
+      "state": "failed",
+      "decline_reason": "technical_error",
+      "created_at": "2025-06-18T18:12:40.130122Z",
+      "updated_at": "2025-06-18T18:12:41.240255Z",
+      "amount": 100,
+      "currency": "GBP",
+      "payment_method": {
+        "type": "revolut_pay_account"
+      }
+    }
+  ],
+  "enforce_challenge": "automatic",
+  "related_order_id": "6852e963-d6a9-a5a4-9609-50b3addc5425"
+}

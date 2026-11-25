@@ -20,7 +20,7 @@ export default {
     frameTitle: 'Vista 3D delle staffe Panev',
     posterAlt: 'Render 3D del supporto SU 220 160 montato con la staffa guida SG 80 150 e la guida',
     points: [
-      '48 articoli del catalogo 2026',
+      '48 articoli del catalogo 2027',
       'Versioni DX e SX',
       'Montaggio con bulloni M10 e regolazione',
       'Foto HD da scaricare',
@@ -134,7 +134,7 @@ export default {
       },
       {
         q: 'I prezzi includono l’IVA?',
-        a: 'No: tutti i prezzi a listino sono in euro, IVA esclusa, riferiti a unità singole (listino 2026). La vendita è riservata a operatori professionali (B2B) con partita IVA; fattura elettronica via SdI.',
+        a: 'No: tutti i prezzi a listino sono in euro, IVA esclusa, riferiti a unità singole (listino 2027). La vendita è riservata a operatori professionali (B2B) con partita IVA; fattura elettronica via SdI.',
       },
       {
         q: 'Quanto costa la spedizione e in quanto tempo arriva?',

@@ -4,6 +4,15 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: always
+    # Втвърдяване (образец: korpora/docker-compose.yml): entrypoint-ът на образа сменя собственика на
+    # данните и минава на потребителя postgres — само тези capability; файловата система е само за четене.
+    read_only: true
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs:
+      - /var/run/postgresql:size=4m
+      - /tmp:size=64m
     environment:
       POSTGRES_DB: sklad
       POSTGRES_USER: sklad_user
@@ -19,6 +28,9 @@ services:
   backend:
     build: ./backend
     restart: always
+    # Върви като node (backend/Dockerfile: USER) — capability не му трябва.
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
     depends_on:
       postgres:
         condition: service_healthy
@@ -39,6 +51,10 @@ services:
   nginx:
     image: nginx:alpine
     restart: always
+    # Master-ът заема порт 80 като root, създава кеш папките за потребителя nginx и пуска workers под него.
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, NET_BIND_SERVICE, SETGID, SETUID]
     depends_on:
       - backend
     ports:

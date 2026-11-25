@@ -21,7 +21,8 @@ export const esportaCsvRouter: Router = Router();
 const MAX_RIGHE = 10_000;
 const BLOCCO = 5000;
 
-function invia(res: Response, nome: string, csv: string): void {
+/** Файлът CSV за сваляне (името — с деня); и за ценоразписа (preventivi-listino-import.ts). */
+export function inviaCsv(res: Response, nome: string, csv: string): void {
   res
     .status(200)
     .set({
@@ -72,7 +73,7 @@ esportaCsvRouter.get(
       if (page >= blocco.pages) break;
     }
     const c = (k: string) => t(`scheda.field.${k}`);
-    invia(
+    inviaCsv(
       res,
       'schede',
       righeCsv(
@@ -129,7 +130,7 @@ esportaCsvRouter.get(
       if (page >= blocco.pages) break;
     }
     const c = (k: string) => t(`preventivi.colonna.${k}`);
-    invia(
+    inviaCsv(
       res,
       'preventivi',
       righeCsv(

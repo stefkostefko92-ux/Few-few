@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formatDateTimeNumeric } from "@/lib/format-date";
 import { ROLE_LABELS } from "@/lib/categories";
 import { createUser, deleteUser } from "@/lib/admin/user-actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
@@ -51,13 +52,7 @@ export default async function UsersPage({
                 <td className="p-3">{u.active ? "Да" : "Не"}</td>
                 <td className="p-3 text-slate-600">
                   {u.lastLoginAt
-                    ? new Intl.DateTimeFormat("bg-BG", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }).format(u.lastLoginAt)
+                    ? formatDateTimeNumeric(u.lastLoginAt)
                     : "—"}
                 </td>
                 <td className="p-3">

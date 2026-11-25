@@ -34,7 +34,8 @@ FILTER LISTS THAT KEEP UP
 - Malware protection (URLhaus), on by default: a known malware site opens a warning page instead, and what pages load from such sites is blocked; plus subscriptions to any filter list by URL
 
 YOU STAY IN CONTROL
-- From the popup, allow a site you want to support, or turn off element hiding on one site if its layout breaks; undo what you hid with one click
+- Three protection levels — Basic (network blocking only, nothing added to the page), Standard (the default) and Strict (also inside embedded frames) — for every site, or for one site from the popup
+- From the popup, allow a site you want to support, or switch one site to Basic if its layout breaks; undo what you hid with one click
 - Site broken? A repair page fixes it in one click (or allows ads there for just an hour), or prepares a report you read and send yourself
 - Switching from uBlock Origin, AdGuard or Adblock Plus? Import your allowed sites and your own filters from its backup file
 - Keyboard shortcuts for blocking on this site, pause and the element picker
@@ -42,6 +43,7 @@ YOU STAY IN CONTROL
 - Element picker and your own filters, including procedural selectors
 - Focus mode: hide chat bubbles, newsletter pop-ups, notification prompts, AI pop-ups and YouTube Shorts
 - "Blocked on this page" shows how much each filter list stopped, with live counters for data and time saved and a chart of the last 30 days
+- "Who we stopped" in Settings: the companies your browser was kept from contacting in the last 30 days, counted on your device only
 - Dark and light themes; the interface is available in 70 languages
 
 PRIVACY

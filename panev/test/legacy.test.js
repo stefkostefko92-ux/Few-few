@@ -41,6 +41,14 @@ test('истинска нова страница или непознат адр�
     assert.equal(legacyTarget(p, SERIES), null, p);
 });
 
+test('старата страница за патента: /brevetto вече е истинска страница, на другите езици води към нея', () => {
+  assert.equal(legacyTarget('/brevetto', SERIES), null);
+  assert.equal(legacyTarget('/brevetto/', SERIES), null);
+  assert.equal(legacyTarget('/en/brevetto', SERIES), '/en/patent');
+  assert.equal(legacyTarget('/bg/brevetto', SERIES), '/bg/patent');
+  assert.equal(legacyTarget('/en/patent', SERIES), null);
+});
+
 test('всяка цел е реална страница на сайта (иначе 301 води в 404)', () => {
   const root = path.join(__dirname, '..');
   const exists = (u) => {
@@ -49,7 +57,8 @@ test('всяка цел е реална страница на сайта (ина
     return fs.existsSync(path.join(root, `${p}.html`));
   };
   const samples = ['/product-page/a-37-170-2-sx', '/en/product-page/x', '/bg/product-page/x', '/en/lavora-con-noi', '/bg/faq',
-    '/en/cookie', '/bg/cookie', '/en/termini', '/bg/termini', '/en/chi-siamo', '/bg/chi-siamo', '/cookie', '/termini'];
+    '/en/cookie', '/bg/cookie', '/en/termini', '/bg/termini', '/en/chi-siamo', '/bg/chi-siamo', '/cookie', '/termini',
+    '/en/brevetto', '/bg/brevetto'];
   for (const s of samples) {
     const t = legacyTarget(s, SERIES);
     assert.ok(t && exists(t), `${s} → ${t} трябва да съществува`);

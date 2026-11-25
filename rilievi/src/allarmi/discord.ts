@@ -21,6 +21,7 @@ export const TIPI_ALLARME = [
   'pagamentoDaVerificare',
   'contestazione',
   'rimborsoFallito',
+  'rimborsoDopoRifiuto',
   'posta',
   'segnalazione',
   'sogliaIva',
@@ -70,6 +71,8 @@ export const PAUSA_MS: Record<TipoAllarme, number> = {
   pagamentoDaVerificare: 10 * 60_000,
   contestazione: 10 * 60_000,
   rimborsoFallito: 10 * 60_000,
+  // Рядко и за пари (възможно второ връщане): всяко се казва, без пауза.
+  rimborsoDopoRifiuto: 0,
   posta: 6 * 60 * 60_000,
   segnalazione: 10 * 60_000,
   sogliaIva: 6 * 60 * 60_000,

@@ -28,6 +28,8 @@ jobs:
         working-directory: CSPos
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
@@ -56,10 +58,14 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/cspos-v') || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     timeout-minutes: 30
+    # Билдът няма права за запис: npm ci изпълнява install скриптове на ~400 пакета (electron,
+    # electron-builder). Публикуването е в отделния job „release" по-долу.
     permissions:
-      contents: write # за публикуване на Release при таг
+      contents: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
@@ -76,7 +82,9 @@ jobs:
 
       - name: Десктоп — зависимости
         working-directory: CSPos/desktop
-        run: npm install
+        # npm ci по закования package-lock.json (детерминистично). Без --ignore-scripts: electron
+        # сваля бинара си в postinstall; правата на job-а са само за четене.
+        run: npm ci
 
       - name: Сглобяване + electron-builder (NSIS .exe)
         working-directory: CSPos/desktop
@@ -89,10 +97,37 @@ jobs:
           path: CSPos/desktop/dist/*.exe
           if-no-files-found: error
 
-      - name: Публикуване на Release (само при таг cspos-v*)
-        if: startsWith(github.ref, 'refs/tags/cspos-v')
+
+  # ── Публикуване на Release (само при таг) ─────────────────────────────────
+  # Отделен job: contents: write е тук, а не в билда. Не изпълнява код от репото/зависимости —
+  # само тегли готовия artifact и го качва.
+  release:
+    name: Release (.exe → GitHub Release)
+    needs: desktop
+    if: startsWith(github.ref, 'refs/tags/cspos-v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # публикуване на Release
+      id-token: write # OIDC за Sigstore provenance (без дълготрайни тайни)
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: carbon-stealth-pos-setup
+          path: dist
+
+      # SLSA build provenance през OIDC — без тайни. Best-effort: атестациите на частно репо
+      # изискват GitHub Enterprise Cloud; без него стъпката не бива да блокира релийза.
+      - name: Provenance атестация (best-effort)
+        continue-on-error: true
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*.exe
+
+      - name: Публикуване на Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
-          files: CSPos/desktop/dist/*.exe
+          files: dist/*.exe
           name: Carbon Stealth POS ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}

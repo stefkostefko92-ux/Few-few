@@ -23,6 +23,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { ROOT, ALLOWED, makeWorktree, runJobs, claudeAvailable } from "./evals/live-run.mjs";
 import { LEDGER, triage, changedFiles, loadLedger } from "./pr-triage.mjs";
+import { ultrareviewLine } from "./core-map.mjs";
 import { startBatch, endBatch } from "../lib/learning-batch.mjs";
 import { isMain } from "../lib/is-main.mjs";
 
@@ -49,6 +50,7 @@ export const FOCUS = {
   dizayner: "визуалното — достъпност на движението (reduced-motion), производителност на ефектите",
   "pravniyat-razbirach": "правната изрядност — GDPR, бисквитки, импресум, медицински/правни низове",
   socialdjiyata: "Instagram потока — само чернови, одобрение от човек, ToS на Meta",
+  "ai-studio": "видео линията — права върху активите, AI етикет, нищо голямо в git, команди без shell",
   geymara: "FiveM ресурсите — сървърна валидация, експлойти през събития, natives",
   goladjiyata: "математиката и отговорната игра — марж, Kelly, калибрация",
   asansyorchika: "нормите за асансьори — точка, стойност, издание",
@@ -153,6 +155,7 @@ export function renderReport(results) {
   for (const row of rows) {
     lines.push(`## #${row.pr} — ${row.worst} — ${row.title}`);
     for (const r of row.rs) lines.push(`- **${r.agent}** · ${r.ok ? verdictOf(r.text) : "неуспешно пускане"} · $${r.costUsd.toFixed(2)}${r.ok && findingsOf(r.text) ? ` — ${findingsOf(r.text)}` : ""}`);
+    if (row.rs.some((r) => r.ultrareview)) lines.push(`- ${ultrareviewLine(row.pr)}`);
     lines.push("");
   }
   return lines.join("\n");
@@ -187,7 +190,7 @@ async function main(argv) {
         // Частично копие само с продуктите на PR-а; без продукт (инфраструктура в корена) — пълно копие.
         wt = makeWorktree(`origin/${p.ref}`, { from: head, paths: LAYER }, { measure: false, sparse: p.products?.length ? p.products : null });
         const st = stage(wt.dir, p);
-        const jobs = p.agents.map((agent) => ({ agent, pr: p.pr, sha: p.sha, title: p.title, name: `${p.pr}-${agent}.txt`, task: reviewTask(p, agent) }));
+        const jobs = p.agents.map((agent) => ({ agent, pr: p.pr, sha: p.sha, title: p.title, ultrareview: !!p.ultrareview, name: `${p.pr}-${agent}.txt`, task: reviewTask(p, agent) }));
         const res = await runJobs(jobs, { wt: wt.dir, concurrency: jobs.length, timeoutMs: 1_200_000, allowed: REVIEW_ALLOWED, extraArgs: ["--max-budget-usd", String(perRun)], onDone: (r) => {
           spent += r.costUsd;
           if (r.ok) writeFileSync(join(out, r.name), r.text);
@@ -196,7 +199,7 @@ async function main(argv) {
         all.push(...res);
       } catch (e) {
         console.log(`✗ #${p.pr} подготовката падна: ${String(e.message).slice(0, 160)}`);
-        all.push(...p.agents.map((agent) => ({ agent, pr: p.pr, sha: p.sha, title: p.title, ok: false, text: "", costUsd: 0 })));
+        all.push(...p.agents.map((agent) => ({ agent, pr: p.pr, sha: p.sha, title: p.title, ultrareview: !!p.ultrareview, ok: false, text: "", costUsd: 0 })));
       } finally { wt?.cleanup(); }
     }
   }));
@@ -209,7 +212,7 @@ export function collect(out, plan) {
   for (const p of plan) for (const agent of p.agents) {
     const f = join(out, `${p.pr}-${agent}.txt`);
     const ok = existsSync(f);
-    res.push({ agent, pr: p.pr, sha: p.sha, title: p.title, name: `${p.pr}-${agent}.txt`, ok, text: ok ? readFileSync(f, "utf8") : "", costUsd: 0 });
+    res.push({ agent, pr: p.pr, sha: p.sha, title: p.title, ultrareview: !!p.ultrareview, name: `${p.pr}-${agent}.txt`, ok, text: ok ? readFileSync(f, "utf8") : "", costUsd: 0 });
   }
   return res.filter((r) => r.ok);
 }

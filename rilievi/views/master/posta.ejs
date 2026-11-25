@@ -1,6 +1,6 @@
 <%
   // „Email del portale“ (routes/master-posta.ts, mail/posta.ts): откъде тръгват писмата сега, формата на
-  // Brevo SMTP (ключът само се пише), пробното писмо и изключването. Грешките — под полето си.
+  // Brevo SMTP (ключът само се пише), пробното писмо с изхода му и изключването. Грешките — под полето си.
   const m = 'posta.';
   const err = (k) => errori[k] ? t(errori[k]) : '';
   const aria = (k, hint) => ' aria-describedby="' + (hint ? 'hint-' + k : '') + (errori[k] ? ' err-' + k : '') + '"' + (errori[k] ? ' aria-invalid="true"' : '');
@@ -25,6 +25,8 @@
       <% if (riga && riga.attiva) { %><form method="post" action="/master/posta/disattiva"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--danger" type="submit"><%= t(m + 'disattiva') %></button></form><% } %>
     </div>
     <p class="field__hint"><%= t(m + 'prova.hint', { email: currentUser.email }) %></p>
+    <% if (prova && prova.esito.esito !== 'spenta') { %><%- include('_posta-esito', { titolo: 'prova', at: prova.at, riuscita: prova.esito.esito === 'inviata', diagnosi: prova.esito.esito === 'errore' ? prova.esito.diagnosi : null, server: prova.server, consegna: true, falliti: 0 }) %><% } %>
+    <% if (invio) { %><%- include('_posta-esito', { titolo: 'invio', at: invio.at, riuscita: false, diagnosi: invio.diagnosi, server: invio.server, consegna: false, falliti: invio.falliti }) %><% } %>
   </section>
   <form class="panel form" method="post" action="/master/posta" novalidate>
     <h2 class="section__title"><%= t(m + 'form.titolo') %></h2>

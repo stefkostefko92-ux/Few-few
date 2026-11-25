@@ -45,13 +45,14 @@
         <td data-label="<%= t('master.contratti.colonne.stato') %>"><span class="stato-contratto stato-contratto--<%= r.stato %>"><%= t('master.contratti.stato.' + r.stato) %></span><% if (r.admin === 0 && r.stato !== 'firmate') { %><br><span class="muted"><%= t('master.contratti.senzaAdmin') %></span><% } %></td>
         <td data-label="<%= t('master.contratti.colonne.firma') %>"><% if (r.firma) { %><%= t('master.contratti.firmaDi', { nome: r.firma.nome, data: fmt.dateTime(r.firma.at) }) %><% if (r.firma.versione !== versione) { %>, <%= t('master.contratti.versioneVecchia', { versione: fmt.day(new Date(r.firma.versione + 'T00:00:00Z')) }) %><% } %><br><span class="<%= r.firma.integro ? 'muted' : 'testo-errore' %>"><%= t(r.firma.integro ? 'master.console.sigilloOk' : 'master.console.sigilloKo') %></span><% } else { %><span class="muted"><%= t('master.contratti.nessunaFirma') %></span><% } %></td>
         <td data-label="<%= t('master.contratti.colonne.regole') %>"><%= t('master.contratti.regole', r.regole) %></td>
-        <td data-label="<%= t('master.contratti.colonne.azioni') %>"><div class="azioni-riga">
+        <% const conAzioni = (r.firma && r.firma.copia) || r.stato === 'esistente'; %>
+        <td data-label="<%= t('master.contratti.colonne.azioni') %>"><% if (!conAzioni) { %>—<% } else { %><div class="azioni-riga">
           <% if (r.firma && r.firma.copia) { %><a class="btn btn--ghost btn--sm" href="/condizioni/copia?azienda=<%= encodeURIComponent(r.id) %>" data-pdf><%- include('../partials/icon', { name: 'download' }) %><span><%= t('master.contratti.copia') %></span></a><% } %>
           <% if (r.stato === 'esistente') { %><form method="post" action="/master/contratti/<%= r.id %>/richiedi" data-conferma="<%= t('master.contratti.richiediConferma', { azienda: r.name }) %>">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button class="btn btn--sm" type="submit" title="<%= t('master.contratti.richiediDesc') %>"><%- include('../partials/icon', { name: 'seal' }) %><span><%= t('master.contratti.richiedi') %></span></button>
           </form><% } %>
-        </div></td>
+        </div><% } %></td>
       </tr>
       <% } %>
     </tbody>

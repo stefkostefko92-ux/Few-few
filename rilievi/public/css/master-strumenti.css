@@ -173,3 +173,26 @@
 .comunicazione-form .grid {
   align-items: start;
 }
+
+/* Изходът от пробното и от последното истинско писмо на страницата на пощата (views/master/_posta-esito.ejs). */
+.posta-esito {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.posta-esito > p {
+  margin: 6px 0 0;
+}
+
+.posta-esito__titolo {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Отговорът на SMTP сървъра е чужд текст без интервали на удобни места — пренася се където трябва. */
+.posta-esito__risposta {
+  overflow-wrap: anywhere;
+}

@@ -175,8 +175,8 @@ async function main() {
   await writeFile(join(SITE_DIR, 'strutture.html'), renderStrutture({ enti, ultimoAnnoCe, href, segnByCod, ultimoCe }));
   await writeFile(join(SITE_DIR, 'segnalazioni.html'), renderSegnalazioni({ segn, href }));
   await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, forense, appalti, appMatch, ultimoAnnoCe }));
-  await writeFile(join(SITE_DIR, 'note-legali.html'), renderNoteLegali({ titolare: config.titolare || {} }));
-  await writeFile(join(SITE_DIR, 'privacy.html'), renderPrivacy({ titolare: config.titolare || {}, hosting: config.hosting || {} }));
+  await writeFile(join(SITE_DIR, 'note-legali.html'), renderNoteLegali());
+  await writeFile(join(SITE_DIR, 'privacy.html'), renderPrivacy({ hosting: config.hosting || {} }));
   if (validaz) await writeFile(join(SITE_DIR, 'verifiche.html'), renderVerifiche({ validaz, appMatch }));
 
   let conContratti = 0;
