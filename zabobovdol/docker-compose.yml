@@ -47,6 +47,8 @@ services:
   app:
     build: .
     restart: unless-stopped
+    # tini като PID 1: прибира осиротелите процеси (иначе зомбита под next-server) и препраща SIGTERM.
+    init: true
     logging: *default-logging
     <<: *nnp
     cap_drop: [ALL]

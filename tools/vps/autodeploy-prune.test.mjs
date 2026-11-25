@@ -52,7 +52,7 @@ function run(L) {
     `RELEASES_DIR="${L.releases}"`, `CURRENT_LINK="${L.current}"`, `SHARED_DIR="${L.shared}"`,
     `SRC="${join(L.rel[5], "few-few")}"`, "KEEP_RELEASES=2", `KORPORA_LAST_GOOD="${join(L.base, "nope")}"`,
     `log(){ echo "LOG $*" >> "${L.log}"; }; ok(){ :; }; warn(){ echo "WARN $*" >> "${L.log}"; }`,
-    ...["release_mount_sources", "rescue_release_env", "prune_releases"].map(fn),
+    ...["release_mount_sources", "compose_workdirs", "rescue_release_env", "prune_releases"].map(fn),
     "prune_releases",
   ].join("\n");
   execFileSync("bash", ["-c", cfg], { encoding: "utf8" });
@@ -143,5 +143,37 @@ test("СПАСЯВАНЕТО ПАДНЕ → release-ът НЕ се трие, с�
     assert.match(log, /Пазя 20260918-130341 — \.env не е спасен/);
     assert.equal(readFileSync(join(L.shared, "linketto", ".env"), "utf8"), "LINKETTO=1\n", "успешното спасяване не чака провала");
     assert.ok(!existsSync(L.rel[1]), "останалите стари releases се чистят нормално");
+  } finally { rmSync(L.base, { recursive: true, force: true }); }
+});
+
+// PR #311 (ChatChat, 11.10.2026): продукт, разгърнат от свой клон, после деплой на друг продукт от main
+// (чийто autodeploy.sh не го познава) изтри папката, към която сочеше shared/chatchat/last-good.
+// Чистенето пази целта на ВСЕКИ $SHARED_DIR/*/last-good, не само на изброените продукти.
+test("last-good на продукт, когото скриптът не познава (chatchat), пази своя release", () => {
+  const L = layout();
+  try {
+    dockerStub(L, { mounts: [] });
+    mkdirSync(join(L.shared, "chatchat"), { recursive: true });
+    writeFileSync(join(L.shared, "chatchat", "last-good"), `${join(L.rel[1], "few-few")}\n`);
+    run(L);
+    assert.ok(existsSync(L.rel[1]), "целта на отката на chatchat остава");
+    for (const i of [0, 2, 3]) assert.ok(!existsSync(L.rel[i]), `${i}: стар и незащитен — изтрит`);
+    for (const i of [4, 5]) assert.ok(existsSync(L.rel[i]), `${i}: последните KEEP_RELEASES`);
+  } finally { rmSync(L.base, { recursive: true, force: true }); }
+});
+
+test("няколко продукта с last-good: всички цели остават; празен или счупен last-good не пречи", () => {
+  const L = layout();
+  try {
+    dockerStub(L, { mounts: [] });
+    for (const [p, i] of [["chatchat", 0], ["piuma", 2]]) {
+      mkdirSync(join(L.shared, p), { recursive: true });
+      writeFileSync(join(L.shared, p, "last-good"), `${join(L.rel[i], "few-few", p)}\n`);
+    }
+    mkdirSync(join(L.shared, "prazen"), { recursive: true });
+    writeFileSync(join(L.shared, "prazen", "last-good"), "");
+    run(L);
+    for (const i of [0, 2]) assert.ok(existsSync(L.rel[i]), `${i} е цел на откат`);
+    for (const i of [1, 3]) assert.ok(!existsSync(L.rel[i]), `${i}: незащитен — изтрит`);
   } finally { rmSync(L.base, { recursive: true, force: true }); }
 });

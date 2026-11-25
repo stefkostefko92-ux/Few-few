@@ -2146,83 +2146,17 @@
           "detail": "Научи: В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат д… (+46 още)"
         },
         {
-          "version": "73.4.0",
-          "date": "2026-11-25",
-          "event": "v73.4 — учене",
-          "detail": "Научи: Тестът tools/vps/autodeploy-prune.test.mjs изрязва release_mount_sources, rescue_releas…"
-        },
-        {
-          "version": "73.5.0",
-          "date": "2026-11-25",
-          "event": "v73.5 — учене",
-          "detail": "Научи: Във vpsdash `el(tag, {raw: x})` записва с textContent, не с innerHTML — чужд изход, пок…"
-        },
-        {
-          "version": "73.6.0",
-          "date": "2026-11-25",
-          "event": "v73.6 — учене",
-          "detail": "Научи: .pr-review/306.diff (vpsdash reclaim) не е отрязан — 4 diff заглавки при 4 файла в 306.…"
-        },
-        {
-          "version": "73.7.0",
-          "date": "2026-11-25",
-          "event": "v73.7 — учене",
-          "detail": "Научи: В autodeploy.sh prune_releases вика release_mount_sources преди compose_workdirs, затов…"
-        },
-        {
-          "version": "73.8.0",
-          "date": "2026-11-25",
-          "event": "v73.8 — учене",
-          "detail": "Научи: Тест -e в bash и chown без -h следват symlink, затова root chown на файл в папка на дру…"
-        },
-        {
-          "version": "73.9.0",
-          "date": "2026-11-25",
-          "event": "v73.9 — учене",
-          "detail": "Научи: В migrate-backup.sh (PR 312) масивът LIVE_DB_SRC изключва суровия том на всяка работеща…"
-        },
-        {
           "version": "74.0.0",
           "date": "2026-11-25",
           "event": "v74.0 — учене",
-          "detail": "Научи: FiveM docker-compose подава целия .env с env_file на трите услуги, затова при смяна на …"
+          "detail": "Научи: FiveM docker-compose подава целия .env с env_file на трите услуги, затова при смяна на … (+6 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „FiveM docker-compose подава целия .env с env_file на трите услуги, затова при смяна на …\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В migrate-backup.sh (PR 312) масивът LIVE_DB_SRC изключва суровия том на всяка работеща…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Тест -e в bash и chown без -h следват symlink, затова root chown на файл в папка на дру…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „В autodeploy.sh prune_releases вика release_mount_sources преди compose_workdirs, затов…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „.pr-review/306.diff (vpsdash reclaim) не е отрязан — 4 diff заглавки при 4 файла в 306.…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Във vpsdash `el(tag, {raw: x})` записва с textContent, не с innerHTML — чужд изход, пок…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Тестът tools/vps/autodeploy-prune.test.mjs изрязва release_mount_sources, rescue_releas…\""
+          "summary": "Научи: „FiveM docker-compose подава целия .env с env_file на трите услуги, затова при смяна на …\" (+6 още)"
         },
         {
           "date": "2026-11-25",
@@ -5337,7 +5271,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 306
+        "lessons": 308
       },
       "evolution": [
         {
@@ -5867,9 +5801,20 @@
           "date": "2026-11-24",
           "event": "v33.4 — учене",
           "detail": "Научи: Във видеото на panev пренасянето на текста цепи само на обикновени интервали, затова дв… (+1 още)"
+        },
+        {
+          "version": "33.6.0",
+          "date": "2026-11-25",
+          "event": "v33.6 — учене",
+          "detail": "Научи: Каталогът на Panev (стр. 20) и сайтът наричат хода на SG по SU „corsa di estensione“ (к… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Каталогът на Panev (стр. 20) и сайтът наричат хода на SG по SU „corsa di estensione“ (к…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-24",
           "type": "learning",
@@ -7586,61 +7531,17 @@
           "detail": "Научи: Защита на release по монтирани от Docker папки не пази release-а, от който идва само en… (+5 още)"
         },
         {
-          "version": "28.0.0",
-          "date": "2026-11-25",
-          "event": "v28.0 — учене",
-          "detail": "Научи: prune_releases в autodeploy.sh пази целта на всеки $SHARED_DIR/*/last-good (първия ред,…"
-        },
-        {
-          "version": "28.1.0",
-          "date": "2026-11-25",
-          "event": "v28.1 — учене",
-          "detail": "Научи: jobs.start във vpsdash слива spec.env върху process.env, затова spec само с env за тайн…"
-        },
-        {
-          "version": "28.2.0",
-          "date": "2026-11-25",
-          "event": "v28.2 — учене",
-          "detail": "Научи: Чистенето на releases от vpsdash (POST /api/reclaim/run) пресмята списъка на сървъра не…"
-        },
-        {
-          "version": "28.3.0",
-          "date": "2026-11-25",
-          "event": "v28.3 — учене",
-          "detail": "Научи: Compose пише етикета com.docker.compose.project.working_dir на всеки контейнер, включит…"
-        },
-        {
           "version": "28.5.0",
           "date": "2026-11-25",
           "event": "v28.5 — учене",
-          "detail": "Научи: deploy_fivem пише FiveM/.env само ако файлът липсва (пръв деплой), затова преименуван к… (+1 още)"
+          "detail": "Научи: deploy_fivem пише FiveM/.env само ако файлът липсва (пръв деплой), затова преименуван к… (+5 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „deploy_fivem пише FiveM/.env само ако файлът липсва (пръв деплой), затова преименуван к…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Compose пише етикета com.docker.compose.project.working_dir на всеки контейнер, включит…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „Чистенето на releases от vpsdash (POST /api/reclaim/run) пресмята списъка на сървъра не…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „jobs.start във vpsdash слива spec.env върху process.env, затова spec само с env за тайн…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „prune_releases в autodeploy.sh пази целта на всеки $SHARED_DIR/*/last-good (първия ред,…\""
+          "summary": "Научи: „deploy_fivem пише FiveM/.env само ако файлът липсва (пръв деплой), затова преименуван к…\" (+5 още)"
         },
         {
           "date": "2026-11-25",
@@ -14875,39 +14776,17 @@
           "detail": "Научи: GENERIC_RULE в secret-scan хваща само стойност в кавички с поне 12 знака след secret/pa… (+11 още)"
         },
         {
-          "version": "37.2.0",
-          "date": "2026-11-25",
-          "event": "v37.2 — учене",
-          "detail": "Научи: prune_releases в deploy/autodeploy.sh пази освен изброените *_LAST_GOOD и целта на всек…"
-        },
-        {
-          "version": "37.3.0",
-          "date": "2026-11-25",
-          "event": "v37.3 — учене",
-          "detail": "Научи: След PR #316 prune_releases в deploy/autodeploy.sh пази и всеки release, към който сочи…"
-        },
-        {
           "version": "37.4.0",
           "date": "2026-11-25",
           "event": "v37.4 — учене",
-          "detail": "Научи: Сензорът undefined-function в tools/vps/deploy-check.mjs (част от gate.mjs) пропуска са…"
+          "detail": "Научи: Сензорът undefined-function в tools/vps/deploy-check.mjs (част от gate.mjs) пропуска са… (+2 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Сензорът undefined-function в tools/vps/deploy-check.mjs (част от gate.mjs) пропуска са…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „След PR #316 prune_releases в deploy/autodeploy.sh пази и всеки release, към който сочи…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „prune_releases в deploy/autodeploy.sh пази освен изброените *_LAST_GOOD и целта на всек…\""
+          "summary": "Научи: „Сензорът undefined-function в tools/vps/deploy-check.mjs (част от gate.mjs) пропуска са…\" (+2 още)"
         },
         {
           "date": "2026-11-25",
