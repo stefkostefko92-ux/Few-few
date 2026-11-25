@@ -7,9 +7,14 @@ const LOCAL_RE = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*
 const ASCII_DOMAIN_RE =
   /^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{1,59})$/;
 
-/** Домейн в канонична форма: малки букви, без точка в края, IDN → punycode. Невалиден → null. */
+/**
+ * Домейн в канонична форма: малки букви, без „www.“ и без точка в края, IDN → punycode. Невалиден → null.
+ * „www.“ пада и тук, не само в normalizeUrl: иначе „не ме търсете“ за www.firma.bg не хващаше
+ * https://www.firma.bg/… (хостът там е firma.bg) — преглед на PR #480, Кодаджията. За „не търси“ по-широко
+ * съвпадение е безопасната посока.
+ */
 export function canonicalDomain(raw: string): string | null {
-  const v = raw.trim().toLowerCase().replace(/\.$/, '');
+  const v = raw.trim().toLowerCase().replace(/\.$/, '').replace(/^www\./, '');
   if (!v || INVISIBLE_RE.test(v)) return null;
   const ascii = domainToASCII(v);
   return ascii && ASCII_DOMAIN_RE.test(ascii) ? ascii : null;

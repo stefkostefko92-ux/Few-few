@@ -72,6 +72,10 @@ export function apiRoutes(deps: ApiDeps): Router {
     if (!body.success) return invalid(res, body.error);
     if (body.data.takenAt > deps.now()) return void res.status(400).json(FUTURE);
     const parsed = parseKzpSnapshot(body.data.text);
+    // Празна снимка = всеки контакт „не е вписан“ — отказ винаги, и с confirmShrink (преглед на PR #480).
+    if (!parsed.errors.length && parsed.values.length === 0) {
+      return void res.status(400).json({ error: 'Снимката е празна — нищо не е внесено.', errors: [] });
+    }
     if (parsed.errors.length) {
       return void res
         .status(400)

@@ -241,3 +241,26 @@ test('италиански номер с удвоен код на странат
   assert.equal(normalizePhone('+39 393 331 234 567', 'IT'), null);
   assert.equal(normalizePhone('+39 333 123 4567', 'IT'), '+393331234567');
 });
+
+// ── Кодаджията, преглед на PR #480 (25.11.2026) ──────────────────────────────────────────────
+
+test('„не ме търсете“ и КЗП за www.домейн хващат и адреса без www (и обратно)', async () => {
+  const store = new MemoryStore();
+  await store.saveSnapshot('KZP', new Date('2026-11-23'), [], 'kzp');
+  await suppress(store, 'www.spam.bg', 'domain');
+  assert.deepEqual(await decision(store, 'https://www.spam.bg/kontakti'), ['blocked']);
+  assert.deepEqual(await decision(store, 'https://spam.bg/kontakti'), ['blocked']);
+  assert.deepEqual(await decision(store, 'ivan@spam.bg'), ['blocked']);
+  const kzp = new MemoryStore();
+  await kzp.saveSnapshot('KZP', new Date('2026-11-23'), [fp('firma.bg')], 'kzp');
+  assert.deepEqual(await decision(kzp, 'ivan@www.firma.bg'), ['blocked']);
+});
+
+test('%40 в пътя на URL не прави адреса „имейл“ — ключовете по домейн остават', async () => {
+  const store = new MemoryStore();
+  await store.saveSnapshot('KZP', new Date('2026-11-23'), [], 'kzp');
+  await suppress(store, 'spam.bg', 'domain');
+  assert.deepEqual(await decision(store, 'https://spam.bg/kontakt%40ivan'), ['blocked']);
+  const keys = lookupKeys('https://spam.bg/kontakt@ivan');
+  assert.ok(keys.includes('spam.bg'), JSON.stringify(keys));
+});

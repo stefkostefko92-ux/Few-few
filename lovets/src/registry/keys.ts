@@ -23,14 +23,15 @@ export function domainChain(domain: string): string[] {
  * поддомейните си. Първият ключ е точната стойност.
  */
 export function lookupKeys(normalizedValue: string): string[] {
+  // URL първо: път с „%40“ се декодира до „@“ и иначе ставаше „имейл“ без ключове по домейн (PR #480).
+  if (normalizedValue.startsWith('https://')) {
+    return [normalizedValue, ...domainChain(urlHost(normalizedValue))];
+  }
   if (normalizedValue.includes('@')) {
     const keys = [normalizedValue];
     const untagged = untaggedEmail(normalizedValue);
     if (untagged !== normalizedValue) keys.push(untagged);
     return [...keys, ...domainChain(emailDomain(normalizedValue))];
-  }
-  if (normalizedValue.startsWith('https://')) {
-    return [normalizedValue, ...domainChain(urlHost(normalizedValue))];
   }
   if (normalizedValue.startsWith('+')) return [normalizedValue];
   return domainChain(normalizedValue);
