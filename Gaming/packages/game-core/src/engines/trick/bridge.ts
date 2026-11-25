@@ -37,6 +37,13 @@ import { buildDeck, hiddenLike, rankOf, suitOf, type Card, type Suit } from "./c
  * per-deal game bonus — the ONLY game bonus is the rubber bonus (700, or 500 if
  * the opponents are already vulnerable) awarded when a side wins its second
  * game. An all-pass deal is redealt by the next dealer.
+ *
+ * Онори (рубер бридж): над линията, за отбора на играча, който ги държи в
+ * РЪКАТА си при раздаването — независимо дали е разиграващ или защитник и дали
+ * договорът е изпълнен: 4 от 5-те онора в коз (A K Q J 10) в една ръка → 100;
+ * всички 5 → 150; при без коз всичките 4 аса в една ръка → 150. Броят се при
+ * затварянето на наддаването (пълни ръце), не влизат за гейм и не се умножават
+ * от контра.
  */
 
 const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"] as const;
@@ -84,9 +91,29 @@ export interface BridgeState {
   gamesWon: [number, number];
   vulnerable: [boolean, boolean];
   dealNo: number;
-  lastDeal: { declarer: Seat; level: number; strain: Strain; doubled: number; made: boolean; tricks: number; declScore: number; defScore: number } | null;
+  lastDeal: {
+    declarer: Seat;
+    level: number;
+    strain: Strain;
+    doubled: number;
+    made: boolean;
+    tricks: number;
+    declScore: number;
+    defScore: number;
+    /** Бонус за онори в това раздаване (липсва в стари снимки). */
+    honors?: BridgeHonors | null;
+  } | null;
+  /** Онорите на текущия договор (изчислени при затварянето на наддаването). */
+  honors?: BridgeHonors | null;
   winningTeam: number | null;
   done: boolean;
+}
+
+/** Бонус за онори: кой ги държи, за кой отбор и колко точки. */
+export interface BridgeHonors {
+  seat: Seat;
+  team: number;
+  points: number;
 }
 
 export type BridgeAction =
@@ -105,6 +132,7 @@ export type BridgeEvent =
   | { type: "PLAY"; seat: Seat; card: Card }
   | { type: "TRICK"; seat: Seat }
   | { type: "RESULT"; team: number; made: boolean; tricks: number }
+  | { type: "HONORS"; seat: Seat; team: number; points: number }
   | { type: "DEAL_END"; declTeam: number; declScore: number; defScore: number; matchPoints: [number, number] }
   | { type: "MATCH"; team: number };
 
@@ -142,6 +170,27 @@ function beats(a: Card, b: Card, trump: Suit | null): boolean {
   if (!aT && bT) return false;
   if (suitOf(a) !== suitOf(b)) return false;
   return (STRENGTH[rankOf(a)] ?? 0) > (STRENGTH[rankOf(b)] ?? 0);
+}
+
+const TRUMP_HONORS = ["A", "K", "Q", "J", "T"] as const;
+
+/**
+ * Онори на една раздадена ръка (13 карти) за даден договор: 4 от 5 онора в коз
+ * → 100, всичките 5 → 150; без коз — 4 аса → 150; иначе 0.
+ */
+export function honorsInHand(hand: Card[], strain: Strain): number {
+  if (strain === "NT") return hand.filter((c) => rankOf(c) === "A").length === 4 ? 150 : 0;
+  const n = TRUMP_HONORS.filter((r) => hand.includes(`${r}${strain}`)).length;
+  return n === 5 ? 150 : n === 4 ? 100 : 0;
+}
+
+/** Онорите на раздаването: най-много една ръка може да ги държи. */
+export function dealHonors(hands: Card[][], strain: Strain): BridgeHonors | null {
+  for (let seat = 0; seat < hands.length; seat++) {
+    const points = honorsInHand(hands[seat]!, strain);
+    if (points > 0) return { seat, team: team(seat), points };
+  }
+  return null;
 }
 
 /** Рубер: играе се до 2 спечелени гейма (или таван от MAX_DEALS раздавания). */
@@ -206,7 +255,8 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
       phase: "AUCTION",
       hands,
       dealer,
-      turn: next4(dealer),
+      // WBF Law 17B: първото обаждане е на раздаващия.
+      turn: dealer,
       leader: next4(dealer),
       trick: [],
       bidLevel: 0,
@@ -225,6 +275,7 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
       vulnerable: [false, false],
       dealNo: 1,
       lastDeal: null,
+      honors: null,
       winningTeam: null,
       done: false,
     };
@@ -291,6 +342,16 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
         return { state: next, events };
       }
       if (action.type === "BID") {
+        // Суров вход: ниво 1–7 (цяло число) и позната деноминация — иначе
+        // `8NT` или `1.5S` минаваха и пречупваха наддаването.
+        if (
+          !Number.isInteger(action.level) ||
+          action.level < 1 ||
+          action.level > 7 ||
+          !(STRAINS as readonly unknown[]).includes(action.strain)
+        ) {
+          throw new IllegalActionError("Invalid bid");
+        }
         const floor = next.bidLevel === 0 ? 0 : bidValue(next.bidLevel, next.bidStrain!);
         if (bidValue(action.level, action.strain) <= floor) {
           throw new IllegalActionError("Bid must be higher");
@@ -379,7 +440,12 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
   },
 
   score(state): SeatScore[] {
-    const winTeam = state.winningTeam ?? (state.matchPoints[0] >= state.matchPoints[1] ? 0 : 1);
+    const [p0, p1] = state.matchPoints;
+    const winTeam = state.winningTeam ?? (p0 === p1 ? null : p0 > p1 ? 0 : 1);
+    // Равни точки без победител → реми и за четиримата.
+    if (winTeam === null) {
+      return [0, 1, 2, 3].map((seat) => ({ seat, result: "draw", points: state.matchPoints[team(seat as Seat)] }));
+    }
     return [0, 1, 2, 3].map((seat) => ({
       seat,
       result: team(seat as Seat) === winTeam ? "win" : "loss",
@@ -395,7 +461,10 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
     const hands = state.hands.map((h, i) =>
       i === seat || (leadMade && dummy !== null && i === dummy) ? h.slice() : hiddenLike(h),
     );
-    return { ...state, hands };
+    // Онорите на текущия договор издават коя ръка държи 4–5 онора — виждат се
+    // само от притежателя, докато раздаването не свърши (тогава са в lastDeal).
+    const honors = state.honors && state.honors.seat === seat ? state.honors : null;
+    return { ...state, hands, honors };
   },
 };
 
@@ -411,6 +480,8 @@ function openContract(
   // which may be the partner of the last bidder, not the last bidder itself.
   const winTeam = team(state.lastBidder!);
   state.declarer = state.firstNamed[winTeam * 5 + strainRank(strain)]!;
+  // Онорите се броят от пълните ръце, преди първата карта.
+  state.honors = dealHonors(state.hands, strain);
   const first = next4(state.declarer); // opening lead is to the declarer's left
   state.leader = first;
   state.turn = first;
@@ -434,6 +505,12 @@ function settleDeal(state: BridgeState, events: BridgeEvent[], rng: SeededRng): 
   );
   state.matchPoints[declTeam as 0 | 1] += declScore;
   state.matchPoints[defTeam as 0 | 1] += defScore;
+  // Онори — над линията, за отбора на притежателя, при всеки изход на договора.
+  const honors = state.honors ?? null;
+  if (honors) {
+    state.matchPoints[honors.team as 0 | 1] += honors.points;
+    events.push({ type: "HONORS", seat: honors.seat, team: honors.team, points: honors.points });
+  }
   state.lastDeal = {
     declarer: state.declarer!,
     level: state.contractLevel,
@@ -443,6 +520,7 @@ function settleDeal(state: BridgeState, events: BridgeEvent[], rng: SeededRng): 
     tricks: state.tricksWon[declTeam]!,
     declScore,
     defScore,
+    honors,
   };
   events.push({ type: "RESULT", team: made ? declTeam : defTeam, made, tricks: state.tricksWon[declTeam]! });
 
@@ -475,8 +553,22 @@ function settleDeal(state: BridgeState, events: BridgeEvent[], rng: SeededRng): 
  *  passed-out (all-pass) path and the post-scoring path. */
 function redealOrEnd(state: BridgeState, events: BridgeEvent[], rng: SeededRng): void {
   if (state.dealNo >= MAX_DEALS_BRIDGE) {
-    state.winningTeam = state.matchPoints[0] >= state.matchPoints[1] ? 0 : 1;
+    // Рубер конвенция за недовършен робер (НЕ е Law 77 — тя е таблицата на
+    // дубликата): отбор с един спечелен гейм получава 300, а отбор с частичен
+    // резултат в недовършения гейм — 100. `belowLine` се нулира при всеки
+    // спечелен гейм, значи > 0 = частичен резултат в текущия гейм. Вариант на АСО:
+    // мачът е ограничен до MAX_DEALS_BRIDGE раздавания.
+    for (const t of [0, 1] as const) {
+      if (state.gamesWon[t] === 1) state.matchPoints[t] += 300;
+      if (state.belowLine[t] > 0) state.matchPoints[t] += 100;
+    }
     state.done = true;
+    // При равни точки победител няма — реми (score() връща "draw" за всички).
+    if (state.matchPoints[0] === state.matchPoints[1]) {
+      state.winningTeam = null;
+      return;
+    }
+    state.winningTeam = state.matchPoints[0] > state.matchPoints[1] ? 0 : 1;
     events.push({ type: "MATCH", team: state.winningTeam });
     return;
   }
@@ -484,7 +576,7 @@ function redealOrEnd(state: BridgeState, events: BridgeEvent[], rng: SeededRng):
   state.hands = [deck.slice(0, 13), deck.slice(13, 26), deck.slice(26, 39), deck.slice(39, 52)];
   state.dealer = next4(state.dealer);
   state.phase = "AUCTION";
-  state.turn = next4(state.dealer);
+  state.turn = state.dealer; // Law 17B: наддаването почва раздаващият
   state.leader = next4(state.dealer);
   state.trick = [];
   state.bidLevel = 0;
@@ -496,6 +588,7 @@ function redealOrEnd(state: BridgeState, events: BridgeEvent[], rng: SeededRng):
   state.trump = null;
   state.contractLevel = 0;
   state.doubled = 0;
+  state.honors = null;
   state.tricksWon = [0, 0];
   state.dealNo += 1;
 }

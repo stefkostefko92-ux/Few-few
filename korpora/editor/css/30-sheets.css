@@ -12,13 +12,31 @@
   padding: 10px 12px;
   min-width: 0;
 }
+/* the sheet's number over its board, the parts and the yield beside them: two clean lines, no separator left
+   hanging at the start of a line */
 .sheetcard figcaption {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 4px 10px;
+  align-items: center;
+  gap: 6px 12px;
   font-size: 13px;
   margin-bottom: 6px;
+}
+.sheetcard figcaption .ttl {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.sheetcard figcaption .meta {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.sheetcard figcaption .side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
 }
 svg.sheet {
   width: 100%;
@@ -219,9 +237,11 @@ svg.sheet {
   border-radius: var(--r);
   background: var(--drawing-paper);
 }
+/* the whole sheet fits the width — on a phone too, where full screen zooms into it — and keeps to the screen's
+   height (the sheet is centred on its paper); nothing scrolls sideways */
 .paperwrap svg.rdw {
   display: block;
   width: 100%;
-  min-width: 760px;
   height: auto;
+  max-height: calc(100dvh - 120px);
 }

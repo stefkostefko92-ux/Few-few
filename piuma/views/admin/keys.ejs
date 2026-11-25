@@ -26,7 +26,7 @@ PIUMA_KEY_SECRET=<%= created.secret %></div>
       <% scopes.forEach((s) => { %><label class="check"><input type="checkbox" name="scopes" value="<%= s %>" <%= s.endsWith(':read') || s === 'drafts:write' ? 'checked' : '' %>> <span class="mono"><%= s %></span></label><% }) %>
     </fieldset>
     <label><%= t('keys.brands') %> <span class="hint"><%= t('keys.brandsHint') %></span><select name="brandIds" multiple size="4"><% brands.forEach((b) => { %><option value="<%= b.id %>"><%= b.name %> (<%= b.slug %>)</option><% }) %></select></label>
-    <label><%= t('keys.allowedIps') %> <span class="hint"><%= t('keys.allowedIpsHint') %></span><input name="allowedIps" placeholder="178.104.77.242"></label>
+    <label><%= t('keys.allowedIps') %> <span class="hint"><%= t('keys.allowedIpsHint') %></span><input name="allowedIps" placeholder="203.0.113.7"></label>
     <label><%= t('keys.expiresIn') %> <span class="hint"><%= t('keys.expiresInHint') %></span><input type="number" name="expiresInDays" min="1" max="365" value="90"></label>
     <button class="btn primary" type="submit"><%- icon('key') %> <%= t('keys.createKey') %></button>
   </form>

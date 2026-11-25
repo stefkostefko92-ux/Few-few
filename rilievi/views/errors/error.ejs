@@ -1,0 +1,12 @@
+<%- include('../partials/top', { titleKey: titleKey, narrowMain: true }) %>
+<div class="stack-gap">
+  <div>
+    <p class="plate__label"><%= t('error.code', { status }) %></p>
+    <h1><%= t(titleKey) %></h1>
+  </div>
+  <p><%= t(messageKey) %></p>
+  <div class="toolbar">
+    <a class="btn btn--primary" href="<%= currentUser ? '/schede' : '/accesso' %>"><%= t(currentUser ? 'error.toSchede' : 'auth.backToLogin') %></a>
+  </div>
+</div>
+<%- include('../partials/bottom') %>

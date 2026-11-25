@@ -250,7 +250,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
     responsible: {
       metaTitle: "Отговорна игра",
       metaDescription:
-        "АСО е социална игра. Съвети за здравословна и балансирана игра.",
+        "АСО е социална игра. Съвети за балансирана игра и инструменти: напомняне за време, дневен лимит и самоизключване.",
       h1: "Отговорна игра",
       blocks: [
         {
@@ -274,6 +274,19 @@ export const LEGAL: Record<Locale, LegalDict> = {
             "Задавай си времеви граници и прави почивки.",
             "Играй за удоволствие, не за да „наваксаш“ загуби.",
             "Не позволявай играта да измества сън, работа или близки.",
+          ],
+        },
+        { type: "h2", text: "Инструменти в профила" },
+        {
+          type: "p",
+          text: "В Профил → Отговорна игра можеш сам(а) да зададеш граници на времето си в АСО:",
+        },
+        {
+          type: "ul",
+          items: [
+            "**Напомняне за време в играта** — на всеки 30, 60 или 120 минути (или изключено) ти показваме „Играете от X мин“ с бутони „Почивка“ и „Продължи“.",
+            "**Дневен лимит за игра** — по избор (30 мин до 6 ч). Броим минутите в мачове; щом стигнеш лимита, нови маси и опашки се затварят до полунощ (софийско време), а започнатият мач се доиграва. По-нисък лимит важи веднага, а по-висок или махането му — след 24 часа.",
+            "**Самоизключване** — за 24 часа, 7 дни, 30 дни или 6 месеца. През това време не можеш да сядаш на маса, да влизаш в опашка или да купуваш в магазина. Самоизключването не може да се отмени преди изтичане — това е умишлено, за да е истинска пауза.",
           ],
         },
         { type: "h2", text: "Нужна ли е помощ?" },
@@ -501,7 +514,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
     responsible: {
       metaTitle: "Responsible Play",
       metaDescription:
-        "АСО is a social game. Tips for healthy and balanced play.",
+        "АСО is a social game. Tips for balanced play and tools: play-time reminder, daily limit and self-exclusion.",
       h1: "Responsible Play",
       blocks: [
         {
@@ -525,6 +538,19 @@ export const LEGAL: Record<Locale, LegalDict> = {
             "Set yourself time limits and take breaks.",
             "Play for enjoyment, not to “chase” losses.",
             "Don't let play crowd out sleep, work or loved ones.",
+          ],
+        },
+        { type: "h2", text: "Tools in your profile" },
+        {
+          type: "p",
+          text: "In Profile → Responsible play you can set your own limits on your time on АСО:",
+        },
+        {
+          type: "ul",
+          items: [
+            "**Play-time reminder** — every 30, 60 or 120 minutes (or off) we show “You've been playing for X min” with “Take a break” and “Continue” buttons.",
+            "**Daily play limit** — optional (30 min to 6 h). We count your minutes in matches; once you reach the limit, new tables and queues close until midnight (Sofia time), and a match you've started is played out. A lower limit applies at once; a higher one or removing it takes effect after 24 hours.",
+            "**Self-exclusion** — for 24 hours, 7 days, 30 days or 6 months. During that time you can't sit at a table, join a queue or buy in the shop. Self-exclusion can't be undone before it ends — on purpose, so the pause is real.",
           ],
         },
         { type: "h2", text: "Need help?" },
@@ -753,7 +779,7 @@ export const LEGAL: Record<Locale, LegalDict> = {
     responsible: {
       metaTitle: "Gioco responsabile",
       metaDescription:
-        "АСО è un gioco sociale. Consigli per un gioco sano ed equilibrato.",
+        "АСО è un gioco sociale. Consigli per un gioco equilibrato e strumenti: promemoria del tempo, limite giornaliero e autoesclusione.",
       h1: "Gioco responsabile",
       blocks: [
         {
@@ -777,6 +803,19 @@ export const LEGAL: Record<Locale, LegalDict> = {
             "Imponiti dei limiti di tempo e fai delle pause.",
             "Gioca per piacere, non per «recuperare» le perdite.",
             "Non lasciare che il gioco tolga spazio al sonno, al lavoro o alle persone care.",
+          ],
+        },
+        { type: "h2", text: "Strumenti nel profilo" },
+        {
+          type: "p",
+          text: "In Profilo → Gioco responsabile puoi impostare tu stesso dei limiti al tuo tempo su АСО:",
+        },
+        {
+          type: "ul",
+          items: [
+            "**Promemoria del tempo di gioco** — ogni 30, 60 o 120 minuti (o disattivato) mostriamo «Stai giocando da X min» con i pulsanti «Pausa» e «Continua».",
+            "**Limite di gioco giornaliero** — facoltativo (da 30 min a 6 h). Contiamo i minuti in partita; raggiunto il limite, nuovi tavoli e code si chiudono fino a mezzanotte (ora di Sofia) e la partita già iniziata si porta a termine. Un limite più basso vale subito; uno più alto o la sua rimozione dopo 24 ore.",
+            "**Autoesclusione** — per 24 ore, 7 giorni, 30 giorni o 6 mesi. In questo periodo non puoi sederti a un tavolo, entrare in coda né acquistare nel negozio. L'autoesclusione non può essere annullata prima della scadenza — di proposito, perché la pausa sia vera.",
           ],
         },
         { type: "h2", text: "Hai bisogno di aiuto?" },

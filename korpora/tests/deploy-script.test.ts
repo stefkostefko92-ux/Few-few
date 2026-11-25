@@ -13,6 +13,9 @@ import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { deploy, mode, sha, sharedEnv, withLayout } from './deploy-harness.js';
 
+const DAY_MS = 86_400_000;
+const daysAgo = (days: number) => new Date(Date.now() - days * DAY_MS);
+
 test('without a .env anywhere it stops with code 3 and builds nothing', () => {
   withLayout((L) => {
     const r = deploy(L);
@@ -61,7 +64,7 @@ test('a redeploy builds first, dumps right before the swap, keeps the five newes
     const old = (i: number) => `pre-deploy-19990101-00000${i}.sql.gz`;
     for (let i = 0; i < 6; i++) {
       writeFileSync(join(backups, old(i)), 'old');
-      utimesSync(join(backups, old(i)), new Date(2026, 0, i + 1), new Date(2026, 0, i + 1));
+      utimesSync(join(backups, old(i)), daysAgo(10 - i), daysAgo(10 - i));
     }
     writeFileSync(join(L.shared, 'indexnow-sitemap.sha256'), `${sha('<urlset/>')}\n`);
     const r = deploy(L, { VOLUME_RC: '0' });
@@ -92,6 +95,49 @@ test('a redeploy builds first, dumps right before the swap, keeps the five newes
     assert.equal(gunzipSync(readFileSync(join(backups, fresh))).toString(), '-- dump\n');
     assert.equal(mode(join(backups, fresh)), '600');
     assert.doesNotMatch(r.log, /^node /m, 'the same sitemap is not submitted again');
+  });
+});
+
+test('a deploy also drops dumps older than 30 days (snapshots before a restore: 8 weeks less a day), however few', () => {
+  withLayout((L) => {
+    sharedEnv(L);
+    const backups = join(L.shared, 'backups');
+    mkdirSync(backups, { recursive: true });
+    const aged = (name: string, days: number) => {
+      writeFileSync(join(backups, name), 'old');
+      const at = new Date(Date.now() - days * 86_400_000);
+      utimesSync(join(backups, name), at, at);
+    };
+    aged('pre-deploy-20260101-000000.sql.gz', 90);
+    // 30 days less a day is the limit, as in backup.sh (its timer runs once a day)
+    aged('pre-deploy-20260801-000000.sql.gz', 29.1);
+    aged('pre-deploy-20260810-000000.sql.gz', 28.9);
+    aged('pre-deploy-20260920-000000.sql.gz', 20);
+    aged('notes.txt', 90);
+    aged('pre-deploy-notes.txt', 90);
+    aged('pre-restore-20260601-000000.dump.age', 55.1);
+    aged('pre-restore-20260601-000000.dump.age.sha256', 55.1);
+    // 8 weeks less a day is the limit, as in backup.sh (its timer runs once a day)
+    aged('pre-restore-20260815-000000.dump.age', 54.9);
+    aged('pre-restore-20260815-000000.dump.age.sha256', 54.9);
+    const r = deploy(L, { VOLUME_RC: '0' });
+    assert.equal(r.status, 0, r.stderr);
+    const left = readdirSync(backups).filter((n) => n !== 'daily');
+    assert.ok(left.includes('pre-deploy-20260920-000000.sql.gz'), 'a recent one stays');
+    assert.ok(
+      left.includes('pre-deploy-20260810-000000.sql.gz'),
+      'still within 30 days less a day',
+    );
+    for (const foreign of ['notes.txt', 'pre-deploy-notes.txt'])
+      assert.ok(left.includes(foreign), `${foreign}: foreign files are not touched`);
+    assert.ok(left.includes('pre-restore-20260815-000000.dump.age'), 'as old as a daily backup');
+    assert.ok(!left.includes('pre-restore-20260601-000000.dump.age'), left.join(' '));
+    // its checksum goes with it, the newer one stays
+    assert.ok(!left.includes('pre-restore-20260601-000000.dump.age.sha256'), left.join(' '));
+    assert.ok(left.includes('pre-restore-20260815-000000.dump.age.sha256'), left.join(' '));
+    assert.ok(!left.includes('pre-deploy-20260101-000000.sql.gz'), left.join(' '));
+    assert.ok(!left.includes('pre-deploy-20260801-000000.sql.gz'), left.join(' '));
+    assert.equal(left.filter((n) => /^pre-deploy-\d/.test(n)).length, 3, 'and the new dump');
   });
 });
 
@@ -213,6 +259,24 @@ test('a live release is remembered as last-good by its real path; a failed one i
     const live = deploy(L);
     assert.equal(live.status, 0, live.stderr);
     assert.equal(readFileSync(join(L.shared, 'last-good'), 'utf8'), `${realpathSync(L.app)}\n`);
+  });
+});
+
+test("after a live swap the project's untagged images are pruned (not other images, not the build cache); a failed one prunes nothing", () => {
+  withLayout((L) => {
+    sharedEnv(L);
+    const prune = 'docker image prune -f --filter label=com.docker.compose.project=korpora\n';
+    const failed = deploy(L, { HEALTH_BODY: '' });
+    assert.equal(failed.status, 4);
+    assert.ok(!failed.log.includes('prune'), failed.log);
+    const live = deploy(L);
+    assert.equal(live.status, 0, live.stderr);
+    assert.ok(live.log.includes(prune), live.log);
+    assert.ok(
+      live.log.indexOf(prune) > live.log.indexOf('/health'),
+      'only once Korpora answers on the port',
+    );
+    assert.doesNotMatch(live.log, /builder prune|image prune .*-a\b|system prune/);
   });
 });
 

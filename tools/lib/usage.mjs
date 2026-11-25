@@ -20,12 +20,17 @@ export const PRICES_FILE = join(HERE, "..", "agents", "prices.json");
 export function loadPrices(file = PRICES_FILE) {
   try { return JSON.parse(readFileSync(file, "utf8")); } catch { return null; }
 }
-/** Цена за модел: най-дългото съвпадение по префикс на id-то (claude-opus-5 ≠ claude-opus-5-5). */
+/**
+ * Цена за модел: най-дългото съвпадение по префикс на id-то (claude-opus-5 ≠ claude-opus-5-5).
+ * Префиксът важи само за суфикс (`[1m]`), НЕ за продължение на версията: „sonnet-5-5“ без свой ред
+ * не е „sonnet-5“. Реален дефект (2026-10-24): 137 пускания на sonnet-5-5 тихо се таксуваха като
+ * sonnet-5 с 2× по-скъпо кеш-четене. Непознатата версия сега е „без цена“ — видима, не сгрешена.
+ */
 export function priceOf(model, prices = loadPrices()) {
   const m = String(model || "").replace(/^claude-/, "").replace(/-\d{8}$/, "");
   const rows = prices?.models || [];
   let best = null;
-  for (const r of rows) if (m === r.id || m.startsWith(r.id + "-") || m.startsWith(r.id)) if (!best || r.id.length > best.id.length) best = r;
+  for (const r of rows) if (m.startsWith(r.id) && !/^-?\d/.test(m.slice(r.id.length))) if (!best || r.id.length > best.id.length) best = r;
   return best;
 }
 /** Цена на едно пускане по цените на API: вход, кеш-четене (×0.1), кеш-запис 5 мин (×1.25), изход. */
@@ -38,7 +43,10 @@ export function costParts(rec, prices = loadPrices()) {
   const p = priceOf(rec.model, prices); if (!p) return null;
   const c = prices.cache || { read: 0.1, write: 1.25 };
   const readPrice = p.cacheRead ?? p.in * c.read;
-  return { input: rec.input * p.in / 1e6, cacheRead: rec.cacheRead * readPrice / 1e6, cacheWrite: rec.cacheWrite * c.write * p.in / 1e6, output: rec.output * p.out / 1e6 };
+  // cacheWrite1h е ЧАСТ от cacheWrite (полето cache_creation на API), на по-високата 1-часова ставка.
+  const w1h = Math.min(rec.cacheWrite1h || 0, rec.cacheWrite || 0);
+  const cacheWrite = ((rec.cacheWrite - w1h) * c.write + w1h * (c.write1h ?? 2)) * p.in / 1e6;
+  return { input: rec.input * p.in / 1e6, cacheRead: rec.cacheRead * readPrice / 1e6, cacheWrite, output: rec.output * p.out / 1e6 };
 }
 
 /** Типът на агента: .meta.json до транскрипта → маркерът на паметта → „общ". */
@@ -64,7 +72,19 @@ export const USAGE_RECORD_V = 2;
 export function summarizeTranscript(path, hint = {}) {
   let lines;
   try { lines = readFileSync(path, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean); } catch { return null; }
-  let turns = 0, input = 0, cacheRead = 0, cacheWrite = 0, output = 0, tools = 0, resultBytes = 0, peakCtx = 0, startCtx = 0, model = "", effort = hint.effort || "";
+  let turns = 0, input = 0, cacheRead = 0, cacheWrite = 0, cacheWrite1h = 0, output = 0, tools = 0, resultBytes = 0, peakCtx = 0, startCtx = 0, model = "", effort = hint.effort || "";
+  // Байтовете резултат по инструмент (2026-11-02): резултатите са почти целият кеш-запис, а една сума не казва кой
+  // инструмент ги носи — без това решението „по-малки резултати“ е на сляпо.
+  const toolOf = new Map(), toolBytes = {};
+  // Кои умения агентът реално е извикал (23.11.2026, идея от openai/plugins · plugin-eval): цената на умение
+  // се мереше, а ползването — не. Името идва от транскрипта, затова минава през SKILL_NAME. Skill се брои по
+  // tool_use id (един отговор може да е записан на няколко реда); прочетен SKILL.md — най-много веднъж на пускане
+  // и само ако няма Skill за същото име. Предзаредените през skills: не са tool_use — тях отчетът не ги мери.
+  // Граница: Read не различава „ползвам“ от „преглеждам“ (AI-джията чете SKILL.md при преглед на PR, извън
+  // .pr-review/) — броят е сигнал за „живо ли е“, не присъда.
+  const skills = {}, skillIds = new Set(), skillReads = new Set();
+  // Повторно четене на същото (файл + offset/limit/pages): 02.11.2026 един PDF, прочетен 5 пъти, утрои пускането.
+  const readKey = new Map(), seenReads = new Set(); let rereads = 0, rereadBytes = 0;
   let t0 = "", t1 = "";
   // Един API отговор се записва на НЯКОЛКО реда (thinking / text / tool_use) със СЪЩИЯ message.id.
   // Входните броячи са еднакви, а output_tokens РАСТЕ ред по ред (стрийминг снимка). Без дедуп всеки
@@ -78,8 +98,28 @@ export function summarizeTranscript(path, hint = {}) {
     const m = r.message; if (!m) continue;
     if (m.model && !/synthetic/.test(m.model)) model = m.model;
     if (Array.isArray(m.content)) for (const b of m.content) {
-      if (b?.type === "tool_use") tools++;
-      else if (b?.type === "tool_result") resultBytes += Buffer.byteLength(typeof b.content === "string" ? b.content : JSON.stringify(b.content || ""));
+      if (b?.type === "tool_use") {
+        tools++;
+        if (b.id) toolOf.set(b.id, String(b.name || "?").replace(/^mcp__([^_]+)__.*/, "mcp:$1"));
+        if (b.name === "Skill" && typeof b.input?.skill === "string" && SKILL_NAME.test(b.input.skill) && !skillIds.has(b.id ?? {})) {
+          if (b.id) skillIds.add(b.id);
+          skills[b.input.skill] = (skills[b.input.skill] || 0) + 1;
+        } else if (b.name === "Read" && typeof b.input?.file_path === "string" && !b.input.file_path.includes("/.pr-review/")) {
+          const m = b.input.file_path.match(SKILL_FILE);
+          if (m && SKILL_NAME.test(m[1])) skillReads.add(m[1]);
+        }
+        if (b.name === "Read" && b.id && b.input?.file_path) {
+          const k = [b.input.file_path, b.input.offset ?? "", b.input.limit ?? "", b.input.pages ?? ""].join("|");
+          if (seenReads.has(k)) { rereads++; readKey.set(b.id, true); } else seenReads.add(k);
+        }
+      }
+      else if (b?.type === "tool_result") {
+        const n = Buffer.byteLength(typeof b.content === "string" ? b.content : JSON.stringify(b.content || ""));
+        resultBytes += n;
+        const t = toolOf.get(b.tool_use_id) || "?";
+        toolBytes[t] = (toolBytes[t] || 0) + n;
+        if (readKey.get(b.tool_use_id)) rereadBytes += n;
+      }
     }
     const u = m.usage; if (!u) continue;
     const key = m.id || `anon-${anon++}`;
@@ -89,27 +129,46 @@ export function summarizeTranscript(path, hint = {}) {
   for (const u of usages.values()) {
     turns++;
     input += u.input_tokens || 0; cacheRead += u.cache_read_input_tokens || 0; cacheWrite += u.cache_creation_input_tokens || 0; output += u.output_tokens || 0;
+    cacheWrite1h += u.cache_creation?.ephemeral_1h_input_tokens || 0; // част от cacheWrite, на 1-часовата ставка
     const ctx = (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0);
     if (turns === 1) startCtx = ctx; // първият ход: системен промпт + дефиниция + доктрина + памет + задача
     peakCtx = Math.max(peakCtx, ctx);
   }
   if (!turns) return null;
+  for (const k of skillReads) if (!skills[k]) skills[k] = 1;
   const id = createHash("sha1").update(basename(path)).digest("hex").slice(0, 10);
   const durationSec = t0 && t1 ? Math.round((Date.parse(t1) - Date.parse(t0)) / 1000) : null;
   return {
     v: USAGE_RECORD_V, id, ts: (t0 || new Date().toISOString()).slice(0, 16),
     agent: hint.agentType || agentTypeOf(path, lines), model: model.replace(/^claude-/, "").replace(/-\d{8}$/, ""), effort: effort || null,
-    turns, input, cacheRead, cacheWrite, output, tools, resultBytes, startCtx, peakCtx, durationSec,
+    turns, input, cacheRead, cacheWrite, ...(cacheWrite1h ? { cacheWrite1h } : {}), output, tools, resultBytes, toolBytes, rereads, rereadBytes, startCtx, peakCtx, durationSec,
+    ...(Object.keys(skills).length ? { skills } : {}),
   };
 }
 
+/** Агентът може да прочете умението и с Read (жива оценка 23.11.2026) — това също е ползване. */
+const SKILL_FILE = /\/\.claude\/skills\/([a-z0-9][a-z0-9-]{0,63})\/SKILL\.md$/;
+/** Име на умение: kebab-case, по желание с префикс на плъгин (`plugin:skill`); без пътища и прототипни имена. */
+export const SKILL_NAME = /^(?!(__proto__|constructor|prototype)$)[a-z0-9][a-z0-9-]{0,63}(:[a-z0-9][a-z0-9-]{0,63})?$/;
+
 // Дневникът е данни от диска (и от клона agents/memory) — не им вярвай на формата. Нечислови или
 // отрицателни броячи правеха цената NaN, а агент „__proto__“ пишеше в прототипа на обекта.
-const NUM_FIELDS = ["turns", "input", "cacheRead", "cacheWrite", "output", "tools", "resultBytes", "startCtx", "peakCtx"];
+const NUM_FIELDS = ["turns", "input", "cacheRead", "cacheWrite", "cacheWrite1h", "output", "tools", "resultBytes", "rereads", "rereadBytes", "startCtx", "peakCtx"];
 function cleanRecord(r) {
   if (!r || typeof r !== "object" || typeof r.id !== "string" || !r.id) return null;
   for (const k of NUM_FIELDS) if (k in r && !(Number.isFinite(r[k]) && r[k] >= 0)) return null;
   for (const k of ["agent", "model"]) if (k in r && typeof r[k] !== "string") return null;
+  // toolBytes е речник от диска: само собствени ключове с крайни неотрицателни числа, без прототипни имена.
+  if ("toolBytes" in r) {
+    const ok = r.toolBytes && typeof r.toolBytes === "object" && !Array.isArray(r.toolBytes)
+      && Object.entries(r.toolBytes).every(([k, v]) => !/^(__proto__|constructor|prototype)$/.test(k) && Number.isFinite(v) && v >= 0);
+    if (!ok) delete r.toolBytes;
+  }
+  if ("skills" in r) {
+    const ok = r.skills && typeof r.skills === "object" && !Array.isArray(r.skills)
+      && Object.entries(r.skills).every(([k, v]) => SKILL_NAME.test(k) && Number.isInteger(v) && v >= 0);
+    if (!ok) delete r.skills;
+  }
   return r;
 }
 

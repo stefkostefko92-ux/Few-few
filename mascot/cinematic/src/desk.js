@@ -12,8 +12,10 @@ export const LAMP_POS = new THREE.Vector3(1.35, GROUND_Y + 1.22, -0.35);
 
 function desktop(materials) {
   const group = new THREE.Group();
-  const top = new THREE.Mesh(new THREE.BoxGeometry(6.4, DESK_TOP_H, 3.8), materials.wood);
-  top.position.y = DESK_Y;
+  // Бюрото се простира напред под обектива (до z≈+6): иначе долният ръб на кадъра хващаше края му и
+  // под него оставаше празна черна лента — сега лакираният плот пълни рамката до дъното.
+  const top = new THREE.Mesh(new THREE.BoxGeometry(8.4, DESK_TOP_H, 8.0), materials.wood);
+  top.position.set(0, DESK_Y, 2.1);
   top.receiveShadow = true;
   top.castShadow = false;
   group.add(top);

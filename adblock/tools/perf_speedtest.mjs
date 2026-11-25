@@ -87,13 +87,29 @@ server.on("upgrade", (req, sock) => {
 await new Promise((r) => server.listen(0, "127.0.0.1", r));
 const origin = `http://127.0.0.1:${server.address().port}`;
 
+async function confirmOnboarding(ctx) {
+  await new Promise((r) => setTimeout(r, 9000));
+  for (const p of ctx.pages()) {
+    if (!p.url().startsWith("chrome-extension://")) continue;
+    for (const re of [/enable ghostery/i, /^(accept|agree|continue|get started|enable|start)$/i]) {
+      try { await p.getByRole("button", { name: re }).first().click({ timeout: 2000 }); await p.waitForTimeout(1500); } catch {}
+    }
+  }
+}
+
 async function measure(label, ext) {
   const dir = mkdtempSync(join(tmpdir(), "sa-perf-"));
   const args = ["--no-sandbox"];
   if (ext) args.push(`--disable-extensions-except=${ext}`, `--load-extension=${ext}`);
   const ctx = await chromium.launchPersistentContext(dir, { channel: "chromium", headless: true, args });
   try {
-    if (ext) { try { if (!ctx.serviceWorkers()[0]) await ctx.waitForEvent("serviceworker", { timeout: 20000 }); } catch {} await new Promise((r) => setTimeout(r, Number(arg("settle", 3)) * 1000)); }
+    if (ext) {
+      try { if (!ctx.serviceWorkers()[0]) await ctx.waitForEvent("serviceworker", { timeout: 20000 }); } catch {}
+      // Друг блокер може да чака потвърждение, за да се включи (Ghostery) — както в compare_blockers.mjs.
+      if (ext !== ROOT) await confirmOnboarding(ctx);
+      await new Promise((r) => setTimeout(r, Number(arg("settle", 3)) * 1000));
+      for (const p of ctx.pages()) if (p.url().startsWith("chrome-extension://")) await p.close().catch(() => {});
+    }
     const out = [];
     for (const mode of MODES) {
       const p = await ctx.newPage();

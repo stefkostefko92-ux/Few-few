@@ -157,3 +157,53 @@ test('федерация: от „само четене" до пълен кон�
   assert.equal((await call(B, cookieB, '/api/settings/peer', { method: 'POST', body: { scope: 'read' } })).status, 200);
   assert.equal((await call(A, cookieA, '/api/nodes/b/files/read?path=/etc/hostname')).status, 403);
 });
+
+test('един сървър: старият съсед сочи към нас самите → ясна аларма, после чистене от панела', async () => {
+  // Панел „a" пази съсед „b", чийто адрес вече сочи към САМИЯ „a" (стар DNS запис).
+  const d = path.join(dir, 'solo');
+  fs.mkdirSync(d);
+  const cfgPath = path.join(d, 'config.json');
+  const PORT = 7813;
+  const SELF = `http://127.0.0.1:${PORT}`;
+  fs.writeFileSync(cfgPath, JSON.stringify({
+    host: '127.0.0.1', port: PORT, nodeId: 'solo', nodeName: 'SOLO', adminUser: 'admin',
+    passwordHash: hashPassword(PASS_A), sessionSecret: 'q'.repeat(64), peerToken: TOKEN,
+    paths: { stateDir: path.join(d, 'state'), archiveDir: d, releasesDir: path.join(d, 'rel'), currentLink: path.join(d, 'cur') },
+    peers: [{ id: 'vps2', name: 'VPS Две', url: SELF, token: TOKEN }],
+    healthChecks: [], alerts: { enabled: false },
+  }));
+  const child = spawn(process.execPath, ['server.js'], {
+    cwd: path.resolve(import.meta.dirname, '..'),
+    env: { ...process.env, CSD_CONFIG: cfgPath },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  kids.push(child);
+  for (let i = 0; i < 60; i++) {
+    try {
+      await fetch(SELF + '/api/ping');
+      break;
+    } catch {
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  const c = await login(SELF, PASS_A);
+  const nodes = await (await call(SELF, c, '/api/nodes')).json();
+  assert.equal(nodes.peers[0].self, true, 'панелът разпознава, че „съседът" е той самият');
+  assert.match(nodes.peers[0].error, /ТАЗИ машина/);
+
+  // Чистене: само с парола; после — един сървър, без жетон.
+  assert.equal((await call(SELF, c, '/api/settings/peer', { method: 'POST', body: { removePeer: 'vps2' } })).status, 428);
+  assert.equal((await sudoOn(SELF, c, PASS_A)).status, 200);
+  assert.equal((await call(SELF, c, '/api/settings/peer', { method: 'POST', body: { removePeer: 'няма' } })).status, 404);
+  assert.equal((await call(SELF, c, '/api/settings/peer', { method: 'POST', body: { removePeer: 'vps2' } })).status, 200);
+  assert.equal((await call(SELF, c, '/api/settings/peer', { method: 'POST', body: { inbound: 'off' } })).status, 200);
+  const after = await (await call(SELF, c, '/api/settings/peer')).json();
+  assert.deepEqual(after.peers, []);
+  assert.equal(after.tokenSet, false);
+  assert.equal(after.scope, 'read');
+  // Старият жетон вече не отваря нищо — а промяната е на диска, не само в паметта.
+  assert.equal((await fetch(SELF + '/api/overview', { headers: { authorization: `Bearer ${TOKEN}` } })).status, 401);
+  const disk = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+  assert.deepEqual(disk.peers, []);
+  assert.equal(disk.peerToken, '');
+});

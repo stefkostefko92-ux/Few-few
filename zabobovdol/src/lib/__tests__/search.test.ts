@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   buildTermGroups,
   classifyIntent,
+  dedupeResults,
   rankIndex,
   type SearchIndex,
 } from "@/lib/search";
@@ -101,4 +102,23 @@ test("дума извън понятията запазва вариантите
 
 test("празна заявка не връща групи", () => {
   assert.equal(buildTermGroups("   ").length, 0);
+});
+
+test("dedupeResults: дублираният въпрос веднъж и с каноничния адрес; събитията с едно име остават", () => {
+  const r = (type: "faq" | "event" | "business", title: string, url: string) => ({ type, title, url, snippet: "", score: 1 });
+  const out = dedupeResults(
+    [
+      r("faq", "Как да платя данък?", "/kak-da/danak-2"),
+      r("faq", "Как да платя данък", "/kak-da/danak"),
+      r("event", "Пазарен ден", "/sabitiya/pazaren-den-1"),
+      r("event", "Пазарен ден", "/sabitiya/pazaren-den-2"),
+      r("business", "Аптека Здраве", "/biznes/apteka-zdrave"),
+      r("business", "Аптека Здраве", "/biznes/apteka-zdrave-2"),
+    ],
+    new Map([["danak-2", "danak"]]),
+  );
+  assert.deepEqual(
+    out.map((x) => x.url),
+    ["/kak-da/danak", "/sabitiya/pazaren-den-1", "/sabitiya/pazaren-den-2", "/biznes/apteka-zdrave", "/biznes/apteka-zdrave-2"],
+  );
 });

@@ -1,5 +1,5 @@
 import type { Prisma, Project } from '@prisma/client';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { audit } from '../audit.js';
 import { sha256Hex } from '../crypto.js';
 import { prisma } from '../db.js';
@@ -27,14 +27,66 @@ const nameSchema = z
   .refine((value) => !hasUnsafeChars(value));
 
 /**
- * Спецификацията от редактора е плосък обект от прости стойности. Всичко друго се отхвърля още тук;
- * после двигателят я нормализира (граници на размерите, познати стойности) — запазва се нормализираната.
+ * Спецификацията от редактора е плосък обект от прости стойности — с две изключения: `grid`, колоните,
+ * отделенията и фронтовете на свободния корпус, в точно тази форма и в границите на двигателя
+ * (engine/layout.js, LAYOUT_LIMITS), и `items`, мебелите на стаята (engine/room.js, ROOM_LIMITS). Всичко друго вложено се отхвърля още тук; после двигателят я нормализира
+ * (граници на размерите, познати стойности) — запазва се нормализираната.
  */
-const specSchema = z
-  .record(
-    z.string().max(40),
-    z.union([z.string().max(200), z.number().finite(), z.boolean(), z.null()]),
+const flatValue = z.union([z.string().max(200), z.number().finite(), z.boolean(), z.null()]);
+const size = z.number().finite().nullable();
+const gridSchema = z
+  .object({
+    columns: z
+      .array(
+        z
+          .object({
+            w: size,
+            cells: z
+              .array(
+                z
+                  .object({ h: size, fill: z.string().max(20), n: z.number().int().min(0).max(99) })
+                  .strict(),
+              )
+              .min(1)
+              .max(8),
+            fronts: z
+              .array(
+                z
+                  .object({
+                    from: z.number().int().min(0).max(7),
+                    to: z.number().int().min(0).max(7),
+                    kind: z.string().max(20),
+                    hinge: z.enum(['left', 'right']).nullable().optional(),
+                  })
+                  .strict(),
+              )
+              .max(8),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(12),
+  })
+  .strict();
+
+// the pieces of a room (engine/room.js, ROOM_LIMITS): a type, a wall, the distance from the corner, flat parameters
+const itemsSchema = z
+  .array(
+    z
+      .object({
+        type: z.string().max(20),
+        wall: z.enum(['A', 'B', 'C']),
+        x: z.number().finite(),
+        params: z.record(z.string().max(40), flatValue).refine((p) => Object.keys(p).length <= 30),
+      })
+      .strict(),
   )
+  .min(1)
+  .max(8);
+
+const specSchema = z
+  .object({ grid: gridSchema.optional(), items: itemsSchema.optional() })
+  .catchall(flatValue)
   .refine((value) => Object.keys(value).length <= 80, 'твърде много полета')
   .refine((value) => isFurnitureType(value.type), 'непознат тип мебел');
 
@@ -51,8 +103,8 @@ function hashOf(spec: Spec): string {
 }
 
 export function normalizedSpec(raw: unknown): Spec | null {
-  // Първо схемата: плоският обект отхвърля вложеното без рекурсия. JSON.stringify върху дълбоко вложен
-  // вход хвърля RangeError — това би било 500 вместо 400.
+  // Първо схемата: плоският обект (и строгата форма на `grid`) отхвърля вложеното без рекурсия.
+  // JSON.stringify върху дълбоко вложен вход хвърля RangeError — това би било 500 вместо 400.
   const parsed = specSchema.safeParse(raw);
   if (!parsed.success) return null;
   if (JSON.stringify(parsed.data).length > MAX_SPEC_BYTES) return null;

@@ -69,13 +69,38 @@ export class FakeModel implements ChatModel {
   calls: MessageCreateParamsStreaming[] = [];
   events: RawMessageStreamEvent[] = textEvents(['Здравей', ', свят!']);
   openError: { status: number } | null = null;
+  /** След толкова събития стриймът „виси“ до abort (симулира прекъсната връзка). */
+  stallAfter: number | null = null;
+  /** Отварянето „виси“ до abort (клиентът затваря, преди Vertex да върне заглавките). */
+  openStall = false;
+  /** Забавяне на отварянето — заявките остават в полет едновременно. */
+  openDelayMs = 0;
 
-  async open(params: MessageCreateParamsStreaming): Promise<AsyncIterable<RawMessageStreamEvent>> {
+  async open(
+    params: MessageCreateParamsStreaming,
+    signal?: AbortSignal,
+  ): Promise<AsyncIterable<RawMessageStreamEvent>> {
     this.calls.push(params);
+    if (this.openDelayMs) await new Promise((r) => setTimeout(r, this.openDelayMs));
+    if (this.openStall) {
+      await new Promise((_, reject) => {
+        if (signal?.aborted) reject(new Error('aborted'));
+        signal?.addEventListener('abort', () => reject(new Error('aborted')));
+      });
+    }
     if (this.openError) throw Object.assign(new Error('upstream'), this.openError);
     const events = this.events;
+    const stallAfter = this.stallAfter;
     return (async function* () {
-      for (const e of events) yield e;
+      for (const [i, e] of events.entries()) {
+        if (stallAfter !== null && i === stallAfter) {
+          await new Promise((_, reject) => {
+            if (signal?.aborted) reject(new Error('aborted'));
+            signal?.addEventListener('abort', () => reject(new Error('aborted')));
+          });
+        }
+        yield e;
+      }
     })();
   }
 }

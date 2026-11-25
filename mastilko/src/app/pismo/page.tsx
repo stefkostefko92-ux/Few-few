@@ -3,6 +3,7 @@ import Image from "next/image";
 import PismoStudio from "@/components/studios/PismoStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатно мотивационно писмо на български";
@@ -74,6 +75,7 @@ export default function PismoPage() {
         </p>
       </header>
       <PismoStudio />
+      <ToolGuide current="/pismo" howTo={HOWTO} />
       <ToolFaq items={FAQ} heading="Въпроси за мотивационното писмо" />
       <RelatedTools current="/pismo" />
       <script

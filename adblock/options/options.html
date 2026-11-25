@@ -18,6 +18,10 @@
   </header>
 
   <main>
+    <p class="managed-banner" id="managedBanner" role="note" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V5l8-3 8 3v16"/><path d="M9 21v-4h6v4M8 8h2M14 8h2M8 12h2M14 12h2"/></svg>
+      <span data-i18n="managedNote">Set by your organization</span>
+    </p>
     <section class="card stat-grid">
       <div class="stat">
         <div class="stat-num" id="blockedTotal">0</div>
@@ -31,6 +35,18 @@
         <div class="stat-num" id="savedTime">0</div>
         <div class="stat-lbl" data-i18n="timeSaved">Time saved</div>
       </div>
+    </section>
+    <section class="card" id="daysCard">
+      <h2 data-i18n="opt_last30">Last 30 days</h2>
+      <div id="daysChart" class="days" role="img" aria-labelledby="daysSum"></div>
+      <p class="row-sub days-sum" id="daysSum"></p>
+      <p class="row-sub" data-i18n="opt_last30_sub">Only daily totals, kept on this device for 30 days. No sites, no addresses.</p>
+    </section>
+    <section class="card" id="whoCard" hidden>
+      <h2 data-i18n="opt_who">Who we stopped</h2>
+      <p class="row-sub" data-i18n="opt_who_sub">The companies whose servers we kept your browser from contacting in the last 30 days. Counted on this device only, per company and day: no addresses, no sites.</p>
+      <ol id="whoList" class="who"></ol>
+      <p class="row-sub" id="whoEmpty" hidden data-i18n="opt_who_empty">Nothing counted yet. Browse for a while and look again.</p>
     </section>
     <button id="resetStats" class="btn ghost wide" data-i18n="opt_reset_statistics">Reset statistics</button>
 
@@ -52,6 +68,28 @@
           <div class="row-sub" data-i18n="opt_keep_settings_allowlist_and_filters_in_s">Keep settings, allowlist and filters in sync on every Chrome you're signed into</div>
         </div>
         <label class="switch"><input type="checkbox" id="syncToggle" /><span class="slider"></span></label>
+      </label>
+    </section>
+
+    <section class="card" id="keysCard">
+      <h2 data-i18n="opt_shortcuts">Keyboard shortcuts</h2>
+      <ul id="keysList" class="list keys"></ul>
+      <button id="keysChange" class="btn ghost" type="button" data-i18n="opt_shortcuts_change">Change shortcuts</button>
+      <p class="row-sub" id="keysHint" hidden data-i18n="opt_shortcuts_ff">In Firefox: Extensions and themes → ⚙ → Manage Extension Shortcuts.</p>
+    </section>
+
+    <section class="card" id="modeCard">
+      <h2 data-i18n="opt_mode">Protection level</h2>
+      <label class="row">
+        <div>
+          <div class="row-title" data-i18n="opt_mode_sub">For every site. To set one site apart, open the extension on that site.</div>
+          <div class="row-sub" id="modeDesc"></div>
+        </div>
+        <select id="modeSelect" class="select">
+          <option value="basic" data-i18n="modeBasic">Basic</option>
+          <option value="standard" data-i18n="modeStandard">Standard</option>
+          <option value="strict" data-i18n="modeStrict">Strict</option>
+        </select>
       </label>
     </section>
 
@@ -88,7 +126,7 @@
       <label class="row">
         <div>
           <div class="row-title" data-i18n="opt_meta_sponsored_posts">Meta sponsored posts</div>
-          <div class="row-sub" data-i18n="opt_hide_sponsored_posts_on_facebook_and_ins">Hide "Sponsored" posts on Facebook &amp; Instagram</div>
+          <div class="row-sub" data-i18n="opt_hide_sponsored_posts_on_facebook_and_ins">Hide "Sponsored" posts on Facebook, Instagram &amp; Threads</div>
         </div>
         <label class="switch"><input type="checkbox" id="featMeta" /><span class="slider"></span></label>
       </label>
@@ -102,7 +140,7 @@
       <label class="row">
         <div>
           <div class="row-title" data-i18n="opt_malware_protection">Malware protection</div>
-          <div class="row-sub" data-i18n="opt_block_known_malware_domains_urlhaus_list">Block known malware domains (URLhaus list by abuse.ch)</div>
+          <div class="row-sub" data-i18n="opt_block_known_malware_domains_urlhaus_list">Warn before a known malware site opens, and block what pages load from such sites (URLhaus list by abuse.ch).</div>
         </div>
         <label class="switch"><input type="checkbox" id="featMalware" /><span class="slider"></span></label>
       </label>
@@ -112,6 +150,13 @@
           <div class="row-sub" data-i18n="opt_disable_google_topics_floc_and_protected">Disable Google Topics, FLoC and Protected Audience ad APIs on every site</div>
         </div>
         <label class="switch"><input type="checkbox" id="featTopics" /><span class="slider"></span></label>
+      </label>
+      <label class="row">
+        <div>
+          <div class="row-title">Global Privacy Control</div>
+          <div class="row-sub" data-i18n="opt_gpc_sub">Asks every site you visit not to sell or share your data (the Sec-GPC signal, which some privacy laws make sites honour). Not sent on sites you allow.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featGpc" /><span class="slider"></span></label>
       </label>
       <label class="row">
         <div>
@@ -178,6 +223,12 @@
       <button id="subsRefresh" class="btn ghost" data-i18n="opt_refresh_subscriptions_now">Refresh subscriptions now</button>
     </section>
 
+    <section class="card" id="connCard">
+      <h2 data-i18n="opt_conn_title">Connections you blocked</h2>
+      <p class="row-sub" data-i18n="opt_conn_sub">Blocked from the popup's “Connections on this page”, each only on its own site.</p>
+      <ul id="connBlocks" class="list"></ul>
+    </section>
+
     <section class="card">
       <h2 data-i18n="opt_hidden_elements">Hidden elements</h2>
       <p class="row-sub" data-i18n="opt_elements_you_hid_manually_with_the_picke">Elements you hid manually with the picker, grouped by site.</p>
@@ -211,6 +262,12 @@
         <button id="importBtn" class="btn ghost" data-i18n="opt_import_settings">Import settings</button>
         <input type="file" id="importFile" accept="application/json" hidden />
       </div>
+      <p class="row-sub foreign-sub" data-i18n="opt_import_foreign_sub">Moving from uBlock Origin, AdGuard or Adblock Plus? Choose its backup file: the sites you allowed and your own filters are added here. Nothing is replaced.</p>
+      <div class="add-row">
+        <button id="foreignBtn" class="btn ghost" type="button" data-i18n="opt_import_foreign">Import from another ad blocker</button>
+        <input type="file" id="foreignFile" accept=".txt,.json,text/plain,application/json" hidden />
+      </div>
+      <p class="row-sub" id="foreignHint" role="status"></p>
     </section>
 
     <section class="card donate">
@@ -229,6 +286,9 @@
 
   <footer>Supreme AdBlock v<span id="extVersion"></span> · <span data-i18n="opt_made_by">made by Carbon Stealth</span></footer>
 
+  <script src="../lib/foreign.js"></script>
   <script src="options.js"></script>
+  <script src="managed.js"></script>
+  <script src="who.js"></script>
 </body>
 </html>

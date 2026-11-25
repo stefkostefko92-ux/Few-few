@@ -270,7 +270,7 @@ ${sezioni}
 export function renderDove({ righe }) {
   const rows = righe
     .map(
-      (r) => `<tr data-t="${esc(`${r.comune} ${r.provincia} ${r.nome}`.toLowerCase())}">
+      (r) => `<tr data-t="${esc(`${r.comune} ${r.provincia} ${r.nome} ${r.ente || ''}`.toLowerCase())}">
       <td>${esc(r.comune)} <span class="small muted">(${esc(r.provincia)})</span></td>
       <td>${esc(r.nome)}<div class="small muted">${esc(r.tipo)}</div></td>
       <td>${r.href ? `<a href="${r.href}">${esc(r.ente)}</a>` : esc(r.ente)}</td>
@@ -282,7 +282,7 @@ export function renderDove({ righe }) {
 <p class="lead">Cerca il tuo comune per trovare gli ospedali e le strutture di ricovero pubbliche del territorio,
 e l’azienda sanitaria che ne gestisce i conti — con il link diretto alla scheda finanziaria.</p>
 <div class="controls"><input type="search" id="q" placeholder="Comune, provincia o nome della struttura…" aria-label="Cerca comune o struttura" style="flex:1"></div>
-<p class="small muted" id="stato"></p>
+<p class="small muted" id="stato" aria-live="polite"></p>
 <div class="tablewrap"><table>
   <thead><tr><th scope="col">Comune</th><th scope="col">Struttura</th><th scope="col">Azienda (conti)</th><th class="num" scope="col">Posti letto</th></tr></thead>
   <tbody id="rows">${rows}</tbody>
@@ -295,7 +295,8 @@ sono nel bilancio della loro ASL. Mostra i primi 400 risultati della ricerca.</p
   var all=[].slice.call(tb.querySelectorAll('tr')),MAX=400;
   function a(){var t=q.value.trim().toLowerCase(),n=0;
     all.forEach(function(r){var ok=(!t||r.getAttribute('data-t').indexOf(t)>=0)&&n<MAX;if(!t)ok=n<MAX;r.style.display=ok?'':'none';if(ok)n++;});
-    st.textContent=n+' strutture mostrate';}
+    st.textContent=n?n+' strutture mostrate':'Nessuna struttura trovata: prova con il nome del comune o la sigla della provincia.';}
+  try{var p=new URLSearchParams(location.search).get('q');if(p)q.value=p.slice(0,80);}catch(e){}
   q.addEventListener('input',function(){clearTimeout(tmr);tmr=setTimeout(a,150);});a();
 })();
 </script>

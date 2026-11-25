@@ -1,16 +1,22 @@
 // Model: normalized spec → parts, hardware, movable groups and symbols, then the checks that need the whole model
 // (shelf sag, sheet fit, small parts, holes against each other, grooves and edge bores, confirmat caps, horizontal holes).
 import { createCtx, cutSize } from './panel.js';
-import { TYPES, BUILDERS, normalizeParams } from './types.js';
+import { TYPES, BUILDERS, normalizeParams, typeText } from './types.js';
+import { normalizeLayout } from './layout.js';
 import { STOCK, hasDecor, hasRal, decorName } from './materials.js';
+import { translator } from './i18n.js';
 import { hingeList, handleList, slideList, bedFittingList } from './hardware.js';
-import { clamp, plural, dimTxt } from './util.js';
+import { clamp, r1 } from './util.js';
 import { purposeOf, edgePurposeOf } from './drill.js';
 import { MIN_WEB, toSegment, edgeBores, boreWeb } from './joinery.js';
+import { POSTS, STEP_DOWN_RANGE, MAX_FEED_RANGE, SPOIL, CUT_LENGTH } from './cam.js';
+import { normalizeItems, partName, roomItemOf } from './room.js';
 
 const SPEC_VERSION = 2;
 export const SHEET_TRIM = 10; // sheet edge trim for nesting, mm
 const SMALL_PART = { w: 50, area: 0.02 }; // narrower or smaller parts are hard to hold on a vacuum table
+const ONION_MIN_T = 6; // the contour leaves an onion skin only on boards thicker than this, mm (gcode.js)
+const SINK_TYPES = new Set(['base', 'kitchen']); // furniture with a base cabinet that may stand under a sink
 const CAP_ROLES = new Set(['side', 'top', 'bed-head', 'bed-foot']);
 const CAP_KEYS = new Set(['footRail']); // a bed without a footboard: the foot rail's outer face shows the confirmat heads
 
@@ -34,6 +40,7 @@ const SPEC_DEFAULTS = {
 // is EN 16121:2013 level 2, which the 2023 edition lowered to 1.5 (CATAS, "Non-domestic furniture", January 2024) —
 // kept as the heavier option.
 const KITCHEN_TYPES = new Set(['base', 'wall', 'tall', 'kitchen']);
+const KITCHEN_LOAD = 1.5;
 export const SHELF_LOADS = [1, 1.5, 2];
 const SHELF_SAG_LIMIT = 0.005;
 // Edge bands, front gap and router diameters that normalizeSpec accepts; the editor builds its controls from these.
@@ -55,6 +62,10 @@ export function normalizeSpec(raw = {}) {
   const type = Object.hasOwn(TYPES, input.type) ? input.type : SPEC_DEFAULTS.type;
   const d = SPEC_DEFAULTS;
   const s = { v: SPEC_VERSION, type, ...normalizeParams(type, input) };
+  // the columns, cells and fronts of a free carcass (layout.js); no other type has one
+  if (type === 'custom') s.grid = normalizeLayout(input.grid);
+  // the pieces of furniture of a room (room.js)
+  if (type === 'room') s.items = normalizeItems(input.items, s.shape);
   s.carcassDecor = hasDecor(input.carcassDecor) ? input.carcassDecor : d.carcassDecor;
   s.frontDecor = hasDecor(input.frontDecor) ? input.frontDecor : d.frontDecor;
   s.frontRal = hasRal(input.frontRal) ? input.frontRal : hasRal(d.frontRal) ? d.frontRal : null;
@@ -70,7 +81,10 @@ export function normalizeSpec(raw = {}) {
   s.tool = pick(Number(input.tool ?? d.tool), TOOL_DIAMETERS, d.tool);
   s.post = input.post === 'grbl' ? 'grbl' : 'iso';
   s.onion = input.onion !== false;
-  s.shelfLoad = SHELF_LOADS.includes(Number(input.shelfLoad)) ? Number(input.shelfLoad) : KITCHEN_TYPES.has(type) ? 1.5 : 1;
+  // GRBL limits of the machine (POSTS.grbl has the defaults); kept with ISO too, so a switch back finds them
+  s.grblStepDown = r1(clamp(Number(input.grblStepDown) || POSTS.grbl.stepDown, ...STEP_DOWN_RANGE));
+  s.grblMaxFeed = Math.round(clamp(Number(input.grblMaxFeed) || POSTS.grbl.maxFeed, ...MAX_FEED_RANGE) / 10) * 10;
+  s.shelfLoad = SHELF_LOADS.includes(Number(input.shelfLoad)) ? Number(input.shelfLoad) : KITCHEN_TYPES.has(type) ? KITCHEN_LOAD : 1;
   return s;
 }
 
@@ -89,50 +103,54 @@ export function withType(spec, type) {
 // those the model really uses. An export built from them would drill and cut for something the customer never chose.
 const usesHw = (model, hw) => model.parts.some((p) => p.features.some((f) => f.hw === hw));
 const usesDecor = (model, id) => model.parts.some((p) => p.decor === id);
-// Parts cut from the front material (frontStock): doors, drawer fronts, the plinth board, the bed's head and foot
-// boards. The desk top takes the front decor too (boardTopDecor) — but not a RAL colour.
-const FRONT_ROLES = new Set(['door', 'drawer-front', 'plinth', 'bed-head', 'bed-foot']);
+// Parts cut from the front material (frontStock): doors, drawer fronts, the blind fronts of corner cabinets, the plinth
+// board, the bed's head and foot boards. The desk top takes the front decor too (boardTopDecor) — but not a RAL colour.
+const FRONT_ROLES = new Set(['door', 'drawer-front', 'blind', 'sliding-door', 'plinth', 'bed-head', 'bed-foot']);
 const usesFronts = (model) => model.parts.some((p) => FRONT_ROLES.has(p.role));
 const usesFrontDecor = (model) => usesFronts(model) || model.parts.some((p) => p.key === 'deskTop');
 const CATALOG_FIELDS = [
-  ['hinge', 'панта', (m) => usesHw(m, 'hinge')],
-  ['handle', 'дръжка', (m) => usesHw(m, 'handle')],
-  ['slide', 'водач', (m) => usesHw(m, 'slide')],
-  ['bedFitting', 'връзка за легло', (m) => m.spec.type === 'bed'],
-  ['carcassDecor', 'декор на корпуса', (m) => usesDecor(m, m.spec.carcassDecor)],
-  ['frontDecor', 'декор на фронтовете', (m) => m.spec.frontMaterial === 'decor' && usesFrontDecor(m)],
-  ['frontRal', 'цвят RAL на фронтовете', (m, input) => input.frontMaterial === 'ral' && usesFronts(m)],
+  ['hinge', (m) => usesHw(m, 'hinge')],
+  ['handle', (m) => usesHw(m, 'handle')],
+  ['slide', (m) => usesHw(m, 'slide')],
+  ['bedFitting', (m) => m.spec.type === 'bed'],
+  ['carcassDecor', (m) => usesDecor(m, m.spec.carcassDecor)],
+  ['frontDecor', (m) => m.spec.frontMaterial === 'decor' && usesFrontDecor(m)],
+  ['frontRal', (m, input) => input.frontMaterial === 'ral' && usesFronts(m)],
 ];
 
 export function catalogDrift(input, model) {
+  const t = translator(model.lang);
   const out = [];
-  for (const [key, label, used] of CATALOG_FIELDS) {
+  for (const [key, used] of CATALOG_FIELDS) {
     const saved = input?.[key];
     if (typeof saved !== 'string' || saved === model.spec[key] || !used(model, input)) continue;
-    out.push(`Вече не е в каталога: ${label} „${saved}“ (заместител: „${model.spec[key] || '—'}“). Изберете наново в редактора и запазете проекта.`);
+    out.push(t('w.drift', { what: t(`drift.${key}`), saved, now: model.spec[key] || '—' }));
   }
   return out;
 }
 
-export function buildModel(input) {
+// opts.lang: the language of the texts of the model and of everything made from it (i18n.js); Bulgarian when unknown
+export function buildModel(input, opts = {}) {
   const spec = normalizeSpec(input);
-  const ctx = createCtx();
+  const ctx = createCtx(opts.lang);
   BUILDERS[spec.type](ctx, spec);
   checkModel(ctx, spec);
   return {
+    lang: ctx.lang,
     spec,
     parts: ctx.parts,
     warnings: ctx.warnings,
     groups: ctx.groups,
     symbols: ctx.symbols,
     hardware: ctx.hardwareLines(),
+    ...(ctx.cells.length ? { cells: ctx.cells } : {}),
+    ...(ctx.runs.length ? { runs: ctx.runs } : {}),
   };
 }
 
 // Short-term deflection of a simply supported shelf under a uniform load (no creep), against 0.5 % of the span.
-// E = 1600 N/mm² is the EN 312 P2 minimum for 13–20 mm particleboard (manufacturer data sheet, report source [43]).
-function shelfSag(spanMm, depthMm, tMm, loadKg) {
-  const E = 1600;
+// E (N/mm²) is the board's own (materials.js: the EN 312 P2 minimum by thickness, 1600 for >13–20 mm, 1500 for >20–25).
+function shelfSag(spanMm, depthMm, tMm, loadKg, E) {
   const I = (depthMm * tMm ** 3) / 12;
   const w = (loadKg * 9.81) / spanMm;
   const mm = (5 * w * spanMm ** 4) / (384 * E * I);
@@ -140,69 +158,98 @@ function shelfSag(spanMm, depthMm, tMm, loadKg) {
   return { mm, limit, ratio: limit > 0 ? mm / limit : 0 };
 }
 
+// The test load of a shelf: the spec's; a kitchen cabinet in a room takes at least a kitchen's, as it would alone.
+function shelfLoadOf(spec, p) {
+  const it = roomItemOf(spec, p);
+  return it && KITCHEN_TYPES.has(it.type) ? Math.max(spec.shelfLoad, KITCHEN_LOAD) : spec.shelfLoad;
+}
+
 function checkModel(ctx, spec) {
+  const { t } = ctx;
   const { parts } = ctx;
-  // shelves
-  for (const p of parts.filter((x) => x.role === 'shelf')) {
-    const loadKg = ((p.L / 100) * (p.W / 100)) * spec.shelfLoad;
-    const sag = shelfSag(p.L, p.W, p.T, loadKg);
-    if (sag.ratio > 1) ctx.warn('warn', `${p.name}: провисване ≈ ${dimTxt(sag.mm)} mm при ${Math.round(loadKg)} kg (${dimTxt(spec.shelfLoad)} kg/dm²) — над 0,5 % от разстоянието между опорите (${dimTxt(sag.limit)} mm). Добавете делител или стеснете колоната.`);
+  // shelves, the fixed ones of a free carcass too (simply supported, as the adjustable ones: on the safe side)
+  for (const p of parts.filter((x) => x.role === 'shelf' || x.role === 'divider')) {
+    const load = shelfLoadOf(spec, p);
+    const loadKg = ((p.L / 100) * (p.W / 100)) * load;
+    const sag = shelfSag(p.L, p.W, p.T, loadKg, STOCK[p.stock].E ?? 1500);
+    if (sag.ratio > 1) ctx.warn('warn', t('w.sag', { part: partName(spec, p, t), mm: t.num(sag.mm), kg: Math.round(loadKg), load: t.num(load), limit: t.num(sag.limit) }));
   }
-  // sheet fit and small parts
-  let small = 0;
+  // sheet fit and small parts: with the onion skin the vacuum holds them until the last pass; without it (switched off,
+  // or a board of ONION_MIN_T mm or less) the cutter can throw them — the engine makes no tabs
+  const small = [];
+  const loose = [];
   for (const p of parts) {
     const cut = cutSize(p, spec.bandCompensation);
     const [SW, SH] = STOCK[p.stock].sheet;
     const fw = SW - 2 * SHEET_TRIM;
     const fh = SH - 2 * SHEET_TRIM;
     const fits = (cut.L <= fw && cut.W <= fh) || (!p.grain && cut.L <= fh && cut.W <= fw);
-    if (!fits) ctx.warn('error', `${p.name}: ${cut.L} × ${cut.W} mm не се побира в лист ${SW} × ${SH} mm${p.grain ? ' по посоката на шарката' : ''}${p.fitHint ? ` — ${p.fitHint}` : ''}.`);
-    if (cut.W < SMALL_PART.w || (cut.L * cut.W) / 1e6 < SMALL_PART.area) small += 1;
+    if (!fits) ctx.warn('error', t(p.grain ? 'w.sheetFitGrain' : 'w.sheetFit', { part: partName(spec, p, t), L: cut.L, W: cut.W, SW, SH, hint: p.fitHint ? ` — ${p.fitHint}` : '' }));
+    if (cut.W < SMALL_PART.w || (cut.L * cut.W) / 1e6 < SMALL_PART.area) (spec.onion && p.T > ONION_MIN_T ? small : loose).push(partName(spec, p, t));
   }
-  if (small) ctx.warn('info', `${plural(small, 'малък детайл', 'малки детайла')} — режат се с тънка кора (onion skin) или табове; проверете вакуума.`);
+  if (small.length) ctx.warn('warn', t.count(small.length, 'w.small'));
+  if (loose.length) ctx.warn('error', t.count(loose.length, 'w.loose', { list: `${loose.slice(0, 3).join(', ')}${loose.length > 3 ? '…' : ''}`, min: ONION_MIN_T }));
+  // the contour goes T + SPOIL deep: no deeper than the cutting length of the cutter (tooling.js)
+  const cel = CUT_LENGTH[spec.tool];
+  for (const stock of new Set(parts.map((p) => p.stock))) {
+    const { thickness } = STOCK[stock];
+    const depth = thickness + SPOIL;
+    if (depth <= cel) continue;
+    const ok = TOOL_DIAMETERS.find((d) => CUT_LENGTH[d] >= depth);
+    ctx.warn('error', t('w.cutLength', { tool: spec.tool, cel, stock: t(`stock.${stock}`), T: thickness, depth: t.num(depth), hint: ok ? t('w.cutLengthHint', { d: ok }) : '' }));
+  }
+  // the model does not know which base cabinet stands under the sink: a note (the defaults carry no warning)
+  const sink = SINK_TYPES.has(spec.type) || (spec.type === 'room' && spec.items.some((it) => SINK_TYPES.has(it.type)));
+  if (sink) ctx.warn('info', t('w.sinkBoard', { stock: t('stock.pb18'), grade: STOCK.pb18.grade }));
   // holes inside the board (the cut part, without its edge band), apart from each other and from the grooves
   for (const p of parts) checkHoles(ctx, p, spec);
   // hinge spread (Blum Inc. note) — reported for fronts wider than they are tall, where it matters
   const short = parts.filter((p) => p.hingeSpreadShort && p.box.max[0] - p.box.min[0] > p.box.max[1] - p.box.min[1]);
-  if (short.length) ctx.warn('info', `${plural(short.length, 'широка ниска врата', 'широки ниски врати')}: разстоянието между крайните панти е по-малко от ширината (бележка в каталога на Blum Inc.) — помислете за 2 врати или подемен механизъм.`);
+  if (short.length) ctx.warn('info', t.count(short.length, 'w.spread'));
   // doors too narrow for their own hinge cup (fronts.js)
   const narrow = parts.filter((p) => p.narrowForCup);
   if (narrow.length) {
     const minW = Math.min(...narrow.map((p) => p.box.max[0] - p.box.min[0]));
-    ctx.warn('warn', `${plural(narrow.length, 'тясна врата', 'тесни врати')} (най-тясната ${dimTxt(minW)} mm): чашката на пантата заема повече от половината от ширината — намалете броя на колоните или на вратите.`);
+    ctx.warn('warn', t.count(narrow.length, 'w.narrowDoors', { min: t.num(minW) }));
   }
   // horizontal holes are not cut by the 3-axis router
   const edge = parts.reduce((a, p) => a + p.edgeOps.reduce((b, e) => b + e.count, 0), 0);
-  if (edge) ctx.warn('info', `${plural(edge, 'хоризонтален отвор', 'хоризонтални отвора')} в челата — пробиват се на хоризонтална машина или с шаблон, не са в G-кода.`);
-  // confirmat heads on visible faces get caps in the colour of the panel
+  if (edge) ctx.warn('info', t.count(edge, 'w.edgeHoles'));
+  // confirmat heads on visible faces get caps in the colour of the panel: by the role of the panel, or marked where
+  // they are made (the heads of a fixed shelf's confirmats in the next column, cells.js)
   const caps = new Map();
   for (const p of parts) {
-    if (!CAP_ROLES.has(p.role) && !CAP_KEYS.has(p.key)) continue;
-    const n = p.features.filter((f) => f.type === 'hole' && f.kind === 'confirmat').length;
+    const byRole = CAP_ROLES.has(p.role) || CAP_KEYS.has(p.key);
+    const n = p.features.filter((f) => f.type === 'hole' && f.kind === 'confirmat' && (byRole || f.cap)).length;
     if (n) caps.set(p.decor, (caps.get(p.decor) ?? 0) + n);
   }
-  for (const [decor, qty] of caps) ctx.hw(`caps:${decor}`, { name: `Капачка за конфирмат, ${decorName(decor)}`, qty, unit: 'бр.', group: 'Крепежи' });
+  for (const [decor, qty] of caps) ctx.hw(`caps:${decor}`, { name: t('hw.caps', { decor: decorName(decor, t) }), qty, unit: t('u.pcs'), group: t('g.fasteners') });
 }
 
-function checkHoles(ctx, p, spec) {
+export function checkHoles(ctx, p, spec) {
+  const { t } = ctx;
   const holes = p.features.filter((f) => f.type === 'hole');
   const grooves = p.features.filter((f) => f.type === 'groove');
   const bores = edgeBores(p);
   const cut = cutSize(p, spec.bandCompensation);
+  const name = partName(spec, p, t);
   for (const h of holes) {
     // the board itself: the edge band adds no material to drill into
     const rim = Math.min(h.u - cut.du0, cut.du0 + cut.L - h.u, h.v - cut.dv0, cut.dv0 + cut.W - h.v) - h.d / 2;
-    if (rim < 0) ctx.warn('error', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ излиза извън детайла — u ${dimTxt(h.u)}, v ${dimTxt(h.v)}.`);
-    else if (rim < MIN_WEB && h.kind !== 'cup') ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(rim)} mm от ръба.`);
+    if (rim < 0) ctx.warn('error', t('w.holeOut', { part: name, d: t.num(h.d), purpose: purposeOf(h.kind, t), u: t.num(h.u), v: t.num(h.v) }));
+    else if (rim < MIN_WEB - 1e-6) ctx.warn('error', t('w.holeEdge', { part: name, d: t.num(h.d), purpose: purposeOf(h.kind, t), rim: t.num(rim), min: MIN_WEB }));
+    // a blind hole keeps MIN_WEB of board under it; a deeper one would break out of the other face
+    if (!h.through && h.depth > p.T - MIN_WEB + 1e-6) ctx.warn('error', t('w.holeBlind', { part: name, d: t.num(h.d), purpose: purposeOf(h.kind, t), depth: t.num(h.depth), T: t.num(p.T), min: MIN_WEB }));
     for (const g of grooves) {
+      if (h.fitting && h.fitting === g.fitting) continue; // one fitting: a Planofit groove ends in its own bosses
       const web = toSegment(h.u, h.v, g) - (g.w + h.d) / 2;
-      if (web < MIN_WEB) ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(Math.max(0, web))} mm от канала — преместете отвора.`);
+      if (web < MIN_WEB - 1e-6) ctx.warn('error', t('w.holeGroove', { part: name, d: t.num(h.d), purpose: purposeOf(h.kind, t), web: t.num(Math.max(0, web)) }));
     }
     // a bore from the edge (the thread of a confirmat from the joining panel, a slide hook): the drill or the screw
     // would break into it, so the part is not cut (fail closed)
     for (const b of bores) {
       const web = boreWeb(h, b);
-      if (web < MIN_WEB) ctx.warn('error', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ при u ${dimTxt(h.u)}, v ${dimTxt(h.v)} е на ${dimTxt(Math.max(0, web))} mm от хоризонталния отвор Ø${dimTxt(b.d)} „${edgePurposeOf(b.kind)}“ в челото — преместете единия.`);
+      if (web < MIN_WEB) ctx.warn('error', t('w.holeBore', { part: name, d: t.num(h.d), purpose: purposeOf(h.kind, t), u: t.num(h.u), v: t.num(h.v), web: t.num(Math.max(0, web)), bd: t.num(b.d), bore: edgePurposeOf(b.kind, t) }));
     }
   }
   for (let i = 0; i < holes.length; i++) {
@@ -211,11 +258,13 @@ function checkHoles(ctx, p, spec) {
       const b = holes[j];
       if (a.hw === 'hinge' && b.hw === 'hinge' && a.ref === b.ref && a.hingeY === b.hingeY) continue; // one hinge: its cup and its own dowels
       const dist = Math.hypot(a.u - b.u, a.v - b.v);
-      if (dist - (a.d + b.d) / 2 < MIN_WEB) {
-        ctx.warn(a.kind === 'cup' && b.kind === 'cup' ? 'error' : 'warn', `${p.name}: отворите Ø${dimTxt(a.d)} „${purposeOf(a.kind)}“ и Ø${dimTxt(b.d)} „${purposeOf(b.kind)}“ при u ${dimTxt(a.u)}, v ${dimTxt(a.v)} се застъпват — преместете единия.`);
+      // holes exactly MIN_WEB apart are fine: 1e-6 absorbs the floating-point error of positions on the 0,1 mm grid
+      if (dist - (a.d + b.d) / 2 < MIN_WEB - 1e-6) {
+        // the drill would break into the other hole, or two screws meet in it: the CNC files are withheld (fail closed)
+        ctx.warn('error', t('w.holesMeet', { part: name, ad: t.num(a.d), a: purposeOf(a.kind, t), bd: t.num(b.d), b: purposeOf(b.kind, t), u: t.num(a.u), v: t.num(a.v) }));
       }
     }
   }
 }
 
-export const typeLabel = (type) => TYPES[type]?.label ?? type;
+export const typeLabel = (type, t) => (TYPES[type] ? typeText(type, t).label : type);

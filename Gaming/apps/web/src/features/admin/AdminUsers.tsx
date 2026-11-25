@@ -4,7 +4,6 @@ import { ROLES, VIP_TIERS } from "@aso/shared";
 import { Badge, Button, Field, Modal, Panel } from "../../ui";
 import { useAuthStore } from "../../lib/store";
 import { isAdmin } from "../../app/RequireRole";
-import { GAME_CATALOG } from "../lobby/games";
 import {
   adminApi,
   type AdminMatchItem,
@@ -12,12 +11,16 @@ import {
   type AdminUserRow,
 } from "./adminApi";
 import { ErrorPanel, errorMessage, useLoad } from "./load";
+import { UserDataSections } from "./AdminUserSections";
+import i18next from "i18next";
+import type { GameKey } from "@aso/shared";
+import { gameTitle as sharedGameTitle } from "../lobby/games";
 
 const selectCls =
   "rounded-card border border-brass-400/20 bg-felt-900/60 px-2 py-2 text-sm text-ink-100";
 
-const gameTitle = (key: string): string =>
-  GAME_CATALOG.find((g) => g.key === key)?.title ?? key;
+// Преводимото име на играта (EN/IT интерфейсът не показва българските заглавия).
+const gameTitle = (key: string): string => sharedGameTitle(i18next.t, key as GameKey);
 
 /** Player search + filters + paginated table; row opens a detail modal. */
 export function AdminUsers() {
@@ -140,6 +143,11 @@ export function AdminUsers() {
                             BAN
                           </Badge>
                         ) : null}
+                        {u.selfExcluded ? (
+                          <Badge tone="felt" title={u.selfExcludedUntil ?? undefined}>
+                            {t("admin.selfExcludedShort", "САМОИЗКЛ.")}
+                          </Badge>
+                        ) : null}
                       </div>
                       <div className="text-xs text-ink-muted">{u.email}</div>
                     </td>
@@ -204,6 +212,7 @@ export function UserDetailModal({
 }) {
   const { t, i18n } = useTranslation();
   const meRole = useAuthStore((s) => s.user?.role);
+  const meId = useAuthStore((s) => s.user?.id);
   const canWrite = isAdmin(meRole);
 
   const { data: detail, error, loading, reload } = useLoad(() => adminApi.user(id), [id]);
@@ -311,6 +320,16 @@ export function UserDetailModal({
                   : t("admin.banPermanent", "Постоянен")}
               </div>
               {u.banReason ? <div className="text-xs">{u.banReason}</div> : null}
+            </div>
+          ) : null}
+
+          {u.selfExcluded && u.selfExcludedUntil ? (
+            <div className="rounded-card border border-brass-400/30 bg-felt-800/60 px-3 py-2 text-sm text-ink-100">
+              {t("admin.selfExcludedUntil", "Самоизключен до")}:{" "}
+              {new Date(u.selfExcludedUntil).toLocaleString(i18n.language)}
+              <div className="text-xs text-ink-muted">
+                {t("admin.selfExcludedNote", "Избор на играча — не може да се отмени преди изтичане.")}
+              </div>
             </div>
           ) : null}
 
@@ -433,20 +452,17 @@ export function UserDetailModal({
             <p className={`text-center text-sm ${msgTone === "ok" ? "text-win" : "text-loss"}`}>{msg}</p>
           ) : null}
 
-          {u.ratings.length ? (
-            <Section title={t("admin.ratings", "Рейтинги")}>
-              <ul className="space-y-1 text-xs text-ink-300">
-                {u.ratings.map((r) => (
-                  <li key={r.game} className="flex justify-between">
-                    <span>{gameTitle(r.game)}</span>
-                    <span className="tnum">
-                      MMR {r.mmr} · {r.wins}/{r.games}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </Section>
-          ) : null}
+          <UserDataSections
+            user={u}
+            meRole={meRole}
+            meId={meId}
+            onErased={() => {
+              setMsgTone("ok");
+              setMsg(t("admin.eraseDone", "Акаунтът е изтрит (анонимизиран)."));
+              reload();
+              onChanged();
+            }}
+          />
 
           <Section title={t("admin.purchases")}>
             {u.purchases.length === 0 ? (
