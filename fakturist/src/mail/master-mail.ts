@@ -5,6 +5,7 @@ import { money } from '../http/view.js';
 import { wrap } from './document-mail.js';
 import type { MailMessage } from './mailer.js';
 import { mailSignature, recipientLocale } from './locale.js';
+import { refundMail } from './refund-mail.js';
 
 /**
  * Писмата за мастър ролята (src/accounts/masters.ts): на засегнатия — дадена/отнета; на останалите
@@ -201,6 +202,8 @@ export async function composeMasterMail(
         ];
   } else if (kind === 'master.dispute') {
     ({ subject, paragraphs } = await disputeMail(payload, bg, base));
+  } else if (kind === 'master.refund') {
+    ({ subject, paragraphs } = refundMail(payload, bg, base));
   } else {
     throw new Error(`Непознат вид писмо: ${kind}`);
   }
@@ -217,4 +220,5 @@ export const MASTER_MAIL_KINDS = [
   'master.revoked',
   'master.notice',
   'master.dispute',
+  'master.refund',
 ] as const;

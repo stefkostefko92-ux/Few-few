@@ -17,12 +17,16 @@ const NOTHING: PendingLegal = { terms: false, companies: [] };
  * следващия вход. Така приема и собственик, създаден от мастъра (нов профил без регистрация). Мастърът е
  * екипът на услугата — не се спира. Прекратена или изтрита фирма не иска договор.
  */
-export async function pendingLegal(userId: string): Promise<PendingLegal> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { platformRole: true },
-  });
-  if (!user || user.platformRole !== 'NONE') return NOTHING;
+export async function pendingLegal(
+  userId: string,
+  /** Ролята от сесията — спестява заявката на всяка страница в приложението (Кодаджията, 25.11.2026). */
+  knownRole?: string,
+): Promise<PendingLegal> {
+  const role =
+    knownRole ??
+    (await prisma.user.findUnique({ where: { id: userId }, select: { platformRole: true } }))
+      ?.platformRole;
+  if (role !== 'NONE') return NOTHING;
   const [terms, owned] = await Promise.all([
     prisma.legalAcceptance.count({
       where: { userId, document: 'terms', version: LEGAL_DOCUMENTS.terms.version },

@@ -115,12 +115,19 @@ export function createServer(): Express {
       autoLogging: { ignore: (req) => req.url === '/health' },
     }),
   );
-  app.use(
-    express.static(join(ROOT, 'public'), {
-      index: false,
-      maxAge: isProduction() ? '365d' : 0,
-      immutable: isProduction(),
-    }),
+  // Версионираните файлове (`?v=`) — година и immutable; без версия (favicon, OG картинките, иконите в
+  // манифеста) — ден: иначе смяната им не стига до хората цяла година (Скоростника, 25.11.2026).
+  const versioned = express.static(join(ROOT, 'public'), {
+    index: false,
+    maxAge: isProduction() ? '365d' : 0,
+    immutable: isProduction(),
+  });
+  const plain = express.static(join(ROOT, 'public'), {
+    index: false,
+    maxAge: isProduction() ? '1d' : 0,
+  });
+  app.use((req, res, next) =>
+    (typeof req.query['v'] === 'string' ? versioned : plain)(req, res, next),
   );
   app.use(cookieParser());
 

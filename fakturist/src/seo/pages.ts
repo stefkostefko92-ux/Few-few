@@ -3,6 +3,7 @@ import type { Locale } from '../i18n.js';
 /**
  * Страниците на витрината — ЕДИНСТВЕНИЯТ списък: рутерът, sitemap, hreflang, breadcrumbs и llms.txt
  * четат оттук. Нова страница = нов ред + изглед `views/site/<id>.ejs` + ключовете `site.<id>.meta.*`.
+ * Страница за рекламите — ред тук + `LANDING_IDS` в landing.ts + съдържанието в речника (общ изглед landing.ejs).
  */
 export const SITE_PAGES = [
   { id: 'home', paths: { bg: '/', en: '/en/' }, priority: 1.0, changefreq: 'weekly' },
@@ -23,6 +24,30 @@ export const SITE_PAGES = [
     paths: { bg: '/e-fakturi-2028', en: '/en/e-invoicing-2028' },
     priority: 0.8,
     changefreq: 'weekly',
+  },
+  {
+    id: 'freeInvoicing',
+    paths: { bg: '/bezplatna-programa-za-fakturi', en: '/en/free-invoicing-software' },
+    priority: 0.8,
+    changefreq: 'monthly',
+  },
+  {
+    id: 'proforma',
+    paths: { bg: '/proforma-faktura', en: '/en/pro-forma-invoice' },
+    priority: 0.7,
+    changefreq: 'monthly',
+  },
+  {
+    id: 'vatLedgers',
+    paths: { bg: '/dnevnitsi-po-dds', en: '/en/vat-ledgers' },
+    priority: 0.7,
+    changefreq: 'monthly',
+  },
+  {
+    id: 'saft',
+    paths: { bg: '/saf-t', en: '/en/saf-t' },
+    priority: 0.7,
+    changefreq: 'monthly',
   },
   {
     id: 'help',

@@ -10,6 +10,7 @@ const { inviteOwnerByFirm } = await import('../../src/accounts/transfer.js');
 const { startFirmHandover, decideFirmHandover, handoverStatus, HandoverError } =
   await import('../../src/accounts/handover.js');
 const { requestTermination } = await import('../../src/accounts/termination.js');
+const { decideMandate } = await import('../../src/accounts/mandates.js');
 const { DAY } = await import('../../src/time.js');
 
 /**
@@ -18,7 +19,16 @@ const { DAY } = await import('../../src/time.js');
  * нов собственик.
  */
 const PASSWORD = 'дълга-и-трудна-парола-2026';
-const EIKS = ['131063188', '123456786', '987654322', '112233440', '556677881', '998877668'];
+const EIKS = [
+  '131063188',
+  '123456786',
+  '987654322',
+  '112233440',
+  '556677881',
+  '998877668',
+  '202000015',
+  '202000022',
+];
 let n = 0;
 let firm = { userId: '', organizationId: '' };
 let otherFirm = { userId: '', organizationId: '' };
@@ -287,4 +297,63 @@ test('прекратяване на фирмата отменя чакащото
     (await prisma.firmHandover.findUniqueOrThrow({ where: { id: proposal.id } })).status,
     'REVOKED',
   );
+});
+
+test('пълномощно извън срока — кантората не се предлага и не поема; оттеглянето отменя чакащото', async () => {
+  // Разбивача, 25.11.2026: предаване по пълномощно, което още не е (или вече не е) в сила, оставяше фирмата
+  // без никого с достъп; оттегляне, докато кантората приема, — същото.
+  const future = await company('ACTIVE');
+  await prisma.clientMandate.updateMany({
+    where: { clientId: future.orgId },
+    data: { validFrom: new Date(Date.now() + 200 * DAY) },
+  });
+  assert.deepEqual((await handoverStatus(future.orgId)).firms, [], 'не се предлага');
+  const start = (c: typeof future) =>
+    startFirmHandover({
+      organizationId: c.orgId,
+      actorId: c.ownerId,
+      password: PASSWORD,
+      firmId: firm.organizationId,
+    });
+  await assert.rejects(start(future), isCode('noMandate'));
+
+  // В сила при предложението, изтекло при приемането.
+  const lapsed = await company('ACTIVE');
+  const proposal = await start(lapsed);
+  await prisma.clientMandate.updateMany({
+    where: { clientId: lapsed.orgId },
+    data: { validTo: new Date(Date.now() - DAY) },
+  });
+  await assert.rejects(
+    decideFirmHandover({
+      handoverId: proposal.id,
+      firmId: firm.organizationId,
+      actorId: firm.userId,
+      accept: true,
+      declaration: true,
+    }),
+    isCode('noMandate'),
+  );
+  assert.equal(
+    await prisma.membership.count({ where: { organizationId: lapsed.orgId, role: 'OWNER' } }),
+    1,
+    'собственикът остава',
+  );
+
+  // Оттеглено пълномощно → чакащото предложение към тази кантора пада.
+  await prisma.clientMandate.updateMany({
+    where: { clientId: lapsed.orgId },
+    data: { validTo: null },
+  });
+  const mandate = await prisma.clientMandate.findFirstOrThrow({
+    where: { clientId: lapsed.orgId },
+  });
+  await decideMandate({
+    mandateId: mandate.id,
+    actorId: lapsed.ownerId,
+    decision: 'revoke',
+    clientOrgId: lapsed.orgId,
+  });
+  const after = await prisma.firmHandover.findUniqueOrThrow({ where: { id: proposal.id } });
+  assert.equal(after.status, 'REVOKED');
 });

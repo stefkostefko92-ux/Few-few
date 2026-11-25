@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { GRAPH_HOST, instagramRequest } from './client.js';
 import type { PublishDeps } from './publish.js';
 

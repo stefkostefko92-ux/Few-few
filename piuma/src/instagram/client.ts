@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 export const GRAPH_HOST = 'https://graph.instagram.com';
 export const OAUTH_HOST = 'https://api.instagram.com';

@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 756
+        "lessons": 779
       },
       "evolution": [
         {
@@ -2129,17 +2129,17 @@
           "detail": "Научи: guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет… (+7 още)"
         },
         {
-          "version": "70.8.0",
+          "version": "73.3.0",
           "date": "2026-11-25",
-          "event": "v70.8 — учене",
-          "detail": "Научи: Когато текст на витрината интерполира числа от базата с резервна стойност за липсващ ре… (+21 още)"
+          "event": "v73.3 — учене",
+          "detail": "Научи: В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат д… (+46 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Когато текст на витрината интерполира числа от базата с резервна стойност за липсващ ре…\" (+21 още) · 3 в карантина"
+          "summary": "Научи: „В live-run worktree vizitka/node_modules липсва, затова гейтовете на vizitka не могат д…\" (+46 още) · 7 в карантина"
         },
         {
           "date": "2026-11-24",
@@ -3216,7 +3216,7 @@
           "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
           "CommunityOx (ox_lib/ox_core/oxmysql) — каноничните модерни модели"
         ],
-        "lessons": 178
+        "lessons": 179
       },
       "evolution": [
         {
@@ -4020,7 +4020,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 258
+        "lessons": 263
       },
       "evolution": [
         {
@@ -4480,17 +4480,17 @@
           "detail": "Научи: Search Quality Rater Guidelines (версия 11.09.2025) казват, че Trust е най-важният елем… (+7 още)"
         },
         {
-          "version": "25.2.0",
+          "version": "25.7.0",
           "date": "2026-11-25",
-          "event": "v25.2 — учене",
-          "detail": "Научи: Файлът `.pr-review/<n>.diff` пак може да е съкратен (376: 10 от 26 файла); списъкът с ф… (+1 още)"
+          "event": "v25.7 — учене",
+          "detail": "Научи: Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat… (+6 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Файлът `.pr-review/<n>.diff` пак може да е съкратен (376: 10 от 26 файла); списъкът с ф…\" (+1 още)"
+          "summary": "Научи: „Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat…\" (+6 още)"
         },
         {
           "date": "2026-11-24",
@@ -7069,7 +7069,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 301
+        "lessons": 305
       },
       "evolution": [
         {
@@ -7487,17 +7487,17 @@
           "detail": "Научи: GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на … (+27 още)"
         },
         {
-          "version": "27.4.0",
+          "version": "27.9.0",
           "date": "2026-11-25",
-          "event": "v27.4 — учене",
-          "detail": "Научи: Нощният бекъп на vpsdash открива Postgres контейнерите по образ (ancestor=postgres или …"
+          "event": "v27.9 — учене",
+          "detail": "Научи: Защита на release по монтирани от Docker папки не пази release-а, от който идва само en… (+5 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Нощният бекъп на vpsdash открива Postgres контейнерите по образ (ancestor=postgres или …\" · 1 в карантина"
+          "summary": "Научи: „Защита на release по монтирани от Docker папки не пази release-а, от който идва само en…\" (+5 още) · 2 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -9184,7 +9184,7 @@
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Тест, който изисква литерален шаблон („[ЗА ПОПЪЛВАНЕ…]“) в публична страница, пази проп…\""
+          "summary": "Научи: „Тест, който изисква литерален шаблон („[ЗА ПОПЪЛВАНЕ…]“) в публична страница, пази проп…\" · 1 в карантина"
         },
         {
           "date": "2026-11-24",
@@ -9595,7 +9595,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 329
+        "lessons": 330
       },
       "evolution": [
         {
@@ -9965,17 +9965,17 @@
           "detail": "Научи: Stripe Invoice.total е след отстъпки и данъци, а total_excluding_tax е без никакъв данъ…"
         },
         {
-          "version": "31.5.0",
+          "version": "31.6.0",
           "date": "2026-11-25",
-          "event": "v31.5 — учене",
-          "detail": "Научи: Revolut Merchant GET /api/disputes (retrieveDisputeList) филтрира по state (повторяем),… (+3 още)"
+          "event": "v31.6 — учене",
+          "detail": "Научи: PR #335 (claude/security-deps-korpora) в korpora вдига zod 3 на 4 с импорти от zod/v3 и… (+4 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Revolut Merchant GET /api/disputes (retrieveDisputeList) филтрира по state (повторяем),…\" (+3 още) · 1 в карантина"
+          "summary": "Научи: „PR #335 (claude/security-deps-korpora) в korpora вдига zod 3 на 4 с импорти от zod/v3 и…\" (+4 още) · 1 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -12220,7 +12220,7 @@
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „Форма с `novalidate`, чието сървърно рендериране показва грешка само през `aria-invalid…\" (+1 още)"
+          "summary": "Научи: „Форма с `novalidate`, чието сървърно рендериране показва грешка само през `aria-invalid…\" (+1 още) · 1 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -13858,7 +13858,7 @@
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименув…\""
+          "summary": "Научи: „PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименув…\" · 1 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -14555,7 +14555,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 374
+        "lessons": 377
       },
       "evolution": [
         {
@@ -14721,17 +14721,17 @@
           "detail": "Научи: Към 2026-11-24 в Latest models на Anthropic стоят Fable 5.2 (claude-fable-5-2, $8/$40, … (+3 още)"
         },
         {
-          "version": "36.8.0",
+          "version": "37.1.0",
           "date": "2026-11-25",
-          "event": "v36.8 — учене",
-          "detail": "Научи: git merge-tree --write-tree -z --name-only --no-messages A B извежда \"<tree-oid>\\0<конф… (+8 още)"
+          "event": "v37.1 — учене",
+          "detail": "Научи: GENERIC_RULE в secret-scan хваща само стойност в кавички с поне 12 знака след secret/pa… (+11 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „git merge-tree --write-tree -z --name-only --no-messages A B извежда \"<tree-oid>\\0<конф…\" (+8 още)"
+          "summary": "Научи: „GENERIC_RULE в secret-scan хваща само стойност в кавички с поне 12 знака след secret/pa…\" (+11 още)"
         },
         {
           "date": "2026-11-24",
@@ -15684,7 +15684,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 229
+        "lessons": 228
       },
       "evolution": [
         {
@@ -15788,9 +15788,20 @@
           "date": "2026-11-24",
           "event": "v23.1 — учене",
           "detail": "Научи: Капан върху fenced код в инжекционен eval пада и върху верен отговор, който цитира дока… (+1 още)"
+        },
+        {
+          "version": "23.4.0",
+          "date": "2026-11-25",
+          "event": "v23.4 — учене",
+          "detail": "Научи: zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к…\" (+2 още)"
+        },
         {
           "date": "2026-11-24",
           "type": "learning",

@@ -114,10 +114,21 @@ export async function masterHandover(input: {
         update: { role: 'OWNER' },
       });
       await ensureSubscription(tx, input.organizationId, now);
-      await tx.transferInvite.updateMany({
+      const revoked = await tx.transferInvite.updateMany({
         where: { organizationId: input.organizationId, acceptedAt: null, revokedAt: null },
         data: { revokedAt: now },
       });
+      // И неизпратените писма с поканите — иначе стига покана с вече отменена връзка (Качествения, 25.11.2026).
+      if (revoked.count > 0) {
+        await tx.notification.updateMany({
+          where: {
+            organizationId: input.organizationId,
+            kind: 'transfer.invite',
+            status: 'PENDING',
+          },
+          data: { status: 'FAILED', lastError: 'Предаването е отменено.' },
+        });
+      }
       await tx.firmHandover.updateMany({
         where: { organizationId: input.organizationId, status: 'PENDING' },
         data: { status: 'REVOKED', decidedAt: now },
