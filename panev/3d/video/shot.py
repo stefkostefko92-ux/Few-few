@@ -11,6 +11,7 @@ import bpy
 from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import film  # noqa: F401,E402 (the film's own build, pose, timeline and texts come first)
 from build import build
 from lib import script_args, use_device
 from pose import pose

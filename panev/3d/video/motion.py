@@ -4,7 +4,6 @@ import math
 from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Matrix, Vector
 from lib import seg
-from build import LEAN, PAIR_X
 
 DEG = math.radians
 
@@ -38,6 +37,7 @@ def jitter(t, k):
 def rig_pose(k, t):
     """matrix_basis of the left or right pair's rig (wall-local) at time t, or None when it is not on stage (the middle
     pair: middle.rig2)."""
+    from build import LEAN, PAIR_X  # the landing-door film's scene: the other helpers here serve every film
     home = Matrix.Translation((PAIR_X[k], 0, 0))
     floating = Matrix.Translation((PAIR_X[k], -0.28, 0.0)) @ Matrix.Rotation(-LEAN, 4, "X")  # B upright, in the air
     away = Matrix.Translation((PAIR_X[k], -0.3, -0.16))

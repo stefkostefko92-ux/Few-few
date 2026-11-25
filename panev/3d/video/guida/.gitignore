@@ -1,0 +1,6 @@
+# Internal render inputs and outputs, never in git (as ../.gitignore).
+/mesh
+/render
+/frames
+/out
+__pycache__/

@@ -6,6 +6,7 @@ import os
 import sys
 import numpy as np
 from PIL import Image
+import film  # noqa: F401,E402 (the film's own build, pose, timeline and texts come first)
 from overlay import frame_overlay, OW as W, OH as H
 from postfx import finish
 
