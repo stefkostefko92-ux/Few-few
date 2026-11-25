@@ -4,10 +4,27 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { findChromium, launchChromium } from "./browser.mjs";
+import { findChromium, launchChromium, loadPkg, pickChromium } from "./browser.mjs";
 
 test("findChromium: несъществуваща база → null, не изключение", () => {
   assert.equal(findChromium("/няма/такава/папка"), null);
+});
+
+// Регресия от целия деплой пробег (02.08): `authz-probe.mjs` живее в `FiveM/`, а
+// този помощник — в `tools/lib/`. Голото име се резолвва от папката на ФАЙЛА,
+// който внася, тоест `FiveM/node_modules` не се поглежда никога и инструментът
+// излизаше с „НЕИЗМЕРЕНО" при налична зависимост. Резервният път внася по ФАЙЛОВ
+// адрес — и тогава картата `exports` се заобикаля, а именуваните износи изчезват.
+test("pickChromium: намира chromium и през `default` (внасяне по файлов адрес)", () => {
+  const marker = { launch: () => {} };
+  assert.equal(pickChromium({ chromium: marker }), marker, "именуван износ (внасяне по име)");
+  assert.equal(
+    pickChromium({ default: { chromium: marker } }),
+    marker,
+    "само `default` — точно формата при внасяне по път; без този клон поправката е нефункционална",
+  );
+  assert.equal(pickChromium({ default: {} }), null, "липсващ chromium не бива да е undefined-обект");
+  assert.equal(pickChromium(null), null, "неуспешен внос не бива да хвърля");
 });
 
 test("launchChromium: връща { browser } ИЛИ { error } — никога не хвърля, никога не мълчи", async () => {
@@ -22,4 +39,23 @@ test("launchChromium: връща { browser } ИЛИ { error } — никога �
     // среда без браузър е ЛЕГИТИМНА — но обяснението трябва да казва какво липсва
     assert.match(r.error, /playwright|Chromium|chromium/);
   }
+});
+
+// Регресия 2026-11-02: ESM import не чете NODE_PATH, а Playwright в средата е глобален → одитите
+// казваха „няма playwright“, докато require('playwright') работи. loadPkg пада към require.
+test("loadPkg: при неуспешен import пада към require (NODE_PATH), не връща празно", async () => {
+  const fake = { chromium: { launch() {} } };
+  const mod = await loadPkg("playwright", {
+    importer: async () => { throw new Error("ERR_MODULE_NOT_FOUND"); },
+    requirer: (n) => { if (n === "playwright") return fake; throw new Error("няма"); },
+  });
+  assert.equal(mod, fake);
+});
+
+test("loadPkg: и двата пътя падат → null (викащият казва ЗАЩО), не изключение", async () => {
+  const mod = await loadPkg("няма-такъв-пакет-xyz", {
+    importer: async () => { throw new Error("x"); },
+    requirer: () => { throw new Error("y"); },
+  });
+  assert.equal(mod, null);
 });

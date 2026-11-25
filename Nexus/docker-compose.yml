@@ -4,6 +4,9 @@ services:
     image: nexus-dominion:latest
     container_name: nexus-dominion
     restart: unless-stopped
+    # Върви като потребителя app (Dockerfile: USER) зад tini — capability не му трябва.
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
     environment:
       NODE_ENV: production
       PORT: 4000

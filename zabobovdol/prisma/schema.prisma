@@ -76,21 +76,26 @@ model AuditLog {
 }
 
 model Faq {
-  id             String   @id @default(cuid())
-  slug           String   @unique
+  id             String    @id @default(cuid())
+  slug           String    @unique
   question       String
   answer         String // Markdown
-  category       String   @default("Общи")
-  tags           String   @default("") // запетая-разделени
-  steps          String   @default("") // допълнителни стъпки, ред на ред
-  relatedLinks   String   @default("") // "Етикет|URL" на ред
+  category       String    @default("Общи")
+  tags           String    @default("") // запетая-разделени
+  steps          String    @default("") // допълнителни стъпки, ред на ред
+  relatedLinks   String    @default("") // "Етикет|URL" на ред
   seoTitle       String?
   seoDescription String?
-  order          Int      @default(0)
-  views          Int      @default(0)
-  published      Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  order          Int       @default(0)
+  views          Int       @default(0)
+  // Дата на последната РЕАЛНА проверка на съдържанието от човек (не updatedAt —
+  // той се мени при всеки преглед и би излъгал, че ръководството е проверено днес).
+  reviewedAt     DateTime?
+  // Местен блок „В Бобов дол:“ — гише, адрес, телефон, работно време (Markdown).
+  localNote      String    @default("")
+  published      Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([published, category])
 }
@@ -109,6 +114,9 @@ model Service {
   hours          String          @default("")
   lat            Float?
   lng            Float?
+  // „Проверено на … · източник: …“ — кога и откъде е сверен номерът.
+  verifiedAt     DateTime?
+  verifiedSource String          @default("")
   isEmergency    Boolean         @default(false)
   seoTitle       String?
   seoDescription String?
@@ -146,23 +154,23 @@ model Business {
 }
 
 model Event {
-  id             String   @id @default(cuid())
-  slug           String   @unique
+  id             String    @id @default(cuid())
+  slug           String    @unique
   title          String
-  description    String   @default("")
-  location       String   @default("")
-  address        String   @default("")
+  description    String    @default("")
+  location       String    @default("")
+  address        String    @default("")
   lat            Float?
   lng            Float?
   startAt        DateTime
   endAt          DateTime?
-  organizer      String   @default("")
-  url            String   @default("")
+  organizer      String    @default("")
+  url            String    @default("")
   seoTitle       String?
   seoDescription String?
-  published      Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  published      Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([published, startAt])
 }
@@ -199,6 +207,7 @@ model Post {
   sourceDate     DateTime? // дата от източника
   seoTitle       String?
   seoDescription String?
+  notifiedAt     DateTime? // кога е пратено известие за новината
   published      Boolean   @default(false)
   publishedAt    DateTime?
   createdAt      DateTime  @default(now())
@@ -264,22 +273,22 @@ enum RideKind {
 
 // „Споделено пътуване“ — обяви за споделяне на разходите по общ маршрут.
 model Rideshare {
-  id           String   @id @default(cuid())
-  slug         String   @unique
-  kind         RideKind @default(OFFER)
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  kind         RideKind  @default(OFFER)
   routeFrom    String // откъде
   routeTo      String // докъде
-  schedule     String   @default("") // кога (дни/час)
-  seats        String   @default("") // свободни места (по избор)
-  costNote     String   @default("") // дял от разходите
-  description  String   @default("")
-  contactName  String   @default("")
-  contactPhone String   @default("")
-  contactEmail String   @default("")
-  published    Boolean  @default(false) // минава през одобрение
+  schedule     String    @default("") // кога (дни/час)
+  seats        String    @default("") // свободни места (по избор)
+  costNote     String    @default("") // дял от разходите
+  description  String    @default("")
+  contactName  String    @default("")
+  contactPhone String    @default("")
+  contactEmail String    @default("")
+  published    Boolean   @default(false) // минава през одобрение
   expiresAt    DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([published, kind])
 }
@@ -305,16 +314,16 @@ model HelpCause {
 
 // „Спомени от Бобов дол“ — споделени от жителите спомени и стари снимки.
 model Memory {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  author      String   @default("")
-  period      String   @default("") // напр. „1980-те“
-  content     String
-  imageUrl    String   @default("")
-  published   Boolean  @default(false) // минава през одобрение
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  author    String   @default("")
+  period    String   @default("") // напр. „1980-те“
+  content   String
+  imageUrl  String   @default("")
+  published Boolean  @default(false) // минава през одобрение
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([published, createdAt])
 }
@@ -433,17 +442,20 @@ model SearchMiss {
 // Предупреждения за актуални измами (телефонни/онлайн), редактирани от админ.
 // Помагат да пазим възрастните хора от схеми, които текат в момента.
 model ScamAlert {
-  id        String   @id @default(cuid())
-  slug      String   @unique
-  title     String
-  summary   String   @default("") // кратко описание (показва се в картата/лентата)
-  body      String   @default("") // Markdown — подробности и съвети
-  severity  String   @default("warning") // info | warning | danger
-  pinned    Boolean  @default(false) // показва се като лента на началната страница
-  order     Int      @default(0)
-  published Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String    @id @default(cuid())
+  slug       String    @unique
+  title      String
+  summary    String    @default("") // кратко описание (показва се в картата/лентата)
+  body       String    @default("") // Markdown — подробности и съвети
+  severity   String    @default("warning") // info | warning | danger
+  pinned     Boolean   @default(false) // показва се като лента на началната страница
+  order      Int       @default(0)
+  source     String    @default("") // напр. „МВР“, „НАП“, „ОДМВР Кюстендил“
+  sourceUrl  String    @default("")
+  notifiedAt DateTime? // кога е пратено известие (за да не се праща два пъти)
+  published  Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([published, order])
 }
@@ -451,17 +463,21 @@ model ScamAlert {
 // Планови/аварийни прекъсвания на ток и вода — редактирани от админ.
 // Показват се на страница „Прекъсвания на ток и вода".
 model Outage {
-  id        String    @id @default(cuid())
-  slug      String    @unique
-  utility   String    @default("ELECTRICITY") // ELECTRICITY (ток) | WATER (вода)
-  area      String    @default("") // кои улици/квартали са засегнати
-  startAt   DateTime? // от кога
-  endAt     DateTime? // докога (очаквано)
-  note      String    @default("") // подробности (по избор, Markdown)
-  planned   Boolean   @default(true) // планово (true) или авария (false)
-  published Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id         String    @id @default(cuid())
+  slug       String    @unique
+  utility    String    @default("ELECTRICITY") // ELECTRICITY (ток) | WATER (вода)
+  area       String    @default("") // кои улици/квартали са засегнати
+  startAt    DateTime? // от кога
+  endAt      DateTime? // докога (очаквано)
+  note       String    @default("") // подробности (по избор, Markdown)
+  planned    Boolean   @default(true) // планово (true) или авария (false)
+  source     String    @default("") // напр. „ЕРМ Запад“ при автоматичен внос
+  sourceUrl  String    @default("")
+  externalId String?   @unique // ключ от източника — пази от двоен внос
+  notifiedAt DateTime? // кога е пратено известие
+  published  Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([published, startAt])
 }
@@ -479,4 +495,98 @@ model ContactMessage {
   updatedAt DateTime @updatedAt
 
   @@index([handled, createdAt])
+}
+
+// ── Растеж и връщане (2026-10) ────────────────────────────────────────────────
+
+// Агрегатна статистика БЕЗ лични данни: брой на ден × метрика × път × източник.
+// Не се пази IP, user agent, хеш или идентификатор — само броят.
+model DailyStat {
+  id     String   @id @default(cuid())
+  day    DateTime @db.Date
+  metric String // view | share_click | tel_click | helpful_yes | helpful_no | app_open | install_click | push_subscribe | qr | search | search_miss …
+  path   String   @default("") // нормализиран път без query (напр. /kak-da/<slug>)
+  source String   @default("") // direct | share | qr-<код> | app | facebook | google | viber | rss | push | друг домейн
+  count  Int      @default(0)
+
+  @@unique([day, metric, path, source])
+  @@index([day, metric])
+}
+
+// Абонамент за известия (web push) по теми. Endpoint-ът е псевдонимен
+// идентификатор на браузъра — трие се при отписване или трайна грешка.
+model PushSubscription {
+  id        String    @id @default(cuid())
+  endpoint  String    @unique
+  p256dh    String
+  auth      String
+  topics    String    @default("outages,scams") // запетая-разделени: outages, scams, news, pharmacy
+  failCount Int       @default(0)
+  lastOkAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// Дежурни аптеки по дати (вместо свободен текст). Попълва се от админ панела.
+model DutyRoster {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date
+  pharmacy  String
+  address   String   @default("")
+  phone     String   @default("")
+  hours     String   @default("") // напр. „08:00–20:00“ или „денонощно“
+  note      String   @default("")
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, date])
+}
+
+// Кратки адреси за QR кодовете по места: /p/<code> → target (вътрешен път),
+// с източник qr-<code> в статистиката — така всеки плакат се мери отделно.
+model ShortLink {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  target    String   @default("/")
+  label     String   @default("") // къде е поставен (напр. „Аптека в центъра“)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Некролози и помени — подават се от близки, публикуват се САМО след модерация.
+model Obituary {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  kind          String    @default("NECROLOGY") // NECROLOGY (некролог) | MEMORIAL (помен)
+  fullName      String
+  birthYear     Int?
+  deathDate     DateTime?
+  ceremonyAt    DateTime? // погребение/помен
+  ceremonyPlace String    @default("")
+  text          String    @default("") // кратък текст от близките (Markdown)
+  photoUrl      String    @default("")
+  fromFamily    String    @default("") // подпис, напр. „От семейството“
+  contactName   String    @default("") // само за модерацията — НЕ се показва
+  contactPhone  String    @default("") // само за модерацията — НЕ се показва
+  consent       Boolean   @default(false) // подателят потвърждава, че е близък и има съгласие
+  published     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([published, createdAt])
+}
+
+// „Този номер е сгрешен“ — сигнал от посетител за телефон в „Услуги“. Без
+// данни за подателя.
+model PhoneReport {
+  id        String   @id @default(cuid())
+  serviceId String
+  note      String   @default("")
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resolved, createdAt])
 }

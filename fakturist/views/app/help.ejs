@@ -1,0 +1,25 @@
+<%- include('../partials/app-head', { title: t('app.help.title') }) %>
+<h1><%= t('app.help.title') %></h1>
+<p class="lead"><%= t('app.help.intro') %></p>
+<p class="actions">
+  <a class="button" href="/app/narachnik.pdf" target="_blank" rel="noopener"><%= t('app.help.manual') %></a>
+  <a class="button-secondary" href="<%= lang === 'en' ? '/en/how-it-works' : '/kak-raboti' %>" target="_blank" rel="noopener"><%= t('app.help.public') %></a>
+</p>
+<nav class="panel help-toc" aria-labelledby="toc-h">
+  <h2 id="toc-h"><%= t('help.manual.contents') %></h2>
+  <ol>
+    <% sections.forEach((s) => { %><li><a href="#<%= s.id %>"><%= s.title %></a></li><% }) %>
+  </ol>
+</nav>
+<% sections.forEach((s, i) => { %>
+<section class="help-section" id="<%= s.id %>" aria-labelledby="<%= s.id %>-h">
+  <h2 id="<%= s.id %>-h"><%= i + 1 %>. <%= s.title %></h2>
+  <% if (s.notInPlan) { %><p class="callout"><%= t('help.manual.notAvailable') %></p><% } %>
+  <p><%= s.intro %></p>
+  <ol class="help-steps">
+    <% s.steps.forEach((step) => { %><li><%= step %></li><% }) %>
+  </ol>
+  <% if (s.tips.length > 0) { %><ul class="help-tips muted"><% s.tips.forEach((tip) => { %><li><%= tip %></li><% }) %></ul><% } %>
+</section>
+<% }) %>
+<%- include('../partials/app-foot') %>

@@ -42,7 +42,9 @@ export type Capability =
   | 'audit:view'
   | 'users:manage'
   | 'keys:manage'
-  | 'settings:view';
+  | 'settings:view'
+  | 'replies:edit'
+  | 'replies:approve';
 
 /** Минималната роля, която има способността. */
 const REQUIRED: Record<Capability, Role> = {
@@ -59,6 +61,9 @@ const REQUIRED: Record<Capability, Role> = {
   'posts:approve': 'REVIEWER',
   'posts:schedule': 'REVIEWER',
   'posts:publish': 'REVIEWER',
+  // Правилата за лични съобщения: пише редактор, пуска ревюър (четири очи — не авторът).
+  'replies:edit': 'EDITOR',
+  'replies:approve': 'REVIEWER',
   'brands:manage': 'MANAGER',
   'autopilot:run': 'MANAGER',
   'accounts:manage': 'MANAGER',

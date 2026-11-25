@@ -1,0 +1,3714 @@
+{
+  "id": "dmg-pitagora-4-0",
+  "fornitore": "DMG",
+  "titolo": "Quote form Pitagora 4.0 (modernizzazioni, v1.9)",
+  "fonte": "QF_Pitagora-4.0_v1.9_261016.pdf caricato dal proprietario del portale il 02/11/2026 (modulo compilabile DMG, invariato; mappa da scripts/moduli/dmg.mjs)",
+  "file": "dmg-pitagora-4-0.pdf",
+  "sha256": "36d1c94cf8da79a86539736dd36df24bb8a22a7b3e587eb9cd849ebbbafbecfc",
+  "tipo": "acroform",
+  "pulizia": {
+    "nonStampare": []
+  },
+  "gruppi": [
+    {
+      "titolo": "Intestazione",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "azienda",
+              "kind": "text",
+              "label": "Azienda",
+              "acro": "00_Header-Azienda",
+              "maxLength": 43,
+              "prefill": "azienda"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "referente",
+              "kind": "textarea",
+              "label": "Referente / Telefono / Mail",
+              "acro": "00_Header-Referente",
+              "maxLength": 600,
+              "prefill": "utente"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "riferimentoProgetto",
+              "kind": "text",
+              "label": "Riferimento progetto",
+              "acro": "00_Header-Rif.Progetto",
+              "maxLength": 43,
+              "prefill": "rif"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "dataConsegna",
+              "kind": "text",
+              "label": "Data consegna richiesta",
+              "acro": "00_Header-DataConsegna",
+              "maxLength": 43
+            },
+            {
+              "key": "paeseDestinazione",
+              "kind": "text",
+              "label": "Paese di destinazione",
+              "acro": "00_Header-Paese-Dest",
+              "maxLength": 43,
+              "predefinito": "Italia"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "1 · Normative",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "normativa",
+              "kind": "radio",
+              "label": "Normativa",
+              "acro": "01_Normative",
+              "opzioni": [
+                {
+                  "valore": "en8112",
+                  "label": "Direttiva ascensori 95/16/CE - EN81-1/2",
+                  "stato": "81-1-2"
+                },
+                {
+                  "valore": "en8120",
+                  "label": "Direttiva ascensori 2014/33/EU - EN81-20/50",
+                  "stato": "81-20"
+                },
+                {
+                  "valore": "en8121",
+                  "label": "Norma EN81-21",
+                  "stato": "81-21"
+                },
+                {
+                  "valore": "en8172",
+                  "label": "Norma EN81-72",
+                  "stato": "81-72"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "normaNazionale",
+              "kind": "radio",
+              "label": "Norma nazionale (EN81-1/2)",
+              "acro": "01_Normative-IT-FR",
+              "opzioni": [
+                {
+                  "valore": "italia",
+                  "label": "Norma UNI 10411:2021 1/2 (Italia)",
+                  "stato": "ITA"
+                },
+                {
+                  "valore": "francia",
+                  "label": "Norma NF82-230 (Francia)",
+                  "stato": "FRA"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "dm2005",
+              "kind": "check",
+              "label": "D.M. 15/09/2005",
+              "acro": "01_Normative-DM.2005"
+            },
+            {
+              "key": "dm2005Tipo",
+              "kind": "radio",
+              "label": "D.M. 15/09/2005",
+              "acro": "01_Normative-DM.2005-scelta",
+              "opzioni": [
+                {
+                  "valore": "antincendio",
+                  "label": "Ascensore antincendio",
+                  "stato": "Asc.Antincendio"
+                },
+                {
+                  "valore": "soccorso",
+                  "label": "Ascensore di soccorso",
+                  "stato": "Asc.Soccorso"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "2 · Dati impianto",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "tensioneImpianto",
+              "kind": "radio",
+              "label": "Tensione impianto",
+              "acro": "02_Dati.Imp_Tens.Impianto",
+              "opzioni": [
+                {
+                  "valore": "v220",
+                  "label": "220 V",
+                  "stato": "220"
+                },
+                {
+                  "valore": "v400",
+                  "label": "400 V",
+                  "stato": "400"
+                }
+              ]
+            },
+            {
+              "key": "tensioneSicurezze",
+              "kind": "radio",
+              "label": "Tensione sicurezze",
+              "acro": "02_Dati.Imp_Tens.Sicurezze",
+              "opzioni": [
+                {
+                  "valore": "vdc48",
+                  "label": "48 VDC",
+                  "stato": "48"
+                },
+                {
+                  "valore": "vac230",
+                  "label": "230 VAC",
+                  "stato": "230"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cablaggio",
+              "kind": "radio",
+              "label": "Tipo cablaggio",
+              "acro": "02_Dati.Imp_Tipo.Cablaggio",
+              "opzioni": [
+                {
+                  "valore": "precablato",
+                  "label": "Precablato DMG",
+                  "stato": "Precablato"
+                },
+                {
+                  "valore": "morsetti",
+                  "label": "Con morsetti a vite",
+                  "stato": "Morsetti"
+                }
+              ]
+            },
+            {
+              "key": "taglia",
+              "kind": "radio",
+              "label": "Fattore di taglia",
+              "acro": "02_Dati.Imp_Taglia",
+              "opzioni": [
+                {
+                  "valore": "taglia11",
+                  "label": "1:1 (diretto)",
+                  "stato": "1:1"
+                },
+                {
+                  "valore": "taglia21",
+                  "label": "2:1 (indiretto)",
+                  "stato": "2:1"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "portata",
+              "kind": "text",
+              "label": "Portata (kg/pers.)",
+              "acro": "02_Dati.Imp_Portata",
+              "maxLength": 18,
+              "prefill": "portataPersone"
+            },
+            {
+              "key": "nPiani",
+              "kind": "text",
+              "label": "N. Piani",
+              "acro": "02_Dati.Imp_N.Piani",
+              "maxLength": 18
+            },
+            {
+              "key": "velocita",
+              "kind": "text",
+              "label": "Velocità (m/s)",
+              "acro": "02_Dati.Imp_Velocità",
+              "maxLength": 18
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "meccanica",
+              "kind": "radio",
+              "label": "Meccanica",
+              "acro": "02_Dati.Imp_Meccanica",
+              "opzioni": [
+                {
+                  "valore": "anello",
+                  "label": "Anello",
+                  "stato": "Anello"
+                },
+                {
+                  "valore": "seggiola",
+                  "label": "Seggiola",
+                  "stato": "Seggiola"
+                }
+              ]
+            },
+            {
+              "key": "manovra",
+              "kind": "radio",
+              "label": "Manovra",
+              "acro": "02_Dati.Imp_Manovra",
+              "opzioni": [
+                {
+                  "valore": "universale",
+                  "label": "Universale",
+                  "stato": "Universale"
+                },
+                {
+                  "valore": "collettivoDiscesa",
+                  "label": "Collettivo discesa",
+                  "stato": "C.Discesa"
+                },
+                {
+                  "valore": "collettivoCompleto",
+                  "label": "Collettivo completo",
+                  "stato": "C.Completo"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "funzionamento",
+              "kind": "radio",
+              "label": "Funzionamento",
+              "acro": "02_Dati.Imp_Funzionamento",
+              "opzioni": [
+                {
+                  "valore": "simplex",
+                  "label": "Simplex",
+                  "stato": "Simplex"
+                },
+                {
+                  "valore": "multiplex",
+                  "label": "Multiplex",
+                  "stato": "Multiplex"
+                }
+              ]
+            },
+            {
+              "key": "multiplexNr",
+              "kind": "text",
+              "label": "Multiplex: Nr.",
+              "acro": "02_Dati.Imp_Funz.Multiplex",
+              "maxLength": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "3 · Dati sala macchine",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "posizioneSala",
+              "kind": "radio",
+              "label": "Posizione sala macchine",
+              "acro": "03_Dati.SM_Posizione",
+              "opzioni": [
+                {
+                  "valore": "alto",
+                  "label": "In alto",
+                  "stato": "Alto"
+                },
+                {
+                  "valore": "basso",
+                  "label": "In basso",
+                  "stato": "Basso"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "neutroDtu",
+              "kind": "check",
+              "label": "Presenza del neutro sul quadro di alimentazione generale (DTU) esistente",
+              "acro": "03_Dati.SM_Neutro-DTU"
+            }
+          ]
+        },
+        {
+          "titolo": "Lunghezze (B: cavo alimentazione e C: cavo motore — fisse, 8 metri)",
+          "campi": [
+            {
+              "key": "cavoA",
+              "kind": "text",
+              "label": "A · Cavo quadro -> pulsantiera più vicina",
+              "acro": "03_Dati.SM_Lunghezza-A-Lop",
+              "maxLength": 18
+            },
+            {
+              "key": "cavoD",
+              "kind": "text",
+              "label": "D · Cavo limitatore",
+              "acro": "03_Dati.SM_Lunghezza-D-Limitatore",
+              "maxLength": 18
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "4 · Dati vano",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "testata",
+              "kind": "text",
+              "label": "Testata",
+              "acro": "03_Dati.Vano_Testata",
+              "maxLength": 16
+            },
+            {
+              "key": "testataRidotta",
+              "kind": "check",
+              "label": "Testata ridotta (EN81-21)",
+              "acro": "03_Dati.Vano_Testata-Ridotta"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "corsa",
+              "kind": "text",
+              "label": "Corsa",
+              "acro": "03_Dati.Vano_Corsa",
+              "maxLength": 16
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "fossa",
+              "kind": "text",
+              "label": "Fossa",
+              "acro": "03_Dati.Vano_Fossa",
+              "maxLength": 16
+            },
+            {
+              "key": "fossaRidotta",
+              "kind": "check",
+              "label": "Fossa ridotta (EN81-21)",
+              "acro": "03_Dati.Vano_Fossa-Ridotta"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pianoMrl",
+              "kind": "radio",
+              "label": "MRL: piano di installazione del quadro di manovra (in assenza di sala macchine)",
+              "acro": "04_Dati.Vano_MRL",
+              "opzioni": [
+                {
+                  "valore": "f1",
+                  "label": "Fermata 1",
+                  "stato": "1"
+                },
+                {
+                  "valore": "f2",
+                  "label": "Fermata 2",
+                  "stato": "2"
+                },
+                {
+                  "valore": "f3",
+                  "label": "Fermata 3",
+                  "stato": "3"
+                },
+                {
+                  "valore": "f4",
+                  "label": "Fermata 4",
+                  "stato": "4"
+                },
+                {
+                  "valore": "f5",
+                  "label": "Fermata 5",
+                  "stato": "5"
+                },
+                {
+                  "valore": "f6",
+                  "label": "Fermata 6",
+                  "stato": "6"
+                },
+                {
+                  "valore": "f7",
+                  "label": "Fermata 7",
+                  "stato": "7"
+                },
+                {
+                  "valore": "f8",
+                  "label": "Fermata 8",
+                  "stato": "8"
+                },
+                {
+                  "valore": "f9",
+                  "label": "Fermata 9",
+                  "stato": "9"
+                },
+                {
+                  "valore": "f10",
+                  "label": "Fermata 10",
+                  "stato": "10"
+                },
+                {
+                  "valore": "f11",
+                  "label": "Fermata 11",
+                  "stato": "11"
+                },
+                {
+                  "valore": "f12",
+                  "label": "Fermata 12",
+                  "stato": "12"
+                },
+                {
+                  "valore": "f13",
+                  "label": "Fermata 13",
+                  "stato": "13"
+                },
+                {
+                  "valore": "f14",
+                  "label": "Fermata 14",
+                  "stato": "14"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "ritornoAutomatico",
+              "kind": "radio",
+              "label": "Ritorno automatico al piano",
+              "acro": "04_Dati.Vano_Ritorno-Aut",
+              "opzioni": [
+                {
+                  "valore": "f1",
+                  "label": "Fermata 1",
+                  "stato": "1"
+                },
+                {
+                  "valore": "f2",
+                  "label": "Fermata 2",
+                  "stato": "2"
+                },
+                {
+                  "valore": "f3",
+                  "label": "Fermata 3",
+                  "stato": "3"
+                },
+                {
+                  "valore": "f4",
+                  "label": "Fermata 4",
+                  "stato": "4"
+                },
+                {
+                  "valore": "f5",
+                  "label": "Fermata 5",
+                  "stato": "5"
+                },
+                {
+                  "valore": "f6",
+                  "label": "Fermata 6",
+                  "stato": "6"
+                },
+                {
+                  "valore": "f7",
+                  "label": "Fermata 7",
+                  "stato": "7"
+                },
+                {
+                  "valore": "f8",
+                  "label": "Fermata 8",
+                  "stato": "8"
+                },
+                {
+                  "valore": "f9",
+                  "label": "Fermata 9",
+                  "stato": "9"
+                },
+                {
+                  "valore": "f10",
+                  "label": "Fermata 10",
+                  "stato": "10"
+                },
+                {
+                  "valore": "f11",
+                  "label": "Fermata 11",
+                  "stato": "11"
+                },
+                {
+                  "valore": "f12",
+                  "label": "Fermata 12",
+                  "stato": "12"
+                },
+                {
+                  "valore": "f13",
+                  "label": "Fermata 13",
+                  "stato": "13"
+                },
+                {
+                  "valore": "f14",
+                  "label": "Fermata 14",
+                  "stato": "14"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pianoPompieri",
+              "kind": "radio",
+              "label": "Piano principale pompieri",
+              "acro": "04_Dati.Vano_PP.Pompieri",
+              "opzioni": [
+                {
+                  "valore": "f1",
+                  "label": "Fermata 1",
+                  "stato": "1"
+                },
+                {
+                  "valore": "f2",
+                  "label": "Fermata 2",
+                  "stato": "2"
+                },
+                {
+                  "valore": "f3",
+                  "label": "Fermata 3",
+                  "stato": "3"
+                },
+                {
+                  "valore": "f4",
+                  "label": "Fermata 4",
+                  "stato": "4"
+                },
+                {
+                  "valore": "f5",
+                  "label": "Fermata 5",
+                  "stato": "5"
+                },
+                {
+                  "valore": "f6",
+                  "label": "Fermata 6",
+                  "stato": "6"
+                },
+                {
+                  "valore": "f7",
+                  "label": "Fermata 7",
+                  "stato": "7"
+                },
+                {
+                  "valore": "f8",
+                  "label": "Fermata 8",
+                  "stato": "8"
+                },
+                {
+                  "valore": "f9",
+                  "label": "Fermata 9",
+                  "stato": "9"
+                },
+                {
+                  "valore": "f10",
+                  "label": "Fermata 10",
+                  "stato": "10"
+                },
+                {
+                  "valore": "f11",
+                  "label": "Fermata 11",
+                  "stato": "11"
+                },
+                {
+                  "valore": "f12",
+                  "label": "Fermata 12",
+                  "stato": "12"
+                },
+                {
+                  "valore": "f13",
+                  "label": "Fermata 13",
+                  "stato": "13"
+                },
+                {
+                  "valore": "f14",
+                  "label": "Fermata 14",
+                  "stato": "14"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 14",
+          "campi": [
+            {
+              "key": "passante14",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-14"
+            },
+            {
+              "key": "accesso1F14",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-14"
+            },
+            {
+              "key": "nome1F14",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-14",
+              "maxLength": 6
+            },
+            {
+              "key": "accesso2F14",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-14"
+            },
+            {
+              "key": "nome2F14",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-14",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 13",
+          "campi": [
+            {
+              "key": "passante13",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-13"
+            },
+            {
+              "key": "accesso1F13",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-13"
+            },
+            {
+              "key": "nome1F13",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-13",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano13",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-13",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F13",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-13"
+            },
+            {
+              "key": "nome2F13",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-13",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 12",
+          "campi": [
+            {
+              "key": "passante12",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-12"
+            },
+            {
+              "key": "accesso1F12",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-12"
+            },
+            {
+              "key": "nome1F12",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-12",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano12",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-12",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F12",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-12"
+            },
+            {
+              "key": "nome2F12",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-12",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 11",
+          "campi": [
+            {
+              "key": "passante11",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-11"
+            },
+            {
+              "key": "accesso1F11",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-11"
+            },
+            {
+              "key": "nome1F11",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-11",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano11",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-11",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F11",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-11"
+            },
+            {
+              "key": "nome2F11",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-11",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 10",
+          "campi": [
+            {
+              "key": "passante10",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-10"
+            },
+            {
+              "key": "accesso1F10",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-10"
+            },
+            {
+              "key": "nome1F10",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-10",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano10",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-10",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F10",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-10"
+            },
+            {
+              "key": "nome2F10",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-10",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 9",
+          "campi": [
+            {
+              "key": "passante9",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-09"
+            },
+            {
+              "key": "accesso1F9",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-09"
+            },
+            {
+              "key": "nome1F9",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-09",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano9",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-09",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F9",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-09"
+            },
+            {
+              "key": "nome2F9",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-09",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 8",
+          "campi": [
+            {
+              "key": "passante8",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-08"
+            },
+            {
+              "key": "accesso1F8",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-08"
+            },
+            {
+              "key": "nome1F8",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-08",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano8",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-08",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F8",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-08"
+            },
+            {
+              "key": "nome2F8",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-08",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 7",
+          "campi": [
+            {
+              "key": "passante7",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-07"
+            },
+            {
+              "key": "accesso1F7",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-07"
+            },
+            {
+              "key": "nome1F7",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-07",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano7",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-07",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F7",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-07"
+            },
+            {
+              "key": "nome2F7",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-07",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 6",
+          "campi": [
+            {
+              "key": "passante6",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-06"
+            },
+            {
+              "key": "accesso1F6",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-06"
+            },
+            {
+              "key": "nome1F6",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-06",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano6",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-06",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F6",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-06"
+            },
+            {
+              "key": "nome2F6",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-06",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 5",
+          "campi": [
+            {
+              "key": "passante5",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-05"
+            },
+            {
+              "key": "accesso1F5",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-05"
+            },
+            {
+              "key": "nome1F5",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-05",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano5",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-05",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F5",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-05"
+            },
+            {
+              "key": "nome2F5",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-05",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 4",
+          "campi": [
+            {
+              "key": "passante4",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-04"
+            },
+            {
+              "key": "accesso1F4",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-04"
+            },
+            {
+              "key": "nome1F4",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-04",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano4",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-04",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F4",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-04"
+            },
+            {
+              "key": "nome2F4",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-04",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 3",
+          "campi": [
+            {
+              "key": "passante3",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-03"
+            },
+            {
+              "key": "accesso1F3",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-03"
+            },
+            {
+              "key": "nome1F3",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-03",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano3",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-03",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F3",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-03"
+            },
+            {
+              "key": "nome2F3",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-03",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 2",
+          "campi": [
+            {
+              "key": "passante2",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-02"
+            },
+            {
+              "key": "accesso1F2",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-02"
+            },
+            {
+              "key": "nome1F2",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-02",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano2",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-02",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F2",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-02"
+            },
+            {
+              "key": "nome2F2",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-02",
+              "maxLength": 6
+            }
+          ]
+        },
+        {
+          "titolo": "Fermata 1",
+          "campi": [
+            {
+              "key": "passante1",
+              "kind": "check",
+              "label": "Accesso passante",
+              "acro": "04_Dati.Vano_Acc.Passante-01"
+            },
+            {
+              "key": "accesso1F1",
+              "kind": "check",
+              "label": "Accesso 1",
+              "acro": "04_Dati.Vano_Accesso1-01"
+            },
+            {
+              "key": "nome1F1",
+              "kind": "text",
+              "label": "Accesso 1: piano",
+              "acro": "03_Dati.Vano_ID1-Piano-01",
+              "maxLength": 6
+            },
+            {
+              "key": "interpiano1",
+              "kind": "text",
+              "label": "Interpiano",
+              "acro": "03_Dati.Vano_Interpiano-01",
+              "maxLength": 16
+            },
+            {
+              "key": "accesso2F1",
+              "kind": "check",
+              "label": "Accesso 2",
+              "acro": "04_Dati.Vano_Accesso2-01"
+            },
+            {
+              "key": "nome2F1",
+              "kind": "text",
+              "label": "Accesso 2: piano",
+              "acro": "03_Dati.Vano_ID2-Piano-01",
+              "maxLength": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "5 · Motori e centraline — VVVF",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "vvvfTipo",
+              "kind": "radio",
+              "label": "Tipo",
+              "acro": "05_VVVF-Tipo",
+              "opzioni": [
+                {
+                  "valore": "geared",
+                  "label": "Geared (asincrono)",
+                  "stato": "Geared"
+                },
+                {
+                  "valore": "gearless",
+                  "label": "Gearless (sincrono)",
+                  "stato": "Gearless"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "motoreMarca",
+              "kind": "textarea",
+              "label": "Marca e modello motore",
+              "acro": "05_VVVF-Motore-Marca",
+              "maxLength": 600
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "motoreV",
+              "kind": "text",
+              "label": "V",
+              "acro": "05_VVVF-Motore-V",
+              "maxLength": 11
+            },
+            {
+              "key": "motoreA",
+              "kind": "text",
+              "label": "A",
+              "acro": "05_VVVF-Motore-A",
+              "maxLength": 11
+            },
+            {
+              "key": "motoreKw",
+              "kind": "text",
+              "label": "kW",
+              "acro": "05_VVVF-Motore-KW",
+              "maxLength": 11
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "motorePoli",
+              "kind": "text",
+              "label": "N° poli",
+              "acro": "05_VVVF-Motore-Poli",
+              "maxLength": 11
+            },
+            {
+              "key": "motoreHz",
+              "kind": "text",
+              "label": "Frequenza",
+              "acro": "05_VVVF-Motore-Hz",
+              "maxLength": 11
+            },
+            {
+              "key": "motoreGiri",
+              "kind": "text",
+              "label": "Giri (RPM)",
+              "acro": "05_VVVF-Motore-Giri",
+              "maxLength": 11
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "anelloChiuso",
+              "kind": "radio",
+              "label": "Anello chiuso",
+              "acro": "05_VVVF-AnelloChiuso",
+              "opzioni": [
+                {
+                  "valore": "no",
+                  "label": "No",
+                  "stato": "No"
+                },
+                {
+                  "valore": "si",
+                  "label": "Si",
+                  "stato": "Si"
+                }
+              ]
+            },
+            {
+              "key": "encoder",
+              "kind": "radio",
+              "label": "Encoder (anello chiuso)",
+              "acro": "05_VVVF-AnelloAperto",
+              "opzioni": [
+                {
+                  "valore": "rs422",
+                  "label": "Encoder 5V RS422",
+                  "stato": "RS485"
+                },
+                {
+                  "valore": "v121524",
+                  "label": "Encoder 12/15/24V",
+                  "stato": "12/15/24V"
+                },
+                {
+                  "valore": "sinCos",
+                  "label": "Encoder Sin Cos",
+                  "stato": "Sin Cos"
+                },
+                {
+                  "valore": "enDat",
+                  "label": "Encoder En Dat",
+                  "stato": "En Dat"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "freno",
+              "kind": "radio",
+              "label": "Freno",
+              "acro": "05_VVVF-Freno",
+              "opzioni": [
+                {
+                  "valore": "singolo",
+                  "label": "Singolo",
+                  "stato": "Singolo"
+                },
+                {
+                  "valore": "singoloAlbero",
+                  "label": "Singolo + freno albero lento",
+                  "stato": "Singolo+Albero"
+                },
+                {
+                  "valore": "doppio",
+                  "label": "Doppio",
+                  "stato": "Doppio"
+                },
+                {
+                  "valore": "trifase",
+                  "label": "Trifase 400 Vac",
+                  "stato": "Trifase"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "frenoTensione",
+              "kind": "text",
+              "label": "Freno: tensione (V)",
+              "acro": "05_VVVF-Freno-Tensione",
+              "maxLength": 12
+            },
+            {
+              "key": "frenoAcDc",
+              "kind": "radio",
+              "label": "AC / DC",
+              "acro": "05_VVVF-Freno-Tens.AC-DC",
+              "opzioni": [
+                {
+                  "valore": "ac",
+                  "label": "AC",
+                  "stato": "AC"
+                },
+                {
+                  "valore": "dc",
+                  "label": "DC",
+                  "stato": "DC"
+                }
+              ]
+            },
+            {
+              "key": "frenoSovraeccitazione",
+              "kind": "check",
+              "label": "+ Sovraeccitazione",
+              "acro": "05_VVVF-Freno+Sovraeccitazione"
+            },
+            {
+              "key": "frenoPotenza",
+              "kind": "check",
+              "label": "Potenza > 300W",
+              "acro": "05_VVVF-Freno-Potenza"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "5 · Motori e centraline — HYDRO",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "avviamento",
+              "kind": "radio",
+              "label": "Avviamento",
+              "acro": "05_HYDRO-Avviamento",
+              "opzioni": [
+                {
+                  "valore": "diretto",
+                  "label": "Diretto",
+                  "stato": "Diretto"
+                },
+                {
+                  "valore": "softStarter",
+                  "label": "Soft Starter",
+                  "stato": "Soft-Starter"
+                },
+                {
+                  "valore": "stellaTriangolo",
+                  "label": "Stella / Triangolo",
+                  "stato": "Stella-Tr."
+                }
+              ]
+            },
+            {
+              "key": "collegamentoMotore",
+              "kind": "radio",
+              "label": "Collegamento motore",
+              "acro": "05_HYDRO-Colleg.Motore",
+              "opzioni": [
+                {
+                  "valore": "fili3",
+                  "label": "3 fili",
+                  "stato": "3 fili"
+                },
+                {
+                  "valore": "fili6",
+                  "label": "6 fili",
+                  "stato": "6 fili"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "emendamentoA3",
+              "kind": "check",
+              "label": "Gestione emendamento A3",
+              "acro": "05_HYDRO-Em.A3"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "centralinaMarca",
+              "kind": "text",
+              "label": "Centralina idraulica: marca e modello",
+              "acro": "05_HYDRO-Centralina-Marca",
+              "maxLength": 43
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "centralinaV",
+              "kind": "text",
+              "label": "V",
+              "acro": "05_HYDRO-Centralina-V",
+              "maxLength": 11
+            },
+            {
+              "key": "centralinaA",
+              "kind": "text",
+              "label": "A",
+              "acro": "05_HYDRO-Centralina-A",
+              "maxLength": 11
+            },
+            {
+              "key": "centralinaKw",
+              "kind": "text",
+              "label": "kW",
+              "acro": "05_HYDRO-Centralina-KW",
+              "maxLength": 11
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "centralinaV2",
+              "kind": "text",
+              "label": "V",
+              "acro": "05_HYDRO-Centralina-V2",
+              "maxLength": 11
+            },
+            {
+              "key": "centralinaA2",
+              "kind": "text",
+              "label": "A",
+              "acro": "05_HYDRO-Centralina-A2",
+              "maxLength": 11
+            },
+            {
+              "key": "centralinaKw2",
+              "kind": "text",
+              "label": "kW",
+              "acro": "05_HYDRO-Centralina-KW2",
+              "maxLength": 11
+            }
+          ]
+        },
+        {
+          "titolo": "Gruppo valvole",
+          "campi": [
+            {
+              "key": "valvoleN",
+              "kind": "text",
+              "label": "N° valvole",
+              "acro": "05_HYDRO-Valvole-N°",
+              "maxLength": 12
+            },
+            {
+              "key": "valvoleTensione",
+              "kind": "text",
+              "label": "Tensione (V)",
+              "acro": "05_HYDRO-Valvole-Tens.gruppo",
+              "maxLength": 12
+            },
+            {
+              "key": "valvoleAcDc",
+              "kind": "radio",
+              "label": "AC / DC",
+              "acro": "05_HYDRO-Valvole-Tens.gruppo-AC-DC",
+              "opzioni": [
+                {
+                  "valore": "ac",
+                  "label": "AC",
+                  "stato": "AC"
+                },
+                {
+                  "valore": "dc",
+                  "label": "DC",
+                  "stato": "DC"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "valvoleMarca",
+              "kind": "textarea",
+              "label": "Gruppo valvole: marca e modello",
+              "acro": "05_HYDRO-Valvole-Marca",
+              "maxLength": 600
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "valvoleV",
+              "kind": "text",
+              "label": "V",
+              "acro": "05_HYDRO-Valvole-V",
+              "maxLength": 11
+            },
+            {
+              "key": "valvoleA",
+              "kind": "text",
+              "label": "A",
+              "acro": "05_HYDRO-Valvole-A",
+              "maxLength": 11
+            },
+            {
+              "key": "valvoleKw",
+              "kind": "text",
+              "label": "kW",
+              "acro": "05_HYDRO-Valvole-KW",
+              "maxLength": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "6 · Porte",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "portePiano",
+              "kind": "radio",
+              "label": "Porte di piano",
+              "acro": "06_Porte-Piano",
+              "opzioni": [
+                {
+                  "valore": "automatiche",
+                  "label": "Automatiche",
+                  "stato": "Automatiche"
+                },
+                {
+                  "valore": "manuali",
+                  "label": "Manuali",
+                  "stato": "Manuali"
+                }
+              ]
+            },
+            {
+              "key": "pattino",
+              "kind": "check",
+              "label": "Con pattino elettronico",
+              "acro": "06_Porte-Piano-Pattino",
+              "prefill": "pattinoRetrattile=si"
+            },
+            {
+              "key": "pattinoV",
+              "kind": "text",
+              "label": "Pattino: tensione (V)",
+              "acro": "06_Porte-Piano-Patt.V",
+              "maxLength": 12
+            },
+            {
+              "key": "pattinoA",
+              "kind": "text",
+              "label": "Pattino: assorbimento (A)",
+              "acro": "06_Porte-Piano-Patt.A",
+              "maxLength": 12
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "porteCabina",
+              "kind": "radio",
+              "label": "Porte di cabina",
+              "acro": "06_Porte-Cabina",
+              "opzioni": [
+                {
+                  "valore": "manuali",
+                  "label": "Manuali",
+                  "stato": "Manuali"
+                },
+                {
+                  "valore": "autonome",
+                  "label": "Autonome",
+                  "stato": "Autonome"
+                },
+                {
+                  "valore": "regolate",
+                  "label": "Regolate",
+                  "stato": "Regolate"
+                },
+                {
+                  "valore": "trifase",
+                  "label": "Trifase",
+                  "stato": "Trifase"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "alimentateMarcia",
+              "kind": "check",
+              "label": "Porte alimentate in marcia",
+              "acro": "06_Porte-Cabina-P.Aliment.In.Marcia"
+            },
+            {
+              "key": "aperturaAnticipata",
+              "kind": "check",
+              "label": "Apertura porte anticipata",
+              "acro": "06_Porte-Cabina-Apertura-Anticipata"
+            },
+            {
+              "key": "rilivellamento",
+              "kind": "check",
+              "label": "Rilivellamento",
+              "acro": "06_Porte-Cabina-Rilivellamento"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "frenatura",
+              "kind": "check",
+              "label": "Frenatura porte",
+              "acro": "06_Porte-Cabina-Frenatura"
+            },
+            {
+              "key": "frenaturaV",
+              "kind": "text",
+              "label": "Frenatura: tensione (V)",
+              "acro": "06_Porte-Cabina-Frenatura-V",
+              "maxLength": 12
+            },
+            {
+              "key": "frenaturaAcDc",
+              "kind": "radio",
+              "label": "AC / DC",
+              "acro": "06_Porte-Cabina-Frenatura-AC-DC",
+              "opzioni": [
+                {
+                  "valore": "ac",
+                  "label": "AC",
+                  "stato": "AC"
+                },
+                {
+                  "valore": "dc",
+                  "label": "DC",
+                  "stato": "DC"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "motorePorteMarca",
+              "kind": "text",
+              "label": "Motore porte: marca e modello",
+              "acro": "06_Porte-Cabina-Marca",
+              "maxLength": 43
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "motorePorteV",
+              "kind": "text",
+              "label": "V",
+              "acro": "06_Porte-Cabina-Marca-V",
+              "maxLength": 11
+            },
+            {
+              "key": "motorePorteA",
+              "kind": "text",
+              "label": "A",
+              "acro": "06_Porte-Cabina-Marca-A",
+              "maxLength": 11
+            },
+            {
+              "key": "motorePorteKw",
+              "kind": "text",
+              "label": "kW",
+              "acro": "06_Porte-Cabina-Marca-KW",
+              "maxLength": 11
+            },
+            {
+              "key": "motorePorteAcDc",
+              "kind": "radio",
+              "label": "AC / DC",
+              "acro": "06_Porte-Cabina-Motore-Tens.AC-DC",
+              "opzioni": [
+                {
+                  "valore": "ac",
+                  "label": "AC",
+                  "stato": "AC"
+                },
+                {
+                  "valore": "dc",
+                  "label": "DC",
+                  "stato": "DC"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "7 · Sistema di conteggio",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "conteggio",
+              "kind": "radio",
+              "label": "Sistema di conteggio",
+              "acro": "07_Conteggio",
+              "opzioni": [
+                {
+                  "valore": "faiFas",
+                  "label": "Lettori magnetici FAI/FAS",
+                  "stato": "FAI/FAS"
+                },
+                {
+                  "valore": "incrementale",
+                  "label": "Encoder incrementale DMG",
+                  "stato": "Incrementale"
+                },
+                {
+                  "valore": "elgo",
+                  "label": "Encoder assoluto ELGO Safe",
+                  "stato": "Elgo"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "8 · Opzioni quadro",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "kitSovratensione",
+              "kind": "check",
+              "label": "Kit protezione sovratensione",
+              "acro": "08_Opzioni-Kit-Sovratensione"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "emergenzaAutomatica",
+              "kind": "check",
+              "label": "Emergenza automatica con apertura porte al piano più vicino",
+              "acro": "08_Opzioni-Eme-Automatica"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "segnalazioneDm236",
+              "kind": "check",
+              "label": "Segnalazione DM 236 (Legge 13)",
+              "acro": "08_Opzioni-Segn.DM236"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "ventilazioneMotore",
+              "kind": "check",
+              "label": "Ventilazione motore",
+              "acro": "08_Opzioni-Vent.Motore"
+            },
+            {
+              "key": "ventilazioneMotoreV",
+              "kind": "radio",
+              "label": "Ventilazione motore",
+              "acro": "08_Opzioni-Vent.Motore-V",
+              "opzioni": [
+                {
+                  "valore": "mono230",
+                  "label": "Monofase 230V",
+                  "stato": "Mono-230"
+                },
+                {
+                  "valore": "mono400",
+                  "label": "Monofase 400V",
+                  "stato": "Mono-400"
+                },
+                {
+                  "valore": "trifase400",
+                  "label": "Trifase 400V",
+                  "stato": "Trifase-400"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "ventilazioneCabina",
+              "kind": "check",
+              "label": "Ventilazione in cabina",
+              "acro": "08_Opzioni-Vent.Cabina"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "sondaTemperatura",
+              "kind": "check",
+              "label": "Sonda temperatura ambiente",
+              "acro": "08_Opzioni-Sonda-Temp"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "comandoLimitatore",
+              "kind": "check",
+              "label": "Comando limitatore di velocità",
+              "acro": "08_Opzioni-Comando-Limitatore"
+            },
+            {
+              "key": "comandoLimitatoreV",
+              "kind": "text",
+              "label": "Tensione (V)",
+              "acro": "08_Opzioni-Comando-Limitatore-V",
+              "maxLength": 12
+            },
+            {
+              "key": "comandoLimitatoreAcDc",
+              "kind": "radio",
+              "label": "AC / DC",
+              "acro": "08_Opzioni-Comando-Limitatore-AC-DC",
+              "opzioni": [
+                {
+                  "valore": "ac",
+                  "label": "AC",
+                  "stato": "AC"
+                },
+                {
+                  "valore": "dc",
+                  "label": "DC",
+                  "stato": "DC"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "protezione230",
+              "kind": "check",
+              "label": "Protezione aggiuntiva 230V",
+              "acro": "08_Opzioni-Protezione-Agg.230V"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "evacuazioneIncendio",
+              "kind": "check",
+              "label": "Evacuazione incendio",
+              "acro": "08_Opzioni-Evacuazione-Incendio"
+            },
+            {
+              "key": "evacuazionePiani",
+              "kind": "radio",
+              "label": "Evacuazione incendio",
+              "acro": "08_Opzioni-Evacuazione-Incendio-Piani",
+              "opzioni": [
+                {
+                  "valore": "singolo",
+                  "label": "Piano singolo",
+                  "stato": "Singolo"
+                },
+                {
+                  "valore": "cascata",
+                  "label": "In cascata",
+                  "stato": "Cascata"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "protezioniEn8121",
+              "kind": "check",
+              "label": "Protezioni EN81-21",
+              "acro": "08_Opzioni-Prot.EN81-21"
+            },
+            {
+              "key": "protezioniEn8121Tipo",
+              "kind": "radio",
+              "label": "Protezioni EN81-21",
+              "acro": "08_Opzioni-Prot.EN81-21-scelta",
+              "opzioni": [
+                {
+                  "valore": "accessoVano",
+                  "label": "Solo controllo accesso vano",
+                  "stato": "Accesso Vano"
+                },
+                {
+                  "valore": "ami100",
+                  "label": "Dispositivo AMI100 RTBS",
+                  "stato": "AMI100"
+                },
+                {
+                  "valore": "shi",
+                  "label": "Dispositivo SHI",
+                  "stato": "SHI"
+                },
+                {
+                  "valore": "manuale",
+                  "label": "Dispositivo manuale",
+                  "stato": "Manuale"
+                },
+                {
+                  "valore": "preattivato",
+                  "label": "Dispositivo pre-attivato",
+                  "stato": "Preattivato"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "protezioneUcm",
+              "kind": "check",
+              "label": "Protezione UCM",
+              "acro": "08_Opzioni-Prot.UCM"
+            },
+            {
+              "key": "protezioneUcmTipo",
+              "kind": "radio",
+              "label": "Protezione UCM",
+              "acro": "08_Opzioni-Prot.UCM-scelta",
+              "opzioni": [
+                {
+                  "valore": "monitoraggio",
+                  "label": "Monitoraggio freno / valvole",
+                  "stato": "Monit.Valvole"
+                },
+                {
+                  "valore": "limitatoreA3",
+                  "label": "Soluzione con limitatore A3",
+                  "stato": "Lim.A3"
+                },
+                {
+                  "valore": "ucmpDmg",
+                  "label": "Soluzione UCMP DMG",
+                  "stato": "UCMP DMG"
+                },
+                {
+                  "valore": "elgo",
+                  "label": "Soluzione ELGO Safe",
+                  "stato": "Elgo"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "9 · Accessori",
+      "righe": [
+        {
+          "titolo": "Cabina",
+          "campi": [
+            {
+              "key": "stop2Accesso",
+              "kind": "check",
+              "label": "Stop 2° accesso",
+              "acro": "09_Acc.Cab_Stop2"
+            },
+            {
+              "key": "grembiule",
+              "kind": "check",
+              "label": "Gestione grembiule retrattile (sensore e cavi)",
+              "acro": "09_Acc.Cab_Gremb.Retrattile"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pesacarico",
+              "kind": "check",
+              "label": "Pesacarico DMG LLEC7",
+              "acro": "09_Acc.Cab_Pesacarico"
+            },
+            {
+              "key": "pesacaricoSensore",
+              "kind": "radio",
+              "label": "Tipo di sensore",
+              "acro": "09_Acc.Cab_Pesacarico-Sensori",
+              "opzioni": [
+                {
+                  "valore": "arcata",
+                  "label": "per arcata",
+                  "stato": "Arcata"
+                },
+                {
+                  "valore": "funi",
+                  "label": "per funi multiple",
+                  "stato": "Funi"
+                },
+                {
+                  "valore": "sottoCabina",
+                  "label": "sotto cabina",
+                  "stato": "Sotto-Cab"
+                },
+                {
+                  "valore": "funeSingola",
+                  "label": "per singola fune",
+                  "stato": "Fune-sing"
+                }
+              ]
+            },
+            {
+              "key": "pesacaricoFuniN",
+              "kind": "text",
+              "label": "Funi multiple: N°",
+              "acro": "09_Acc.Cab_Pesacarico-Sens.Funi-N°",
+              "maxLength": 7
+            },
+            {
+              "key": "pesacaricoFuneDiam",
+              "kind": "text",
+              "label": "Singola fune: Ø",
+              "acro": "09_Acc.Cab_Pesacarico-Sens.Funi-Diam",
+              "maxLength": 7
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "lampadaTetto",
+              "kind": "check",
+              "label": "Lampada di emergenza tetto cabina",
+              "acro": "09_Acc.Cab_Lamp.Eme-TOC"
+            },
+            {
+              "key": "barrieraCellule",
+              "kind": "check",
+              "label": "Barriera di cellule",
+              "acro": "09_Acc.Cab_Antine"
+            }
+          ]
+        },
+        {
+          "titolo": "Vano",
+          "campi": [
+            {
+              "key": "illuminazioneVano",
+              "kind": "radio",
+              "label": "Illuminazione vano",
+              "acro": "09_Acc.Vano_Kit-Illuminazione",
+              "opzioni": [
+                {
+                  "valore": "ledCordino",
+                  "label": "Led di vano + cordino",
+                  "stato": "Led+Cord"
+                },
+                {
+                  "valore": "ledDeviatore",
+                  "label": "Led di vano + deviatore",
+                  "stato": "Led+Deviatore"
+                },
+                {
+                  "valore": "kitCordino",
+                  "label": "Solo kit accensione (cordino)",
+                  "stato": "Kit-Cord"
+                },
+                {
+                  "valore": "kitDeviatore",
+                  "label": "Solo kit accensione (deviatore)",
+                  "stato": "Kit-Deviatore"
+                }
+              ]
+            },
+            {
+              "key": "catenaSicurezze",
+              "kind": "check",
+              "label": "Catena sicurezze",
+              "acro": "09_Acc.Vano_Catena-Sicu"
+            },
+            {
+              "key": "canalinaVano",
+              "kind": "check",
+              "label": "Canalina vano",
+              "acro": "09_Acc.Vano_Canalina"
+            }
+          ]
+        },
+        {
+          "titolo": "Sala macchine",
+          "campi": [
+            {
+              "key": "caviAlimentazione",
+              "kind": "check",
+              "label": "Cavi alimentazione quadro",
+              "acro": "09_Acc.SM_Cavi-Alim-Quadro"
+            },
+            {
+              "key": "kitCaviFreno",
+              "kind": "check",
+              "label": "Kit cavi freno - sonda - motore",
+              "acro": "09_Acc.SM_Kit-Cavi-freno-sonda-motore"
+            },
+            {
+              "key": "caviMotore",
+              "kind": "check",
+              "label": "Cavi schermati motore",
+              "acro": "09_Acc.SM_Cavi-Motore"
+            },
+            {
+              "key": "illuminazioneSala",
+              "kind": "check",
+              "label": "Illuminazione sala macchine",
+              "acro": "09_Acc.SM_Illum.SM"
+            },
+            {
+              "key": "luceEmergenza",
+              "kind": "check",
+              "label": "Luce di emergenza",
+              "acro": "09_Acc.SM_Luce-Eme"
+            },
+            {
+              "key": "pulsantieraStop",
+              "kind": "check",
+              "label": "Pulsantiera di Stop",
+              "acro": "09_Acc.SM_Stop"
+            },
+            {
+              "key": "localePulegge",
+              "kind": "check",
+              "label": "Locale pulegge separato",
+              "acro": "09_Acc.SM_Loc.Pulegge-Separato"
+            },
+            {
+              "key": "cavoManovra",
+              "kind": "check",
+              "label": "Cavo per manovra provvisoria (30m)",
+              "acro": "09_Acc.SM_Cavo-Manovra-30mt"
+            },
+            {
+              "key": "quadroGenerale",
+              "kind": "check",
+              "label": "Quadro di alimentazione generale",
+              "acro": "09_Acc.SM_Quadro-Generale"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "telefonia",
+              "kind": "radio",
+              "label": "Telefono di emergenza",
+              "acro": "09_Acc.Cab_Telefonia",
+              "opzioni": [
+                {
+                  "valore": "amigo",
+                  "label": "Sistema telefonico di emergenza Amigo (EN81-28)",
+                  "stato": "DMG-Amigo"
+                },
+                {
+                  "valore": "altro",
+                  "label": "Altro telefono",
+                  "stato": "Altro"
+                }
+              ]
+            },
+            {
+              "key": "derivatoSala",
+              "kind": "check",
+              "label": "Derivato di sala macchine",
+              "acro": "09_Acc.Cab_Telefonia-S.M"
+            },
+            {
+              "key": "derivatoFossa",
+              "kind": "check",
+              "label": "Derivato di fondo fossa",
+              "acro": "09_Acc.Cab_Telefonia-F.F"
+            },
+            {
+              "key": "altroTelefono",
+              "kind": "text",
+              "label": "Altro telefono: quale",
+              "acro": "09_Acc.Cab_Altro-Telefono-Nome",
+              "maxLength": 48
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "10 · Pulsantiere di cabina",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "antivandalo",
+              "kind": "radio",
+              "label": "Opzione antivandalo EN81-71",
+              "acro": "10_CarPanels_Dim_EN81-71",
+              "opzioni": [
+                {
+                  "valore": "classe1",
+                  "label": "Classe 1",
+                  "stato": "Classe1"
+                },
+                {
+                  "valore": "classe2",
+                  "label": "Classe 2",
+                  "stato": "Classe2"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cabinaPiastrePiane",
+              "kind": "radio",
+              "label": "Montaggio a filo: piastre piane (larghezza × altezza)",
+              "acro": "10_CarPanels_Dim_Flush-scelta",
+              "opzioni": [
+                {
+                  "valore": "piana900x150",
+                  "label": "Piastre piane 150 × 900",
+                  "stato": "Flush_0915"
+                },
+                {
+                  "valore": "piana900x180",
+                  "label": "Piastre piane 180 × 900",
+                  "stato": "Flush_0918"
+                },
+                {
+                  "valore": "piana900x220",
+                  "label": "Piastre piane 220 × 900",
+                  "stato": "Flush_0922"
+                },
+                {
+                  "valore": "piana1000x150",
+                  "label": "Piastre piane 150 × 1000",
+                  "stato": "Flush_1015"
+                },
+                {
+                  "valore": "piana1000x180",
+                  "label": "Piastre piane 180 × 1000",
+                  "stato": "Flush_1018"
+                },
+                {
+                  "valore": "piana1000x220",
+                  "label": "Piastre piane 220 × 1000",
+                  "stato": "Flush_1022"
+                },
+                {
+                  "valore": "piana1100x150",
+                  "label": "Piastre piane 150 × 1100",
+                  "stato": "Flush_1115"
+                },
+                {
+                  "valore": "piana1100x180",
+                  "label": "Piastre piane 180 × 1100",
+                  "stato": "Flush_1118"
+                },
+                {
+                  "valore": "piana1100x220",
+                  "label": "Piastre piane 220 × 1100",
+                  "stato": "Flush_1122"
+                },
+                {
+                  "valore": "piana1200x150",
+                  "label": "Piastre piane 150 × 1200",
+                  "stato": "Flush_1215"
+                },
+                {
+                  "valore": "piana1200x180",
+                  "label": "Piastre piane 180 × 1200",
+                  "stato": "Flush_1218"
+                },
+                {
+                  "valore": "piana1200x220",
+                  "label": "Piastre piane 220 × 1200",
+                  "stato": "Flush_1222"
+                }
+              ]
+            },
+            {
+              "key": "copMisura",
+              "kind": "text",
+              "label": "COP su misura",
+              "acro": "10_CarPanels_Dim_Flush",
+              "maxLength": 18
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cabinaModello",
+              "kind": "radio",
+              "label": "Montaggio sovrapposto (larghezza × altezza)",
+              "acro": "10_CarPanels_Dim_scelta",
+              "opzioni": [
+                {
+                  "valore": "greta900x160",
+                  "label": "Greta 160 × 900",
+                  "stato": "Greta_0916"
+                },
+                {
+                  "valore": "greta900x200",
+                  "label": "Greta 200 × 900",
+                  "stato": "Greta_0920"
+                },
+                {
+                  "valore": "greta1000x160",
+                  "label": "Greta 160 × 1000",
+                  "stato": "Greta_1016"
+                },
+                {
+                  "valore": "greta1000x200",
+                  "label": "Greta 200 × 1000",
+                  "stato": "Greta_1020"
+                },
+                {
+                  "valore": "greta1100x160",
+                  "label": "Greta 160 × 1100",
+                  "stato": "Greta_1116"
+                },
+                {
+                  "valore": "greta1100x200",
+                  "label": "Greta 200 × 1100",
+                  "stato": "Greta_1120"
+                },
+                {
+                  "valore": "greta1200x160",
+                  "label": "Greta 160 × 1200",
+                  "stato": "Greta_1216"
+                },
+                {
+                  "valore": "greta1200x200",
+                  "label": "Greta 200 × 1200",
+                  "stato": "Greta_1220"
+                },
+                {
+                  "valore": "luna900x160",
+                  "label": "Luna 160 × 900",
+                  "stato": "Luna_0916"
+                },
+                {
+                  "valore": "luna900x200",
+                  "label": "Luna 200 × 900",
+                  "stato": "Luna_0920"
+                },
+                {
+                  "valore": "luna1000x160",
+                  "label": "Luna 160 × 1000",
+                  "stato": "Luna_1016"
+                },
+                {
+                  "valore": "luna1000x200",
+                  "label": "Luna 200 × 1000",
+                  "stato": "Luna_1020"
+                },
+                {
+                  "valore": "luna1200x200",
+                  "label": "Luna 200 × 1200",
+                  "stato": "Luna_1220"
+                },
+                {
+                  "valore": "cut900x160",
+                  "label": "Cut 160 × 900",
+                  "stato": "Cut_0916"
+                },
+                {
+                  "valore": "cut900x200",
+                  "label": "Cut 200 × 900",
+                  "stato": "Cut_0920"
+                },
+                {
+                  "valore": "cut1000x160",
+                  "label": "Cut 160 × 1000",
+                  "stato": "Cut_1016"
+                },
+                {
+                  "valore": "cut1000x200",
+                  "label": "Cut 200 × 1000",
+                  "stato": "Cut_1020"
+                },
+                {
+                  "valore": "cut1200x200",
+                  "label": "Cut 200 × 1200",
+                  "stato": "Cut_1220"
+                },
+                {
+                  "valore": "silver900x200",
+                  "label": "Silverlight 200 × 900",
+                  "stato": "Silver_0920"
+                },
+                {
+                  "valore": "silver1000x200",
+                  "label": "Silverlight 200 × 1000",
+                  "stato": "Silver_1020"
+                },
+                {
+                  "valore": "silver1100x200",
+                  "label": "Silverlight 200 × 1100",
+                  "stato": "Silver_1120"
+                },
+                {
+                  "valore": "silver1200x200",
+                  "label": "Silverlight 200 × 1200",
+                  "stato": "Silver_1220"
+                },
+                {
+                  "valore": "venus200",
+                  "label": "Colonna Venus 200",
+                  "stato": "Column_0020"
+                },
+                {
+                  "valore": "venus210",
+                  "label": "Colonna Venus 210",
+                  "stato": "Column_0021"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "venusLunghezza",
+              "kind": "text",
+              "label": "Colonna Venus: lunghezza (2000-2400)",
+              "acro": "10_CarPanels_Dim_Column",
+              "maxLength": 16
+            },
+            {
+              "key": "venusApertura",
+              "kind": "radio",
+              "label": "Colonna Venus",
+              "acro": "10_CarPanels_Dim_Column-Fixed",
+              "opzioni": [
+                {
+                  "valore": "fissa",
+                  "label": "Fissa",
+                  "stato": "Fissa"
+                },
+                {
+                  "valore": "apribile",
+                  "label": "Apribile",
+                  "stato": "Apribile"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "materiale",
+              "kind": "radio",
+              "label": "Materiale",
+              "acro": "10_CarPanels_Materials",
+              "opzioni": [
+                {
+                  "valore": "pvdBlack",
+                  "label": "PVD black",
+                  "stato": "PVD black"
+                },
+                {
+                  "valore": "pvdBronze",
+                  "label": "PVD bronze",
+                  "stato": "PVD bronze"
+                },
+                {
+                  "valore": "inoxScotchBrite",
+                  "label": "Inox Scotch Brite",
+                  "stato": "Inox S.B."
+                },
+                {
+                  "valore": "inoxMirror",
+                  "label": "Inox Mirror",
+                  "stato": "Mirror"
+                },
+                {
+                  "valore": "pvdSatinato",
+                  "label": "PVD satinato",
+                  "stato": "PVD gold brushed"
+                },
+                {
+                  "valore": "pvdLucido",
+                  "label": "PVD lucido",
+                  "stato": "PVD gold polished"
+                },
+                {
+                  "valore": "g320",
+                  "label": "G320",
+                  "stato": "G320"
+                },
+                {
+                  "valore": "lino",
+                  "label": "Lino",
+                  "stato": "Lino"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "display",
+              "kind": "radio",
+              "label": "Display",
+              "acro": "10_CarPanels_Display",
+              "opzioni": [
+                {
+                  "valore": "banksy",
+                  "label": "Banksy",
+                  "stato": "Banksy"
+                },
+                {
+                  "valore": "raffaello",
+                  "label": "Raffaello",
+                  "stato": "Raffaello"
+                },
+                {
+                  "valore": "giotto",
+                  "label": "Giotto",
+                  "stato": "Giotto"
+                },
+                {
+                  "valore": "matisse",
+                  "label": "Matisse",
+                  "stato": "Matisse"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "displayKg",
+              "kind": "text",
+              "label": "Capacità (Kg)",
+              "acro": "10_CarPanels_Display-Kg",
+              "maxLength": 22
+            },
+            {
+              "key": "displayPersone",
+              "kind": "text",
+              "label": "Persone",
+              "acro": "10_CarPanels_Display-Persons",
+              "maxLength": 22
+            },
+            {
+              "key": "displayImpianto",
+              "kind": "text",
+              "label": "N° Impianto",
+              "acro": "10_CarPanels_Display-ID",
+              "maxLength": 44
+            },
+            {
+              "key": "displayCe",
+              "kind": "text",
+              "label": "N° CE",
+              "acro": "10_CarPanels_Display-CE",
+              "maxLength": 22
+            },
+            {
+              "key": "displayAltro",
+              "kind": "text",
+              "label": "Altro",
+              "acro": "10_CarPanels_Display-Other",
+              "maxLength": 44
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pulsanti",
+              "kind": "radio",
+              "label": "Design pulsanti",
+              "acro": "10_CarPanels_P.Button",
+              "opzioni": [
+                {
+                  "valore": "dardoQuadrato",
+                  "label": "Dardo (quadrato)",
+                  "stato": "1"
+                },
+                {
+                  "valore": "dardoTondo",
+                  "label": "Dardo (tondo)",
+                  "stato": "2"
+                },
+                {
+                  "valore": "macro",
+                  "label": "Macro",
+                  "stato": "3"
+                },
+                {
+                  "valore": "disco",
+                  "label": "Disco",
+                  "stato": "4"
+                },
+                {
+                  "valore": "blQuadrato",
+                  "label": "BL (quadrato)",
+                  "stato": "5"
+                },
+                {
+                  "valore": "blTondo",
+                  "label": "BL (tondo)",
+                  "stato": "6"
+                },
+                {
+                  "valore": "sherman",
+                  "label": "Sherman",
+                  "stato": "7"
+                },
+                {
+                  "valore": "panzer",
+                  "label": "Panzer",
+                  "stato": "8"
+                }
+              ]
+            },
+            {
+              "key": "illuminazione",
+              "kind": "radio",
+              "label": "Illuminazione",
+              "acro": "10_CarPanels_P.Button-Illimin",
+              "opzioni": [
+                {
+                  "valore": "singolaRossa",
+                  "label": "Singola: rossa",
+                  "stato": "Red"
+                },
+                {
+                  "valore": "singolaBlu",
+                  "label": "Singola: blu",
+                  "stato": "Blue"
+                },
+                {
+                  "valore": "doppiaRossa",
+                  "label": "Doppia: bianca rossa",
+                  "stato": "W-Red"
+                },
+                {
+                  "valore": "doppiaBlu",
+                  "label": "Doppia: bianca blu",
+                  "stato": "W-Blue"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "titolo": "Elementi acustici",
+          "campi": [
+            {
+              "key": "telefono",
+              "kind": "radio",
+              "label": "Telefono",
+              "acro": "10_CarPanels_Acoustic-Telephone",
+              "opzioni": [
+                {
+                  "valore": "amigo",
+                  "label": "Derivato audio di cabina Telefonia DMG Amigo system",
+                  "stato": "Amigo"
+                },
+                {
+                  "valore": "altro",
+                  "label": "Altro telefono",
+                  "stato": "Other"
+                }
+              ]
+            },
+            {
+              "key": "telefonoAltro",
+              "kind": "text",
+              "label": "Altro telefono: quale",
+              "acro": "10_CarPanels_Acoustic-Telephone-Other",
+              "maxLength": 27
+            },
+            {
+              "key": "sintesiVocale",
+              "kind": "check",
+              "label": "Sintesi vocale DMG",
+              "acro": "10_CarPanels_Acoustic-Caruso"
+            },
+            {
+              "key": "citofoniaPompieri",
+              "kind": "check",
+              "label": "Citofonia DMG per pompieri",
+              "acro": "10_CarPanels_Acoustic-Intercom"
+            }
+          ]
+        },
+        {
+          "titolo": "Pulsanti di servizio",
+          "campi": [
+            {
+              "key": "servizioApri",
+              "kind": "check",
+              "label": "Apri porte",
+              "acro": "10_CarPanels_Service-Apri.P"
+            },
+            {
+              "key": "servizioChiudi",
+              "kind": "check",
+              "label": "Chiudi porte",
+              "acro": "10_CarPanels_Service-Chiudi.P"
+            },
+            {
+              "key": "servizioAllarme",
+              "kind": "check",
+              "label": "Allarme",
+              "acro": "10_CarPanels_Service-Allarme"
+            },
+            {
+              "key": "servizioStop",
+              "kind": "check",
+              "label": "Stop",
+              "acro": "10_CarPanels_Service-Stop"
+            }
+          ]
+        },
+        {
+          "titolo": "Contatti a chiave",
+          "campi": [
+            {
+              "key": "chiaviDove",
+              "kind": "radio",
+              "label": "Contatti a chiave",
+              "acro": "10_CarPanels_Key-Cab-Flo",
+              "opzioni": [
+                {
+                  "valore": "cabina",
+                  "label": "In cabina",
+                  "stato": "Car"
+                },
+                {
+                  "valore": "piani",
+                  "label": "Ai piani",
+                  "stato": "Floors"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "chiave1Tipo",
+              "kind": "radio",
+              "label": "Chiave 1",
+              "acro": "10_CarPanels_Key-Type1",
+              "opzioni": [
+                {
+                  "valore": "kaba",
+                  "label": "Kaba",
+                  "stato": "Kaba"
+                },
+                {
+                  "valore": "viro",
+                  "label": "Viro",
+                  "stato": "Viro"
+                },
+                {
+                  "valore": "euro",
+                  "label": "Euro",
+                  "stato": "Euro"
+                }
+              ]
+            },
+            {
+              "key": "chiave1Pe",
+              "kind": "radio",
+              "label": "Chiave 1: posizioni",
+              "acro": "10_CarPanels_Key-Type1-PE",
+              "opzioni": [
+                {
+                  "valore": "p2e1",
+                  "label": "2P-1E",
+                  "stato": "21"
+                },
+                {
+                  "valore": "p2e1rm",
+                  "label": "2P-1E R.M.",
+                  "stato": "RM"
+                },
+                {
+                  "valore": "p2e2",
+                  "label": "2P-2E",
+                  "stato": "22"
+                }
+              ]
+            },
+            {
+              "key": "chiave1Incisione",
+              "kind": "text",
+              "label": "Chiave 1: incisione",
+              "acro": "10_CarPanels_Key-Type1-Decor",
+              "maxLength": 27
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "chiave2Tipo",
+              "kind": "radio",
+              "label": "Chiave 2",
+              "acro": "10_CarPanels_Key-Type2",
+              "opzioni": [
+                {
+                  "valore": "kaba",
+                  "label": "Kaba",
+                  "stato": "Kaba"
+                },
+                {
+                  "valore": "viro",
+                  "label": "Viro",
+                  "stato": "Viro"
+                },
+                {
+                  "valore": "euro",
+                  "label": "Euro",
+                  "stato": "Euro"
+                }
+              ]
+            },
+            {
+              "key": "chiave2Pe",
+              "kind": "radio",
+              "label": "Chiave 2: posizioni",
+              "acro": "10_CarPanels_Key-Type2-PE",
+              "opzioni": [
+                {
+                  "valore": "p2e1",
+                  "label": "2P-1E",
+                  "stato": "21"
+                },
+                {
+                  "valore": "p2e1rm",
+                  "label": "2P-1E R.M.",
+                  "stato": "RM"
+                },
+                {
+                  "valore": "p2e2",
+                  "label": "2P-2E",
+                  "stato": "22"
+                }
+              ]
+            },
+            {
+              "key": "chiave2Incisione",
+              "kind": "text",
+              "label": "Chiave 2: incisione",
+              "acro": "10_CarPanels_Key-Type2-Decor",
+              "maxLength": 27
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "smartKey",
+              "kind": "check",
+              "label": "Smart Key Plus",
+              "acro": "10_CarPanels_Key-SmartKey"
+            },
+            {
+              "key": "smartKeyMaster",
+              "kind": "text",
+              "label": "Master",
+              "acro": "10_CarPanels_Key-SmartKey-Master",
+              "maxLength": 11
+            },
+            {
+              "key": "smartKeyUser",
+              "kind": "text",
+              "label": "User",
+              "acro": "10_CarPanels_Key-SmartKey-User",
+              "maxLength": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "11 · Pulsantiere di piano",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "pianoPiastrePiane",
+              "kind": "radio",
+              "label": "Piastre piane (larghezza × altezza)",
+              "acro": "11_FloorPanels_Dim_Flush-scelta",
+              "opzioni": [
+                {
+                  "valore": "piana150x60",
+                  "label": "Piastre piane 60 × 150",
+                  "stato": "Flush_1560"
+                },
+                {
+                  "valore": "piana150x80",
+                  "label": "Piastre piane 80 × 150",
+                  "stato": "Flush_1580"
+                },
+                {
+                  "valore": "piana200x60",
+                  "label": "Piastre piane 60 × 200",
+                  "stato": "Flush_2060"
+                },
+                {
+                  "valore": "piana200x80",
+                  "label": "Piastre piane 80 × 200",
+                  "stato": "Flush_2080"
+                },
+                {
+                  "valore": "piana200x90",
+                  "label": "Piastre piane 90 × 200",
+                  "stato": "Flush_2090"
+                },
+                {
+                  "valore": "piana250x60",
+                  "label": "Piastre piane 60 × 250",
+                  "stato": "Flush_2560"
+                },
+                {
+                  "valore": "piana250x80",
+                  "label": "Piastre piane 80 × 250",
+                  "stato": "Flush_2580"
+                },
+                {
+                  "valore": "piana250x90",
+                  "label": "Piastre piane 90 × 250",
+                  "stato": "Flush_2590"
+                }
+              ]
+            },
+            {
+              "key": "pianoPiastreAltra",
+              "kind": "text",
+              "label": "Piastre piane: altra altezza",
+              "acro": "11_FloorPanels_Dim_Flush",
+              "maxLength": 9
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pianoModello",
+              "kind": "radio",
+              "label": "Greta, Luna, Cut, Silverlight (larghezza × altezza)",
+              "acro": "11_FloorPanels_Dim_scelta",
+              "opzioni": [
+                {
+                  "valore": "greta160x65",
+                  "label": "Greta 65 × 160",
+                  "stato": "Greta_1665"
+                },
+                {
+                  "valore": "greta225x65",
+                  "label": "Greta 65 × 225",
+                  "stato": "Greta_2265"
+                },
+                {
+                  "valore": "greta245x65",
+                  "label": "Greta 65 × 245",
+                  "stato": "Greta_2465"
+                },
+                {
+                  "valore": "gretaaltrax65",
+                  "label": "Greta 65 × altra altezza",
+                  "stato": "Greta_0065"
+                },
+                {
+                  "valore": "greta160x85",
+                  "label": "Greta 85 × 160",
+                  "stato": "Greta_1685"
+                },
+                {
+                  "valore": "greta225x85",
+                  "label": "Greta 85 × 225",
+                  "stato": "Greta_2285"
+                },
+                {
+                  "valore": "greta245x85",
+                  "label": "Greta 85 × 245",
+                  "stato": "Greta_2485"
+                },
+                {
+                  "valore": "gretaaltrax85",
+                  "label": "Greta 85 × altra altezza",
+                  "stato": "Greta_0085"
+                },
+                {
+                  "valore": "cut225x90",
+                  "label": "Cut 90 × 225",
+                  "stato": "Cut_2290"
+                },
+                {
+                  "valore": "cut245x90",
+                  "label": "Cut 90 × 245",
+                  "stato": "Cut_2490"
+                },
+                {
+                  "valore": "cutaltrax90",
+                  "label": "Cut 90 × altra altezza",
+                  "stato": "Cut_0090"
+                },
+                {
+                  "valore": "silver225x100",
+                  "label": "Silverlight 100 × 225",
+                  "stato": "Silver_2210"
+                },
+                {
+                  "valore": "silver245x100",
+                  "label": "Silverlight 100 × 245",
+                  "stato": "Silver_2410"
+                },
+                {
+                  "valore": "silveraltrax100",
+                  "label": "Silverlight 100 × altra altezza",
+                  "stato": "Silver_0010"
+                },
+                {
+                  "valore": "luna160x70",
+                  "label": "Luna 70 × 160",
+                  "stato": "Luna_1670"
+                },
+                {
+                  "valore": "luna225x70",
+                  "label": "Luna 70 × 225",
+                  "stato": "Luna_2270"
+                },
+                {
+                  "valore": "luna245x70",
+                  "label": "Luna 70 × 245",
+                  "stato": "Luna_2470"
+                },
+                {
+                  "valore": "lunaaltrax70",
+                  "label": "Luna 70 × altra altezza",
+                  "stato": "Luna_0070"
+                },
+                {
+                  "valore": "luna160x90",
+                  "label": "Luna 90 × 160",
+                  "stato": "Luna_1690"
+                },
+                {
+                  "valore": "luna225x90",
+                  "label": "Luna 90 × 225",
+                  "stato": "Luna_2290"
+                },
+                {
+                  "valore": "luna245x90",
+                  "label": "Luna 90 × 245",
+                  "stato": "Luna_2490"
+                },
+                {
+                  "valore": "lunaaltrax90",
+                  "label": "Luna 90 × altra altezza",
+                  "stato": "Luna_0090"
+                }
+              ]
+            },
+            {
+              "key": "pianoModelloAltra",
+              "kind": "text",
+              "label": "Altra altezza",
+              "acro": "11_FloorPanels_Dim_Other",
+              "maxLength": 9
+            }
+          ]
+        },
+        {
+          "titolo": "Piano ALTO",
+          "campi": [
+            {
+              "key": "altoChiave",
+              "kind": "radio",
+              "label": "Chiave",
+              "acro": "11_FloorPanels_Button-config.TOP-Key",
+              "opzioni": [
+                {
+                  "valore": "chiave",
+                  "label": "Chiave",
+                  "stato": "1"
+                },
+                {
+                  "valore": "smartKey",
+                  "label": "Smart Key plus",
+                  "stato": "2"
+                }
+              ]
+            },
+            {
+              "key": "altoDisplay",
+              "kind": "radio",
+              "label": "Display",
+              "acro": "11_FloorPanels_Button-config.TOP-Display",
+              "opzioni": [
+                {
+                  "valore": "banksy",
+                  "label": "Banksy",
+                  "stato": "3"
+                },
+                {
+                  "valore": "raffaello",
+                  "label": "Raffaello",
+                  "stato": "4"
+                },
+                {
+                  "valore": "giotto",
+                  "label": "Giotto",
+                  "stato": "5"
+                }
+              ]
+            },
+            {
+              "key": "altoGong",
+              "kind": "check",
+              "label": "Gong",
+              "acro": "11_FloorPanels_Button-config.TOP-Gong"
+            },
+            {
+              "key": "altoPresente",
+              "kind": "check",
+              "label": "Segnalazione «Presente»",
+              "acro": "11_FloorPanels_Button-config.TOP-Segn1"
+            },
+            {
+              "key": "altoAllarme",
+              "kind": "check",
+              "label": "Segnalazione allarme",
+              "acro": "11_FloorPanels_Button-config.TOP-Segn2"
+            },
+            {
+              "key": "altoFuoriServizio",
+              "kind": "check",
+              "label": "Segnalazione fuori servizio",
+              "acro": "11_FloorPanels_Button-config.TOP-Segn3"
+            },
+            {
+              "key": "altoNomePiano",
+              "kind": "check",
+              "label": "Nome piano",
+              "acro": "11_FloorPanels_Button-config.TOP-Piano"
+            }
+          ]
+        },
+        {
+          "titolo": "Piani INTERMEDI",
+          "campi": [
+            {
+              "key": "intermediChiave",
+              "kind": "radio",
+              "label": "Chiave",
+              "acro": "11_FloorPanels_Button-config.MIDDLE-Key",
+              "opzioni": [
+                {
+                  "valore": "chiave",
+                  "label": "Chiave",
+                  "stato": "1"
+                },
+                {
+                  "valore": "smartKey",
+                  "label": "Smart Key plus",
+                  "stato": "2"
+                }
+              ]
+            },
+            {
+              "key": "intermediDisplay",
+              "kind": "radio",
+              "label": "Display",
+              "acro": "11_FloorPanels_Button-config.MIDDLE-Display",
+              "opzioni": [
+                {
+                  "valore": "banksy",
+                  "label": "Banksy",
+                  "stato": "3"
+                },
+                {
+                  "valore": "raffaello",
+                  "label": "Raffaello",
+                  "stato": "4"
+                },
+                {
+                  "valore": "giotto",
+                  "label": "Giotto",
+                  "stato": "5"
+                }
+              ]
+            },
+            {
+              "key": "intermediGong",
+              "kind": "check",
+              "label": "Gong",
+              "acro": "11_FloorPanels_Button-config.MIDDLE-Gong"
+            },
+            {
+              "key": "intermediPresente",
+              "kind": "check",
+              "label": "Segnalazione «Presente»",
+              "acro": "11_FloorPanels_Button-config.MIDDLE-Segn1"
+            },
+            {
+              "key": "intermediAllarme",
+              "kind": "check",
+              "label": "Segnalazione allarme",
+              "acro": "11_FloorPanels_Button-config.MIDDLE-Segn2"
+            },
+            {
+              "key": "intermediFuoriServizio",
+              "kind": "check",
+              "label": "Segnalazione fuori servizio",
+              "acro": "11_FloorPanels_Button-config.MIDDLE-Segn3"
+            },
+            {
+              "key": "intermediNomePiano",
+              "kind": "check",
+              "label": "Nome piano",
+              "acro": "11_FloorPanels_Button-config.MIDDLE-Piano"
+            }
+          ]
+        },
+        {
+          "titolo": "Piano PRINCIPALE",
+          "campi": [
+            {
+              "key": "principaleChiave",
+              "kind": "radio",
+              "label": "Chiave",
+              "acro": "11_FloorPanels_Button-config.MAIN-Key",
+              "opzioni": [
+                {
+                  "valore": "chiave",
+                  "label": "Chiave",
+                  "stato": "1"
+                },
+                {
+                  "valore": "smartKey",
+                  "label": "Smart Key plus",
+                  "stato": "2"
+                }
+              ]
+            },
+            {
+              "key": "principaleDisplay",
+              "kind": "radio",
+              "label": "Display",
+              "acro": "11_FloorPanels_Button-config.MAIN-Display",
+              "opzioni": [
+                {
+                  "valore": "banksy",
+                  "label": "Banksy",
+                  "stato": "3"
+                },
+                {
+                  "valore": "raffaello",
+                  "label": "Raffaello",
+                  "stato": "4"
+                },
+                {
+                  "valore": "giotto",
+                  "label": "Giotto",
+                  "stato": "5"
+                }
+              ]
+            },
+            {
+              "key": "principaleGong",
+              "kind": "check",
+              "label": "Gong",
+              "acro": "11_FloorPanels_Button-config.MAIN-Gong"
+            },
+            {
+              "key": "principalePresente",
+              "kind": "check",
+              "label": "Segnalazione «Presente»",
+              "acro": "11_FloorPanels_Button-config.MAIN-Segn1"
+            },
+            {
+              "key": "principaleAllarme",
+              "kind": "check",
+              "label": "Segnalazione allarme",
+              "acro": "11_FloorPanels_Button-config.MAIN-Segn2"
+            },
+            {
+              "key": "principaleFuoriServizio",
+              "kind": "check",
+              "label": "Segnalazione fuori servizio",
+              "acro": "11_FloorPanels_Button-config.MAIN-Segn3"
+            },
+            {
+              "key": "principaleNomePiano",
+              "kind": "check",
+              "label": "Nome piano",
+              "acro": "11_FloorPanels_Button-config.MAIN-Piano"
+            }
+          ]
+        },
+        {
+          "titolo": "Piano BASSO",
+          "campi": [
+            {
+              "key": "bassoChiave",
+              "kind": "radio",
+              "label": "Chiave",
+              "acro": "11_FloorPanels_Button-config.BOTTOM-Key",
+              "opzioni": [
+                {
+                  "valore": "chiave",
+                  "label": "Chiave",
+                  "stato": "1"
+                },
+                {
+                  "valore": "smartKey",
+                  "label": "Smart Key plus",
+                  "stato": "2"
+                }
+              ]
+            },
+            {
+              "key": "bassoDisplay",
+              "kind": "radio",
+              "label": "Display",
+              "acro": "11_FloorPanels_Button-config.BOTTOM-Display",
+              "opzioni": [
+                {
+                  "valore": "banksy",
+                  "label": "Banksy",
+                  "stato": "3"
+                },
+                {
+                  "valore": "raffaello",
+                  "label": "Raffaello",
+                  "stato": "4"
+                },
+                {
+                  "valore": "giotto",
+                  "label": "Giotto",
+                  "stato": "5"
+                }
+              ]
+            },
+            {
+              "key": "bassoGong",
+              "kind": "check",
+              "label": "Gong",
+              "acro": "11_FloorPanels_Button-config.BOTTOM-Gong"
+            },
+            {
+              "key": "bassoPresente",
+              "kind": "check",
+              "label": "Segnalazione «Presente»",
+              "acro": "11_FloorPanels_Button-config.BOTTOM-Segn1"
+            },
+            {
+              "key": "bassoAllarme",
+              "kind": "check",
+              "label": "Segnalazione allarme",
+              "acro": "11_FloorPanels_Button-config.BOTTOM-Segn2"
+            },
+            {
+              "key": "bassoFuoriServizio",
+              "kind": "check",
+              "label": "Segnalazione fuori servizio",
+              "acro": "11_FloorPanels_Button-config.BOTTOM-Segn3"
+            },
+            {
+              "key": "bassoNomePiano",
+              "kind": "check",
+              "label": "Nome piano",
+              "acro": "11_FloorPanels_Button-config.BOTTOM-Piano"
+            }
+          ]
+        },
+        {
+          "titolo": "Configurazione segnalatori",
+          "campi": [
+            {
+              "key": "segnalatori",
+              "kind": "radio",
+              "label": "Segnalatori",
+              "acro": "11_FloorPanels_Indicator-config",
+              "opzioni": [
+                {
+                  "valore": "principale",
+                  "label": "Al piano principale",
+                  "stato": "Main"
+                },
+                {
+                  "valore": "tutti",
+                  "label": "A tutti i piani",
+                  "stato": "All"
+                }
+              ]
+            },
+            {
+              "key": "segnalatoriVerso",
+              "kind": "radio",
+              "label": "Verso",
+              "acro": "11_FloorPanels_Indicator-HV",
+              "opzioni": [
+                {
+                  "valore": "orizzontale",
+                  "label": "Orizzontale",
+                  "stato": "H"
+                },
+                {
+                  "valore": "verticale",
+                  "label": "Verticale",
+                  "stato": "V"
+                }
+              ]
+            },
+            {
+              "key": "segnalatoriDisplay",
+              "kind": "radio",
+              "label": "Display",
+              "acro": "11_FloorPanels_Indicator-display",
+              "opzioni": [
+                {
+                  "valore": "banksy",
+                  "label": "Banksy",
+                  "stato": "Banksy"
+                },
+                {
+                  "valore": "raffaello",
+                  "label": "Raffaello",
+                  "stato": "Raffaello"
+                },
+                {
+                  "valore": "giotto",
+                  "label": "Giotto",
+                  "stato": "Giotto"
+                }
+              ]
+            },
+            {
+              "key": "segnalatoriFrecce",
+              "kind": "check",
+              "label": "Frecce di direzione",
+              "acro": "11_FloorPanels_Indicator-Frecce"
+            },
+            {
+              "key": "segnalatoriGong",
+              "kind": "check",
+              "label": "Gong",
+              "acro": "11_FloorPanels_Indicator-Gong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "12 · Note",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "noteQuadro",
+              "kind": "textarea",
+              "label": "Quadro",
+              "acro": "12_Note-Controller",
+              "maxLength": 600
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "notePulsantiere",
+              "kind": "textarea",
+              "label": "Pulsantiere",
+              "acro": "12_Note-Fixtures",
+              "maxLength": 600
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

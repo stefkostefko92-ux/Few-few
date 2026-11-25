@@ -1,5 +1,8 @@
 # Автоматизиран деплой (`deploy/autodeploy.sh`)
 
+**Сървърът е при netcup (ЕС/Германия), не при Hetzner** (собственикът, 13.11.2026). IP адресът — от DNS,
+никога по памет: `getent hosts rilievi.carbonstealth.eu`.
+
 Деплой на монорепото до жив сървър — едно действие.
 
 ## Работен поток (репото е публично — сървърът си взема архива сам)
@@ -35,13 +38,25 @@ sudo REF=09597af… bash /opt/few-few/current/deploy/fetch-deploy.sh    # точ
 дискът свършва мълчаливо); и подава `ARCHIVE=` изрично, за да не изпревари ръчно качен
 ZIP отпреди месец.
 
+**Пазач на ref-а по продукт.** След успешен деплой `fetch-deploy.sh` записва от кой ref върви
+всеки продукт (`/opt/few-few/shared/deploy-refs/<продукт>`, папка 700). Деплой от **друг** ref
+за същия продукт спира с код 1 ПРЕДИ свалянето и казва откъде върви — така `REF=main` по
+подразбиране не може тихо да върне продукт, пуснат от неслят клон (zabobovdol, 15.11.2026).
+Без `PROJECTS` се проверяват всички запомнени продукти. Изходи: слей клона в main и пусни
+веднъж с `ALLOW_REF_SWITCH=1`, или подай `REF=<онзи клон>`. Първият деплой (без запис) минава.
+Тест: `tools/vps/fetch-deploy-refguard.test.mjs`.
+
 ## Работен поток (резервен — ръчно качен архив)
 
 Когато сървърът няма изходяща мрежа към GitHub:
 
 1. В GitHub → **Code → Download ZIP** (или `tar.gz` от Releases).
-2. Качи архива в **`/root`** (напр. `scp Few-few.zip root@СЪРВЪР:/root/`).
-3. ```bash
+2. На СВОЯТА машина: `sha256sum Few-few.zip > Few-few.zip.sha256` — без този файл до архива
+   `autodeploy.sh` спира (проверката е задължителна; изрично без нея: `ALLOW_UNVERIFIED_ARCHIVE=1`).
+   `fetch-deploy.sh` го пише сам.
+3. Качи двата файла. След втвърдяването от `tools/vps/ansible/site.yml` root по SSH не влиза:
+   `scp Few-few.zip Few-few.zip.sha256 deploy@СЪРВЪР:` → на сървъра `sudo mv ~/Few-few.zip* /root/`.
+4. ```bash
    cd /root && unzip -o Few-few.zip >/dev/null   # само за да стигнеш до скрипта
    sudo bash /root/few-few-*/deploy/autodeploy.sh
    ```
@@ -111,12 +126,36 @@ ZIP отпреди месец.
   Health на `127.0.0.1:8788/healthz`. Еднократно: DNS A запис, `.env` с
   `OSPEDALI_ADMIN_PASSWORD`+`OSPEDALI_SESSION_SECRET`, Nginx vhost + certbot →
   `ospedalitrasparenti/deploy/DEPLOY.md`.
+- **fivem** (Thraex PVP): Docker Compose модел като zabobovdol. Пренася `FiveM/.env`
+  (при пръв деплой го **генерира** с random `POSTGRES_PASSWORD` и random админ парола —
+  паролата се показва ВЕДНЪЖ в изхода, в `.env` стои само scrypt хешът ѝ), симлинква
+  `FiveM/backups` към `/opt/few-few/shared/fivem/backups`, после `FiveM/scripts/deploy.sh`:
+  `pg_dump` бекъп **преди** миграцията (празен бекъп = спиране), `up -d --build`, чакане на
+  базата, `prisma migrate deploy`, и първоначално напълване от публичния списък на Cfx.re
+  **само при празна таблица**. Health на `127.0.0.1:3010/api/health`; при успех — IndexNow
+  ping през `tools/seo/indexnow.mjs` (директорията се мени при всяко откриване).
+  Еднократно: DNS A запис, Nginx vhost от `FiveM/deploy/nginx.conf` (**стрипва
+  `CF-Connecting-IP`/`X-Forwarded-For` — това е защита, не настройка**) + certbot, и
+  `RESEND_API_KEY` в `.env`, иначе уведомленията по чл. 16/17 DSA не тръгват →
+  `FiveM/DEPLOY.md`.
+- **linketto** (Linketto — „link in bio“): Docker Compose (db + app на `127.0.0.1:<HTTP_PORT>`, по подразбиране 4350 — 4340 е на rilievi; проект
+  `linketto`). Тайните, дъмповете и качените снимки са в `/opt/few-few/shared/linketto/` (`.env` 600 —
+  при пръв деплой се генерират САМО `POSTGRES_PASSWORD`/`DATABASE_URL`/`CRON_SECRET`, Revolut е в
+  `sandbox`; том `linketto_db` без `.env` = отказ, не нови тайни). `linketto/scripts/deploy.sh`:
+  `pg_dump` бекъп **преди** миграцията, билд докато старият app върви, `prisma migrate deploy` с новия
+  образ, смяна, сонда `/api/health` с маркер `"app":"linketto"`; при провал — откат на кода към
+  `last-good`. Инсталира systemd таймерите от DEPLOY.md §9 (планове всеки час, отчет, срокове) и
+  logrotate (7 дни); при успех — IndexNow ping. Еднократно: DNS, vhost от `linketto/deploy/nginx.conf`
+  + certbot, ръчните ключове в `.env` → `linketto/DEPLOY.md` §7.
 - **panev** (Panev Ascensori): systemd модел като medqr/vizitka. `rsync panev/ → /opt/panev`
   (изключва `data/` — SQLite базата, `node_modules/`, `.env`), `npm ci --omit=dev`,
   сийд **само при липсваща база** (админ + каталог за `/admin`), снимка на базата преди
   рестарт, самоинсталиращ се systemd unit (`panev/deploy/systemd/panev.service`, порт
   `127.0.0.1:4102`, User=`panev`), `systemctl restart panev`; при провал — автоматичен
-  rollback на кода **и** на базата. Health на `127.0.0.1:4102/api/health`. Тайните са в
+  rollback на кода **и** на базата. Health на `127.0.0.1:4102/api/health`; при успех — IndexNow
+  през `tools/seo/indexnow.mjs`, пуснат от корена на release-а с ключовия файл от архива
+  (`panev/<key>.txt` — името му е ключът), публичния му адрес и адресите от `panev/sitemap.xml`
+  на същия release; `PANEV_INDEXNOW=0` го спира. Тайните са в
   `/etc/panev/panev.env` (systemd `EnvironmentFile`, права 600) — при пръв деплой се
   генерира с random `JWT_SECRET` (без него приложението спира в продукция), `SMTP_PASS`
   остава `CHANGE_ME`. Еднократно: DNS, nginx vhost (301 `www.` → каноничния non-www) +
@@ -150,11 +189,89 @@ ZIP отпреди месец.
   същото, затова откат няма; скриптът сочи последния дъмп и вика човек → `korpora/DEPLOY.md`:
   обикновено `migrate resolve --rolled-back` (PostgreSQL е върнал миграцията цялата), а
   възстановяване от дъмпа — само ако данните трябва да се върнат.
+- **rilievi** (схемите за оглед на асансьори): моделът на korpora — Docker Compose (db + app; в
+  контейнера 4330, **на живия сървър публикуван на `127.0.0.1:4340`** — проверено 13.11.2026), стъпките са в `rilievi/deploy/deploy.sh`: тайните от
+  `/opt/few-few/shared/rilievi/.env` (прави ги веднъж `rilievi/deploy/setup-env.sh`; без тях rilievi
+  се пропуска като „още ненастроен“), `pg_dump` преди смяната, сонда с маркер `"app":"rilievi"`,
+  дневен бекъп (`rilievi-backup.timer`), vhost-ът от репото щом има сертификат. Откатът е към
+  `RILIEVI_LAST_GOOD` с `RILIEVI_SKIP_BACKUP=1`; при провалена миграция — човек → `rilievi/DEPLOY.md`.
+  Първият MASTER — веднъж с `rilievi/deploy/create-master.sh`; останалите само с покана.
+- **semki** (Semki Bot — Discord бот за семките във FiveM + дашборд): моделът на rilievi — Docker
+  Compose (db + app на `127.0.0.1:<HTTP_PORT>`, първият свободен от 4340), стъпките са в `semki/deploy/deploy.sh`: тайните от
+  `/opt/few-few/shared/semki/.env` (прави ги веднъж `semki/deploy/setup-env.sh` — Discord токен, client
+  secret, ID-тата; без тях semki се пропуска като „още ненастроен“), `pg_dump` преди смяната, сонда с
+  маркер `"app":"semki"`, vhost-ът `vps2.carbonstealth.eu` от репото щом има сертификат. Откатът е към
+  `SEMKI_LAST_GOOD` с `SEMKI_SKIP_BACKUP=1`; при провалена миграция — човек → `semki/DEPLOY.md`.
+- **fakturist** (Фактурист — фактуриране върху EN 16931, `fakturist.carbonstealth.eu`): моделът на
+  rilievi — Docker Compose (db + app; по подразбиране `127.0.0.1:4340`, **на живия сървър
+  `HTTP_PORT=4342`** — 4340 е на rilievi, 4341 на semki, проверено 13.11.2026), стъпките са в
+  `fakturist/deploy/deploy.sh`: тайните от `/opt/few-few/shared/fakturist/.env` (600; прави ги веднъж
+  `fakturist/deploy/setup-env.sh` — `POSTGRES_PASSWORD`, `JWT_SECRET`, `LEDGER_SEAL_KEY`,
+  `PUBLIC_BASE_URL`, `REGISTRATION_OPEN=true` — правните текстове са публикувани 13.11.2026; без тях
+  fakturist се пропуска като „още ненастроен“),
+  `pg_dump` преди смяната (последните 5 в `…/fakturist/backups`), `up -d` (миграциите — от
+  entrypoint-а), сонда на `/health` (`"ok":true` и маркер `"app":"fakturist"`; проверява се и че портът е
+  публикуван от контейнера `app` на проекта), vhost-ът от репото щом има
+  сертификат. **`LEDGER_SEAL_KEY` не се сменя никога след първата фактура** (веригата на документите,
+  2FA тайните и ключовете на интеграциите зависят от него): първият успешен деплой пази отпечатъка му в
+  `…/fakturist/ledger-seal-key.sha256` и друг ключ спира деплоя преди build-а. Откатът е към
+  `FAKTURIST_LAST_GOOD` с `FAKTURIST_SKIP_BACKUP=1`; при провалена миграция (`P3009`/`P3018`) — човек.
+  Мастър акаунтът — веднъж с `fakturist/deploy/create-owner.sh` (паролата през stdin).
+
+  **Бекъпи на fakturist** (само PostgreSQL — медия няма; моделът на `rilievi/deploy/backup.sh`):
+  - Преди всяка миграция: `…/fakturist/backups/pre-deploy-*.sql.gz` (последните 5).
+  - Дневно в 03:40 UTC: `fakturist-backup.timer` → `fakturist/deploy/backup.sh` от last-good →
+    `…/fakturist/backups/daily/fakturist-*.sql.gz` (600, папка 700). Пазят се последните 14, но
+    **никога по-стари от 90 дни** (договорът за обработване, т. 11). Скриптът отказва
+    `FAKTURIST_BACKUP_MAX_DAYS` над 90. Таванът за двата вида копия пази и
+    `/etc/cron.daily/fakturist-backups` (слага го `deploy.sh`), също и в дните, в които бекъпът не минава.
+  - Проверено възстановяване (`fakturist/deploy/restore-test.sh`): всеки дъмп се възстановява във временен
+    PostgreSQL (`--network none`, временна парола, махнат с тома си). Проверява се, че има приложени
+    миграции, че броят редове в `"Document"` и `"AuditLog"` съвпада с дъмпа и че веригите са цели:
+    поредни `chainIndex` по фирма, всеки `prevHash` сочи предишния. HMAC печатът не се проверява тук,
+    защото `LEDGER_SEAL_KEY` не излиза от `.env`; печата проверява мастър панелът. Провалът на
+    проверката е провал на бекъпа: ротацията не тръгва и добрите копия остават.
+  - Успех → `backups/LAST_OK`. Провал → `backups/LAST_ERROR`, критичен ред в журнала
+    (`fakturist-backup-alert.service`) и сигнал до `FAKTURIST_ALERT_URL`, ако е зададен.
+  - Копието извън сървъра е по избор. Задава се веднъж в `/opt/few-few/shared/fakturist/backup.env`
+    (600, root) с `FAKTURIST_OFFSITE=user@host:fakturist` (папката там се създава веднъж) и
+    `FAKTURIST_OFFSITE_SSH="-p 23 -i /root/.ssh/fakturist_backup"` (ключ само за това).
+    `FAKTURIST_HEARTBEAT_URL` (Uptime Kuma push) вдига аларма при пропуснат ден. Отиват само дъмповете,
+    огледално (`rsync --delete`): изтритото тук по срок изчезва и там. Ако бекъпът дълго не минава,
+    сложи и на отсрещната страна правило за триене след 90 дни.
+  - **Тайните не ги изнася нито скриптът, нито агент.** `/opt/few-few/shared/fakturist/.env` носи
+    `LEDGER_SEAL_KEY`, който не се сменя никога. Собственикът го копира веднъж, на ръка, на място само за
+    себе си. При възстановяване `.env` се връща **преди** базата, иначе веригата и 2FA не се проверяват.
+
+  Трите команди за собственика (на сървъра, като root):
+
+  ```bash
+  # 1) включване на таймера (deploy.sh го прави сам; тази е за проверка или ако е бил спрян)
+  sudo systemctl enable --now fakturist-backup.timer && systemctl list-timers fakturist-backup.timer
+  # 2) ръчен бекъп сега (дъмп + проверено възстановяване + копие извън сървъра, ако е зададено)
+  sudo systemctl start fakturist-backup.service && journalctl -u fakturist-backup -n 20 --no-pager
+  # 3) проверка на възстановяване на конкретен дъмп (живата база не се пипа)
+  cd "$(sudo head -n 1 /opt/few-few/shared/fakturist/last-good)" &&
+    sudo bash deploy/restore-test.sh "$(sudo sh -c 'ls -1t /opt/few-few/shared/fakturist/backups/daily/fakturist-*.sql.gz | head -n 1')"
+  ```
+
+  Възстановяване (дъмпът е с `--clean --if-exists` и заменя таблиците). Това е разрушително, затова
+  първо прави нов дъмп:
+  `cd "$(sudo head -n 1 /opt/few-few/shared/fakturist/last-good)" && sudo docker compose stop app &&
+  sudo zcat /opt/few-few/shared/fakturist/backups/daily/fakturist-<дата>.sql.gz | sudo docker compose exec -T db psql -v ON_ERROR_STOP=1 -q -U fakturist -d fakturist && sudo docker compose start app`.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
   `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
   ping иска сесия), rollback като medqr. Пръв деплой без конфиг: пуска `deploy/install.sh`
   (конфиг + тайни + услуга) → `vpsdash/`.
+- **IndexNow след здрав релийз** (Bing, Yandex, Seznam, Naver, Yep; Google не участва) — подава се
+  сам за zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora и rilievi (двата само
+  при променен sitemap, от собствения си `deploy.sh`), fivem и panev. Само след минала здравна проба — без adblock, който подава след
+  качването на файловете, дори когато публичната му проба още не минава. Никъде не е условие за
+  успеха: провал на подаването е предупреждение, деплоят остава успешен. `tools/seo/indexnow.mjs`
+  излиза с 0 само когато всички адреси от sitemap-а са подадени; непрочетен sitemap е провал, не
+  подаване само на началната страница. За останалите продукти
+  командата се пуска ръчно — от корена на release-а (`cd /opt/few-few/current`), не от `/root`.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -163,10 +280,14 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto semki` | кои проекти да се разгръщат тук |
+| `FIVEM_HEALTH_URL` | `http://127.0.0.1:3010/api/health` | health на fivem |
+| `FIVEM_DOMAIN` | `thraex.carbonstealth.eu` | домейн на fivem (за `.env` и IndexNow) |
+| `LINKETTO_HEALTH_URL` · `LINKETTO_DOMAIN` · `LINKETTO_STATE_DIR` · `LINKETTO_INDEXNOW` | празно → `http://127.0.0.1:<HTTP_PORT от .env, иначе 4350>/api/health` · `piuma.carbonstealth.eu` · `/opt/few-few/shared/linketto` · `1` | сонда, домейн, тайни/бекъпи/снимки/last-good, IndexNow на linketto |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
+| `PANEV_SITE` · `PANEV_INDEXNOW` | `https://panevascensori.it` · `1` | публичният адрес на panev за IndexNow (хостът от `panev/sitemap.xml` — друг хост търсачките отхвърлят) и подаването след успешен деплой (`0` го спира) |
 | `OSPEDALI_DIR` | `/opt/ospedali` | път на ospedali (systemd, без билд) |
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
@@ -174,8 +295,12 @@ ZIP отпреди месец.
 | `PIUMA_ENV` / `PIUMA_HEALTH_URL` | `/opt/few-few/shared/piuma/.env` · `http://127.0.0.1:4310/health` (портът се чете от `HTTP_PORT` в `.env`) | тайните и health на piuma |
 | `KORPORA_LAST_GOOD` | `/opt/few-few/shared/korpora/last-good` | пътят на последния release на korpora, който е отговорил — към него е откатът |
 | `KORPORA_SHARED` · `KORPORA_HEALTH_WAIT` · `KORPORA_INDEXNOW` | `/opt/few-few/shared/korpora` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
+| `RILIEVI_SHARED` · `RILIEVI_LAST_GOOD` · `RILIEVI_HEALTH_WAIT` | `/opt/few-few/shared/rilievi` · `…/last-good` · `90` | тайни и бекъпи на rilievi, последният работещ release (целта на отката), секунди за сондата |
+| `SEMKI_SHARED` · `SEMKI_LAST_GOOD` · `SEMKI_HEALTH_WAIT` | `/opt/few-few/shared/semki` · `…/last-good` · `90` | тайни и бекъпи на semki, последният работещ release (целта на отката), секунди за сондата |
+| `FAKTURIST_SHARED` · `FAKTURIST_LAST_GOOD` · `FAKTURIST_HEALTH_WAIT` | `/opt/few-few/shared/fakturist` · `…/last-good` · `90` | тайни, бекъпи и отпечатък на `LEDGER_SEAL_KEY` на fakturist, последният работещ release (целта на отката), секунди за сондата |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
-| `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
+| `ARCHIVE` | (най-новият в `/root`) | конкретен архив (до него задължително `<архив>.sha256`) |
+| `ALLOW_UNVERIFIED_ARCHIVE` | `0` | `1` = деплой без `.sha256` (изрично, на твоя отговорност) |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
 | `ZBD_ENV` | `/opt/few-few/shared/zabobovdol/.env` | стабилният дом на тайните на zabobovdol (600) |
 | `ZBD_HEALTH_URL` | `http://127.0.0.1:<HTTP_PORT>/api/health` | сонда на zabobovdol (с базата) |

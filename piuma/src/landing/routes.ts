@@ -22,15 +22,15 @@ function absolute(path: string): string {
 }
 
 /** Канонично: витрината е на корена; езикът е параметър, не отделен адрес. */
-function canonicalFor(locale: Locale): string {
-  return locale === 'bg' ? absolute('/') : absolute(`/?lang=${locale}`);
+function canonicalFor(locale: Locale, path = '/'): string {
+  return locale === 'bg' ? absolute(path) : absolute(`${path}?lang=${locale}`);
 }
 
 /** Езиковите варианти за `hreflang`, плюс `x-default` към източника. */
-function alternates(): Array<{ hreflang: string; href: string }> {
+function alternates(path = '/'): Array<{ hreflang: string; href: string }> {
   return [
-    ...LOCALES.map((code) => ({ hreflang: code, href: canonicalFor(code) })),
-    { hreflang: 'x-default', href: absolute('/') },
+    ...LOCALES.map((code) => ({ hreflang: code, href: canonicalFor(code, path) })),
+    { hreflang: 'x-default', href: absolute(path) },
   ];
 }
 
@@ -118,6 +118,19 @@ landingRouter.get('/', (req: Request, res) => {
   });
 });
 
+/**
+ * Политиката за поверителност (чл. 13 ОРЗД) — публична, без вход, от същите речници като
+ * витрината. Без JavaScript и без данни от заявката: само текст. Имейлът и www.cpdp.bg в
+ * преведения текст стават връзки в шаблона; изчезнат ли от превода, връзката стои отделно.
+ */
+landingRouter.get('/privacy', (_req, res) => {
+  const locale = res.locals.locale as Locale;
+  res.render('landing/privacy', {
+    canonical: canonicalFor(locale, '/privacy'),
+    alternates: alternates('/privacy'),
+  });
+});
+
 /** Роботите: витрината се обхожда, панелът и машинните пътища — не. */
 landingRouter.get('/robots.txt', (_req, res) => {
   res
@@ -136,22 +149,37 @@ landingRouter.get('/robots.txt', (_req, res) => {
     );
 });
 
+/**
+ * Публичните страници в картата на сайта. Всяка има по адрес на език и същите езикови
+ * варианти като в `<head>` на страницата. Поверителността е под витрината по приоритет.
+ */
+const SITEMAP_PAGES = [
+  {
+    path: '/',
+    changefreq: 'weekly',
+    priority: (locale: Locale) => (locale === 'bg' ? '1.0' : '0.8'),
+  },
+  { path: '/privacy', changefreq: 'monthly', priority: () => '0.3' },
+] as const;
+
 landingRouter.get('/sitemap.xml', (_req, res) => {
   const today = new Date().toISOString().slice(0, 10);
-  const links = alternates()
-    .map((a) => `    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${a.href}"/>`)
-    .join('\n');
-  const entries = LOCALES.map((locale) =>
-    [
-      '  <url>',
-      `    <loc>${canonicalFor(locale)}</loc>`,
-      links,
-      `    <lastmod>${today}</lastmod>`,
-      '    <changefreq>weekly</changefreq>',
-      `    <priority>${locale === 'bg' ? '1.0' : '0.8'}</priority>`,
-      '  </url>',
-    ].join('\n'),
-  ).join('\n');
+  const entries = SITEMAP_PAGES.flatMap((page) => {
+    const links = alternates(page.path)
+      .map((a) => `    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${a.href}"/>`)
+      .join('\n');
+    return LOCALES.map((locale) =>
+      [
+        '  <url>',
+        `    <loc>${canonicalFor(locale, page.path)}</loc>`,
+        links,
+        `    <lastmod>${today}</lastmod>`,
+        `    <changefreq>${page.changefreq}</changefreq>`,
+        `    <priority>${page.priority(locale)}</priority>`,
+        '  </url>',
+      ].join('\n'),
+    );
+  }).join('\n');
 
   res
     .type('application/xml')

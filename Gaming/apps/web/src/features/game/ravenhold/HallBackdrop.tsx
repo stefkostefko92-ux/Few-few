@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { HALL_FRAG, HALL_VERT } from "./hallShader";
 import { FOG_LINEAR, TONES, type RavenTone } from "./palette";
-import { createGovernor, initialPixelCap } from "./governor";
+import { createGovernor, createStallDetector, initialPixelCap } from "./governor";
 
 interface Props {
   tone: RavenTone;
@@ -96,6 +96,9 @@ export function HallBackdrop({ tone, reduced, onStatus }: Props) {
     const cap = initialPixelCap(coarse, Math.min(screen.width, screen.height));
     gl.uniform1f(u("uEmbers"), coarse ? 6 : 10);
     const governor = createGovernor();
+    // Безнадеждно бавен рендер (софтуерен WebGL): залата застива на последния
+    // кадър, вместо да замразява страницата (часовникът на хода изтичаше).
+    const stall = createStallDetector();
 
     let cssW = 0, cssH = 0;
     const resize = () => {
@@ -120,6 +123,10 @@ export function HallBackdrop({ tone, reduced, onStatus }: Props) {
     let raf = 0, last = 0, lastTick = 0, lost = false;
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
+      if (stall.tick(now)) {
+        stop(); // последният кадър остава; при преоразмеряване се рисува един
+        return;
+      }
       if (lastTick && governor.sample(now - lastTick, now)) resize();
       lastTick = now;
       if (now - last < FRAME_MS) return;
@@ -133,6 +140,7 @@ export function HallBackdrop({ tone, reduced, onStatus }: Props) {
         return;
       }
       governor.reset(performance.now());
+      stall.reset(performance.now());
       lastTick = 0;
       raf = requestAnimationFrame(tick);
     };

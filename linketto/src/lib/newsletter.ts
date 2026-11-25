@@ -50,3 +50,10 @@ export function buildSubscribersCsv(rows: readonly SubscriberRow[]): string {
   );
   return [header, ...lines].join('\r\n') + '\r\n';
 }
+
+/** Рассылка: най-много една на профил за 24 часа (Разбивача т. 5 — спам през нашия Brevo). */
+export const BROADCAST_COOLDOWN_MS = 24 * 60 * 60_000;
+
+export function broadcastAllowed(lastBroadcastAt: Date | null, now: number = Date.now()): boolean {
+  return !lastBroadcastAt || now - lastBroadcastAt.getTime() > BROADCAST_COOLDOWN_MS;
+}

@@ -25,14 +25,30 @@ scriptlets/             scriptlet engine (##+js): policy.js (ЕДИНСТВЕН 
                         политиката — инлайнва се в engine-а, importScripts в SW, content
                         script ПРЕДИ content.js в изолирания свят, vm в билда) + engine.js
                         (clean-room код) + list.txt (данни) → main.js
-                        (пече се от build_scriptlets.mjs; MAIN world при document_start)
+                        (пече се от build_scriptlets.mjs; MAIN world при document_start) + ubo_engine.js (същият
+                        engine в ролята „парче“: чете само `__tbabScriptletChunk` на своето uBO парче — main.js вече
+                        НЕ носи 16 817-те хоста като excludeMatches; Chrome копира всеки регистриран шаблон във всеки
+                        renderer, дублираният списък струваше ~4 MB на процес)
 youtube_loader.js       подава live добавките (данни) на youtube_main чрез DOM събитие
-youtube_main.js         MAIN world (регистриран от SW) — маха рекламите от player/feed отговорите като текст
+youtube_main.js         MAIN world (регистриран от SW) — маха рекламите от player/feed отговорите като текст;
+                        5.7: скок над вшита реклама (SSAP), формите на /player след отказ, „abnormality“ колбекът
 youtube_skip.js         auto-skip + enforcement fallback (видеото винаги зарежда)
-youtube.css             скрива рекламните UI елементи на YouTube
+youtube.css             (manifest) само backdrop/scroll на enforcement диалога — остава и при bypass
+youtube_ads.css         рекламните UI елементи на YouTube — регистрира го SW заедно с youtube_main (sa-youtube-css)
+twitch_main.js          MAIN world (регистриран от SW, sa-twitch) — обвива Worker-а на плейъра; вшитите реклами в HLS →
+                        чист поток от друг тип плейър, иначе рекламните сегменти се махат
 rules/                  DNR статични правила: ad_rules + youtube_rules +
                         easylist/easyprivacy/urlhaus/removeparam (билднати от
                         tools/build_filters.mjs) + козметичен bundle + counts
+lib/who.js · rules/who.json  6.0 „Кого спряхме“ (Настройки): блокираните заявки по компания и ден, 31 дни, само на
+                        устройството. Chrome казва само КОЕ правило е блокирало — rules/who.json („правило → компания“)
+                        се ГЕНЕРИРА: `node tools/build_who.mjs` след build_filters/generate_rules и след промяна на
+                        popup/companies.js (`--check` е в tests/who.test.mjs); броенето е в refreshBadge (getMatchedRules,
+                        по timeStamp, белегът на раздела в storage.session), картата — options/who.js
+lib/managed.js          6.1 политики за организации (managed_schema.json): clean/apply/allows/locks; UI — options/managed.js
+lib/modes.js            6.0 режими Basic/Standard/Strict (глобално + `siteModes` по сайт): чист планер (SA_MODES) —
+                        кои страницови скриптове къде (`pageScriptPlan`, id `sa-page-*`); SW, Firefox background,
+                        manifest-ът преди meta.js и tests/modes.test.mjs го ползват
 lib/foreign.js          внос от uBlock Origin / AdGuard / Adblock Plus (Настройки + welcome): само разделя
                         текста на сайтове и редове; SW проверява всичко отново (`importForeign` →
                         parseImportedList — правило с път НИКОГА не става блок на целия домейн)
@@ -138,6 +154,42 @@ bash tools/package.sh                         # билд + самопровер�
 
 ## Инварианти (не чупи)
 
+- **Режими (6.0).** content.js/.css, cosmetic_generic.css, cookies, antiadblock и picker НЕ са в manifest-а:
+  SW ги регистрира по `lib/modes.js` (`syncPageScripts`, persistAcrossSessions). Basic — нищо наше на страницата
+  (и без main.js/uBO парчета/gpc.js, без meta.js; YouTube/Twitch остават — свой превключвател: изключват се САМО
+  за разрешен сайт, никога по Basic — 6.1.1, гейт в tests/twitch.test.mjs + youtube.browser); Standard — само
+  top frame + cookies.js в рамките на CMP-тата (`CMP_FRAME_HOSTS` == регекса в cookies.js, гейт); Strict — всички
+  рамки (поведението на 5.8). **main.js следва същия план** (`-content` записите: Standard — главната рамка,
+  Strict — всички, id `sa-scriptlets[-strict|-standard]`); uBO парчетата остават във всички рамки (поправки по
+  хост). Нов страницов скрипт = ред в `PAGE_SCRIPTS`, не в manifest-а. Всяко писане на mode/siteModes вика
+  `syncPageScripts` + `syncScriptlets` само (без storage слушател — двойна работа: всяко scripting извикване
+  струва на Chrome ~0,6 s, смяна на режим ≈ 2 s). И двете минават през ЕДНА опашка (`scriptingChain`), всяко
+  извикване — през `scripting()` с таймаут 20 s (обещание, което Chrome не разреши, не държи опашката вечно), и
+  не пипат нищо, ако вече е регистрирано точно така (`sameRegistrations` — всеки старт на браузъра). Popup-ът
+  има ЕДИН ред „Protection here“ — заместил „Hide ad boxes here“ (старият `noCosmetics` се сгъва в Basic при
+  ъпдейт/внос, `foldNoCosmetics`); нов ред = над 600 px. Гейт: tests/modes.test.mjs + extension.browser (режимите
+  в истински Chromium).
+
+- **Броене (6.1).** „Блокирани“, значката, дневната графика, „спестени“ и „Кого спряхме“ броят САМО блокиращи
+  правила: `getMatchedRules` докладва и изключенията на листите, allowlist-а, паузата и хедърите (GPC/Topics върху
+  всяка заявка — 1 блокирана заявка показваше 7). `blocks()` = `logListKey() !== null` и не е в `rules/passive.json`
+  (генерира го `tools/build_who.mjs` с who.json; `--check` в tests/who.test.mjs — пусни го след build_filters).
+  Белегът по раздел е в `storage.session` (`countBlocked`), никога в паметта на SW.
+- **Allow правила по двойки (6.1).** `allowAllRequests` се закача за рамката при потвърждаване на навигацията —
+  ранна заявка може да мине покрай него (измерено: 1/6 паузи, 1/10 разрешавания). Паузата = 69999 allowAllRequests
+  + 69997 `allow` с празно условие; всеки разрешен сайт = 90000+2i allowAllRequests + 90000+2i+1 `allow` по
+  `initiatorDomains`. Нов вид „разреши“ → същото. Всички записи на динамични правила (без отдалечените листи) — през
+  `inDnrQueue`.
+- **Вложени нива (6.1).** `excludeMatches` винаги бие `matches`: планът в `lib/modes.js` е по региони с отделна
+  регистрация за всяко ниво на влагане (`sa-page-<ниво>[N]-*`); uBO парчетата/gpc изключват Basic родител само
+  точно, ако под него има сайт с друго ниво (`basicExcludes`). Гейт: случайните дървета в tests/modes.test.mjs.
+- **Политики за организации (6.1, `docs/ENTERPRISE.md`).** `chrome.storage.managed` → `lib/managed.js`
+  (`clean` → `apply` в storage.local → `allows` във всеки обработчик, `locks` за UI). Налага се при инсталация,
+  старт, внос, синхронизация и промяна на политиката (`storage.onChanged` area "managed"). Нов потребителски път към
+  заключваема настройка → `SA_MANAGED.allows` в SW, не само изключен контрол в UI. Firefox: `storage` ключът се
+  маха от manifest-а (package.sh). Ръчен тест с истинска политика иска root (`/etc/opt/chrome/policies/managed`) —
+  browser тестът подменя само източника (`managedPolicy`).
+
 - **Единствена цел** (Web Store): блокиране на реклами/тракери. **Без remote
   code, никога.** Единствените мрежови заявки са дневен GET на
   `adblock.carbonstealth.eu/filters.json` (+ `.sig` — Ed25519 подпис, проверява
@@ -166,6 +218,45 @@ bash tools/package.sh                         # билд + самопровер�
   filters.json `requestFlags` може да ги пусне, с plain-retry резервата. `youtube_skip` само mute +
   родния Skip — **никога** 16× (YouTube го брои). Ако YouTube все пак откаже, bypass-ът (6 ч) маха
   и `sa-youtube`, и scriptlet-ите от YouTube страниците.
+- **YouTube 5.7 (флагнат клиент: вшита реклама, отказ, 0x0, изкуствено забавяне).** По метода на поддръжниците на uBO,
+  като НАШ код в `youtube_main.js` (само www.youtube.com, не за Premium): реклама, вшита в потока („SSAP, AD“ в
+  `getStatsForNerds`) → `seekTo` до края ѝ през API-то на плейъра — единственото позволено превъртане, и никога ако
+  „продължителността на рекламата“ е тази на клипа; `<video>` не се пипа. Отказ (UNPLAYABLE → answer/3037019 +
+  WEB_PAGE_TYPE_UNKNOWN, без captcha) или засядане на 0x0 → `loadVideoById` на място със следващата форма, всяка
+  веднъж, изчаква новия отговор (8 s); ПРЕДИ отказ/засядане заявката не се пипа. **6.1.1 — формите са тези на uBO
+  quick-fixes (2026-11):** watch channel → yahi → inline (isInlinePlaybackNoAd) → oaeb (params oAEBogYBLg) → както е;
+  embed channel → eafg (eAFgAQ); всяка с `#reloadxhr` referer (по него отговор на оформена заявка се познава в
+  `videostatsPlaybackUrl`). Смени ли uBO реда — същото тук + tests/youtube.test.mjs. Засядането: щом плейърът го
+  каже (`Map.prototype.has("onSnackbarMessage")` или самостоятелен Uint8Array от 104/105 байта в `push` — куките
+  само записват часа, четат през родните getter-и) и засядането се задържи 1 s, иначе след 10 s; дума отпреди
+  отговора на последния опит не се брои. Куките стоят САМО докато клипът тръгва (watch/embed, нов клип, опит) и се
+  махат след 2 s игра — `push` е най-горещата функция на страницата. Списъкът с форми е по клип. Всеки опит праща `tbab-yt-retry` на документа
+  (родният dispatchEvent, взет преди страницата) → `youtube_skip` рестартира часовника си (25 s спиране и 8 s
+  Playback ID; най-много 1/s и 20 на страница): bypass-ът от 6 ч е само след изчерпани опити. Отказ завършва с
+  един опит „както е“; засядане — с формите и после заявки както са, без нов опит. След опит в плейлист плейлистът се връща.
+  **Вграденият `ytInitialPlayerResponse` (пълно зареждане)** го чисти `youtube_main` при присвояване (неприсвоен
+  капан се маха при DOMContentLoaded) — правилата на uBO
+  за `www.youtube.com` НЕ тичат (двигателят търси правилата по хоста без „www.“ — отделен дефект, 21 www-ключа) и на
+  Basic изобщо ги няма. „abnormality“ колбекът (иглата е сглобена, за да не я съдържа нашата функция) не тича. Аварийни стопове —
+  `youtube.noShapes` / `youtube.noSsapJump` (булеви). **Изключение от „никога googlevideo“:** само фалшивата заявка с
+  `expire` в миналото — динамично правило 69998 от днешната дата (`fakeGvRule`, опреснява се на 12 ч), НИКОГА фиксиран
+  регекс (този на uBO хваща истински заявки от януари 2027); RE2 има 2 KB лимит — `tests/ytrules.test.mjs`.
+- **Невидимост (5.7).** Всяка кука (youtube_main, twitch_main, `cloak` в engine.js) маха своите `chrome-extension://`
+  редове от `e.stack` при хвърляне — `Function.prototype.toString.call({})` трябва да хвърля като родния. **Никакви
+  обвивки на `appendChild`/`insertBefore`/`append`/`prepend`** в YouTube: под всеки вмъкнат елемент стоеше наш кадър;
+  iframe-ите се закачат през `contentWindow`/`contentDocument` getter-ите и при вмъкване (MutationObserver). На YouTube
+  нищо наше не се пише по страницата: `content.js` там е `genericHideHost` (без AD_SELECTORS, unhide маркери, Smart
+  Detection), рекламното CSS е стил на разширението (`youtube_ads.css`, регистриран — го няма в `document.styleSheets`), `data-tbab-yt-bypass` — само при
+  `attrForced`. Browser гейт: `tests/browser/youtube.browser.mjs`.
+- **Twitch (5.7).** `twitch_main.js` обвива `Worker` само за IVS worker-а на плейъра (blob с
+  `amazon-ivs-wasmworker`): новият blob = изходният текст на `twitchWorker` от САМИЯ файл + JSON константи + скриптът на
+  плейъра непроменен (синхронен XHR на blob-а). Нищо в blob-а не идва от мрежата; без eval/Function. В worker-а:
+  реклама в media плейлистата → токен за embed/popout/autoplay от gql.twitch.tv (публичният client id, БЕЗ
+  Authorization и бисквитки) → същото качество; качеството остава на другия поток за сесията (v3 срещу v6), нов токен
+  само след грешка (нов токен = нова сесия = скок). Всички с реклама → `strip` (сегментите + техните тагове, ad
+  DATERANGE, PREFETCH; MEDIA-SEQUENCE остава верен). Заявки САМО към Twitch. Наш код, който хвърли, не спира плейъра
+  (`try` около него в blob-а). Изключване: разрешен twitch.tv / пауза / `features.twitch: false`. Гейт:
+  `tests/twitch.test.mjs` (истинският blob срещу фалшив Twitch) + `tests/browser/twitch.browser.mjs`.
 - `rules/ad_rules.json` и `rules/youtube_rules.json` идват **само** от `tools/generate_rules.py` — правило се
   добавя там, не в JSON-а. Id-тата са фиксирани (изваден id не се ползва повторно: YouTube 1001/1003);
   `tests/generate_rules.test.mjs` ребилдва във временна папка и сравнява байт по байт.
