@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 750
+        "lessons": 751
       },
       "evolution": [
         {
@@ -2200,9 +2200,20 @@
           "date": "2026-11-25",
           "event": "v70.2 — учене",
           "detail": "Научи: rolldown 1.2.19 фиксира точно @emnapi/core и @emnapi/runtime 2.0.0-beta.2 в optional wa…"
+        },
+        {
+          "version": "70.3.0",
+          "date": "2026-11-25",
+          "event": "v70.3 — учене",
+          "detail": "Научи: .pr-review/348.diff (rilievi netcup) е пълен — 5 diff заглавки при 5 файла в 348.stat; …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/348.diff (rilievi netcup) е пълен — 5 diff заглавки при 5 файла в 348.stat; …\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
