@@ -9,23 +9,26 @@ import bpy
 from mathutils import Matrix, Vector
 from lib import box
 from grinder import HEAD_Y, N_SPARKS
+from hands import mx
 
 Z_C = -0.045           # disc centre height: the nut stays under the sill (bottom at -0.028)
-A_X = (-0.055, 0.005)  # plate A across x, relative to its pair
+A_X = (-0.055, 0.005)  # plate A across x, relative to its pair (DX; mirrored on the SX pair, hands.py)
 LEAD = 0.0605          # disc centre to its leading edge at plate A's height
 RATE, SHUTTER, G = 440.0, 1 / 60, Vector((0, 0, -9.81))
 A_TOP = -0.028         # top of plate A's platform = bottom of the sill
 PUSH = 0.010           # the sill slides back 10 mm in the slots (18) for the disc, then returns flush
-MARK = (96.3, 97.2)    # the marker draws on the left plate in the close-up; the others are marked by then
+T11 = 16.0             # step 11 starts at 112 s: step 10 grew by 16 s (the rebar, 24.11.2026); times below from 96 s
+MARK = (96.3 + T11, 97.2 + T11)  # the marker draws on the left plate in the close-up; the others are marked by then
 # pair, approach, traverse, retreat (s); the close-up cuts the left plate, the wide shot the middle and the right one
-CUTS = [(0, (98.8, 99.5), (99.5, 101.7), (101.8, 102.6)),
-        (2, (104.9, 105.4), (105.4, 106.4), (106.45, 106.75)),
-        (1, (106.75, 107.25), (107.25, 108.25), (108.3, 108.8))]
+CUTS = [(k, *((a + T11, b + T11) for a, b in spans)) for k, *spans in (
+    (0, (98.8, 99.5), (99.5, 101.7), (101.8, 102.6)),
+    (2, (104.9, 105.4), (105.4, 106.4), (106.45, 106.75)),
+    (1, (106.75, 107.25), (107.25, 108.25), (108.3, 108.8)))]
 
 
 def sill_push(t):
     """How far the sill is pushed back towards the wall (m): out for the cuts, back flush at the end."""
-    return PUSH * (seg(t, 97.8, 98.6) - seg(t, 109.1, 109.9))
+    return PUSH * (seg(t, 97.8 + T11, 98.6 + T11) - seg(t, 109.1 + T11, 109.9 + T11))
 
 
 def build_cut(pairs):
@@ -71,7 +74,7 @@ def schedule(front_y, pair_x):
     y_c = front_y - 0.0011
     out, prev = [], None
     for k, ap, tr, rt in CUTS:
-        xl, xr = pair_x[k] + A_X[0], pair_x[k] + A_X[1]
+        xl, xr = sorted(pair_x[k] + mx(k, a) for a in A_X)
         s = Vector((xl - LEAD, y_c, Z_C))
         e = Vector((xr - LEAD + 0.004, y_c, Z_C))
         far = prev if prev is not None else s + Vector((-0.06, -0.16, 0.05))

@@ -4,7 +4,8 @@
 // доклада „клиповете не зареждат от време на време".
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { runInNewContext } from "node:vm";
+import { runInNewContext, runInContext } from "node:vm";
+import { types } from "node:util";
 import { ROOT, ok, done } from "./_harness.mjs";
 
 const src = (f) => readFileSync(join(ROOT, f), "utf8");
@@ -25,6 +26,7 @@ function ytTab({ now = 10 * HOUR, storage = {}, session = {}, els = {}, reply = 
   const attrs = {};
   const created = [];
   const dispatched = [];
+  const docListeners = {};
   sb.CustomEvent = class { constructor(type, init) { this.type = type; this.detail = init && init.detail; } };
   sb.document = {
     documentElement: {
@@ -40,7 +42,7 @@ function ytTab({ now = 10 * HOUR, storage = {}, session = {}, els = {}, reply = 
     querySelectorAll: (sel) => (sel in els ? [].concat(els[sel]) : []),
     getElementById: () => null,
     createElement: (tag) => ({ tag, remove() {} }),
-    addEventListener() {},
+    addEventListener: (type, f) => { (docListeners[type] ||= []).push(f); },
     dispatchEvent: (ev) => { dispatched.push(ev); return true; },
   };
   sb.MutationObserver = class { constructor(cb) { sb.__mo = cb; } observe() {} };
@@ -60,7 +62,9 @@ function ytTab({ now = 10 * HOUR, storage = {}, session = {}, els = {}, reply = 
   const load = (file) => runInNewContext(src(file), sb, { filename: file });
   const run = () => sb.__mo && sb.__mo([]);
   const change = (c) => listeners.forEach((f) => f(c, "local"));
-  return { sb, attrs, created, dispatched, messages, session, load, run, change };
+  // youtube_main (MAIN world) retried the clip: the event it sends on the document
+  const retried = () => (docListeners["tbab-yt-retry"] || []).forEach((f) => f({ type: "tbab-yt-retry" }));
+  return { sb, attrs, created, dispatched, messages, session, load, run, change, retried };
 }
 const player = (...classes) => ({ classList: { contains: (c) => classes.includes(c) } });
 const video = () => ({ muted: false, playbackRate: 1, currentTime: 5, duration: 600 });
@@ -212,6 +216,39 @@ function tick(t, video, seconds) {
   ok("stall stage 2 (within 3 min of stage 1): bypass requested + reload", t.messages.some((m) => m.type === "ytBypass") && t.sb.__reloads === 1 && t.session.tbab_yt_bypass_n === "1");
 }
 {
+  // 6.1.1: youtube_main is still retrying the clip (the next request shape) → the clock starts again each time;
+  // the reload — and, after it, the six-hour bypass — only once the retries are over
+  const now = 40 * HOUR;
+  const v = stalledVideo();
+  const t = ytTab({ now, storage: { enabled: true }, session: { tbab_yt_noflags: "1", tbab_yt_stage1_at: String(now - 60 * 1000) }, els: { ".html5-video-player": player("buffering-mode"), "video.html5-main-video, video": v } });
+  t.load("youtube_skip.js");
+  for (let k = 0; k < 4; k++) { tick(t, v, 12); t.retried(); } // four retries, 12 s apart: 48 s without a frame
+  ok("stall: retries in progress (48 s, 4 retries) → no reload and no bypass", t.sb.__reloads === 0 && t.messages.length === 0);
+  tick(t, v, 27);
+  ok("stall: …25 s after the last retry → the usual path (here stage 2: bypass + reload)", t.sb.__reloads === 1 && t.messages.some((m) => m.type === "ytBypass"));
+}
+{
+  // a page script that learned the event name cannot hold the clock forever
+  const now = 40 * HOUR;
+  const v = stalledVideo();
+  const t = ytTab({ now, storage: { enabled: true }, els: { ".html5-video-player": player("buffering-mode"), "video.html5-main-video, video": v } });
+  t.load("youtube_skip.js");
+  for (let k = 0; k < 40; k++) { tick(t, v, 1); t.retried(); t.retried(); t.retried(); } // a flood: 3 a second for 40 s
+  ok("retry event flood: 20 restarts at most — 40 s into it the clock already runs again", t.sb.__reloads === 0);
+  tick(t, v, 10);
+  ok("retry event flood: …and fires 25 s after the 20th (no event holds it any more)", t.sb.__reloads === 1);
+}
+{
+  // the Playback ID clock restarts on a retry too
+  const now = 20 * HOUR;
+  const t = ytTab({ now, storage: { enabled: true }, els: { ".ytp-error": { textContent: "An error occurred. Please try again later. (Playback ID: AbC123)" } } });
+  t.load("youtube_skip.js");
+  t.sb.__now += 6000; t.run(); t.retried(); t.sb.__now += 6000; t.run();
+  ok("Playback ID error: a retry in between restarts its 8 s (no bypass at 12 s)", t.messages.length === 0 && t.sb.__reloads === 0);
+  t.sb.__now += 9000; t.run();
+  ok("…stable 8 s after the retry → bypass + reload", t.messages.some((m) => m.type === "ytBypass") && t.sb.__reloads === 1);
+}
+{
   // stage 1 was long ago → a new incident starts at stage 1 again (a reload, NOT a 6 h bypass)
   const now = 40 * HOUR;
   const v = stalledVideo();
@@ -269,7 +306,7 @@ function tick(t, video, seconds) {
 // Скриптът се зарежда с името, което има в браузъра (chrome-extension://…), за да се види дали
 // кадрите му изтичат в e.stack. Promise е от отделен realm: куката на .then не пипа самия тест.
 const MAIN_URL = "chrome-extension://abcdefghijklmnop/youtube_main.js";
-function ytPage(responses, before = {}, { host = "www.youtube.com", path = "/watch", search = "?v=vid1" } = {}) {
+function ytPage(responses, before = {}, { host = "www.youtube.com", path = "/watch", search = "?v=vid1", pre = null } = {}) {
   const RealmPromise = runInNewContext("Promise");
   const sb = { Proxy, Reflect, WeakMap, WeakSet, Object, Array, JSON, RegExp, String, Number, Promise: RealmPromise, Function, Error, TypeError, URLSearchParams };
   sb.window = sb;
@@ -281,7 +318,13 @@ function ytPage(responses, before = {}, { host = "www.youtube.com", path = "/wat
   const winListeners = {};
   sb.addEventListener = (t, f) => { (winListeners[t] ||= []).push(f); };
   const ids = {};
-  sb.document = { getElementById: (id) => ids[id] || null, addEventListener() {}, visibilityState: "visible" };
+  const els = {};
+  const docListeners = {};
+  sb.document = { getElementById: (id) => ids[id] || null, querySelector: (s) => els[s] || null,
+    addEventListener: (t, f) => { (docListeners[t] ||= []).push(f); }, visibilityState: "visible" };
+  // the retry note to youtube_skip goes out through the native dispatchEvent, taken before any page code
+  const events = [];
+  sb.EventTarget = class { dispatchEvent(ev) { events.push({ target: this, type: ev.type }); return true; } };
   sb.__timers = [];
   sb.__intervals = [];
   sb.setTimeout = function setTimeout(fn, ms) { sb.__timers.push(ms); return 1; };
@@ -331,13 +374,17 @@ function ytPage(responses, before = {}, { host = "www.youtube.com", path = "/wat
     appendChild: Node_.prototype.appendChild, then: RealmPromise.prototype.then,
     responseText: Object.getOwnPropertyDescriptor(XHR.prototype, "responseText").get,
     contentWindow: Object.getOwnPropertyDescriptor(IFrame_.prototype, "contentWindow").get });
+  if (pre) pre(sb); // e.g. a uBO rule that ran before us
   runInNewContext(src("youtube_main.js"), sb, { filename: MAIN_URL });
   const PLAYER = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false";
   const playerBody = () => JSON.stringify({ videoId: "vid1", context: { client: { clientName: "WEB", clientScreen: "WATCH" } }, playbackContext: { contentPlaybackContext: { referer: "https://www.youtube.com/", lactMilliseconds: "-1" } }, attestationRequest: { omitBotguardData: true } });
   const call = (url = PLAYER, body = JSON.stringify({ videoId: "x", context: {} })) => sb.fetch(url, { method: "POST", body });
   const config = (cfg) => (winListeners["tbab-yt-cfg"] || []).forEach((f) => f({ detail: JSON.stringify(cfg) }));
   const tick = (n = 1, ms = 500) => { for (let i = 0; i < n; i++) { sb.__now += ms; sb.__intervals.forEach((f) => f()); } };
-  return { sb, ids, calls, call, config, sent, XHR, Resp, Req, IFrame_, mos, tick, PLAYER, playerBody, RealmPromise };
+  // code run by "the page" itself (its own Map / arrays — the realm youtube_main hooked)
+  const inPage = (code) => runInContext(code, sb);
+  const domLoaded = () => (docListeners.DOMContentLoaded || []).forEach((f) => f({ type: "DOMContentLoaded" }));
+  return { sb, ids, els, events, calls, call, config, sent, XHR, Resp, Req, IFrame_, mos, tick, inPage, domLoaded, PLAYER, playerBody, RealmPromise };
 }
 const OK = { playabilityStatus: { status: "OK" }, streamingData: {}, adPlacements: [{ a: 1 }], adSlots: [{ s: 1 }], playerAds: [{ p: 1 }] };
 const BAD = { playabilityStatus: { status: "UNPLAYABLE", reason: "Video unavailable" } };
@@ -385,6 +432,34 @@ const BAD = { playabilityStatus: { status: "UNPLAYABLE", reason: "Video unavaila
   ok("main: feed ad renderers removed from the browse response, the real video stays", j.contents.richGridRenderer.contents.length === 1 && !!j.contents.richGridRenderer.contents[0].richItemRenderer.content.videoRenderer);
   const r2 = await p.call("https://www.youtube.com/youtubei/v1/browse");
   ok("main: a feed without ads is passed through untouched (no re-serialising)", r2.body === JSON.stringify({ contents: { a: 1 } }));
+}
+{
+  // Shorts (the uBO rule entries.[-].command.reelWatchEndpoint.adClientParams.isAd — on Basic only we run)
+  const reel = { entries: [{ command: { reelWatchEndpoint: { videoId: "a", adClientParams: { isAd: false } } } }, { command: { reelWatchEndpoint: { videoId: "ad", adClientParams: { isAd: true } } } }] };
+  const p = ytPage([reel]);
+  const j = JSON.parse(await (await p.call("https://www.youtube.com/youtubei/v1/reel/reel_watch_sequence?prettyPrint=false")).text());
+  ok("main: Shorts — the ad entry of the reel sequence is dropped, the clip stays", j.entries.length === 1 && j.entries[0].command.reelWatchEndpoint.videoId === "a");
+}
+{
+  // 6.1.1: a full page load (a reload) — the first player answer is inline, and on Basic no uBO rule cleans it
+  const p = ytPage([]);
+  p.inPage('var ytInitialPlayerResponse = { playabilityStatus: { status: "OK" }, adPlacements: [1], playerAds: [2], adSlots: [3], streamingData: {} };');
+  const v = p.sb.ytInitialPlayerResponse;
+  const d = Object.getOwnPropertyDescriptor(p.sb, "ytInitialPlayerResponse");
+  ok("reload: the inline ytInitialPlayerResponse loses adPlacements/playerAds/adSlots as it is assigned",
+    !!v && !("adPlacements" in v) && !("playerAds" in v) && !("adSlots" in v) && "no_ads" in v && "streamingData" in v && v.playabilityStatus.status === "OK");
+  ok("reload: …and is a plain data property afterwards (no lingering accessor)", !!d && "value" in d && !d.get);
+  p.inPage("var ytInitialData = { contents: [{ adSlotRenderer: {} }, { videoRenderer: { videoId: 'v' } }] };");
+  ok("reload: the inline ytInitialData loses its ad renderers (as before)", p.sb.ytInitialData.contents.length === 1);
+  const q = ytPage([], {}, { pre: (sb) => Object.defineProperty(sb, "ytInitialPlayerResponse", { configurable: true, get() { return "uBO"; }, set() {} }) });
+  ok("reload: where a uBO rule trapped it first (Standard/Strict), it is left to that rule", q.sb.ytInitialPlayerResponse === "uBO");
+  const e = ytPage([], {}, { path: "/" });
+  const before = !!Object.getOwnPropertyDescriptor(e.sb, "ytInitialPlayerResponse");
+  e.domLoaded();
+  ok("reload: a page that never assigns it (no player) keeps no accessor of ours after DOMContentLoaded",
+    before && !Object.getOwnPropertyDescriptor(e.sb, "ytInitialPlayerResponse") && !!Object.getOwnPropertyDescriptor(e.sb, "ytInitialData") === false);
+  p.domLoaded();
+  ok("reload: …an assigned one stays as it is (plain data, cleaned)", "no_ads" in p.sb.ytInitialPlayerResponse && "value" in Object.getOwnPropertyDescriptor(p.sb, "ytInitialPlayerResponse"));
 }
 {
   const p = ytPage([]);
@@ -467,7 +542,7 @@ function fakePlayer(p, state) {
   p.ids.movie_player = mp;
   return mp;
 }
-const shapeOf = (c) => ({ screen: c.body?.context?.client?.clientScreen, params: c.body?.params, referer: c.body?.playbackContext?.contentPlaybackContext?.referer, lact: c.body?.playbackContext?.contentPlaybackContext?.lactMilliseconds });
+const shapeOf = (c) => { const cpc = c.body?.playbackContext?.contentPlaybackContext; return { screen: c.body?.context?.client?.clientScreen, params: c.body?.params, referer: cpc?.referer, lact: cpc?.lactMilliseconds, inline: cpc?.isInlinePlaybackNoAd }; };
 {
   const p = ytPage([OK, OK, OK, OK, OK, OK]);
   const st = { resp: PLAYING };
@@ -477,37 +552,176 @@ const shapeOf = (c) => ({ screen: c.body?.context?.client?.clientScreen, params:
   ok("shapes: until a refusal, /player goes out exactly as YouTube built it", JSON.stringify(p.calls[0].body) === p.playerBody() && mp.loads.length === 0);
   st.resp = REFUSED; p.tick();
   ok("shapes: refusal (UNPLAYABLE → the ad-blocker help page) → the clip is retried in place", mp.loads.length === 1 && mp.loads[0][0] === "vid1");
+  ok("shapes: …and youtube_skip is told (its stall clock starts again)", p.events.length === 1 && p.events[0].type === "tbab-yt-retry" && p.events[0].target === p.sb.document);
   await p.call(p.PLAYER, p.playerBody());
   const s1 = shapeOf(p.calls[1]);
-  ok(`shapes: the retry carries params 8AUB, a fresh lactMilliseconds and the #reloadxhr referer (${JSON.stringify(s1)})`,
-    s1.params === "8AUB" && s1.referer === "https://www.youtube.com/#reloadxhr" && s1.lact === String(p.sb.__now) && s1.screen === "WATCH");
+  ok(`shapes: a refusal moves past CHANNEL — params YAHI and the #reloadxhr referer; lactMilliseconds untouched (uBO dropped "lactmilli", 2026-11) (${JSON.stringify(s1)})`,
+    s1.params === "YAHI" && s1.referer === "https://www.youtube.com/#reloadxhr" && s1.lact === "-1" && s1.screen === "WATCH" && !s1.inline);
   p.tick(2);
   ok("shapes: the player still holds the old answer → no second retry yet (it would burn a shape)", mp.loads.length === 1);
   st.resp = Object.assign({}, REFUSED); p.tick();
   ok("shapes: refused again → the next shape", mp.loads.length === 2);
   await p.call(p.PLAYER, p.playerBody());
   const s2 = shapeOf(p.calls[2]);
-  ok("shapes: …\"inline\" = only the referer", s2.params === undefined && s2.referer.endsWith("#reloadxhr") && s2.lact === "-1");
+  ok(`shapes: …"inline" = isInlinePlaybackNoAd + the referer (${JSON.stringify(s2)})`, s2.inline === true && s2.params === undefined && s2.referer.endsWith("#reloadxhr"));
+  st.resp = Object.assign({}, REFUSED); p.tick();
+  await p.call(p.PLAYER, p.playerBody());
+  const s3 = shapeOf(p.calls[3]);
+  ok(`shapes: …then "oaeb" = params oAEBogYBLg (${JSON.stringify(s3)})`, s3.params === "oAEBogYBLg" && !s3.inline && s3.referer.endsWith("#reloadxhr"));
   for (let k = 0; k < 6; k++) { st.resp = Object.assign({}, REFUSED); p.tick(20); }
   ok(`shapes: bounded — every shape once, then as sent, then stop (${mp.loads.length} retries)`, mp.loads.length === 4);
-  // XHR path and a body inside a Request carry the same shape
-  const x = new p.sb.XMLHttpRequest();
-  x.open("POST", p.PLAYER); x.send(p.playerBody());
-  const r = await p.sb.fetch(new p.Req(p.PLAYER, { method: "POST", body: p.playerBody() }));
-  ok("shapes: the XHR body and a Request body are shaped too", typeof p.sent[0].body === "string" && typeof r.body === "string");
+  await p.call(p.PLAYER, p.playerBody());
+  ok("shapes: …the last retry goes out exactly as built", JSON.stringify(p.calls[4].body) === p.playerBody());
+  // XHR path and a body inside a Request carry the same shape (forced back on for the check)
+  const q = ytPage([OK, OK]); const qs = { resp: REFUSED }; fakePlayer(q, qs); q.tick();
+  const x = new q.sb.XMLHttpRequest();
+  x.open("POST", q.PLAYER); x.send(q.playerBody());
+  const r = await q.sb.fetch(new q.Req(q.PLAYER, { method: "POST", body: q.playerBody() }));
+  ok("shapes: the XHR body and a Request body are shaped too", JSON.parse(q.sent[0].body).params === "YAHI" && q.calls[0].body.params === "YAHI" && typeof r.body === "string");
 }
+const STUCK = () => ({ resp: Object.assign({}, PLAYING), buffering: true, stats: { debug_info: "s:5 t:0.00 b:0.000-0.000", resolution: "0x0", buffer_health_seconds: "0.00 s" } });
 {
+  // the fallback: the player says nothing, the stats alone for 10 s
   const p = ytPage([OK, OK]);
-  const st = { resp: PLAYING, buffering: true, stats: { debug_info: "s:5 t:0.00 b:0.000-0.000", resolution: "0x0", buffer_health_seconds: "0.00 s" } };
+  const st = STUCK();
   const mp = fakePlayer(p, st);
   p.tick(10); // 5 s
-  ok("stuck: under 10 s at 0x0 with an empty buffer → nothing", mp.loads.length === 0);
+  ok("stuck: under 10 s at 0x0 with an empty buffer (and no word from the player) → nothing", mp.loads.length === 0);
   p.tick(22); // 16 s
   ok("stuck: 10 s at 0x0 with an empty buffer → retried in place with the first shape", mp.loads.length === 1);
   await p.call(p.PLAYER, p.playerBody());
-  ok("stuck: …clientScreen CHANNEL (WEB client only)", shapeOf(p.calls[0]).screen === "CHANNEL");
+  ok("stuck: …clientScreen CHANNEL (WEB client only) and the referer", shapeOf(p.calls[0]).screen === "CHANNEL" && shapeOf(p.calls[0]).referer.endsWith("#reloadxhr"));
   p.sb.document.visibilityState = "hidden"; st.resp = Object.assign({}, PLAYING); p.tick(60);
   ok("stuck: a hidden tab is not a stuck player", mp.loads.length === 1);
+}
+{
+  // 6.1.1: the player's own word — its "onSnackbarMessage" lookup, or a 104/105-byte message — and the retry is at once
+  const p = ytPage([OK, OK, OK, OK]);
+  const st = STUCK();
+  const mp = fakePlayer(p, st);
+  p.tick(1);
+  p.inPage('new Map([["a", 1]]).has("onSnackbarMessage")');
+  p.tick(1);
+  ok("stuck: the word alone is not enough — the stuck state must hold a second (a healthy start is 0x0 for a moment too)", mp.loads.length === 0);
+  p.tick(1);
+  ok("stuck: the player looks up onSnackbarMessage while stuck → retried once that held a second (not after 10 s)", mp.loads.length === 1);
+  await p.call(p.PLAYER, p.playerBody());
+  // the shaped answer is stuck too (its tracking URL carries #reloadxhr) → the next shape, again at once
+  st.resp = Object.assign({}, PLAYING, { playbackTracking: { videostatsPlaybackUrl: { baseUrl: "https://s.youtube.com/api/stats/playback?referrer=https%3A%2F%2Fwww.youtube.com%2F%23reloadxhr" } } });
+  p.tick(1);
+  p.inPage("[].push(new Uint8Array(105))");
+  p.tick(2);
+  ok("stuck: a 105-byte message on the shaped (#reloadxhr) answer → the next shape a second later", mp.loads.length === 2);
+  await p.call(p.PLAYER, p.playerBody());
+  ok("stuck: …params YAHI", shapeOf(p.calls[1]).params === "YAHI");
+  // not the word: a view into a bigger buffer, another length, another key; nor a word while playing
+  const q = ytPage([]); const qs = STUCK(); const mq = fakePlayer(q, qs); q.tick(1);
+  q.inPage("[].push(new Uint8Array(new ArrayBuffer(400), 0, 105)); [].push(new Uint8Array(64)); new Map().has('onError'); [].push({ length: 105 })");
+  q.tick(2);
+  ok("stuck: a view into a bigger buffer, 64 bytes, another key, an object with length 105 → not the player's word", mq.loads.length === 0);
+  const w = ytPage([]); const mw = fakePlayer(w, { resp: PLAYING }); w.tick(1);
+  w.inPage('new Map().has("onSnackbarMessage"); [].push(new Uint8Array(104))'); w.tick(4);
+  ok("stuck: the word while the clip plays → nothing", mw.loads.length === 0);
+  // the word came while the clip played; 4 s later the clip sticks → that word is stale, the 10 s fallback is not
+  const o = ytPage([]); const os = { resp: PLAYING }; const mo = fakePlayer(o, os); o.tick(1);
+  o.inPage('new Map().has("onSnackbarMessage")'); o.tick(8);
+  Object.assign(os, STUCK()); o.tick(6);
+  ok("stuck: a stale word (over 3 s old) does not count …", mo.loads.length === 0);
+  o.tick(16);
+  ok("stuck: …the 10 s fallback still does", mo.loads.length === 1);
+  const before = {};
+  const n = ytPage([], before);
+  ok("stuck: Map.prototype.has and Array.prototype.push stringify like their natives",
+    n.inPage("Function.prototype.toString.call(Map.prototype.has)") === "function has() { [native code] }" &&
+    n.inPage("Function.prototype.toString.call(Array.prototype.push)") === "function push() { [native code] }" &&
+    n.inPage("[1,2].push(3)") === 3 && n.inPage("new Map([[1,2]]).has(1)") === true);
+}
+{
+  // every shape tried and still stuck → the request as built, and then nothing (youtube_skip takes over)
+  const p = ytPage([]);
+  const st = STUCK();
+  const mp = fakePlayer(p, st);
+  for (let k = 0; k < 8; k++) { p.tick(1); p.inPage('new Map().has("onSnackbarMessage")'); p.tick(20); st.resp = Object.assign({}, st.resp); }
+  ok(`stuck: bounded — CHANNEL, YAHI, inline, oaeb, then stop (${mp.loads.length} retries)`, mp.loads.length === 4);
+  // …on THIS clip: the next clip of the page (a suggestion, a playlist) has its own list again
+  st.resp = Object.assign({}, PLAYING, { videoDetails: { videoId: "vid2", lengthSeconds: "100" } });
+  p.tick(1); p.inPage('new Map().has("onSnackbarMessage")'); p.tick(3);
+  ok("stuck: a new clip on the same watch page gets its own retries (the list used to run over from the last clip)", mp.loads.length === 5 && mp.loads[4][0] === "vid2");
+}
+{
+  // review 6.1.1: a word heard before the retry's own answer landed was about the old answer
+  const p = ytPage([]);
+  const st = STUCK();
+  const mp = fakePlayer(p, st);
+  p.tick(1); p.inPage('new Map().has("onSnackbarMessage")'); p.tick(3);
+  ok("stale word: first retry (CHANNEL)", mp.loads.length === 1);
+  p.tick(1); p.inPage('new Map().has("onSnackbarMessage")'); // the old player, still on screen
+  st.resp = Object.assign({}, st.resp); p.tick(4); // the new answer lands, 0x0 for a moment
+  ok("stale word: not counted against the new answer — no second retry within 2 s", mp.loads.length === 1);
+  p.inPage('new Map().has("onSnackbarMessage")'); p.tick(3);
+  ok("stale word: a word after the new answer counts", mp.loads.length === 2);
+}
+{
+  // review 6.1.1: nothing is counted when the clip cannot be retried (no videoId yet)
+  const p = ytPage([OK]);
+  const st = { resp: Object.assign({}, REFUSED, { videoDetails: undefined }) };
+  const mp = fakePlayer(p, st);
+  p.tick(4);
+  st.resp = Object.assign({}, REFUSED); p.tick();
+  await p.call(p.PLAYER, p.playerBody());
+  ok("refused without a videoId: no retry and no shape spent — the first real retry is still YAHI", mp.loads.length === 1 && p.calls[0].body.params === "YAHI");
+}
+{
+  // the hooks on Array.prototype.push / Map.prototype.has are there only while a clip starts
+  const p = ytPage([]);
+  const st = STUCK();
+  const mp = fakePlayer(p, st);
+  // the page's own Array/Map (the vm realm), checked for a Proxy — the hooks are Proxies, the natives are not
+  const hooked = (q) => types.isProxy(q.inPage("[].push")) && types.isProxy(q.inPage("new Map().has"));
+  const plain = (q) => !types.isProxy(q.inPage("[].push")) && !types.isProxy(q.inPage("new Map().has"));
+  ok("hooks: armed while the clip starts (a watch page)", hooked(p));
+  Object.assign(st, { resp: Object.assign({}, PLAYING), buffering: false, stats: { debug_info: "s:8", resolution: "1280x720", buffer_health_seconds: "9.00 s" } });
+  for (let k = 1; k <= 6; k++) { st.prog = { current: k, duration: 212 }; p.tick(1); }
+  ok("hooks: the clip played 2 s → Array.prototype.push and Map.prototype.has are the natives again", plain(p));
+  Object.assign(st, STUCK()); p.tick(1); p.inPage("[].push(new Uint8Array(105))"); p.tick(3);
+  ok("hooks: …and then no word is heard (only the 10 s fallback would act)", mp.loads.length === 0);
+  st.resp = Object.assign({}, PLAYING, { videoDetails: { videoId: "vid9", lengthSeconds: "60" } }); p.tick(1);
+  ok("hooks: a new clip arms them again", hooked(p));
+  const h = ytPage([], {}, { path: "/" });
+  h.tick(4);
+  ok("hooks: never armed off a watch page (the home page, a channel)", plain(h));
+}
+{
+  // an embed: CHANNEL for WEB_EMBEDDED_PLAYER, then params eAFgAQ (uBO quick fixes, 2026-11)
+  const p = ytPage([OK, OK], {}, { path: "/embed/vid1", search: "" });
+  const st = STUCK();
+  const mp = fakePlayer(p, st);
+  const embedBody = () => JSON.stringify({ videoId: "vid1", context: { client: { clientName: "WEB_EMBEDDED_PLAYER", clientScreen: "EMBED" }, thirdParty: { embeddedPlayerContext: { ancestorOrigins: [] } } },
+    playbackContext: { contentPlaybackContext: { referer: "https://example.com/" } }, serializedThirdPartyEmbedConfig: "x" });
+  p.inPage('new Map().has("onSnackbarMessage")'); p.tick(3);
+  await p.call(p.PLAYER, embedBody());
+  const e1 = shapeOf(p.calls[0]);
+  ok(`embed: first shape = clientScreen CHANNEL on the embedded client + #reloadxhr (${JSON.stringify(e1)})`, mp.loads.length === 1 && e1.screen === "CHANNEL" && e1.referer === "https://example.com/#reloadxhr");
+  st.resp = Object.assign({}, st.resp); p.tick(17); p.inPage('new Map().has("onSnackbarMessage")'); p.tick(1);
+  await p.call(p.PLAYER, embedBody());
+  const e2 = shapeOf(p.calls[1]);
+  ok(`embed: then params eAFgAQ (${JSON.stringify(e2)})`, mp.loads.length === 2 && e2.params === "eAFgAQ" && e2.screen === "EMBED");
+}
+{
+  // loadVideoById drops the playlist: put back once the retried clip runs
+  const p = ytPage([], {}, { search: "?v=vid1&list=PL123" });
+  const st = { resp: REFUSED };
+  const mp = fakePlayer(p, st);
+  let playlistId = null; const set = [];
+  mp.getPlaylistId = () => playlistId;
+  p.els["yt-playlist-manager"] = { getPlaylistData: () => ({ playlistId: "PL123" }), setPlaylistData: (d) => set.push(["data", d.playlistId]), setPlayerPlaybackControlData: (d) => set.push(["panel", d.playlistPanelRenderer.playlistId]) };
+  p.tick();
+  st.resp = Object.assign({}, PLAYING); st.prog = { current: 0, duration: 212 }; p.tick(2);
+  ok("playlist: not before the retried clip runs", set.length === 0);
+  st.prog = { current: 1, duration: 212 }; p.tick();
+  ok(`playlist: the clip runs, no playlist in the player → put back (${JSON.stringify(set)})`, set.join() === "data,PL123,panel,PL123");
+  p.tick(4);
+  ok("playlist: …once", set.length === 2);
 }
 {
   const p = ytPage([]);

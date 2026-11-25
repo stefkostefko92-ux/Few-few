@@ -70,7 +70,37 @@ const schema = z
     /** Име на издателя в приложението за TOTP кодове. */
     TOTP_ISSUER: z.string().min(1).default('Piuma'),
 
-    ANTHROPIC_API_KEY: z.string().min(1).optional(),
+    /**
+     * Черновите от Claude минават САМО през Google Cloud Vertex AI на мулти-региона `eu`.
+     * Първостепенният Claude API няма обработка в ЕС, а единичните региони (`europe-west1`…)
+     * дават само Sonnet 4.6 и по-стари — затова се приема единствено `eu`. Друг регион =
+     * процесът не тръгва (fail-closed); „europe-“ не значи ЕС (`europe-west2` е Лондон).
+     * Без проект или без файла с удостоверения генерирането е изключено, панелът работи.
+     */
+    VERTEX_PROJECT_ID: z
+      .string()
+      .regex(
+        /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/,
+        'VERTEX_PROJECT_ID: ID на Google Cloud проект (6–30 знака: малки букви, цифри, тире)',
+      )
+      .optional(),
+    VERTEX_REGION: z
+      .literal('eu', {
+        errorMap: () => ({
+          message: 'VERTEX_REGION трябва да е „eu“ (мулти-регионът на ЕС) — global/us/регион не',
+        }),
+      })
+      .default('eu'),
+    /** Голо Vertex ID. Наличността в `eu` се сверява преди смяна (CLAUDE.md). */
+    VERTEX_MODEL: z
+      .string()
+      .regex(/^claude-[a-z0-9-]+(@\d{8})?$/, 'VERTEX_MODEL: Vertex ID на модел на Claude')
+      .default('claude-opus-5-5'),
+    /** Път до JSON ключа на service account-а (mode 600) — абсолютен, в средата на процеса. */
+    GOOGLE_APPLICATION_CREDENTIALS: z
+      .string()
+      .startsWith('/', 'GOOGLE_APPLICATION_CREDENTIALS: абсолютен път до файла')
+      .optional(),
   })
   .superRefine((cfg, ctx) => {
     if (cfg.NODE_ENV === 'production' && !cfg.AUDIT_ANCHOR_DIR) {

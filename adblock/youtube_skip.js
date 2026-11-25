@@ -166,6 +166,21 @@
   let lastSeenTime = -1;
   let lastSrc = "";
   let advanced = false; // this clip has played on this page
+  // youtube_main (MAIN world) retried the clip in place with the next request shape: the stall clock and the
+  // Playback ID clock start again. The reload and the six-hour bypass below are for a clip that still does
+  // not start once those retries are over — 6.1.1: the clock used to run through them, and a slow rotation
+  // ended in six hours of ads ("after a refresh the 15-second ads start").
+  // At most one restart a second and 20 a page: a page script that learned the name cannot hold the clock
+  // forever (past the cap the clock simply runs, as before 6.1.1).
+  let retryResets = 0, retryResetAt = 0;
+  try {
+    document.addEventListener("tbab-yt-retry", () => {
+      const now = Date.now();
+      if (retryResets >= 20 || now - retryResetAt < 1000) return;
+      retryResets++; retryResetAt = now;
+      stallSince = 0; errSeenAt = 0;
+    }, true);
+  } catch {}
   function isLive(video, player) {
     if (!isFinite(Number(video.duration))) return true;
     try { if (player && player.classList.contains("ytp-live")) return true; } catch {}

@@ -13,7 +13,8 @@
 
 Node ≥22 · TypeScript strict (ESM, `NodeNext`) · Express 5 · EJS (сървърно рендиран панел, строг
 CSP с nonce) · Prisma 6 + PostgreSQL · BullMQ + Redis · zod на всеки външен вход · pino · Argon2id ·
-TOTP (RFC 6238, нула зависимости) · Anthropic SDK (`claude-opus-5`) за черновите.
+TOTP (RFC 6238, нула зависимости) · Claude през Google Cloud Vertex AI (`@anthropic-ai/vertex-sdk`,
+мулти-регион `eu`, модел `VERTEX_MODEL`, по подразбиране `claude-opus-5-5`) за черновите.
 
 ## Команди (гейтът)
 
@@ -86,6 +87,7 @@ src/
                        events (разчитане, без името на човека) · match · decide (решение без странични
                        ефекти) · compose (бележката отдолу) · webhook-routes (ПРЕДИ общия JSON парсер)
   content/             lint (HIGH блокира) · plan (планът на страницата, zod) · prompt (контекст: план + Insights) · schedule (чиста логика на автопилота) · generate
+                       · vertex (готов ли е AI, клиентът — закован за ЕС хоста, таймаут, повторни опити, лог `ai.usage`)
   services/            accounts · posts · publish · insights (синхронизация + представяне) · autopilot — инвариантите живеят тук, не в маршрутите
   queue/               BullMQ опашка и работник
 locales/               bg.json (източник) · en.json · it.json — пълни огледала, гейтвани от теста
@@ -170,3 +172,27 @@ DEPLOY.md              еднократните стъпки, които скр�
 
 `IG_GRAPH_VERSION` е конфигурация, не константа. Лимитите и разрешенията се сверяват в
 документацията на Meta, не по памет.
+
+**Claude през Vertex AI.** Черновите вървят САМО през Google Cloud Vertex AI на мулти-региона
+`eu` (`src/content/vertex.ts`): първостепенният Claude API няма обработка в ЕС, а единичните
+региони (`europe-west1`…) дават само Sonnet 4.6 и по-стари. `VERTEX_REGION` приема единствено
+`eu` — друго и процесът не тръгва; хостът `aiplatform.eu.rep.googleapis.com` е закован в кода,
+за да не го пренасочи `ANTHROPIC_VERTEX_BASE_URL`. Без проект/ключ (или ключ, по-отворен от 600)
+генерирането е изключено, панелът и `/health` работят. Настройката на сървъра е в DEPLOY.md §1а.
+
+- **Модел = `VERTEX_MODEL`.** Преди смяна сверявай, че моделът е отбелязан в колоната
+  „EU multi-region“ на https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency
+  (към 2026-11-19: Opus 5 и Opus 5.5 — да) и че е активиран в Model Garden на проекта. Opus 5.5
+  отхвърля `temperature`/`top_p`/`top_k`, `budget_tokens` и prefill — `buildDraftRequest` не ги
+  праща, `effort` е изричен (`medium`). Vertex няма Batch, Files, Models API и сървърния `fallbacks`.
+- **SDK.** `@anthropic-ai/sdk` и `@anthropic-ai/vertex-sdk` се вдигат ЗАЕДНО (v1 на vertex иска v1
+  на sdk — иначе второ копие); `npm ls @anthropic-ai/sdk` трябва да показва едно копие.
+- **Кеш.** Системният промпт (~1000 знака) по оценка е под минималния кешируем префикс (512
+  токена за Opus 5/5.5; не е мерен с count_tokens), а под минимума `cache_control` е тих no-op.
+  Извикванията са и редки (клик, автопилот седмично) спрямо 5-минутния кеш — маркерът е махнат.
+  Логът `ai.usage` показва вход/изход/кеш на всяко извикване; маркер има смисъл чак при
+  стабилен префикс над минимума и чести повторения.
+- **Недоверен вход.** Надписите от Instagram влизат в промпта JSON-кодирани, а системният
+  промпт казва, че полето `caption` е данни, не инструкции (`tests/prompt.test.ts`).
+- **Таймаут.** 100 s на опит, 2 повторни опита, общ таван 115 s — под `proxy_read_timeout 120s`
+  на nginx. 403/404 не се повтарят и излизат като ясно изречение в панела.
