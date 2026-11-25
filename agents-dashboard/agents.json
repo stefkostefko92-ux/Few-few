@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 739
+        "lessons": 740
       },
       "evolution": [
         {
@@ -2140,9 +2140,20 @@
           "date": "2026-11-25",
           "event": "v69.1 — учене",
           "detail": "Научи: В този worktree сложна bash команда с node tools/agents/rubric.mjs (много операции) иск…"
+        },
+        {
+          "version": "69.2.0",
+          "date": "2026-11-25",
+          "event": "v69.2 — учене",
+          "detail": "Научи: tools/video/presets.mjs поддържа подкоманда loudnorm (два прохода, --in/--out) и frames…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „tools/video/presets.mjs поддържа подкоманда loudnorm (два прохода, --in/--out) и frames…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
