@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 777
+        "lessons": 778
       },
       "evolution": [
         {
@@ -2163,9 +2163,20 @@
           "date": "2026-11-25",
           "event": "v73.1 — учене",
           "detail": "Научи: deploy/autodeploy.sh не копира nginx vhost за vizitka — промени във vizitka/deploy/ngin…"
+        },
+        {
+          "version": "73.2.0",
+          "date": "2026-11-25",
+          "event": "v73.2 — учене",
+          "detail": "Научи: В live-run worktree Ivan/backend/node_modules липсва, затова тестовете на Ivan не могат…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „В live-run worktree Ivan/backend/node_modules липсва, затова тестовете на Ivan не могат…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
