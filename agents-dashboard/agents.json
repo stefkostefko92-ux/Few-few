@@ -7490,6 +7490,11 @@
       "activity": [
         {
           "date": "2026-11-25",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Под set -e провал в `cmd && log` в тялото на while не спира функцията; статусът на функ…\""
+        },
+        {
+          "date": "2026-11-25",
           "type": "learning",
           "summary": "Научи: „fakturist/deploy/deploy.sh връща код 0 и когато няма TLS сертификат за домейна (sync_ng…\" (+1 още) · 1 в карантина"
         },
