@@ -184,11 +184,18 @@ if [ "$DOCKER" = 1 ]; then
     [ -n "$c" ] || continue
     CONTAINERS+=("$c")
     CKIND[$c]="$(db_kind "$c")"
-    CRUN[$c]="$(docker inspect -f '{{.State.Running}}' "$c")"
+    # Контейнер, изтрит между `ps` и `inspect`, не бива да убива бекъпа под set -e.
+    CRUN[$c]="$(docker inspect -f '{{.State.Running}}' "$c" 2>/dev/null)" || { warn "Контейнер $c изчезна по време на обхода — пропускам."; continue; }
     # Образ на Postgres без жив сървър вътре (напр. бекъп помощник с pg_dump) не е
     # база: дъмп от него е невъзможен и би дал фалшив провал.
     if [ "${CKIND[$c]}" = pg ] && [ "${CRUN[$c]}" = true ] && ! docker exec "$c" pg_isready -q >/dev/null 2>&1; then
-      CKIND[$c]=app; PG_HELPERS+=("$c")
+      # С том за данни (PGDATA) това е БАЗА, която не отговаря — не помощник. Тихо „помощен“ значеше
+      # без дъмп и без суров том при зелен пинг (преглед на PR #312): сега е провал, а томът ѝ влиза.
+      if docker inspect -f '{{range .Mounts}}{{.Destination}}{{println}}{{end}}' "$c" 2>/dev/null | grep -q '^/var/lib/postgresql'; then
+        CKIND[$c]=pgdown
+      else
+        CKIND[$c]=app; PG_HELPERS+=("$c")
+      fi
     fi
     # Папката на compose проекта държи compose файла, .env и относителните bind-ове.
     WORKDIRS+=("$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$c")")
@@ -412,6 +419,11 @@ fi
 inv "пропуснати стари releases: ${#OLD_REL[@]} (кодът идва от git; .env-овете им влизат)"
 inv "изключени имена: ${EXCL_NAME[*]}"
 FREE="$(df -Pk "$OUT_DIR" | awk 'NR==2{print $4}')"
+# Нощните дъмпове (DUMP_TO на същия диск): под минимума не пишем — пълен диск сваля и продуктите.
+MIN_FREE_KB="${MIN_FREE_KB:-2097152}"
+if [ "$MODE" = dumps ] && [ "$FREE" -lt "$MIN_FREE_KB" ] && [ "$FORCE" != 1 ]; then
+  die "Свободни $(kb_h "$FREE") в $OUT_DIR — под минимума $(kb_h "$MIN_FREE_KB") за нощните дъмпове. Освободи място или MIN_FREE_KB=…"
+fi
 if [ "$SAVE_IMAGES" = 1 ]; then EST=$((EST + ${IMG_KB:-0})); inv "образи (SAVE_IMAGES=1) · $(kb_h "${IMG_KB:-0}")"; fi
 inv "общо ≈ $(kb_h "$EST") · свободно в $OUT_DIR: $(kb_h "$FREE")"
 
@@ -586,6 +598,7 @@ for c in "${CONTAINERS[@]}"; do
   case "${CKIND[$c]}" in
     pg) dump_pg_container "$c";;
     my) dump_my_container "$c";;
+    pgdown) fail "Postgres $c не отговаря на pg_isready — без дъмп; суровият том е в архива (консистентен само във FINAL).";;
     redis) save_redis_container "$c";;
     mongo) warn "MongoDB $c: без логически дъмп — суровият том е в архива (консистентен само във FINAL; в горещ режим — по възможност).";;
   esac
@@ -628,13 +641,15 @@ backup_sqlite(){
   else
     st=127; printf 'няма python3 и sqlite3' > "$ERR"
   fi
-  own="$(stat -c %u:%g "$f")"
+  # Базата може да изчезне по време на обхода (приложение я изтрива) — под set -e голият stat би убил
+  # целия бекъп (преглед на PR #312). Тогава няма какво да се връща на собственика.
+  own="$(stat -c %u:%g "$f" 2>/dev/null)" || own=""
   # Собствеността на създадените от нас -wal/-shm се връща на собственика на базата. Папката е
   # негова: между проверката и chown той може да подмени файла със symlink (CWE-367). Затова само
   # обикновен файл и `chown -h` — той сменя самата връзка, никога целта (преглед на PR #312).
-  if [ "$had_wal" = 0 ] && [ ! -L "$f-wal" ] && [ -f "$f-wal" ]; then chown -h -- "$own" "$f-wal"; fi
-  if [ "$had_shm" = 0 ] && [ ! -L "$f-shm" ] && [ -f "$f-shm" ]; then chown -h -- "$own" "$f-shm"; fi
-  if [ "$st" = 0 ]; then SQLITES+=("$f · $(du -h "$dst" | cut -f1) · $(stat -c %U "$f") · ok")
+  if [ -n "$own" ] && [ "$had_wal" = 0 ] && [ ! -L "$f-wal" ] && [ -f "$f-wal" ]; then chown -h -- "$own" "$f-wal"; fi
+  if [ -n "$own" ] && [ "$had_shm" = 0 ] && [ ! -L "$f-shm" ] && [ -f "$f-shm" ]; then chown -h -- "$own" "$f-shm"; fi
+  if [ "$st" = 0 ]; then SQLITES+=("$f · $(du -h "$dst" 2>/dev/null | cut -f1) · $(stat -c %U "$f" 2>/dev/null || echo '?') · ok")
   else fail "SQLite $f: копието не мина (код $st) — $(errline); суровият файл е в архива"; SQLITES+=("$f · — · ПРОВАЛ"); fi
 }
 inf "SQLite бази…"

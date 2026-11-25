@@ -134,3 +134,36 @@ test("MongoDB: томът не се пропуска като „дъмпнат�
   assert.doesNotMatch(live[1], /mongo/, "Mongo няма логически дъмп — суровият том трябва да влезе");
   assert.match(src, /mongod\.service "\*\) ROOTS="\$ROOTS \/var\/lib\/mongodb"/, "хостовият mongod влиза в архива");
 });
+
+// Повторен преглед на PR #312 (Кодаджията, VPS-аджията — Medium):
+test("backup_sqlite: база, изчезнала по време на обхода, не убива скрипта под set -e", () => {
+  const src = readFileSync(script, "utf8");
+  const fn = src.match(/^backup_sqlite\(\)\{\n[\s\S]*?^\}/m)?.[0];
+  assert.ok(fn);
+  const base = mkdtempSync(join(tmpdir(), "mbgone-"));
+  try {
+    const bin = join(base, "bin");
+    mkdirSync(bin);
+    writeFileSync(join(bin, "python3"), "#!/bin/sh\nexit 1\n", { mode: 0o755 });
+    const cfg = ["set -euo pipefail", `export PATH="${bin}:$PATH"`, `STAGE="${join(base, "stage")}"`, `ERR="${join(base, "err")}"`,
+      "SQLITE_PY=x", "SQLITES=()", "FAILS=()", 'fail(){ FAILS+=("$*"); }', "errline(){ :; }", fn,
+      `backup_sqlite "${join(base, "nyama.db")}"`, 'echo "FAILS=${#FAILS[@]}"'].join("\n");
+    const r = spawnSync("bash", ["-c", cfg], { encoding: "utf8" });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /FAILS=1/, "провалът се записва, скриптът продължава");
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+test("Postgres без отговор, но с том с данни, е ПРОВАЛ (не „помощен“) и суровият му том влиза", () => {
+  const src = readFileSync(script, "utf8");
+  assert.match(src, /CKIND\[\$c\]=pgdown/, "жива база без pg_isready се маркира отделно");
+  assert.match(src, /pgdown\) fail "Postgres \$c/, "и дава fail, не тишина");
+  assert.doesNotMatch(src.match(/case "\$\{CKIND\[\$c\]\}" in ([a-z|]+)\) if/)[1], /pgdown/, "томът ѝ не се пропуска");
+});
+
+test("нощните дъмпове и пробното възстановяване проверяват свободното място", () => {
+  const src = readFileSync(script, "utf8");
+  assert.match(src, /MODE" = dumps \] && \[ "\$FREE" -lt "\$MIN_FREE_KB" \]/, "dumps: минимум свободно място");
+  const off = readFileSync(join(here, "offsite-backup.sh"), "utf8");
+  assert.match(off, /df -Pk "\$VERIFY_TMP"/, "verify сверява свободното място преди restore");
+});

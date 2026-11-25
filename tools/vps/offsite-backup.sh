@@ -169,6 +169,11 @@ cmd_verify(){
   inf "restic check (+ прочит на ${VERIFY_READ} от данните)…"
   restic check --read-data-subset="$VERIFY_READ"
   # Не в /tmp: възстановените дъмпове са ЦЕЛИ бази (лични данни), а /tmp може да е в RAM.
+  # Пробното възстановяване пише цели бази: без място пълни диска на живия сървър (преглед на PR #312).
+  local need free
+  need="$(du -sk "$DUMP_DIR" 2>/dev/null | cut -f1 || true)"; need=$(( ${need:-0} * 2 ))
+  free="$(df -Pk "$VERIFY_TMP" | awk 'NR==2{print $4}' || true)"
+  [ "${free:-0}" -ge "$need" ] || die "Свободни ${free:-0} KB в $VERIFY_TMP при нужни ~$need KB за пробното възстановяване — VERIFY_TMP=<друг диск>."
   TMP="$(mktemp -d "$VERIFY_TMP/offsite-verify.XXXXXX")"
   inf "Пробно възстановяване на дъмповете от последната снимка…"
   restic restore latest --host "$HOST" --tag nightly --target "$TMP" --include "$DUMP_DIR" >/dev/null
