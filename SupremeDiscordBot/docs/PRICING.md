@@ -11,7 +11,7 @@ Supreme Bot се продава **само** през **Discord Premium Apps** (
 | Tier | Цена (информативна, „от“) | Обхват | Какво включва |
 |------|---------------------------|--------|----------------|
 | **Free** | €0 | 1 сървър | 1 панел, 2 формуляра (до 5 въпроса), 1 верификация, 30-дневни transcript-и |
-| **Premium** | от €4.99/мес | 1 сървър | Всичко ОСВЕН white-label: до 50 панела/формуляра/въпроса, верификация, giveaways, poll-ове, sticky + scheduled/recurring, AI отговори, round-robin, webhooks, REST API, безсрочни transcript-и |
+| **Premium** | от €4.99/мес | 1 сървър | Всичко ОСВЕН white-label: до 50 панела/формуляра/въпроса, 10 верификационни панела (1 е безплатен; верификацията, giveaways и poll-овете са без гейт и работят и на Free), sticky + scheduled/recurring, AI отговори, round-robin, webhooks, REST API, безсрочни transcript-и |
 | **White-label** | от €9.99/мес | 1 сървър | Premium + собствен бранд бот (качваш свой Discord bot token) |
 
 - **Само месечно.** Discord Premium Apps не поддържа годишни абонаменти → няма

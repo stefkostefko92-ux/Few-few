@@ -1,0 +1,14 @@
+{
+  "fps": 30,
+  "width": 1080,
+  "height": 1350,
+  "pulse": 0.125,
+  "barPulses": [2, 2, 3],
+  "introBars": 4,
+  "bars": 32,
+  "duration": 36,
+  "cover": 3.4,
+  "loudnorm": "I=-14:TP=-1.5:LRA=9",
+  "site": "https://scuolabg.carbonstealth.eu",
+  "url": "scuolabulgaramilano.it"
+}

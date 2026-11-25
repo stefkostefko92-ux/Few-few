@@ -17,14 +17,26 @@ import { spawn } from "node:child_process";
 import { summarizeTranscript } from "../../tools/lib/usage.mjs";
 import { appendPendingUsage, pendingUsagePath, isGitRepo } from "../../tools/lib/memory-branch.mjs";
 import { evalMode } from "../../tools/lib/eval-mode.mjs";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+
+/**
+ * SubagentStop без agent_type и без мета-файл = вътрешен помощник на харнеса (подсказки, /btw), не пуснат
+ * от нас агент. Куката е без matcher и тича и за тях (/en/hooks#subagentstop-input) — досега се брояха
+ * като „общ“ и надуваха общите агенти в отчета (2026-11-02, четвърто проучване).
+ */
+export function agentLabel(payload, rec) {
+  if (!payload?.agent_type && rec?.agent === "общ" && payload?.hook_event_name === "SubagentStop") return "вътрешен";
+  return rec?.agent;
+}
 
 export function captureRun(payload, cwd = ROOT) {
   const tp = payload.agent_transcript_path;
   if (!tp || !isGitRepo(cwd)) return null;
   const rec = summarizeTranscript(tp, { agentType: payload.agent_type || "", effort: payload.effort?.level || "" });
   if (!rec) return null;
+  rec.agent = agentLabel(payload, rec);
   const ev = evalMode(cwd);
   if (ev) rec.eval = `${ev.label}${ev.memory === "off" ? "·без-памет" : ""}`; // проверка ≠ продукция в отчета
   return appendPendingUsage(cwd, rec) ? rec : null;
@@ -55,4 +67,4 @@ function main() {
   process.exit(0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) { try { main(); } catch { process.exit(0); } }
+if (isMain(import.meta.url)) { try { main(); } catch { process.exit(0); } }

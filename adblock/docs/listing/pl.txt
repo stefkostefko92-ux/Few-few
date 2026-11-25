@@ -12,3 +12,4 @@ Supreme AdBlock blokuje reklamy wszędzie — reklamy wideo na YouTube, banery, 
 • Strona nie działa? Jedno kliknięcie ją naprawia — albo daj nam znać; nic nie zostanie wysłane, zanim tego nie zobaczysz.
 • Przechodzisz z uBlock Origin, AdGuard lub Adblock Plus? Przenieś dozwolone witryny i filtry jednym plikiem.
 • Zobacz, z jakimi innymi witrynami łączy się strona, i zablokuj dowolną z nich tylko tam jednym kliknięciem.
+• Poziom ochrony: Podstawowa · Standardowa · Ścisła

@@ -1,0 +1,66 @@
+<%- include('../partials/app-head', { title: t('app.ownership.title') }) %>
+<% const blocked = status.reviewPending ? 'reviewPending' : (status.locked ? 'locked' : null); %>
+<h1><%= t('app.ownership.title') %></h1>
+<p class="lead"><%= t('app.ownership.intro', { name: org.legalName }) %></p>
+<% if (ok) { %><p class="ok" role="status"><%= t('app.ownership.ok.' + ok) %></p><% } %>
+<% if (err) { %><p class="error" role="alert"><%= tOr('app.ownership.err.' + err, t('auth.errors.invalid')) %></p><% } %>
+
+<% if (status.person || status.firm) { %>
+<section class="panel stack" aria-labelledby="pending-h">
+  <h2 id="pending-h"><%= t('app.ownership.pendingTitle') %></h2>
+  <% if (status.person) { %><p><%= t('app.ownership.pendingPerson', { email: status.person.email, date: bgDate(status.person.expiresAt) }) %></p><% } %>
+  <% if (status.firm) { %><p><%= t('app.ownership.pendingFirm', { firm: status.firm.firmName, date: bgDate(status.firm.expiresAt) }) %></p><% } %>
+  <p class="muted"><%= t('app.ownership.pendingNote') %></p>
+  <form method="post" action="/app/o/<%= org.id %>/sobstvenost/otmeni">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="button-secondary"><%= t('app.ownership.cancel') %></button>
+  </form>
+</section>
+<% } %>
+
+<% if (blocked) { %>
+<p class="callout"><%= t('app.ownership.blocked.' + blocked) %></p>
+<% } else { %>
+<section class="stack" aria-labelledby="person-h">
+  <h2 id="person-h"><%= t('app.ownership.personTitle') %></h2>
+  <p><%= t('app.ownership.personText') %></p>
+  <form method="post" action="/app/o/<%= org.id %>/sobstvenost/chovek" class="panel stack narrow-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('app.ownership.email') %><input type="email" name="email" autocomplete="off" maxlength="254" required></label>
+    <label><%= t('app.ownership.password') %><input type="password" name="password" autocomplete="current-password" required></label>
+    <% if (twoFactor) { %><label><%= t('app.ownership.code') %><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><% } %>
+    <div><button type="submit"><%= t('app.ownership.sendPerson') %></button></div>
+  </form>
+</section>
+
+<% if (status.kind === 'COMPANY') { %>
+<section class="stack" aria-labelledby="firm-h">
+  <h2 id="firm-h"><%= t('app.ownership.firmTitle') %></h2>
+  <p><%= t('app.ownership.firmText') %></p>
+  <% if (status.firms.length === 0) { %>
+  <p class="muted"><%= t('app.ownership.noFirms') %></p>
+  <% } else { %>
+  <form method="post" action="/app/o/<%= org.id %>/sobstvenost/kantora" class="panel stack narrow-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label><%= t('app.ownership.firm') %>
+      <select name="firmId" required>
+        <% status.firms.forEach((f) => { %><option value="<%= f.id %>"><%= f.legalName %><%= f.eik ? ' · ' + f.eik : '' %></option><% }) %>
+      </select>
+    </label>
+    <ul class="muted">
+      <li><%= t('app.ownership.firmEffects.members') %></li>
+      <li><%= t('app.ownership.firmEffects.mandate') %></li>
+      <li><%= t('app.ownership.firmEffects.controller') %></li>
+      <li><%= t('app.ownership.firmEffects.owner') %></li>
+    </ul>
+    <p class="callout"><%= t('app.ownership.firmEffects.before') %> <a href="/app/o/<%= org.id %>/iznos.zip" target="_blank" rel="noopener"><%= t('app.ownership.exportLink') %></a></p>
+    <label><%= t('app.ownership.password') %><input type="password" name="password" autocomplete="current-password" required></label>
+    <% if (twoFactor) { %><label><%= t('app.ownership.code') %><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><% } %>
+    <div><button type="submit"><%= t('app.ownership.sendFirm') %></button></div>
+  </form>
+  <% } %>
+</section>
+<% } %>
+<% } %>
+<p class="muted"><%= t('app.ownership.support') %></p>
+<%- include('../partials/app-foot') %>

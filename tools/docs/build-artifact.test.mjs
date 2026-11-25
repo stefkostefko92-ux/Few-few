@@ -35,6 +35,17 @@ test("ЗЪБИ: `</script>` във вграждано съдържание се 
     /затвори блока по-рано/);
 });
 
+// Реален случай (2026-11-13): `</script>` в docs.js затваря вградения блок по-рано и оголва остатъка
+// от низа като разметка. Ако в него има „<html“, старият ред на проверките казваше „остана обвиващ
+// таг: <html“ и пращаше търсенето към обвивката, а причината беше във вграденото съдържание.
+test("ЗЪБИ: при `</script>` във вграденото се назовава ТО, не оголеният след него обвиващ таг", () => {
+  const docs = 'var d = {"t": "име със </script> затваря блока, а знакът <html> е проза"};';
+  assert.throws(
+    () => assertPublishable(`<p>ок</p>\n<script>\n${docs}\n</script>`, { "docs.js": docs }),
+    /docs\.js съдържа "<\/script>"/,
+  );
+});
+
 test("ЗЪБИ: останал обвиващ таг в РАЗМЕТКАТА се хваща", () => {
   assert.throws(() => assertPublishable("<p>a</p>\n</body>"), /остана обвиващ таг/);
 });
@@ -176,4 +187,16 @@ test("ЗЪБИ: и COMMIT_ONLY шаблоните (JWT) спират публи�
 test("реалният билд НЕ съдържа нито един шаблон за тайна (ALL)", () => {
   const { html } = build();
   assert.deepEqual(findSecretsIn(html), [], "реалният артефакт трябва да е чист");
+});
+
+test("вграждането не разгъва $` / $' / $& от съдържанието (31.10.2026: 58 агента вместо 29)", async () => {
+  const { dashReader } = await import("./build-artifact.mjs");
+  const real = dashReader(null, ROOT);
+  // „(`$`)“ дойде с rilievi/CLAUDE.md в docs.js; низова замяна вмъкваше началото на страницата втори път.
+  const reader = { ...real, read: (p) => (p === "docs.js" ? real.read(p) + "\n// (`$`) · $' · $& · $$\n" : real.read(p)) };
+  const { html, agents } = build(join(ROOT, "agents-dashboard"), reader);
+  assert.equal((html.match(/const FALLBACK = \{/g) || []).length, 1, "FALLBACK е вграден веднъж");
+  assert.ok(html.includes("// (`$`) · $' · $& · $$"), "текстът е вграден дословно");
+  const reg = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
+  assert.equal(agents, (Array.isArray(reg) ? reg : reg.agents).length);
 });

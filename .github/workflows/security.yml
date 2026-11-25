@@ -26,22 +26,20 @@ jobs:
     # без нищо да е счупено. Виж бележката при gitleaks стъпката.
     timeout-minutes: 15
     steps:
-      # Забележка (state-level follow-up): пинвай action-ите към пълен commit SHA (не @vX),
-      # за да не може tag-hijack да вкара supply-chain код в CI-то.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0 # пълна история — за gitleaks
           persist-credentials: false # не оставяй GITHUB_TOKEN в git config (по-малка exfil повърхност)
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
       # ТВЪРД ГЕЙТ: вграденият скенер (нула външни зависимости → нула supply-chain риск).
       # Той е задължителният слой; всичко останало е допълнение.
       - name: secret-scan (built-in, hard gate)
         run: node tools/security/secret-scan.mjs
-      # ДОПЪЛНИТЕЛЕН СЛОЙ: gitleaks по цялата история. best-effort — сваля се непроверен
-      # бинар, затова НЕ го правим твърда зависимост (иначе самото CI става вектор);
-      # ако намери нещо, стъпката се проваля видимо, но твърдият гейт горе вече е минал.
+      # ДОПЪЛНИТЕЛЕН СЛОЙ: gitleaks по цялата история. best-effort — бинарът се сваля от
+      # GitHub Releases и се проверява срещу sha256, закован в този файл (виж стъпката), но пак НЕ е
+      # твърда зависимост; ако намери нещо, стъпката се проваля видимо, а твърдият гейт горе вече е минал.
       #
       # ЗАСЯЧЕНО НА ЖИВО (07.08.2026): стъпката ЗАКЪСА за 10+ минути и остави цялата
       # проверка „in progress". `continue-on-error` покрива ПРОВАЛ, не ЗАВИСВАНЕ —
@@ -56,9 +54,17 @@ jobs:
         timeout-minutes: 8
         run: |
           ver="8.21.2"
-          curl -sSL --max-time 120 --retry 2 --retry-delay 3 \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${ver}/gitleaks_${ver}_linux_x64.tar.gz" \
-            | tar -xz gitleaks && sudo mv gitleaks /usr/local/bin/ || { echo "gitleaks недостъпен — пропускам"; exit 0; }
+          # sha256 на архива за v8.21.2 — от официалния gitleaks_8.21.2_checksums.txt на релийза.
+          # Ъпгрейд на ver = нов хеш от checksums файла на новия релийз.
+          sha="5bc41815076e6ed6ef8fbecc9d9b75bcae31f39029ceb55da08086315316e3ba"
+          tmp="$(mktemp -d)"
+          if ! curl -sSL --max-time 120 --retry 2 --retry-delay 3 -o "$tmp/gl.tgz" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${ver}/gitleaks_${ver}_linux_x64.tar.gz"; then
+            echo "gitleaks недостъпен — пропускам"; exit 0
+          fi
+          # Несъвпадение = подменен/повреден архив → видим провал (не се изпълнява).
+          echo "${sha}  $tmp/gl.tgz" | sha256sum -c - || { echo "::error::gitleaks sha256 не съвпада — не го изпълнявам"; exit 1; }
+          tar -xzf "$tmp/gl.tgz" -C "$tmp" gitleaks && sudo mv "$tmp/gitleaks" /usr/local/bin/
           gitleaks git --no-banner --redact --exit-code 1 --max-target-megabytes 5
 
   dependencies:
@@ -67,7 +73,7 @@ jobs:
     timeout-minutes: 10
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
       # ДОПЪЛНИТЕЛЕН СЛОЙ (best-effort, като gitleaks по-горе): официалният
@@ -80,6 +86,59 @@ jobs:
       # secret-scan (job „secrets" по-горе).
       - name: dependency-review (best-effort — иска GHAS)
         continue-on-error: true
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
         with:
           fail-on-severity: high
+
+  new-deps:
+    name: Нови зависимости (typosquat скенер)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # историята на базата — скенерът прави git diff base...HEAD
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      # ТВЪРД ГЕЙТ (без continue-on-error): изход 1 = подозрение за typosquat.
+      # Нула зависимости, без мрежа. Изход 0 с „▲" са предупреждения и не гейтват.
+      - name: new-deps (typosquat, hard gate)
+        env:
+          BASE_REF: ${{ github.base_ref }} # през env, не вмъкнато в скрипта
+        run: node tools/security/new-deps.mjs --base "origin/$BASE_REF"
+
+  signatures:
+    name: Подписи на npm пакети (npm audit signatures, best-effort)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'pull_request'
+    # Допълващ слой: проверява registry подписите/provenance на пакетите от СМЕНЕНИТЕ lock файлове.
+    # Само публични ключове от registry.npmjs.org — без тайни. Не гейтва (мрежа, workspace-и, форкове).
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: npm audit signatures (сменените package-lock.json)
+        env:
+          BASE_REF: ${{ github.base_ref }} # през env, не вмъкнато в скрипта
+        run: |
+          rc=0
+          for f in $(git diff --name-only "origin/$BASE_REF...HEAD" -- '*package-lock.json'); do
+            [ -f "$f" ] || continue
+            d="$(dirname "$f")"
+            [ -f "$d/package.json" ] || continue
+            echo "::group::$f"
+            tmp="$(mktemp -d)"
+            cp "$d/package.json" "$f" "$tmp/"
+            (cd "$tmp" && npm ci --ignore-scripts --no-audit --no-fund && npm audit signatures) || rc=1
+            echo "::endgroup::"
+          done
+          exit $rc
