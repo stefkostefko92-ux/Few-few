@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 513
+        "lessons": 514
       },
       "evolution": [
         {
@@ -663,9 +663,20 @@
           "date": "2026-11-25",
           "event": "v46.6 — учене",
           "detail": "Научи: Правните страници на brevo.com (/legal/termsofuse/, /gdpr/) се рендират с JS и WebFetch…"
+        },
+        {
+          "version": "46.7.0",
+          "date": "2026-11-25",
+          "event": "v46.7 — учене",
+          "detail": "Научи: При транзакционни писма през Brevo полето contactPixelTrackingConsent=false само аноним…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „При транзакционни писма през Brevo полето contactPixelTrackingConsent=false само аноним…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
