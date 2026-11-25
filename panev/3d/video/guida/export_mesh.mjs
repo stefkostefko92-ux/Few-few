@@ -19,8 +19,8 @@ const { boltGeometry, nutGeometry, washerGeometry, railGeometry, M10 } = await i
 
 const OUT = process.argv[2] ?? fileURLToPath(new URL('mesh/', import.meta.url));
 mkdirSync(OUT, { recursive: true });
-const REACH = 100; // mm, mid-travel (45–155 on SU 220 160, catalogue p. 21) with the rail at the SG's wall end;
-// the video then pushes the SG 25 mm further out (build.py, SG_PUSH)
+const REACH = 130; // mm, wall to the rail axis once set to its line: the foot 105 mm off the wall (owner: at least 10 cm),
+// the SG turned round as the engine fits it (catalogue p. 21, travel 45–155); the video slides it there from 25 mm back
 const mat = (name) => ({ name });
 const M = { part: [mat('zinc'), mat('edge')], hw: mat('hw'), forged: mat('forged'), rail: mat('rail') };
 const meshes = [];

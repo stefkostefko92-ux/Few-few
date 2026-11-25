@@ -1,22 +1,22 @@
 """The Italian copy of the counterweight-guide film: the nine step cards (title, line), the part callouts and the cards
 that differ from the landing-door film (header, intro, closing). Owner's procedure and values (25.11.2026): plumb line
-5 mm from the head of the rail, two M10 anchors per SU, large washers above and below the SG bolts with a grower
-under the nut, washer and grower under the N1 clips' nuts, everything tightened once the rail is plumb.
+5 mm in front of the rail's blade, two M10 anchors per SU, a large washer on every fastener and a grower under every
+nut of the SG and of the N1 clips, the SG pushed forward under the rail on camera, everything tightened at the end.
 U+00A0 keeps "SU 220 160", "5 mm", "N1" on one line (overlay.wrap splits on plain spaces only)."""
 NB = "\u00a0"
 
 STEP_TEXT = [
-    ("Fili a piombo", f"Cala dall’alto un filo a piombo per ogni guida, 5{NB}mm davanti alla testa della guida."),
+    ("Fili a piombo", f"Cala dall’alto un filo a piombo per ogni guida: passerà 5{NB}mm davanti alla lama."),
     ("Tracciatura", "Appoggia il supporto SU al muro, in bolla e in linea con il filo, e segna i fori nelle asole."),
     ("Foratura", f"Fora i punti segnati con il trapano tassellatore, punta da 10{NB}mm."),
     ("Fissaggio dei supporti SU", "Fissa ogni supporto SU con due tasselli M10, con rondella maggiorata, e serra i dadi."),
     ("Staffa SG sul supporto", "Bullone M10 con rondella maggiorata sopra; sotto rondella maggiorata, rondella elastica "
                                "spezzata (grower) e dado. Serraggio leggero: la SG deve ancora scorrere."),
-    ("Posa della guida", "Appoggia la guida alla flangia della staffa SG."),
+    ("Guida a piombo", f"Cala la guida contro la flangia della SG e mettila a piombo: 5{NB}mm tra la lama e il filo."),
+    ("SG in avanti", "Fai scorrere la SG in avanti sul braccio, sotto la guida."),
     (f"Graffe{NB}N1", f"Blocca la guida con due graffe{NB}N1: dietro la flangia rondella maggiorata, grower e dado, senza serrare."),
-    ("Guida a piombo", f"Fai scorrere la SG sul braccio finché la testa della guida è a 5{NB}mm dal filo, poi controlla "
-                       "la verticalità con la livella."),
-    ("Serraggio finale", "Con la guida a piombo serra tutto: i bulloni della SG e i dadi delle graffe."),
+    ("Verifica e serraggio", "Controlla la verticalità con la livella, poi serra tutto: i bulloni della SG e i dadi delle "
+                             "graffe."),
 ]
 
 # (point, badge, label, from, to, dx, dy)
@@ -34,10 +34,10 @@ CALLOUTS = [
     ("grower_sx", "", "Grower spezzata", 51.0, 54.0, -200, 90),
     ("nut_sx", "", "Serraggio leggero", 52.6, 56.0, 190, -110),
     ("rail_sx", "", "Guida SX", 62.0, 66.0, -150, -100), ("rail_dx", "", "Guida DX", 62.3, 66.0, 150, -100),
-    ("clip_sx", "", f"Graffa{NB}N1", 67.4, 70.2, 150, -90),
-    ("cwasher_sx", "", "Rondella maggiorata", 71.0, 73.2, -170, -90), ("cgrower_sx", "", "Grower spezzata", 71.6, 75.0, -170, 60),
-    ("slide_sx", "", "La SG scorre sul braccio", 76.2, 79.8, -170, 90),
-    ("level", "", "Guida a piombo", 83.2, 85.0, -170, -90),
+    ("slide_sx", "", "La SG scorre sul braccio", 69.6, 74.0, -170, 90),
+    ("clip_sx", "", f"Graffa{NB}N1", 75.4, 78.2, 150, -90),
+    ("cwasher_sx", "", "Rondella maggiorata", 79.0, 81.6, -170, -90), ("cgrower_sx", "", "Grower spezzata", 79.6, 83.0, -170, 60),
+    ("level", "", "In bolla", 84.0, 85.5, 150, -90),
     ("nut_sx", "", "Serraggio", 89.0, 93.0, 150, 70), ("cnut_sx", "", "Dadi delle graffe", 93.2, 98.0, -170, -80),
 ]
 

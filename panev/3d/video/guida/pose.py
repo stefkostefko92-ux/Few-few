@@ -22,26 +22,26 @@ SHOTS = {  # eye, target, lens
     "fora": ((-0.86, -0.62, 0.12), (-0.48, -0.02, 0.03), 34),
     "fiss": ((-0.22, -0.72, 0.18), (-0.47, -0.03, 0.03), 40),
     "fissw": ((0.0, -1.45, 0.2), (0.0, 0.0, 0.02), 30),
-    "sg": ((-0.62, -0.38, 0.22), (-0.39, -0.09, 0.07), 45),
-    "sg2": ((-0.55, -0.36, -0.02), (-0.39, -0.09, 0.055), 50),
+    "sg": ((-0.62, -0.34, 0.22), (-0.39, -0.06, 0.07), 45),
+    "sg2": ((-0.56, -0.33, -0.02), (-0.39, -0.07, 0.055), 50),
     "sgw": ((0.22, -1.25, 0.26), (0.26, -0.05, 0.05), 32),
     "rail": ((0.75, -1.2, 0.45), (-0.15, 0.0, 0.05), 28),
-    "graffe": ((-0.23, -0.27, 0.19), (-0.345, -0.16, 0.09), 55),
-    "graffe2": ((-0.75, -0.35, 0.2), (-0.38, -0.12, 0.09), 40),
+    "graffe": ((-0.22, -0.29, 0.2), (-0.345, -0.1625, 0.09), 55),
+    "graffe2": ((-0.75, -0.32, 0.2), (-0.38, -0.09, 0.09), 40),
     "piombo": ((-0.15, -0.45, 0.22), (-0.37, -0.12, 0.08), 40),
-    "gap": ((-0.1, -0.135, 0.16), (-0.3, -0.13, 0.1), 100),        # along the head: its front face and the line 5 mm off
-    "livella": ((-0.12, -0.55, 0.3), (-0.32, -0.13, 0.25), 45),
+    "gap": ((-0.12, -0.14, 0.15), (-0.3225, -0.135, 0.1), 100),  # along the wall: the blade's front and the line 5 mm off
+    "livella": ((-0.1, -0.5, 0.3), (-0.29, -0.13, 0.25), 45),
     "piombow": ((0.0, -1.6, 0.42), (0.0, 0.0, 0.05), 30),
     "serr": ((-0.66, -0.5, -0.14), (-0.4, -0.09, 0.06), 36),
-    "hero": ((-0.8, -0.95, 0.25), (0.0, -0.08, 0.02), 36),
+    "hero": ((-0.78, -0.95, 0.25), (-0.12, -0.08, 0.02), 36),
 }
 FOCUS = {
     "intro": ((-0.38, -0.1, 0.08), 8.0), "fili": ((0.0, -0.1, 0.0), 8.0), "trac": ((-0.46, 0.0, 0.03), 5.6),
     "tracw": ((0.46, -0.02, 0.03), 5.6), "fora": ((-0.5, 0.0, 0.03), 2.8), "fiss": ((-0.46, -0.01, 0.03), 4.5),
-    "fissw": ((0.0, -0.05, 0.03), 8.0), "sg": ((-0.39, -0.08, 0.07), 5.6), "sg2": ((-0.38, -0.08, 0.05), 6.3), "sgw": ((0.42, -0.1, 0.06), 6.3),
-    "rail": ((0.0, -0.1, 0.1), 8.0), "graffe": ((-0.345, -0.16, 0.09), 7.1), "graffe2": ((-0.37, -0.11, 0.09), 5.6),
-    "piombo": ((-0.36, -0.12, 0.08), 6.3), "gap": ((-0.3, -0.133, 0.1), 16.0),
-    "livella": ((-0.32, -0.13, 0.25), 6.3), "piombow": ((0.0, -0.1, 0.05), 8.0), "serr": ((-0.4, -0.09, 0.06), 4.0),
+    "fissw": ((0.0, -0.05, 0.03), 8.0), "sg": ((-0.39, -0.06, 0.07), 5.6), "sg2": ((-0.38, -0.06, 0.05), 6.3), "sgw": ((0.42, -0.1, 0.06), 6.3),
+    "rail": ((0.0, -0.1, 0.1), 8.0), "graffe": ((-0.345, -0.1625, 0.09), 7.1), "graffe2": ((-0.37, -0.09, 0.09), 5.6),
+    "piombo": ((-0.36, -0.12, 0.08), 6.3), "gap": ((-0.3225, -0.137, 0.1), 16.0),
+    "livella": ((-0.29, -0.13, 0.25), 6.3), "piombow": ((0.0, -0.1, 0.05), 8.0), "serr": ((-0.4, -0.09, 0.06), 4.0),
     "hero": ((-0.38, -0.1, 0.05), 8.0),
 }
 WIRE_IN = {"sx": (4.6, 7.6), "dx": (5.0, 8.0)}   # the bob lowered from the top, then it swings to rest
@@ -85,12 +85,12 @@ def level_at(S, t, sx):
         lv.matrix_world = rig @ Matrix.Translation((0.11, -0.016 - 0.2 * (1 - k), 0.065 + 0.12 * (1 - k)))
         S["bub1"].location.x, S["bub2"].location.z = 0.0, 0.026
         return lv.matrix_world @ Vector((0, -0.013, 0.05))
-    if 82.6 <= t < 85.2:
-        k = seg(t, 82.6, 83.2) - seg(t, 84.7, 85.2)
+    if 83.2 <= t < 85.8:
+        k = seg(t, 83.2, 83.8) - seg(t, 85.2, 85.8)
         rail = sx["rail"].matrix_world
-        face = rail @ Vector((0.0225, -0.0025, (260.0 - RAIL_Y0) * MM / RAIL_STRETCH))  # the blade's front face, over the clips
+        tip = rail @ Vector((0.05, 0.0, (260.0 - RAIL_Y0) * MM / RAIL_STRETCH))  # against the head, over the clips
         show(lv, True)
-        lv.matrix_world = Matrix.Translation(face + Vector((0, -0.15 * (1 - k), 0))) @ basis((0, -1, 0), (0, 0, 1))
+        lv.matrix_world = Matrix.Translation(tip + Vector((0.15 * (1 - k), 0, 0))) @ basis((1, 0, 0), (0, 0, 1))
         S["bub1"].location.x, S["bub2"].location.z = 0.012, 0.026
         return lv.matrix_world @ Vector((0, -0.013, 0.05))
     return None
@@ -215,7 +215,7 @@ def points(S, sx, dx, lv):
         pts[f"SU_{side}"] = R @ Vector((s * 0.06, -0.006, 0.032))
         rail = h["rail"].matrix_world
         pts[f"rail_{side}"] = rail @ Vector((s * 0.03, -0.0025, (380.0 - RAIL_Y0) * MM / RAIL_STRETCH))
-        pts[f"tip_{side}"] = rail @ Vector((s * 0.05, -0.0025, (100.0 - RAIL_Y0) * MM / RAIL_STRETCH))  # head, front
+        pts[f"tip_{side}"] = rail @ Vector((s * 0.0275, -0.0025, (100.0 - RAIL_Y0) * MM / RAIL_STRETCH))  # blade front
     h0 = sx["anchors"][0]
     pts["mark_sx"] = h0["wall"]
     pts["hole_sx"] = h0["wall"]
@@ -231,7 +231,7 @@ def points(S, sx, dx, lv):
     pts["cnut_sx"] = c["nut"].matrix_world @ Vector((0, -0.006, 0.004))
     pts["slide_sx"] = sx["SG"].matrix_world @ Vector((0.0, -0.04, 0.0))
     pv = S["wires"]["sx"][0].location
-    pts["wtip_sx"] = Vector((pts["tip_sx"].x, pv.y + 0.00075, pts["tip_sx"].z))  # the line's near side, level with it
+    pts["wtip_sx"] = Vector((pv.x, pv.y + 0.00075, pts["tip_sx"].z))  # the line's near side, level with it
     if lv is not None:
         pts["level"] = lv
     return pts

@@ -1,7 +1,8 @@
 """Builds the counterweight-guide scene: the concrete wall of the shaft, two plumb lines, and on three levels the SU 220 160
 + SG 80 150 brackets with their T rails from the site's 3-D engine (guida/export_mesh.mjs): SX on the left, DX on the
-right, the rail heads 600 mm apart and facing each other, the SG pushed 25 mm further out than mid-travel, each plumb
-line 5 mm in front of its rail's head (owner, 25.11.2026). The film mounts level 0; the others are on the wall too.
+right, the rail heads 600 mm apart and facing each other, the rail's foot 105 mm off the wall once set, each plumb line
+5 mm in front of its rail's blade, the SG slid 25 mm forward to it on camera (owner, 25.11.2026). The film mounts
+level 0; the others are on the wall too.
 Hardware per the owner: two M10 wedge anchors per SU, M10 x 30 bolts above and below the SG, the forged N1 clips; a
 large washer on every one, a grower under every nut of the SG and of the clips. Returns handles for pose.py."""
 import math
@@ -19,16 +20,16 @@ from parts import film_materials, big_washer, grower, n1_clip, place, plumb, BIG
 
 HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
 GAP = 0.600               # m between the rail heads (owner)
-WIRE = 0.005              # m from the front of the rail's head to its plumb line, in front of it (owner)
+WIRE = 0.005              # m from the blade's front face to its plumb line, in front of the blade's middle (owner)
 LINE_R = 0.00075          # m: the plumb line's radius
-SG_PUSH = 0.025           # m: the SG (and its rail) further out along the arm than mid-travel (owner: 2–3 cm)
-BOLT_AT = (35.0, 55.0)    # mm along the SG from its wall end: the stations that stand in the arm's outer slot, pushed
+BOLT_AT = (35.0, 115.0)   # mm along the SG from its wall end: 80 mm apart (the large washers clear), one in each arm
+#                           slot all along the 25 mm slide (catalogue stations of SG 80 150, pp. 57-59)
 TIP = 270.0               # mm: three.js x of the SX rail head (SG flange face 220 + T50 rail 50)
 SIDE_X = {"sx": -(GAP / 2 + TIP * MM), "dx": GAP / 2 + TIP * MM}
 SIGN = {"sx": 1.0, "dx": -1.0}  # the DX meshes are mirrored about their x = 0
 LEVELS = (0.0, 1.5, -1.5)       # Blender z of each bracket level; the film mounts 0
 ANCHOR_X = (47.0, 144.0)        # mm along the SU flange: the middle of its two slots, 32.5 up
-SLIDE0 = Vector((-0.002, 0.008, 0.0))  # m: the SG before it is set to the line, 2 mm aside and 8 mm nearer the wall (SX)
+SLIDE0 = Vector((0.0, 0.025, 0.0))  # m: the SG (and the rail on it) 25 mm nearer the wall until pushed to its line
 RAIL_Y0 = -2300.0               # mm: the rail's foot under its level
 RAIL_STRETCH = 1.4              # the 5 m rail drawn 7 m long: its top stays out of the upward shots
 R3 = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]], dtype=np.float64)  # three.js direction -> Blender
@@ -94,12 +95,13 @@ def build_side(side, lv, z, M, recs, meta, spare):
     h["SU"] = part(f"SU-{side}{lv}", recs[f"SU-{side}"], M, (0, 0, 0), rig, (0, 0, 0))
     sgrec = recs[f"SG-{side}"]
     sgref = (sgrec["p"].min(0) + sgrec["p"].max(0)) / 2
-    h["sg"] = sg = empty(f"sg-{side}{lv}", rig, tuple(bl(sgref) + Vector((0, -SG_PUSH, 0))))
+    h["sg"] = sg = empty(f"sg-{side}{lv}", rig, tuple(bl(sgref)))
     h["sg_home"] = sg.location.copy()
     h["SG"] = part(f"SG-{side}{lv}", sgrec, M, sgref, sg, (0, 0, 0))
     if lv == 0:  # one rail per side, through every level: it rides on the mounted level's SG
         rail = spare["rail"] if side == "sx" else mirrored(spare["rail"], 0.0)
-        h["rail"] = part(f"rail-{side}", rail, M, (0, 0, 0), sg, np.array([s * meta["flangeX"], RAIL_Y0, meta["reach"]]) - sgref)
+        # hung on its plumb line first: it hangs from the rig, the SG slides under it
+        h["rail"] = part(f"rail-{side}", rail, M, (0, 0, 0), rig, np.array([s * meta["flangeX"], RAIL_Y0, meta["reach"]]))
         h["rail"].scale.z = RAIL_STRETCH
         h["rail_home"] = h["rail"].location.copy()
     fr = next(f for f in meta["frames"] if f["hand"] == side)
@@ -170,7 +172,7 @@ def build(scene):
     windows = []
     for (side, lv), h in sides.items():
         xa, xb = sorted((SIDE_X[side], SIDE_X[side] + SIGN[side] * 0.22))
-        windows.append((xa, xb, LEVELS[lv], LEVELS[lv] + 0.065))
+        windows.append((xa, xb, LEVELS[lv], LEVELS[lv] + 0.13))  # behind the SU and the SG's flange
     face = build_wall(M, windows)
     holes, marks = [], []
     for side in ("sx", "dx"):
@@ -182,8 +184,9 @@ def build(scene):
                                         M["mark"], (p.x, -0.0002, p.z), 0) for q in range(2)]))
     wires = {}
     for side in ("sx", "dx"):
-        front = meta["reach"] * MM + SG_PUSH + 0.0025  # the head's front face, from the wall
-        wires[side] = plumb(f"wire-{side}", M, (-SIGN[side] * GAP / 2, -(front + WIRE + LINE_R), 4.4))
+        front = (meta["reach"] + 2.5) * MM                     # the blade's front face, from the wall
+        mid = SIDE_X[side] + SIGN[side] * (meta["flangeX"] + 5.0 + 22.5) * MM  # the blade's middle: foot 5, blade 45
+        wires[side] = plumb(f"wire-{side}", M, (mid, -(front + WIRE + LINE_R), 4.4))
     drill, bit = build_drill(M)
     level, bub1, bub2 = build_level(M)
     worlds, lights = studio(scene, GUIDE_LIGHTS)

@@ -1,7 +1,8 @@
 """The mounted level of the counterweight-guide film as a function of second t, per side (SX left, DX right; the DX
 side does each step off camera, a beat after the SX one we watch). Owner's order (25.11.2026): SU marked, drilled and
-anchored; SG on its arm, snug; the rail; the N1 clips with washer, grower and nut; the rail to 5 mm from its plumb line;
-everything tight. The ratchet and the level are placed in pose.py from the times here."""
+anchored; SG on its arm, snug, 25 mm back; the rail lowered onto its plumb line (5 mm); the SG pushed forward under
+it; the N1 clips with large washer, grower and nut; level, then everything tight. The ratchet and the level are placed
+in pose.py from the times here."""
 import math
 from mathutils import Matrix, Vector
 from lib import MM, seg
@@ -23,11 +24,11 @@ BOLT_TOP = {"sx": ((46.0, 46.8), (46.4, 47.2)), "dx": ((57.3, 57.31), (57.3, 57.
 BOLT_LOW = {"sx": ((49.6, 50.6), (50.0, 51.0)), "dx": ((57.3, 57.31), (57.3, 57.31))}
 SPIN_ON = {"sx": ((50.6, 51.8), (51.0, 52.2)), "dx": ((57.3, 57.31), (57.3, 57.31))}
 SNUG = {"sx": ((52.6, 53.6), (54.0, 55.0)), "dx": ((57.3, 57.31), (57.3, 57.31))}   # light: the grower a third down
-RAIL_IN = {"sx": (59.6, 63.4), "dx": (59.9, 63.7)}  # lowered from above, straight down past its plumb line
-CLIP_IN = {"sx": ((66.6, 67.5), (67.2, 68.1)), "dx": (74.0, 74.01)}
-CSTACK_IN = {"sx": ((70.6, 71.4), (71.0, 71.8)), "dx": (74.5, 74.51)}
-CSPIN = {"sx": ((71.6, 72.8), (72.0, 73.2)), "dx": (74.6, 74.61)}
-ALIGN = {"sx": ((76.2, 78.6), (78.8, 79.8)), "dx": ((84.0, 84.5), (84.5, 84.8))}       # out from the wall, then aside
+RAIL_IN = {"sx": (59.6, 63.4), "dx": (59.9, 63.7)}  # lowered from above to its plumb line, against the SG's flange
+CLIP_IN = {"sx": ((74.4, 75.3), (75.0, 75.9)), "dx": (82.0, 82.01)}
+CSTACK_IN = {"sx": ((78.6, 79.4), (79.0, 79.8)), "dx": (82.5, 82.51)}
+CSPIN = {"sx": ((79.6, 80.8), (80.0, 81.2)), "dx": (82.6, 82.61)}
+ALIGN = {"sx": ((69.6, 72.8), (72.8, 72.81)), "dx": ((73.0, 73.6), (73.6, 73.61))}     # pushed 25 mm forward
 TIGHT = {"sx": ((88.6, 90.4), (90.8, 92.6)), "dx": ((97.0, 97.1), (97.0, 97.1))}       # SG nuts, from below
 CTIGHT = {"sx": ((93.2, 94.8), (95.2, 96.8)), "dx": ((97.0, 97.1), (97.0, 97.1))}      # clip nuts, from behind
 
