@@ -1,0 +1,9 @@
+<%
+  // Предупреждението на всяка страница с изчисление (аргано, ограничител и всяко следващо) — същият текст
+  // като в края на PDF-а (src/argano/pdf-testata.ts, `disegnaAvvertenza`); тестът пази, че всяка страница
+  // с изчисление го включва.
+%><aside class="avvertenza-calcolo" aria-labelledby="avvertenza-titolo">
+  <h2 class="avvertenza-calcolo__titolo" id="avvertenza-titolo"><%= t('calcoli.avvertenza.titolo') %></h2>
+  <p><%= t('calcoli.avvertenza.testo') %></p>
+  <p class="muted"><%= t('calcoli.avvertenza.pagina') %></p>
+</aside>

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { GameKey, LobbySnapshot, MatchPlayerInfo, PublicUser } from "@aso/shared";
 import type { MatchPhase } from "../features/game/useMatch";
+import { localizeBots } from "./botNames";
 
 interface AuthState {
   user: PublicUser | null;
@@ -31,19 +32,29 @@ interface MatchState {
   /** Whose turn it is, and when their server clock expires (epoch ms, 0 = none). */
   turn: number | null;
   turnEndsAt: number;
+  /** Full length of the running turn clock (ms, 0 = unknown) — countdown bar. */
+  turnMs: number;
+  /** My consecutive turn timeouts (1 = warned; one more → bot takes the seat). */
+  timeoutStrikes: number;
   /** Seats currently disconnected (bot covering). */
   disconnected: number[];
   /** Seats currently played by a bot substitute (timed out / dropped). */
   substituted: number[];
+  /** How many actions the server lists as legal for me in the latest state. */
+  legalCount: number;
+  /** Bumped on every GAME_STATE — lets a probe (tests, a11y) see progress. */
+  stateVersion: number;
   /** Bumped by "play again" — GameView keys the view on it, so the whole match
    *  subtree remounts and useMatch re-enters the queue. */
   epoch: number;
   playAgain: () => void;
   setMatch: (m: { matchId: string; seat: number; players: MatchPlayerInfo[]; game: GameKey }) => void;
   setPhase: (phase: MatchPhase) => void;
-  setLive: (turn: number | null, turnEndsAt: number) => void;
+  setLive: (turn: number | null, turnEndsAt: number, turnMs?: number, timeoutStrikes?: number) => void;
   setPresence: (seat: number, connected: boolean) => void;
   setSubstituted: (seats: number[]) => void;
+  /** Record one GAME_STATE arrival (legal-action count for my seat). */
+  noteState: (legalCount: number) => void;
   clearMatch: () => void;
 }
 
@@ -55,14 +66,18 @@ export const useMatchStore = create<MatchState>((set) => ({
   phase: "searching",
   turn: null,
   turnEndsAt: 0,
+  turnMs: 0,
+  timeoutStrikes: 0,
   disconnected: [],
   substituted: [],
+  legalCount: 0,
+  stateVersion: 0,
   epoch: 0,
   playAgain: () => set((s) => ({ epoch: s.epoch + 1 })),
   setMatch: ({ matchId, seat, players, game }) =>
-    set({ matchId, seat, players, game, phase: "playing", disconnected: [], substituted: [] }),
+    set({ matchId, seat, players: localizeBots(players), game, phase: "playing", disconnected: [], substituted: [], timeoutStrikes: 0 }),
   setPhase: (phase) => set({ phase }),
-  setLive: (turn, turnEndsAt) => set({ turn, turnEndsAt }),
+  setLive: (turn, turnEndsAt, turnMs = 0, timeoutStrikes = 0) => set({ turn, turnEndsAt, turnMs, timeoutStrikes }),
   setPresence: (seat, connected) =>
     set((s) => ({
       disconnected: connected
@@ -72,8 +87,9 @@ export const useMatchStore = create<MatchState>((set) => ({
           : [...s.disconnected, seat],
     })),
   setSubstituted: (seats) => set({ substituted: seats }),
+  noteState: (legalCount) => set((s) => ({ legalCount, stateVersion: s.stateVersion + 1 })),
   clearMatch: () =>
-    set({ matchId: null, seat: 0, players: [], game: null, phase: "searching", turn: null, turnEndsAt: 0, disconnected: [], substituted: [] }),
+    set({ matchId: null, seat: 0, players: [], game: null, phase: "searching", turn: null, turnEndsAt: 0, turnMs: 0, timeoutStrikes: 0, disconnected: [], substituted: [], legalCount: 0, stateVersion: 0 }),
 }));
 
 /**

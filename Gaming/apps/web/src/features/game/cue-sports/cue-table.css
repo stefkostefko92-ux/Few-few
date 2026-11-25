@@ -24,6 +24,20 @@
     inset 0 -3px 8px rgba(0, 0, 0, 0.6);
 }
 
+/* Short screens (1366×768 laptops): the felt AND its controls fit on one
+   screen, so aiming, „Сила“ and „Удар“ are never on opposite sides of a
+   scroll. ~268px of frame + controls sit around the felt (2:1 for the SVG
+   felt, ~0.54 of the width for the 3D canvas); 32px stay as breathing room.
+   Below 560px tall the cap would only shrink a table that scrolls anyway. */
+@media (min-height: 560px) {
+  .aso-cue {
+    width: min(94vw, 1120px, calc(200vh - 552px));
+  }
+  .aso-cue--gl {
+    width: min(94vw, 1120px, calc(185vh - 510px));
+  }
+}
+
 /* Milled brass inner rim around the cloth. */
 .aso-cue__rim {
   position: relative;
@@ -45,11 +59,17 @@
   cursor: crosshair;
 }
 
-/* WebGL canvas table (hybrid renderer) — rails are drawn inside the canvas. */
+/* WebGL canvas table (hybrid renderer) — rails are drawn inside the canvas.
+   The board canvas is transparent (Рейвънхолд), so this is the room around
+   the table: the hall's dark flagstone floor under a warm pool from the lamp
+   over the table. Without it the brass rim's gradient filled the whole view. */
 .aso-cue__gl {
   border-radius: 11px;
   overflow: hidden;
   line-height: 0;
+  background:
+    radial-gradient(60% 55% at 50% 52%, rgba(255, 176, 96, 0.16), transparent 72%),
+    radial-gradient(120% 100% at 50% 50%, #16130f 0%, #0b0d12 70%, #07080b 100%);
 }
 .aso-cue__gl canvas {
   touch-action: none;
@@ -113,4 +133,123 @@
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.4);
   vertical-align: middle;
+}
+
+/* Ефект (точка на удара) + обявяване на джоб за осмицата. */
+.aso-cue__extras {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem 1.5rem;
+  margin-top: 0.75rem;
+}
+.aso-cue__spin {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.aso-cue__spinpad {
+  width: 64px;
+  height: 64px;
+  touch-action: none;
+  cursor: crosshair;
+  border-radius: 50%;
+}
+.aso-cue__spinpad:focus-visible {
+  outline: 2px solid var(--brass-300);
+  outline-offset: 3px;
+}
+.aso-cue__spinpad[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: default;
+}
+.aso-cue__spinmeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 7.5rem;
+}
+.aso-cue__spinreset {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  color: var(--brass-300);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.aso-cue__spinreset:disabled {
+  opacity: 0.4;
+  text-decoration: none;
+}
+/* 8-ball на осмицата: обявеният джоб + „Смени“ (самото обявяване е в
+   прозореца за решение). Ширината е фиксирана: смяната на текста не мести
+   ефекта до него. */
+.aso-cue__called {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 15rem;
+  max-width: 100%;
+  font-size: 0.85rem;
+  color: var(--ink-300);
+}
+.aso-cue__called b {
+  color: var(--brass-100);
+}
+.aso-cue__called button {
+  font-size: 0.8rem;
+  color: var(--brass-300);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Умалената маса в прозореца за решение (DecisionTable): отделен ред над
+   бутоните на прозореца; самата маса е до 18rem. */
+.aso-cue-mini {
+  flex: 0 0 100%;
+  /* джобовете-бутони стърчат извън рамката */
+  padding-block: 0.5rem 0.25rem;
+}
+.aso-cue-mini__frame {
+  position: relative;
+  width: min(100%, 18rem);
+  margin-inline: auto;
+}
+.aso-cue-mini__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.8);
+}
+.aso-cue-mini__pockets {
+  position: absolute;
+  inset: 0;
+}
+.aso-cue-mini__pocket {
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  /* Само пръстен: топка в устата на джоба (осмицата!) остава видима. */
+  border: 2px solid rgba(242, 207, 122, 0.85);
+  background: transparent;
+  box-shadow: 0 0 10px -2px rgba(242, 207, 122, 0.6), inset 0 0 6px rgba(242, 207, 122, 0.35);
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+.aso-cue-mini__pocket:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+  border-color: #fff1c9;
+}
+/* Фокусът (прозорецът слага фокуса на първия избор) — пунктир, не „избран“. */
+.aso-cue-mini__pocket:focus-visible {
+  outline: 2px dashed var(--brass-300);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aso-cue-mini__pocket {
+    transition: none;
+  }
 }

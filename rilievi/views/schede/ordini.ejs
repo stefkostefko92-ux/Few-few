@@ -1,0 +1,40 @@
+<%# Gli ordini ai fornitori (routes/ordini-invio.ts): tutti quelli dell'ambito, filtrabili per stato. %><%- include('../partials/top', { titleKey: 'flusso.ordini.titolo' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('flusso.ordini.titolo') %></h1>
+    <p class="page-head__sub"><%= t('flusso.ordini.elencoSub') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <form class="filter" method="get" action="/ordini">
+    <label class="field__label" for="f-stato"><%= t('flusso.ordini.filtro') %></label>
+    <div class="filter__row">
+      <select class="select" id="f-stato" name="stato">
+        <option value=""><%= t('flusso.ordini.tutti') %></option>
+        <% for (const s of stati) { %><option value="<%= s %>"<% if (s === stato) { %> selected<% } %>><%= t('flusso.ordini.stati.' + s) %></option>
+        <% } %>
+      </select>
+      <button class="btn" type="submit"><%= t('impostazioni.choose') %></button>
+    </div>
+  </form>
+  <% if (righe.length === 0) { %><p class="muted"><%= t('flusso.ordini.nessunoElenco') %></p><% } else { %>
+  <div class="table-scorre">
+  <table class="table table--stack">
+    <thead><tr>
+      <% for (const c of ['data', 'impianto', 'fornitore', 'stato', 'da']) { %><th scope="col"><%= t('flusso.ordini.colonne.' + c) %></th>
+      <% } %>
+    </tr></thead>
+    <tbody>
+      <% for (const o of righe) { %><tr>
+        <td data-label="<%= t('flusso.ordini.colonne.data') %>"><%= fmt.dateTime(o.inviatoAt) %></td>
+        <th scope="row" data-label="<%= t('flusso.ordini.colonne.impianto') %>"><a href="/schede/<%= o.scheda.id %>#ordini"><%= o.scheda.indirizzo || o.scheda.matricola || o.scheda.id %></a><br><span class="muted"><%= o.azienda.name %></span></th>
+        <td data-label="<%= t('flusso.ordini.colonne.fornitore') %>"><%= o.destinatarioNome %></td>
+        <td data-label="<%= t('flusso.ordini.colonne.stato') %>"><%= t('flusso.ordini.stati.' + o.stato) %></td>
+        <td data-label="<%= t('flusso.ordini.colonne.da') %>"><%= o.inviatoDa ? o.inviatoDa.name : '—' %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  </div><% } %>
+</div>
+<%- include('../partials/bottom') %>

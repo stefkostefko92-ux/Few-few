@@ -257,3 +257,25 @@ export function searchCatalog(query: string, limit = 10): CatalogEntry[] {
 export function catalogById(id: string): CatalogEntry | undefined {
   return CATALOG.find((e) => e.id === id);
 }
+
+/** Абзаци, предназначени САМО за AI асистентите — не се показват в сайта. */
+const ASSISTANT_ONLY = /^ЗАБЕЛЕЖКА за AI асистенти/;
+
+/**
+ * Текстът от каталога като абзаци за ВИДИМО показване на инструментната
+ * страница (блок „За инструмента“ в `ToolGuide`).
+ *
+ * Защо: страниците бяха почти само контроли на редактора + 3–4 въпроса —
+ * търсачката вижда един и същ шаблон 14 пъти и ги оставя „обходени, но не
+ * индексирани“. Каталогът вече съдържа проверено, конкретно описание на всеки
+ * инструмент — показваме ТОЧНО него, за да не се разминат сайтът и конекторът.
+ * Редовете вътре в абзац са пренесени ръчно → сливат се с интервал.
+ */
+export function catalogParagraphs(id: string): string[] {
+  const e = catalogById(id);
+  if (!e) return [];
+  return e.text
+    .split(/\n\s*\n/)
+    .map((p) => p.replace(/\s*\n\s*/g, " ").trim())
+    .filter((p) => p && !ASSISTANT_ONLY.test(p));
+}

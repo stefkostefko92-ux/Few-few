@@ -3,6 +3,7 @@ import Image from "next/image";
 import VoucherStudio from "@/components/studios/VoucherStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни подаръчни ваучери и талони за отстъпка";
@@ -64,6 +65,7 @@ export default function VaucheriPage() {
         </p>
       </header>
       <VoucherStudio />
+      <ToolGuide current="/vaucheri" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/vaucheri" />
       <script

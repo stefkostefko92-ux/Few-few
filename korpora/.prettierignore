@@ -1,0 +1,11 @@
+node_modules
+dist
+data
+public/editor
+public/fonts
+prisma/migrations
+package-lock.json
+engine
+tests/engine
+views
+*.min.js

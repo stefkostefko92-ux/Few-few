@@ -60,13 +60,21 @@ function hashStr(s: string): number {
  * deterministic rotating window of game-specific dailies, so a player sees a
  * fresh mix each day and the whole roster is covered across a week. Pure and
  * deterministic — the same `dayKey` always yields the same set.
+ *
+ * `rotatingSlots` е броят ротиращи дневни задачи — VIP слотовете
+ * (`VipPerks.questSlots`; безплатно = ROTATING_DAILY_COUNT). По-големият прозорец
+ * винаги започва със същите задачи като по-малкия, така че VIP само добавя.
  */
-export function activeQuests(dayKey: string): readonly QuestDef[] {
+export function activeQuests(
+  dayKey: string,
+  rotatingSlots: number = ROTATING_DAILY_COUNT,
+): readonly QuestDef[] {
   const core = QUEST_DEFS.filter((q) => q.core);
   const rotating = QUEST_DEFS.filter((q) => q.period === "daily" && !q.core);
   if (rotating.length === 0) return core;
   const start = hashStr(dayKey) % rotating.length;
-  const n = Math.min(ROTATING_DAILY_COUNT, rotating.length);
+  const slots = Number.isFinite(rotatingSlots) ? Math.max(0, Math.floor(rotatingSlots)) : ROTATING_DAILY_COUNT;
+  const n = Math.min(slots, rotating.length);
   const picks = Array.from({ length: n }, (_, i) => rotating[(start + i) % rotating.length]!);
   return [...core, ...picks];
 }
@@ -74,6 +82,10 @@ export function activeQuests(dayKey: string): readonly QuestDef[] {
 export interface QuestView {
   key: string;
   period: QuestPeriod;
+  /** Какво напредва задачата — за етикета в UI. */
+  trigger: QuestDef["trigger"];
+  /** Игра-филтър (липсва = коя да е игра). */
+  game?: GameKey;
   progress: number;
   target: number;
   completed: boolean;
@@ -190,9 +202,29 @@ export interface LeaderboardEntry {
   userId: string;
   displayName: string;
   rating: number;
+  /** Активното (неизтекло) VIP ниво — за значката в класацията. */
+  vipTier?: string;
 }
 
 /** Redis sorted-set key for a per-game leaderboard. */
 export const leaderboardKey = (game: GameKey): string => `lb:${game}`;
 /** Redis sorted-set key for the current season's global leaderboard. */
 export const seasonLeaderboardKey = (seasonIndex: number): string => `lb:season:${seasonIndex}`;
+
+/**
+ * ISO седмица (UTC) за ключа на седмичните мисии: „2026-W46“. Един източник за
+ * API-то (създаване на мисиите) и worker-а (чистене на старите) — ако се
+ * разминат, worker-ът би изтрил мисиите на текущата седмица.
+ */
+export function isoWeek(d = new Date()): string {
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const week =
+    1 +
+    Math.round(
+      ((date.getTime() - firstThursday.getTime()) / 86_400_000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7,
+    );
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}

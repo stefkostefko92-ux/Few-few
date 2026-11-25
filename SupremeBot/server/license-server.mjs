@@ -13,7 +13,12 @@
  *                                            customer re-activate after a
  *                                            reinstall wiped their device id)
  *
- * Env: LICENSE_SECRET (must match the extension), PORT (8787), HOST (127.0.0.1;
+ * Keys are ECDSA P-256 signatures; this server holds only the PUBLIC key, so it
+ * has no secret to leak and cannot mint keys. The private key stays with the
+ * seller (tools/genkey.mjs).
+ *
+ * Env: LICENSE_PUBLIC_KEY (SPKI b64url; defaults to the one in the extension),
+ *      PORT (8787), HOST (127.0.0.1;
  *      set 0.0.0.0 in Docker), LICENSE_DB (path to bindings.json),
  *      LICENSE_ADMIN_TOKEN (enables /unbind), LICENSE_ALLOW_ORIGIN (CORS origin).
  */
@@ -23,8 +28,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const LICENSE_SECRET = process.env.LICENSE_SECRET || 'TZ-b0d6632a1a185b2714f94eee965390232c763380df811d59-stealth';
-const LICENSE_PREFIX = 'TZ1';
+// Same public key as LICENSE_PUBLIC_KEY in src/shared/payment.js. Override it
+// with the env var after rotating the key pair.
+export const SHIPPED_PUBLIC_KEY = 'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsoxllU7kFnMtCT_g1-6fmCcN2lPiQxJp9OaTvYmVy2VChIrdwwphkkfE1nedXHL3CaLZ4JFypbAo7tjJzU7rnQ';
+const LICENSE_PREFIX = 'TZ2';
+let PUBLIC_KEY = null;
+export function setPublicKey(spkiB64url) {
+  PUBLIC_KEY = crypto.createPublicKey({ key: Buffer.from(spkiB64url, 'base64url'), format: 'der', type: 'spki' });
+}
+setPublicKey(process.env.LICENSE_PUBLIC_KEY || SHIPPED_PUBLIC_KEY);
 const PORT = process.env.PORT || 8787;
 // Loopback by default so a bare systemd deploy never exposes plaintext HTTP
 // beside the TLS proxy. Docker sets HOST=0.0.0.0 (see docker-compose.yml).
@@ -44,10 +56,12 @@ export function verifyKey(key) {
   if (typeof key !== 'string') return null;
   const parts = key.trim().split('.');
   if (parts.length !== 3 || parts[0] !== LICENSE_PREFIX) return null;
-  const [, payloadB64, sig] = parts;
-  const expected = crypto.createHmac('sha256', LICENSE_SECRET).update(payloadB64).digest('base64url').slice(0, 24);
-  if (!safeEqual(sig, expected)) return null;
+  const [, payloadB64, sigB64] = parts;
   try {
+    const sig = b64urlToBuf(sigB64);
+    if (sig.length !== 64) return null;
+    const ok = crypto.verify('sha256', Buffer.from(payloadB64), { key: PUBLIC_KEY, dsaEncoding: 'ieee-p1363' }, sig);
+    if (!ok) return null;
     const payload = JSON.parse(b64urlToBuf(payloadB64).toString('utf8'));
     if (typeof payload.exp !== 'number') return null;
     return payload;
@@ -55,14 +69,21 @@ export function verifyKey(key) {
 }
 
 // Pure handler (also used by tests). Mutates db; returns {status, body, dirty}.
+// One canonical form per key, so " KEY" / "KEY\n" cannot become extra bindings
+// of the same key. A device id is a short string, never an object.
+const normKey = (k) => (typeof k === 'string' ? k.trim() : null);
+const validDevice = (d) => typeof d === 'string' && d.length > 0 && d.length <= 128;
+
 export function handle(method, url, body, db, adminToken = ADMIN_TOKEN) {
-  const u = new URL(url, 'http://x');
+  let u;
+  try { u = new URL(url, 'http://x'); } catch { return reply(400, { ok: false, error: 'BAD_URL' }); }
   if (method === 'OPTIONS') return reply(204, null);   // CORS preflight
   if (method === 'GET' && u.pathname === '/health') return reply(200, { ok: true });
   if (method === 'POST' && u.pathname === '/unbind') {
     // Support tool: release a key's device binding so a customer whose
     // reinstall wiped the device id can activate again.
-    const { key, admin } = body || {};
+    const { admin } = body || {};
+    const key = normKey((body || {}).key);
     if (!adminToken || !safeEqual(admin || '', adminToken)) return reply(403, { ok: false, error: 'FORBIDDEN' });
     if (!verifyKey(key)) return reply(400, { ok: false, error: 'INVALID_KEY' });
     if (!db[key]) return reply(404, { ok: false, error: 'NOT_BOUND' });
@@ -70,18 +91,19 @@ export function handle(method, url, body, db, adminToken = ADMIN_TOKEN) {
     return reply(200, { ok: true }, true);
   }
   if (method === 'POST' && u.pathname === '/activate') {
-    const { key, device } = body || {};
+    const key = normKey((body || {}).key);
+    const device = (body || {}).device;
     const payload = verifyKey(key);
     if (!payload) return reply(400, { ok: false, error: 'INVALID_KEY' });
     if (payload.exp * 1000 <= Date.now()) return reply(403, { ok: false, error: 'EXPIRED_KEY' });
-    if (!device) return reply(400, { ok: false, error: 'NO_DEVICE' });
+    if (!validDevice(device)) return reply(400, { ok: false, error: 'NO_DEVICE' });
     const existing = db[key];
     if (existing && existing.device !== device) return reply(409, { ok: false, error: 'BOUND_ELSEWHERE' });
     db[key] = { device, exp: payload.exp, boundAt: existing?.boundAt || Date.now() };
     return reply(200, { ok: true, exp: payload.exp }, true);   // dirty -> persist
   }
   if (method === 'GET' && u.pathname === '/status') {
-    const key = u.searchParams.get('key');
+    const key = normKey(u.searchParams.get('key'));
     const device = u.searchParams.get('device');
     const payload = verifyKey(key);
     if (!payload) return reply(400, { ok: false, error: 'INVALID_KEY' });

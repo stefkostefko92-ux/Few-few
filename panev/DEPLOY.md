@@ -65,7 +65,10 @@ sudo PROJECTS="panev" bash /root/few-few-*/deploy/autodeploy.sh   # само pan
 7. инсталира/обновява systemd unit-а, `systemctl restart panev`;
 8. health check на `/api/health` (10 опита × 3 с);
 9. **при провал** — връща и кода, и базата, рестартира и маркира деплоя като
-   неуспешен (`autodeploy.sh` завършва с грешка).
+   неуспешен (`autodeploy.sh` завършва с грешка);
+10. **при успех** — подава адресите от `sitemap.xml` към търсачките през IndexNow
+    (`panev_ping_indexnow`, виж раздел „IndexNow“). Ако подаването пропадне, деплоят
+    остава успешен и в изхода има предупреждение.
 
 nginx не се пипа при деплой: статиката се сервира от същите пътища, а
 приложението е зад проксито.
@@ -140,11 +143,9 @@ curl -sI https://panevascensori.it/en/            # 200
 curl -sI https://panevascensori.it/data/panev.db  # 404 (базата не се сервира)
 ```
 
-След промяна по страници/`sitemap.xml` — подай към търсачките:
-
-```bash
-node tools/seo/indexnow.mjs https://panevascensori.it
-```
+Към търсачките `autodeploy.sh` подава сам след минала здравна проба — в изхода на деплоя е редът
+„✓ Подадени N URL“. Ако вместо него има „panev: IndexNow подаването пропадна“, пусни ръчно
+командата от раздел „IndexNow“ по-долу.
 
 (Google **не** поддържа IndexNow — там разчитаме на свеж `sitemap.xml` +
 еднократна верификация в Search Console.)
@@ -191,6 +192,32 @@ sudo systemctl restart panev
 Снимките на базата отпреди рестарт са `/opt/panev/data/panev.db.pre-<час>`
 (пазят се последните 5).
 
+## 7а. Нова админ парола на сървъра (без вход в /admin)
+
+Когато паролата е изтекла или забравена. Всяка смяна прекратява всички стари сесии на този админ.
+
+```bash
+sudo -u panev node /opt/panev/scripts/admin-password.js --list                    # кои админи има
+sudo -u panev node /opt/panev/scripts/admin-password.js info@panevascensori.it    # случайна парола, показва се веднъж
+sudo -u panev node /opt/panev/scripts/admin-password.js --revoke info@panevascensori.it   # само край на сесиите
+```
+
+Препоръчителна е случайната парола (24 знака): не я пишеш никъде, само я копираш веднъж в мениджъра
+на пароли. Ако искаш своя, подай я **само по тръба** — `read -s` не я показва на екрана, а в историята
+на shell-а остава `"$PW"`, не паролата:
+
+```bash
+read -rsp 'Нова парола: ' PW; echo
+printf '%s\n' "$PW" | sudo -u panev node /opt/panev/scripts/admin-password.js --stdin info@panevascensori.it
+unset PW
+```
+
+Избраната парола минава същите правила като в `/admin`: поне 12 знака, без името на сайта, „admin“,
+„password“, имейла или „дума + година“. `ADMIN_PASSWORD` в средата скриптът отказва — тя остава в
+историята, а стара стойност от първия сийд иначе би станала новата парола, без да разбереш.
+`--list` показва и последния вход на всеки админ — непознат админ или вход, който не е твой, значи
+изтекъл достъп.
+
 ## 8. Диагностика
 
 | Симптом | Къде да гледаш |
@@ -215,17 +242,38 @@ sudo systemctl restart panev
    (Google не поддържа IndexNow).
 5. Тест на **restore** от бекъп (§6).
 
-### IndexNow
+## IndexNow
 
 Ключът живее в репото като `panev/d6e1a2e328c3fd92c84f47c85c1fb084.txt` (схемата
 `<key>.txt` в корена на сайта, както при mastilko) и се качва с обикновения rsync
-на autodeploy. Подаване след промяна по страници/sitemap/hreflang/JSON-LD:
+на autodeploy.
+
+**Подава се автоматично.** След всеки деплой, минал здравната проба, `autodeploy.sh`
+(`panev_ping_indexnow`) пуска командата по-долу от корена на новия release, с още един аргумент —
+`--sitemap panev/sitemap.xml`: адресите идват от sitemap-а на същия release, не от живия сайт.
+Ключът е от файла в архива (името на файла е ключът, затова смяната му не иска промяна в скрипта).
+Провал на подаването е предупреждение, не провал на деплоя. `PANEV_INDEXNOW=0` го спира за един
+пробег.
+
+В `panev/` стои **точно един** ключов файл (32 шестнайсетични знака, от `indexnow.mjs --gen-key`).
+При смяна на ключа старият файл се маха в същия комит — скриптът взема първия по азбучен ред, а
+`npm test` (`test/indexnow-key.test.js`) пада при два. Същият тест пази и `sitemap.xml`: само
+адреси на `https://panevascensori.it`, без индекс на sitemap-и.
+
+Ръчно — само ако автоматичното подаване е пропаднало. Тази команда чете живия `sitemap.xml`; ако
+той не се изтегли, инструментът спира с грешка и не подава нищо:
 
 ```bash
+# от корена на репото; на сървъра това е последният release:
+cd /opt/few-few/current
 node tools/seo/indexnow.mjs https://panevascensori.it \
   --key-file panev/d6e1a2e328c3fd92c84f47c85c1fb084.txt \
   --key-location https://panevascensori.it/d6e1a2e328c3fd92c84f47c85c1fb084.txt
 ```
+
+Инструментът търси по подразбиране `<сайт>/indexnow-key.txt`, какъвто Panev няма: без двата
+аргумента спира с „Липсва валиден IndexNow ключ“. Пусната извън корена на release-а (напр. от
+`/root`), командата пада с `Cannot find module '…/tools/seo/indexnow.mjs'`.
 
 Търсачките теглят `keyLocation`, за да докажат собствеността — **файлът трябва да е
 жив, преди да подадеш**, иначе цялата партида се отхвърля.

@@ -11,6 +11,9 @@ import type {
   ResetPasswordInput,
   VipPerks,
   VipTier,
+  ResponsibleSettingsInput,
+  ResponsibleSettingsView,
+  SelfExclusionPeriod,
 } from "@aso/shared";
 
 /** Which OAuth providers the server has credentials for. */
@@ -39,6 +42,8 @@ export class ApiError extends Error {
     public readonly status: number,
     public readonly code: string,
     message: string,
+    /** Целият обект `error` от отговора (напр. `issues` при validation_error, `until` при бан). */
+    public readonly details: Record<string, unknown> = {},
   ) {
     super(message);
     this.name = "ApiError";
@@ -48,7 +53,9 @@ export class ApiError extends Error {
 /** One in-flight refresh at a time — concurrent 401s all await the same call. */
 let refreshing: Promise<boolean> | null = null;
 
-async function tryRefresh(): Promise<boolean> {
+/** Rotate the access cookie from the refresh cookie (single-flight). Also used by
+ *  the socket to re-authenticate a rejected reconnect. */
+export async function tryRefresh(): Promise<boolean> {
   refreshing ??= fetch("/api/auth/refresh", { method: "POST", credentials: "include" })
     .then((r) => r.ok)
     .catch(() => false)
@@ -57,6 +64,18 @@ async function tryRefresh(): Promise<boolean> {
     });
   return refreshing;
 }
+
+/** Endpoints that must never trigger a refresh-and-replay (credentials flow). */
+const NO_REFRESH = new Set([
+  "/auth/login",
+  "/auth/register",
+  "/auth/refresh",
+  "/auth/logout",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/auth/verify-email",
+  "/auth/resend-verification",
+]);
 
 async function request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
   const res = await fetch(`/api${path}`, {
@@ -67,8 +86,10 @@ async function request<T>(path: string, init?: RequestInit, retried = false): Pr
 
   // The access cookie lives ~15 min: rotate it from the refresh cookie and
   // replay ONCE, so long sessions (admin panel, shop tabs) never dead-end in
-  // silent 401s. Auth routes themselves are exempt (refresh loops).
-  if (res.status === 401 && !retried && !path.startsWith("/auth/")) {
+  // silent 401s. Only the credential endpoints are exempt — NOT the whole
+  // /auth/ prefix: that also caught /auth/me, so every return visit after
+  // 15 min bounced to /login despite a valid 30-day refresh cookie.
+  if (res.status === 401 && !retried && !NO_REFRESH.has(path.split("?")[0] ?? path)) {
     if (await tryRefresh()) return request<T>(path, init, true);
   }
 
@@ -77,9 +98,9 @@ async function request<T>(path: string, init?: RequestInit, retried = false): Pr
   if (!res.ok) {
     const err =
       typeof body === "object" && body !== null && "error" in body
-        ? (body as { error: { code?: string; message?: string } }).error
+        ? (body as { error: { code?: string; message?: string } & Record<string, unknown> }).error
         : undefined;
-    throw new ApiError(res.status, err?.code ?? "unknown", err?.message ?? "Request failed");
+    throw new ApiError(res.status, err?.code ?? "unknown", err?.message ?? "Request failed", err ?? {});
   }
 
   return body as T;
@@ -99,6 +120,19 @@ export const api = {
 
   // Account (GDPR)
   deleteAccount: () => request<{ ok: true }>("/account/delete", { method: "POST" }),
+
+  // Отговорна игра: напомняне за време, дневен лимит, самоизключване
+  responsible: () => request<ResponsibleSettingsView>("/account/responsible"),
+  updateResponsible: (input: ResponsibleSettingsInput) =>
+    request<ResponsibleSettingsView>("/account/responsible", {
+      method: "PUT",
+      body: JSON.stringify(input),
+    }),
+  selfExclude: (period: SelfExclusionPeriod) =>
+    request<ResponsibleSettingsView>("/account/self-exclude", {
+      method: "POST",
+      body: JSON.stringify({ period, confirm: true }),
+    }),
 
   // Email verification & password reset
   verifyEmail: (token: string) =>
@@ -140,7 +174,15 @@ export const api = {
     }),
   billingPortal: () => request<{ url: string }>("/shop/portal", { method: "POST" }),
   vipStatus: () =>
-    request<{ tier: VipTier; vipUntil: string | null; perks: VipPerks }>("/shop/vip"),
+    request<{
+      tier: VipTier;
+      vipUntil: string | null;
+      perks: VipPerks;
+      /** Жив Stripe абонамент (active/trialing/past_due/unpaid/paused) или null. */
+      subscription: { status: string; tier: VipTier; currentPeriodEnd: string } | null;
+      /** Има Stripe клиент → може да отвори Customer Portal (отказ, карта, фактури). */
+      canManageBilling: boolean;
+    }>("/shop/vip"),
 
   // Progression (S6)
   claimDaily: () =>

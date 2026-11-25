@@ -25,11 +25,23 @@ async function sqliteOverview() {
   const out = [];
   const seen = new Set();
   const candidates = [...SQLITE_SPOTS];
-  // Допълнително: всякакви .db/.sqlite в известните data папки.
-  for (const dir of ['/opt/medqr/data', '/opt/vizitka/data', '/opt/nexus/state/data', '/opt/cspos/data']) {
+  // Допълнително: всякакви .db/.sqlite в data папките на ВСЕКИ продукт под /opt.
+  // Затвореният списък изоставаше от реалността: panev (/opt/panev/data/panev.db)
+  // липсваше и таблото казваше „Няма данни" на сървър със SQLite база в продукция.
+  // Обхождането е плитко (едно ниво под /opt, таван 60) — само имена, нищо не се чете.
+  const dirs = ['/opt/medqr/data', '/opt/vizitka/data', '/opt/nexus/state/data', '/opt/cspos/data'];
+  try {
+    for (const d of fs.readdirSync('/opt', { withFileTypes: true }).slice(0, 60)) {
+      if (!d.isDirectory() || d.name === 'few-few') continue;
+      dirs.push(`/opt/${d.name}/data`, `/opt/${d.name}/state/data`);
+    }
+  } catch {
+    /* няма /opt — нищо за добавяне */
+  }
+  for (const dir of [...new Set(dirs)]) {
     try {
       for (const f of fs.readdirSync(dir)) {
-        if (/\.(db|sqlite3?)$/.test(f)) candidates.push({ product: path.basename(path.dirname(dir)), file: path.join(dir, f) });
+        if (/\.(db|sqlite3?)$/.test(f)) candidates.push({ product: dir.split('/')[2] || path.basename(path.dirname(dir)), file: path.join(dir, f) });
       }
     } catch {
       /* няма такава папка на този VPS */
@@ -154,7 +166,9 @@ async function postgresOverview() {
 }
 
 // ── Снимки (dump) ─────────────────────────────────────────────────────────────
-export const DUMP_DIR = '/opt/few-few/shared/db-dumps';
+// `CSD_DUMP_DIR` е само за тестове (`test/shellspec.test.js` сглобява истински
+// скриптове срещу временна папка); на сървъра пътят е фиксиран.
+export const DUMP_DIR = process.env.CSD_DUMP_DIR || '/opt/few-few/shared/db-dumps';
 
 export function sqliteDumpSpec(file) {
   const f = assertSqlite(file);

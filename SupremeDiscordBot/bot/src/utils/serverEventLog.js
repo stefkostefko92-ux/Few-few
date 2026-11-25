@@ -144,8 +144,16 @@ async function getEventLogConfig(serverId) {
 // който преглежда събитията, вижда само текста и кликва. Обезвреждаме
 // отварящата скоба с пълноширинен вариант: изглежда почти същото, но не
 // образува линк. Останалият markdown е козметичен. (Разбивача, 07.08.2026)
+//
+// Голите адреси (З14) също: Discord ги прави кликаеми, а съобщение-стръв е точно
+// такова с линк към измама. Схемата „://“ се разкъсва с невидим знак, „www.“ —
+// също: текстът остава четим за модератора, но не е връзка.
 function safeText(value, max = 1024) {
-  return String(value).replace(/\[/g, "［").slice(0, max);
+  return String(value)
+    .replace(/\[/g, "［")
+    .replace(/:\/\//g, ":\u200b//")
+    .replace(/\bwww\./gi, (m) => `${m.slice(0, 3)}\u200b.`)
+    .slice(0, max);
 }
 
 /**
@@ -221,6 +229,29 @@ export async function isEventCategoryEnabled(serverId, category) {
   return !!(config?.enabled && Array.isArray(config.categories) && config.categories.includes(category));
 }
 
+// ─── Отрицателен кеш за недостъпен лог канал (З6) ───────────────────────────
+const DEAD_CHANNEL_TTL = 5 * 60 * 1000;
+const deadLogChannels = new Map(); // `${guildId}:${channelId}` → expiresAt
+
+// Unknown Channel / Missing Access / Missing Permissions — тоест „няма да стане и
+// след секунда“. 429 и 5xx са временни и НЕ влизат тук.
+const PERMANENT_CODES = new Set([10003, 50001, 50013]);
+function isPermanentChannelError(err) {
+  const status = err?.status ?? err?.httpStatus;
+  return PERMANENT_CODES.has(err?.code) || status === 403 || status === 404;
+}
+function isChannelDead(key, now = Date.now()) {
+  const until = deadLogChannels.get(key);
+  if (!until) return false;
+  if (until > now) return true;
+  deadLogChannels.delete(key);
+  return false;
+}
+function markChannelDead(key, now = Date.now()) {
+  deadLogChannels.set(key, now + DEAD_CHANNEL_TTL);
+  if (deadLogChannels.size > 2000) for (const [k, v] of deadLogChannels) if (v <= now) deadLogChannels.delete(k);
+}
+
 /**
  * Логни едно server-event: (а) прати embed в конфигурирания лог канал,
  * (б) прати payload към backend за DB запис. Fail-safe — никога не хвърля.
@@ -251,10 +282,16 @@ export async function logServerEvent(client, guild, evt) {
     // v37 — всяка категория може да сочи към СВОЙ канал; липсва ли запис за
     // нея, пада обратно към общия. Така заварените конфигурации не се променят.
     const targetChannelId = config.channels?.[category] || config.channelId;
+    // З6: канал, до който не можем да стигнем (изтрит, без права), се помни 5 мин.
+    // Иначе всяко събитие в сървъра означаваше REST заявка и/или 403 — а 401/403/429
+    // се броят към лимита от 10 000 невалидни заявки за 10 мин (Cloudflare бан).
+    const deadKey = `${guild.id}:${targetChannelId}`;
+    if (targetChannelId && isChannelDead(deadKey)) return;
     if (targetChannelId) {
       try {
+        let fetchErr = null;
         const logChannel = client.channels.cache.get(targetChannelId)
-          || await client.channels.fetch(targetChannelId).catch(() => null);
+          || await client.channels.fetch(targetChannelId).catch((e) => { fetchErr = e; return null; });
         // Guard: only log to a channel that belongs to THIS guild — otherwise an
         // admin could point eventLogChannelId at a channel in another server where
         // the bot is present and relay this guild's activity there.
@@ -266,9 +303,12 @@ export async function logServerEvent(client, guild, evt) {
             allowedMentions: { parse: [] },
           });
         } else {
+          // Временна грешка при fetch (мрежа, 5xx, 429) не е „няма канал“.
+          if (!fetchErr || isPermanentChannelError(fetchErr)) markChannelDead(deadKey);
           console.warn(`[event-log] log channel ${targetChannelId} (category ${category}) not found or not text-based for guild ${guild.id}`);
         }
       } catch (err) {
+        if (isPermanentChannelError(err)) markChannelDead(deadKey);
         console.warn(`[event-log] failed to post embed to ${targetChannelId} (category ${category}): ${err?.message}`);
       }
     }
@@ -377,12 +417,21 @@ export async function fetchVoiceMoveActor(guild, toChannelId, maxAgeMs = 5000) {
   }
 }
 
-/** Кой е изключил члена от гласов канал (Discord: MemberDisconnect). */
-export async function fetchVoiceDisconnectActor(guild, maxAgeMs = 5000) {
+/**
+ * Кой е изключил члена от гласов канал (Discord: MemberDisconnect).
+ *
+ * Сверява се ЦЕЛТА (З7): преди това първият запис в последните 5 s се
+ * приписваше на всеки, който напусне — тоест на човек, излязъл сам, се лепваше
+ * чуждо изключване. Записът без цел (Discord за MemberDisconnect днес изпраща
+ * само `count`; discord.js: „MemberDisconnect … do not provide a target_id“) не се
+ * приписва никому: по-добре „излезе сам“, отколкото измислен модератор.
+ */
+export async function fetchVoiceDisconnectActor(guild, targetId, maxAgeMs = 5000) {
+  if (!targetId) return null;
   try {
     const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.MemberDisconnect, limit: 5 });
     const now = Date.now();
-    const entry = logs.entries.find((e) => now - e.createdTimestamp <= maxAgeMs);
+    const entry = logs.entries.find((e) => e.target?.id === targetId && now - e.createdTimestamp <= maxAgeMs);
     if (!entry?.executor) return null;
     const ex = entry.executor;
     const tag = ex.discriminator && ex.discriminator !== "0" ? `${ex.username}#${ex.discriminator}` : ex.username;
@@ -393,4 +442,4 @@ export async function fetchVoiceDisconnectActor(guild, maxAgeMs = 5000) {
 }
 
 export { AuditLogEvent };
-export { eventLogConfigCache };
+export { eventLogConfigCache, deadLogChannels };

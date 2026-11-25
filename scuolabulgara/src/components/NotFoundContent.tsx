@@ -1,23 +1,29 @@
 import Link from "next/link";
+import { connection } from "next/server";
+import { getOne } from "@/lib/content";
+import { t } from "@/lib/i18n";
+import { RosetteMotif } from "./Stitch";
 
-// Inner 404 card (no <html>/<body>) so it can be embedded inside any layout.
-export default function NotFoundContent() {
+// Inner 404 (no <html>/<body>) so it can be embedded inside any layout. It
+// can't know the visitor's language, so it says it in all three — each in the
+// wording set in the admin („Надписи по бутони и менюта“).
+export default async function NotFoundContent() {
+  await connection(); // read at request time, so an edit in the admin shows at once
+  const [it, bg, en] = await Promise.all([getOne("it", "ui"), getOne("bg", "ui"), getOne("en", "ui")]);
   return (
     <main className="notfound">
-      <div className="notfound__card">
-        <img src="/assets/img/brand/logo.webp" alt="Qui Bulgaria" width={150} height={130} />
-        <div className="notfound__code" aria-hidden="true">404</div>
-        <p className="notfound__lead">
-          <strong>Страницата не е намерена.</strong><br />
-          Pagina non trovata · Page not found
-        </p>
-        <p className="notfound__sub">
-          Връзката може да е остаряла или сгрешена. · Il link potrebbe essere errato. · The link may be broken.
-        </p>
-        <div className="notfound__actions">
-          <Link className="btn btn--primary btn--lg" href="/bg">Начало</Link>
-          <Link className="btn btn--ghost btn--lg" href="/it">Home</Link>
-          <Link className="btn btn--ghost btn--lg" href="/en">Home (EN)</Link>
+      <div className="wrap notfound__grid">
+        <RosetteMotif size={9} className="notfound__rosette" />
+        <div>
+          <p className="notfound__code">404</p>
+          <h1 lang="bg">{t("bg", "notfound.text", bg)}</h1>
+          <p lang="it">{t("it", "notfound.text", it)}</p>
+          <p lang="en">{t("en", "notfound.text", en)}</p>
+          <div className="actions">
+            <Link className="btn btn--red" href="/it" lang="it">{t("it", "backHome", it)}</Link>
+            <Link className="btn btn--line" href="/bg" lang="bg">{t("bg", "backHome", bg)}</Link>
+            <Link className="btn btn--line" href="/en" lang="en">{t("en", "backHome", en)}</Link>
+          </div>
         </div>
       </div>
     </main>

@@ -2,13 +2,16 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
   <title>Tanoth Master Bot - Settings</title>
+  <link rel="stylesheet" href="../src/shared/ui.css">
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
   <div class="wrap">
     <aside>
-      <div class="brand"><span>⚔️</span><b data-i18n="extName">Tanoth Master Bot</b></div>
+      <div class="brand"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><defs><radialGradient id="tbm-opt-glow" cx="16" cy="14" r="17" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#27e08a" stop-opacity=".34"/><stop offset="1" stop-color="#27e08a" stop-opacity="0"/></radialGradient><linearGradient id="tbm-opt-blade" x1="12.8" y1="0" x2="19.2" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#cdd6dc"/><stop offset=".47" stop-color="#fff"/><stop offset=".5" stop-color="#7f8a94"/><stop offset="1" stop-color="#b6c0c8"/></linearGradient><linearGradient id="tbm-opt-brass" x1="0" y1="17.4" x2="0" y2="20.6" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".55" stop-color="#e2b246"/><stop offset="1" stop-color="#9a6a1a"/></linearGradient><linearGradient id="tbm-opt-grip" x1="14.4" y1="0" x2="17.6" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4b3223"/><stop offset=".45" stop-color="#a77852"/><stop offset="1" stop-color="#3a271b"/></linearGradient><radialGradient id="tbm-opt-gem" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#d9ffec"/><stop offset=".35" stop-color="#27e08a"/><stop offset="1" stop-color="#087a49"/></radialGradient></defs><rect x=".6" y=".6" width="30.8" height="30.8" rx="8" fill="#0a0b0d" stroke="#27e08a" stroke-opacity=".7" stroke-width="1.1"/><rect x=".6" y=".6" width="30.8" height="30.8" rx="8" fill="url(#tbm-opt-glow)"/><g><path d="M16 2.3 L19.2 8 V17.6 H12.8 V8 Z" fill="url(#tbm-opt-blade)"/><path d="M16 5.2 V15.8" stroke="#56626c" stroke-width=".6" stroke-opacity=".75" stroke-linecap="round"/><rect x="4.6" y="17.4" width="22.8" height="3.2" rx="1.6" fill="url(#tbm-opt-brass)"/><rect x="4.6" y="19.6" width="22.8" height="1" rx=".5" fill="#4a2f06" opacity=".45"/><rect x="14.4" y="20.4" width="3.2" height="5" rx=".8" fill="url(#tbm-opt-grip)"/><path d="M14.4 22.1 L17.6 21.2 M14.4 23.7 L17.6 22.8 M14.4 25.3 L17.6 24.4" stroke="#1d1109" stroke-width=".6" opacity=".85"/><circle cx="16" cy="27" r="2.9" fill="#e2b246"/><circle cx="16" cy="27" r="2.1" fill="url(#tbm-opt-gem)"/><circle cx="15.3" cy="26.3" r=".55" fill="#fff" opacity=".9"/></g></svg><b data-i18n="extName">Tanoth Master Bot</b></div>
       <nav id="nav"></nav>
       <div class="aside-actions">
         <button id="save" class="primary" data-i18n="optSave">Save</button>
@@ -23,19 +26,19 @@
           <h2 data-i18n="subTitle">Subscription</h2>
         </div>
         <div class="sub-status" id="sub-status"></div>
-        <p class="sub-warn" data-i18n="legalBanWarning"></p>
+        <p class="sub-warn callout" data-i18n="legalBanWarning"></p>
         <div class="sub-plans">
           <button class="btn-pay" id="sub-pay-monthly">€<span id="sub-price-m">4</span> / <span data-i18n="uiMonth">month</span></button>
           <button class="btn-pay alt" id="sub-pay-lifetime">€<span id="sub-price-l">20</span> <span data-i18n="uiLifetime">lifetime</span></button>
         </div>
         <label class="sub-consent"><input type="checkbox" id="sub-consent"> <span data-i18n="legalConsent"></span></label>
-        <div class="sub-row" style="margin-top:14px">
+        <div class="sub-row">
           <input id="sub-key" type="text" data-i18n-ph="uiKeyPlaceholder" placeholder="License key">
           <button id="sub-activate" data-i18n="uiActivate">Activate</button>
         </div>
         <div class="sub-msg" id="sub-msg"></div>
         <p class="sub-note"></p>
-        <div class="sub-legal"><span id="sub-merchant"></span> · <a id="sub-terms" data-i18n="legalTerms"></a> · <a id="sub-privacy" data-i18n="legalPrivacy"></a></div>
+        <div class="sub-legal"><span id="sub-merchant"></span> · <button type="button" class="linkbtn inline" id="sub-terms" data-i18n="legalTerms"></button> · <button type="button" class="linkbtn inline" id="sub-privacy" data-i18n="legalPrivacy"></button></div>
       </section>
 
       <section class="tools-card">
@@ -62,7 +65,7 @@
         <div class="tool-row">
           <span class="tool-label" data-i18n="toolNotify">Notifications</span>
           <button id="notify-test" data-i18n="toolTestNotify">Send test notification</button>
-          <a id="open-stats" class="tool-link" data-i18n="toolStats">Open statistics ↗</a>
+          <button type="button" id="open-stats" class="linkbtn tool-link" data-i18n="toolStats">Open statistics ↗</button>
         </div>
         <div class="tool-msg" id="tool-msg"></div>
       </section>

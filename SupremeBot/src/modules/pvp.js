@@ -4,18 +4,18 @@
   const TB = window.TanothBot;
   const { Api, State, Storage, Stats, Logger, I18n, Scheduler } = TB;
 
-  // Persisted in sessionStorage so the daily cap and the arena cooldown
-  // survive page reloads (autologin reloads the tab; an in-memory cooldown
+  // Persisted in localStorage (game origin) so the daily cap and the arena
+  // cooldown survive page reloads AND a new/second game tab (autologin reloads the tab; an in-memory cooldown
   // would otherwise let a reload trigger a bloodstone-charged early fight).
   const SS_KEY = 'tb_pvp';
   function loadPersisted() {
     try {
-      const v = JSON.parse(sessionStorage.getItem(SS_KEY) || '{}');
+      const v = JSON.parse(localStorage.getItem(SS_KEY) || '{}');
       return { foughtToday: Number(v.foughtToday) || 0, dayStamp: v.dayStamp || today(), cooldownUntil: Number(v.cooldownUntil) || 0 };
     } catch (_) { return { foughtToday: 0, dayStamp: today(), cooldownUntil: 0 }; }
   }
   function persist() {
-    try { sessionStorage.setItem(SS_KEY, JSON.stringify({ foughtToday, dayStamp, cooldownUntil })); } catch (_) {}
+    try { localStorage.setItem(SS_KEY, JSON.stringify({ foughtToday, dayStamp, cooldownUntil })); } catch (_) {}
   }
 
   function today() { return new Date().toDateString(); }
@@ -78,12 +78,16 @@
         foughtToday++;
         cooldownUntil = Date.now() + Math.max(1, Number(c.cooldownSeconds) || 600) * 1000;
         persist();
-        if (res.won) {
+        // won is true / false, or null when the response could not be read -
+        // an unreadable fight is neither a win nor a defeat (do not skew stats).
+        if (res.won === true) {
           Stats.bump({ duelsWon: 1, goldEarned: res.gold || 0 });
           Logger.success(I18n.t('logPvpWon', [name, String(res.gold || 0)]));
-        } else {
+        } else if (res.won === false) {
           Stats.bump({ duelsLost: 1 });
           Logger.warn(I18n.t('logPvpLost', [name]));
+        } else {
+          Logger.info(I18n.t('logPvpFight', [name]));
         }
         await Api.miniUpdate();              // refresh gold/bloodstones
         Scheduler.wakeAt(cooldownUntil);

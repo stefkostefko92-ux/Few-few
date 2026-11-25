@@ -4,7 +4,7 @@ export default {
   products: {
     kicker: 'Prodotti & listino',
     title: 'Tutti i codici a catalogo',
-    lead: 'Prezzi netti unitari in euro, IVA esclusa, aggiornamento listino 2026. Le voci “a preventivo” sono quotate su commessa. Sconti per volumi e forniture continuative su richiesta.',
+    lead: 'Prezzi netti unitari in euro, IVA esclusa, aggiornamento listino 2027. Le voci “a preventivo” sono quotate su commessa. Sconti per volumi e forniture continuative su richiesta.',
     chooseTitle: 'Scegliere il sistema giusto',
     chooseLead: 'Individua la famiglia di staffe più adatta partendo dal componente da fissare e dalle condizioni del vano corsa.',
     chooseHead: ['Applicazione', 'Famiglia consigliata', 'Spessore', 'Caratteristica'],
@@ -58,7 +58,7 @@ export default {
     aletta: 'Aletta di sormonto 35 mm',
     dxsx: 'Staffa ambidestra: disponibile in versione destra (DX) e sinistra (SX). Indicare la mano desiderata in fase d’ordine.',
     dimsOnDrawing: 'misura “A” su disegno · sp. 4 mm',
-    priceNote: 'Prezzi di listino indicativi, IVA esclusa · aggiornamento 2026 · fa fede l’offerta commerciale in corso di validità. Vendita riservata a operatori professionali (B2B) con partita IVA.',
+    priceNote: 'Prezzi di listino indicativi, IVA esclusa · aggiornamento 2027 · fa fede l’offerta commerciale in corso di validità. Vendita riservata a operatori professionali (B2B) con partita IVA.',
     sections: {
       doors: {
         num: '01',

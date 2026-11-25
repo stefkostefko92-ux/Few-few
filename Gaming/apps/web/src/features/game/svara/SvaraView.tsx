@@ -1,17 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import gsap from "gsap";
+import { svaraRaisePresets, type SvaraState as CoreSvaraState } from "@aso/game-core";
 import { useAuthStore } from "../../../lib/store";
 import { useSettings } from "../../../lib/settings";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
+import { sortNatural } from "../cards/sortHand";
 import { FeltTable, Seat, TableCenter } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
 import { useGameEvents } from "../useGameEvents";
+import { useSendOnce } from "../useSendOnce";
+import { seatNames } from "../seatNames";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import { ChipStack, Pot } from "../betting/Chips";
 import "../betting/chips.css";
 
@@ -24,6 +29,8 @@ interface SvaraState {
   folded: boolean[];
   pot: number;
   current: number;
+  minRaise: number;
+  pots: { amount: number; eligible: number[] }[];
   turn: number;
   seats: number;
   dealer: number;
@@ -36,7 +43,8 @@ interface SvaraState {
 }
 type SvaraAction =
   | { type: "CALL" }
-  | { type: "RAISE" }
+  | { type: "RAISE"; to: number }
+  | { type: "ALLIN" }
   | { type: "FOLD" }
   | { type: "CONTINUE" }
   | { type: "JOIN" }
@@ -108,7 +116,12 @@ export function SvaraView({ title }: { title: string }) {
   const m = useMatch<SvaraState, SvaraAction>("SVARA");
   const { state, legal, seat, phase, result, players } = m;
 
-  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+  // Same-named seats get an ordinal (bots arrive as „Бот 1, 2, 3“) so the banners say who.
+  const names = useMemo(() => seatNames(players), [players]);
+  const nameFor = (s: number) => names(s) ?? `#${s}`;
+  // One move per state: a double click on „Плащам“/„Продължи“ sent a second
+  // action that the server refused („Невалиден ход“).
+  const send = useSendOnce(state, m.send);
 
   // Opponent-visible action announcements (единни термини: svara.* ключовете).
   const { banners } = useGameAnnouncements({
@@ -116,6 +129,14 @@ export function SvaraView({ title }: { title: string }) {
     toBanner: (ev) => {
       if (ev.type === "WIN") {
         const pot = typeof ev.pot === "number" ? ev.pot : 0;
+        if (typeof ev.potIndex === "number" && ev.potIndex > 0)
+          return {
+            text: t(ev.split ? "svara.splitsPot" : "svara.winsSidePot", {
+              name: ev.seat === seat ? t("game.you") : nameFor(ev.seat as number),
+              pot,
+            }),
+            tone: ev.seat === seat ? "win" : "brass",
+          };
         return ev.seat === seat
           ? { text: `${t("fx.youWinPot")} (+${pot})`, tone: "win" }
           : {
@@ -135,6 +156,11 @@ export function SvaraView({ title }: { title: string }) {
       if (ev.type === "HAND")
         return { text: t("svara.newHand", { n: ev.handNo, defaultValue: "Ръка {{n}}" }), tone: "brass" };
       if (ev.seat === seat) return null;
+      if (ev.type === "ALLIN")
+        return {
+          text: t("svara.allInBanner", { name: nameFor(ev.seat as number), to: ev.to }),
+          tone: "loss",
+        };
       if (ev.type === "FOLD")
         return { text: `${nameFor(ev.seat as number)}: ${t("svara.fold")}`, tone: "brass" };
       if (ev.type === "RAISE")
@@ -207,16 +233,53 @@ export function SvaraView({ title }: { title: string }) {
 
   const myTurn = !!state && state.phase === "BETTING" && state.turn === seat && legal.length > 0;
   const call = legal.find((a) => a.type === "CALL");
-  const raise = legal.find((a) => a.type === "RAISE");
+  const allIn = legal.find((a) => a.type === "ALLIN");
   const fold = legal.find((a) => a.type === "FOLD");
   const cont = legal.find((a) => a.type === "CONTINUE");
   const join = legal.find((a) => a.type === "JOIN");
   const skip = legal.find((a) => a.type === "SKIP");
   const toCall = state ? state.current - (state.bet[seat] ?? 0) : 0;
+  const myChips = state?.chips[seat] ?? 0;
+
+  // Вдигане с избор на размер: мин (последното вдигане) … целият стек.
+  const presets =
+    state && myTurn ? svaraRaisePresets(state as unknown as CoreSvaraState, seat) : null;
+  const [raiseTo, setRaiseTo] = useState(0);
+  // Размерът на вдигането (пресети + плъзгач) се разгъва при нужда: свит,
+  // прозорецът се побира над сукното и не покрива залозите на масата.
+  const [sizing, setSizing] = useState(false);
+  useEffect(() => {
+    // Нов ход / ново ниво → плъзгачът се връща на минимума.
+    setRaiseTo(presets?.min ?? 0);
+    setSizing(false);
+  }, [presets?.min, presets?.allIn, state?.handNo]);
+  const raiseValue = presets ? Math.min(presets.allIn, Math.max(presets.min, raiseTo)) : 0;
+  const sendRaise = () => {
+    if (!presets) return;
+    // Целият стек = all-in (същото действие, ясно събитие за масата).
+    if (raiseValue >= presets.allIn && allIn) send(allIn);
+    else send({ type: "RAISE", to: raiseValue });
+  };
+  const canBet = myTurn && !frozen;
+  // Решенията идват като прозорец (DecisionPrompt), когато са на ред:
+  // залогът на моя ход, влизането в сварата и „Продължи“ след шоудауна.
+  // Докато масата показва замразения шоудаун, залог на сляпо не се предлага.
+  const live = phase === "playing";
+  const showdownOpen = live && !!state && state.phase === "SHOWDOWN" && !!cont;
+  const svaraOpen = live && !!state && state.phase === "SVARA" && !frozen && (!!join || !!skip);
+  const betOpen = live && canBet;
+  const onContinue = () => {
+    if (!cont || !send(cont)) return;
+    // Играчът продължи сам — не дръж масата замразена на showdown.
+    if (unfreezeTimer.current) clearTimeout(unfreezeTimer.current);
+    setFrozen(null);
+  };
 
   /** Ръката на едно място: реални карти при showdown, гърбове иначе. */
   const seatCards = (s: number, size: "sm" | "md", overlap: number) => {
-    const hand = view?.hands[s] ?? [];
+    const dealt = view?.hands[s] ?? [];
+    // Собствената ръка — подредена по боя и сила (A K Q J T 9 8 7); чуждите — както са.
+    const hand = s === seat ? sortNatural(dealt) : dealt;
     return hand.map((card, i) => (
       <PlayingCard key={`${card}-${i}`} card={card} size={size} style={{ marginLeft: i ? overlap : 0 }} />
     ));
@@ -233,12 +296,18 @@ export function SvaraView({ title }: { title: string }) {
     );
   };
 
-  const chipsBadge = (s: number) => (
-    <span className="svara-chips tnum">
-      <ChipStack amount={view?.chips[s] ?? 0} size="sm" />
-      {view?.chips[s] ?? 0}
-    </span>
-  );
+  const chipsBadge = (s: number) => {
+    const isAllIn =
+      view?.phase === "BETTING" && !view.folded[s] && (view.chips[s] ?? 0) === 0;
+    return (
+      <span className="svara-chips tnum">
+        <ChipStack amount={view?.chips[s] ?? 0} size="sm" />
+        {view?.chips[s] ?? 0}
+        {isAllIn ? <span className="svara-allin">{t("svara.allIn")}</span> : null}
+      </span>
+    );
+  };
+  const sidePots = (view?.pots ?? []).filter((p) => p.amount > 0);
 
   // При showdown "активен" е победителят; иначе — този на ход.
   const seatActive = (s: number) =>
@@ -249,7 +318,17 @@ export function SvaraView({ title }: { title: string }) {
       <Announcements banners={banners} fixed />
       {state && view ? (
         <>
-          <div ref={tableRef}>
+          <div
+            ref={tableRef}
+            data-testid="svara-table"
+            data-svara-phase={view.phase}
+            data-frozen={frozen ? "true" : "false"}
+            data-hand-no={view.handNo}
+            data-pot={view.pot}
+            data-my-chips={myChips}
+            data-to-call={toCall}
+            data-folded={state.folded[seat] ? "true" : "false"}
+          >
             {/* "Полунощният кръг" — dark, dramatic spotlight (§4.3). */}
             <FeltTable crest="♣" feltColor="#102a20" feltDark="#06120c">
               {opponentSlots(view.seats, seat).map(({ seat: s, x, y }) => (
@@ -257,7 +336,7 @@ export function SvaraView({ title }: { title: string }) {
                   key={s}
                   className="svara-seat-slot"
                   data-seat={s}
-                  style={{ left: `${x}%`, top: `${y}%` }}
+                  style={{ "--slot-x": `${x}%`, top: `${y}%` } as CSSProperties}
                 >
                   <Seat
                     pos="top"
@@ -276,6 +355,15 @@ export function SvaraView({ title }: { title: string }) {
               <TableCenter>
                 <div className="svara-center">
                   <Pot amount={view.pot} label={t("svara.pot")} />
+                  {sidePots.length > 1 ? (
+                    <ul className="svara-pots tnum" aria-label={t("svara.pot")}>
+                      {sidePots.map((p, i) => (
+                        <li key={i}>
+                          {i === 0 ? t("svara.mainPot") : t("svara.sidePot", { n: i })}: {p.amount}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                   <span className="svara-hand-no tnum">
                     {t("svara.handNo", { n: view.handNo, max: MAX_HANDS, defaultValue: "Ръка {{n}}/{{max}}" })}
                   </span>
@@ -301,62 +389,155 @@ export function SvaraView({ title }: { title: string }) {
             </FeltTable>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-            {state.phase === "SHOWDOWN" ? (
-              <Button
-                disabled={!cont}
-                onClick={() => {
-                  if (!cont) return;
-                  m.send(cont);
-                  // Играчът продължи сам — не дръж масата замразена на showdown.
-                  if (unfreezeTimer.current) clearTimeout(unfreezeTimer.current);
-                  setFrozen(null);
-                }}
-              >
-                {t("svara.continue", { defaultValue: "Продължи" })}
-              </Button>
-            ) : state.phase === "SVARA" ? (
-              join || skip ? (
-                <>
-                  <Button disabled={!join} onClick={() => join && m.send(join)}>
-                    {t("svara.join", { fee: state.svaraFee, defaultValue: "Влез в сварата ({{fee}})" })}
-                  </Button>
-                  <Button variant="ghost" disabled={!skip} onClick={() => skip && m.send(skip)}>
-                    {t("svara.skip", { defaultValue: "Оставам извън" })}
-                  </Button>
-                </>
-              ) : (
-                <span className="svara-waiting">
-                  {t("svara.waitingJoin", { defaultValue: "Свара! Изчакване на решенията…" })}
-                </span>
-              )
-            ) : (
-              <>
-                {/* Бутоните са винаги видими; извън твоя ход са само disabled.
-                    Докато масата показва замразения showdown, не позволяваме
-                    залог на сляпо в новата (още невидима) ръка. */}
+          {/* Свара: чужди решения дали да влязат — само статус под масата. */}
+          {state.phase === "SVARA" && !svaraOpen ? (
+            <p className="mt-4 text-center">
+              <span className="svara-waiting">
+                {t("svara.waitingJoin", { defaultValue: "Свара! Изчакване на решенията…" })}
+              </span>
+            </p>
+          ) : null}
+
+          {/* Решенията са горе и ниски (заглавие + един ред бутони): на 768px
+              лаптоп сукното е пълно — места, залози, пот, моите карти — и
+              прозорецът се побира над него, без да покрива нищо от тях. */}
+
+          {/* Шоудаун: откритите карти — „Продължи“ пуска следващата ръка
+              (сървърът продължава и сам след няколко секунди). */}
+          <DecisionPrompt
+            open={showdownOpen}
+            promptKey={`show-${state.handNo}`}
+            title={t("svara.showdownTitle")}
+            placement="top"
+            testId="svara-showdown"
+          >
+            <Button className="!py-2" data-svara-action="CONTINUE" onClick={onContinue}>
+              {t("svara.continue", { defaultValue: "Продължи" })}
+            </Button>
+          </DecisionPrompt>
+
+          {/* Обявена свара: влизам ли в под-играта (вноската = потът). */}
+          <DecisionPrompt
+            open={svaraOpen}
+            promptKey={`svara-${state.handNo}-${state.svaraFee}`}
+            title={t("svara.svara", { defaultValue: "СВАРА!" })}
+            placement="top"
+            testId="svara-join"
+          >
+            <Button className="!py-2" disabled={!join} data-svara-action="JOIN" onClick={() => join && send(join)}>
+              {t("svara.join", { fee: state.svaraFee, defaultValue: "Влез в сварата ({{fee}})" })}
+            </Button>
+            <Button
+              variant="ghost"
+              className="!py-2"
+              disabled={!skip}
+              data-svara-action="SKIP"
+              onClick={() => skip && send(skip)}
+            >
+              {t("svara.skip", { defaultValue: "Оставам извън" })}
+            </Button>
+          </DecisionPrompt>
+
+          {/* Моят залог: пас / чек-плащане / вдигане (пресети + плъзгач) / ол-ин. */}
+          <DecisionPrompt
+            open={betOpen}
+            promptKey={`bet-${state.handNo}-${state.current}-${state.pot}`}
+            title={t("svara.yourBet")}
+            placement="top"
+            testId="svara-bet"
+          >
+            <div className="flex w-full flex-col items-center gap-2" data-testid="svara-actions">
+              <div className="flex flex-wrap items-center justify-center gap-2">
                 <Button
                   variant="ghost"
-                  disabled={!myTurn || !!frozen || !fold}
-                  onClick={() => fold && m.send(fold)}
+                  className="!py-2"
+                  disabled={!fold}
+                  data-svara-action="FOLD"
+                  onClick={() => fold && send(fold)}
                 >
                   {t("svara.fold")}
                 </Button>
-                <Button
-                  variant="felt"
-                  disabled={!myTurn || !!frozen || !call}
-                  onClick={() => call && m.send(call)}
-                >
-                  {toCall > 0
-                    ? `${t("svara.call")} (${toCall})`
-                    : t("svara.check", { defaultValue: "Чек" })}
-                </Button>
-                <Button disabled={!myTurn || !!frozen || !raise} onClick={() => raise && m.send(raise)}>
-                  {t("svara.raise")} (+10)
-                </Button>
-              </>
-            )}
-          </div>
+                {/* Без достатъчно чипове за изравняване: all-in „за по-малко“. */}
+                {allIn && myChips <= toCall ? (
+                  <Button variant="felt" className="!py-2" data-svara-action="ALLIN" onClick={() => send(allIn)}>
+                    {t("svara.allInAmount", { n: myChips })}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="felt"
+                    className="!py-2"
+                    disabled={!call}
+                    data-svara-action="CALL"
+                    onClick={() => call && send(call)}
+                  >
+                    {toCall > 0 ? `${t("svara.call")} (${toCall})` : t("svara.check", { defaultValue: "Чек" })}
+                  </Button>
+                )}
+                {presets ? (
+                  <Button
+                    variant={sizing ? "felt" : "brass"}
+                    className="!py-2"
+                    data-svara-raise-toggle=""
+                    aria-expanded={sizing}
+                    onClick={() => setSizing((v) => !v)}
+                  >
+                    {t("svara.raise")} {sizing ? "▴" : "▾"}
+                  </Button>
+                ) : allIn && myChips > toCall ? (
+                  // Къс стек: не стига за минимално вдигане — остава само all-in.
+                  <Button className="!py-2" data-svara-action="ALLIN" onClick={() => send(allIn)}>
+                    {t("svara.allInAmount", { n: myChips })}
+                  </Button>
+                ) : null}
+              </div>
+              {presets && sizing ? (
+                <div className="svara-raise" role="group" aria-label={t("svara.raiseSize")}>
+                  <div className="svara-raise__presets">
+                    {(
+                      [
+                        ["raiseMin", presets.min],
+                        ["raiseHalfPot", presets.halfPot],
+                        ["raisePot", presets.pot],
+                        ["allIn", presets.allIn],
+                      ] as const
+                    ).map(([key, v]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        className="svara-raise__preset"
+                        data-preset={key}
+                        data-value={v}
+                        aria-pressed={raiseValue === v}
+                        onClick={() => setRaiseTo(v)}
+                      >
+                        {t(`svara.${key}`)}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="range"
+                    className="svara-raise__slider"
+                    min={presets.min}
+                    max={presets.allIn}
+                    step={1}
+                    value={raiseValue}
+                    aria-label={t("svara.raiseSize")}
+                    onChange={(e) => setRaiseTo(Number(e.target.value))}
+                  />
+                  <Button
+                    className="!py-2"
+                    data-svara-action={raiseValue >= presets.allIn ? "ALLIN" : "RAISE"}
+                    data-raise-to={raiseValue}
+                    onClick={sendRaise}
+                  >
+                    {raiseValue >= presets.allIn
+                      ? t("svara.allInAmount", { n: myChips })
+                      : t("svara.raiseTo", { to: raiseValue })}
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          </DecisionPrompt>
 
           <p className="betting-notice">{t("svara.notice")}</p>
         </>

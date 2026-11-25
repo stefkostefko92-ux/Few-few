@@ -55,6 +55,13 @@ function freshEngine({ settings = {}, api = {}, state = {}, license = { status: 
   };
   ctx.window = ctx;
   ctx.globalThis = ctx;
+  // Minimal sessionStorage (autologin persists its reload counter + resume flag).
+  const ss = {};
+  ctx.sessionStorage = {
+    getItem: (k) => (k in ss ? ss[k] : null),
+    setItem: (k, v) => { ss[k] = String(v); },
+    removeItem: (k) => { delete ss[k]; }
+  };
 
   // Minimal chrome mock.
   const changeListeners = [];
@@ -128,7 +135,7 @@ function freshEngine({ settings = {}, api = {}, state = {}, license = { status: 
       await t.fn(); await drain();
     }
   }
-  return { TB, calls, advance, drain, reloaded, nowMs: () => now, count: (n) => (calls[n] || []).length };
+  return { TB, calls, advance, drain, reloaded, ss, nowMs: () => now, count: (n) => (calls[n] || []).length };
 }
 
 /* ------------------------------- tests --------------------------------- */
@@ -222,6 +229,29 @@ await test('dungeon: runs when tries available, then cools down (no re-fire)', a
   assert.equal(e.count('startDungeon'), 1, 'no back-to-back dungeon');
 });
 
+await test('dungeon: free_tries_today is the daily CAP - never runs past it (would burn bloodstones)', async () => {
+  // Real client: a run is free only while dungeon_made_today < free_tries_today,
+  // otherwise it charges a bloodstone. 3 free per day, 3 already made -> stop.
+  const capped = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, dungeon: { enabled: true } }
+  });
+  capped.TB.Api.getDungeon = () => { capped.TB.State.patch({ dungeon: { freeTries: 3, madeToday: 3, level: 3, maxLevel: 10 } }); return Promise.resolve(); };
+  capped.TB.Scheduler.start();
+  await capped.advance(60000);
+  assert.equal(capped.count('startDungeon'), 0, 'cap reached -> no paid (bloodstone) run');
+
+  // 3 free per day, 2 made -> exactly one more free run, then stop.
+  const one = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, dungeon: { enabled: true } }
+  });
+  let made = 2;
+  one.TB.Api.getDungeon = () => { one.TB.State.patch({ dungeon: { freeTries: 3, madeToday: made, level: 3, maxLevel: 10 } }); return Promise.resolve(); };
+  one.TB.Api.startDungeon = () => { made++; (one.calls.startDungeon = one.calls.startDungeon || []).push([]); return Promise.resolve(); };
+  one.TB.Scheduler.start();
+  await one.advance(120000);
+  assert.equal(one.count('startDungeon'), 1, 'one free run left today, then it stops at the cap');
+});
+
 await test('event quest: starts the mission when one is offered', async () => {
   const e = freshEngine({
     settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, eventquest: { enabled: true } }
@@ -284,7 +314,9 @@ await test('active-hours: loop-induced pause is auto-resumed by heartbeat', asyn
   // Close the window: the LOOP (not the heartbeat) must detect it and pause
   // in a way the heartbeat can undo later.
   e.TB.Storage._set(mergeSettings({ general: { enabled: true, humanize: false }, scheduler: { enabled: true, activeFrom: closed, activeTo: closedTo } }));
-  await e.advance(5000);
+  // An idle loop no longer re-checks every 2 s; it notices within its 30 s
+  // safety check (a real settings change also nudges it immediately).
+  await e.advance(31000);
   assert.equal(e.TB.Scheduler.isPaused(), true, 'paused outside the active window');
   // Reopen the window and fire the heartbeat: it must auto-resume.
   e.TB.Storage._set(mergeSettings({ general: { enabled: true, humanize: false }, scheduler: { enabled: false } }));
@@ -306,6 +338,70 @@ await test('out of free adventures does not starve work (no fake busy timer)', a
   e.TB.Scheduler.start();
   await e.advance(5000);
   assert.equal(e.count('startWork'), 1, 'work ran even though adventures are exhausted');
+});
+
+await test('work: gold_fee is the hourly WAGE (income) - a broke character must still work', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, work: { enabled: true, durationHours: 2, stopWhenAdventureReady: false } },
+    api: { miniUpdate: () => Promise.resolve({ gold: 0, bloodstones: 0 }) }
+  });
+  e.TB.Api.getWorkData = () => { e.TB.State.patch({ work: { maxHours: 8, goldFee: 500 } }); return Promise.resolve(); };
+  e.TB.Scheduler.start();
+  await e.advance(5000);
+  assert.equal(e.count('startWork'), 1, 'worked with 0 gold: the wage is income, not a fee');
+});
+
+// Node string layout from the game client: [0] level, [1] max, [2] canUpgrade,
+// [3] bonus/level, [4] bonus, [5..7] gold base/incr/factor, [8..10] bs cost,
+// [11] levelsByGold, [12] levelsByBs.
+const node = (level, { can = 1, lvg = level } = {}) => [level, 100, can, 0, 0, 100, 10, 1, 1, 1, 1, lvg, 0];
+const circleWith = (n8) => ({ 8: n8, 16: node(0) });
+
+await test('circle (auto): a failing purchase backs off instead of retrying every cycle', async () => {
+  let attempts = 0;
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, circle: { enabled: true, mode: 'auto', currency: 'gold', multiple: 1 } },
+    state: { gold: 100000 },
+    api: {
+      getCircle: () => Promise.resolve(circleWith(node(0))),
+      buyCircleNode: () => { attempts++; return Promise.reject(new Error('FAULT locked')); }
+    }
+  });
+  e.TB.Scheduler.start();
+  await e.advance(4 * 60 * 1000);       // 4 minutes, well inside the 5-minute back-off
+  assert.equal(attempts, 1, `one failed attempt, then back-off (got ${attempts} - a request storm)`);
+});
+
+await test('circle: cost uses levelsByGold, not the total level (bloodstone levels do not count)', async () => {
+  // Level 50 but only 0 bought with gold: real price = (100 + 10*0) * 1 = 100.
+  // The old formula used the level: (100 + 10*50) = 600 and wrongly skipped it.
+  let bought = 0;
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, circle: { enabled: true, mode: 'auto', currency: 'gold', multiple: 1 } },
+    state: { gold: 300 },
+    api: {
+      getCircle: () => Promise.resolve(circleWith(node(50, { lvg: 0 }))),
+      buyCircleNode: () => { bought++; return Promise.resolve(); }
+    }
+  });
+  e.TB.Scheduler.start();
+  await e.advance(3000);
+  assert.ok(bought >= 1, 'affordable at the real price (100 <= 300 gold) -> bought');
+});
+
+await test('circle: a node with canUpgrade=0 is never sent to the server', async () => {
+  let attempts = 0;
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, circle: { enabled: true, mode: 'auto', currency: 'gold', multiple: 1 } },
+    state: { gold: 100000 },
+    api: {
+      getCircle: () => Promise.resolve(circleWith(node(5, { can: 0 }))),
+      buyCircleNode: () => { attempts++; return Promise.resolve(); }
+    }
+  });
+  e.TB.Scheduler.start();
+  await e.advance(60000);
+  assert.equal(attempts, 0, 'the game UI refuses canUpgrade=0 nodes; so do we');
 });
 
 await test('training: fetches costs then raises the cheapest attribute', async () => {
@@ -395,6 +491,137 @@ await test('map with endless encounters does NOT starve training/autosell', asyn
   assert.ok(e.count('startLiberation') > 0, 'map still clears encounters');
   assert.ok(e.count('raiseAttribute') > 0, 'training was NOT starved by map');
   assert.ok(e.count('sellItem') > 0, 'autosell was NOT starved by map');
+});
+
+await test('fixed actionIntervalSec paces actions (programmable Next action)', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: true, actionIntervalSec: 10 }, adventures: { enabled: false } }
+  });
+  let acted = 0;
+  e.TB.Scheduler.register({ id: 'counter', priority: 99, tick: () => async () => { acted++; } });
+  e.TB.Scheduler.start();
+  await e.advance(65000);
+  // ~10s spacing over 65s -> a handful of actions, nowhere near the spam rate.
+  assert.ok(acted >= 4 && acted <= 9, `paced ~10s apart, got ${acted}`);
+  assert.ok(e.TB.Scheduler.status().nextAt > e.nowMs(), 'nextAt exposed for the panel countdown');
+});
+
+await test('per-action webhook carries the module\'s own log line even when the log ring buffer is full', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, webhooks: { notifyEachAction: true } }
+  });
+  // Fill the 300-entry ring buffer: from now on history().length never changes.
+  for (let i = 0; i < 400; i++) e.TB.Logger.info('noise ' + i);
+  const sent = [];
+  e.TB.notify = (o) => sent.push(o);
+  e.TB.Scheduler.register({
+    id: 'probe', priority: 99,
+    tick: () => async () => { e.TB.Logger.success('Adventure started - 900s, +100 gold'); }
+  });
+  e.TB.Scheduler.start();
+  await e.advance(2000);
+  // desktop:false marks the per-action reports (the start notification is separate).
+  const perAction = sent.filter((o) => o.desktop === false);
+  assert.ok(perAction.length > 0, 'a per-action notification was sent (webhooks only, never a Chrome popup)');
+  assert.equal(perAction[0].message, 'Adventure started - 900s, +100 gold', 'detail comes from the module log line, not the generic module name');
+});
+
+await test('autologin: reconnecting remembers the engine was running, and the next page load resumes it', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, autologin: { enabled: true, reloadOnDisconnect: true, maxReloadAttempts: 5 } },
+    state: { sessionLost: 1_700_000_000_000 }          // a session fault just happened
+  });
+  assert.equal(e.TB.Autologin.peekResume(), false, 'nothing to resume yet');
+  e.TB.Scheduler.start();
+  await e.advance(2000);
+  assert.equal(e.reloaded.count, 1, 'reloaded the page to reconnect');
+  assert.equal(e.TB.Autologin.peekResume(), true, 'the running engine was remembered across the reload');
+  e.TB.Autologin.clearResume();                         // what content-script does once the session is back
+  assert.equal(e.TB.Autologin.peekResume(), false);
+});
+
+await test('map: slot -> region is floor(slot/3) like the game (18 slots, 3 per territory)', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false },
+      map: { enabled: true, encounters: true, illusionCave: false, dragon: false, regions: "Oblivion Gorge, Dragon's Claw Mountains" } },
+    api: { getMapDetails: () => Promise.resolve({ energy: 5, nextAttack: 0, monsters: [{ location: 0, stars: 1 }, { location: 3, stars: 1 }] }) }
+  });
+  e.TB.Scheduler.start();
+  await e.advance(1500);
+  assert.equal(e.count('startLiberation'), 1);
+  assert.equal(e.calls.startLiberation[0][0], 3, 'slot 3 is Oblivion Gorge (region 1), the top priority');
+});
+
+await test('map: cave/dragon that cost bloodstones are skipped; free ones run', async () => {
+  const mk = (cost) => freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false },
+      map: { enabled: true, encounters: false, illusionCave: true, dragon: false } },
+    api: { getCaveDetails: () => Promise.resolve({ cost }), directNum: (d, n) => (n === 'bloodstone_cost' ? d.cost : null) }
+  });
+  const paid = mk(2); paid.TB.Scheduler.start(); await paid.advance(3000);
+  assert.equal(paid.count('startIllusionCave'), 0, 'never spends bloodstones on the cave');
+  const free = mk(0); free.TB.Scheduler.start(); await free.advance(3000);
+  assert.equal(free.count('startIllusionCave'), 1, 'a free cave run still happens');
+});
+
+await test('work: "stop when adventure ready" does not block work when the adventures module is off', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false },
+      work: { enabled: true, durationHours: 2, stopWhenAdventureReady: true } },
+    state: { freeAdventures: 5 }
+  });
+  e.TB.Api.getWorkData = () => { e.TB.State.patch({ work: { maxHours: 8, goldFee: 0 } }); return Promise.resolve(); };
+  e.TB.Scheduler.start();
+  await e.advance(5000);
+  assert.equal(e.count('startWork'), 1, 'nobody will use those adventures, so work runs');
+});
+
+await test('guild: a refused donation backs off instead of retrying every cycle', async () => {
+  let attempts = 0;
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, guild: { enabled: true, donateGold: true, minDonation: 1000 } },
+    state: { gold: 100000 },
+    api: { guildSpendGold: () => { attempts++; return Promise.reject(new Error('FAULT no guild')); } }
+  });
+  e.TB.Scheduler.start();
+  await e.advance(4 * 60 * 1000);
+  assert.equal(attempts, 1, `one refused donation, then back-off (got ${attempts})`);
+});
+
+await test('timers: the next action fires right after the game timer ends (no delay set)', async () => {
+  const e = freshEngine({ settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false } } });
+  const end = e.nowMs() + 60700;                      // hero busy 60.7 s (not on any poll grid)
+  e.TB.State.patch({ adventureReturnAt: end });
+  let firedAt = 0;
+  e.TB.Scheduler.register({ id: 'probe', priority: 1, tick: () => (e.TB.State.get().adventureReturnAt > e.nowMs() || firedAt ? null : async () => { firedAt = e.nowMs(); }) });
+  e.TB.Scheduler.start();
+  await e.advance(59000);
+  assert.equal(firedAt, 0, 'nothing while the hero is busy');
+  await e.advance(2000);
+  assert.ok(firedAt >= end && firedAt - end <= 400, `fired ${firedAt - end} ms after the timer (want <= 400)`);
+});
+
+await test('timers: a busy hero is not polled every few seconds (sleeps to the timer)', async () => {
+  const e = freshEngine({ settings: { general: { enabled: true, humanize: true }, adventures: { enabled: false } } });
+  e.TB.State.patch({ adventureReturnAt: e.nowMs() + 10 * 60000 });   // 10-minute task
+  let ticks = 0;
+  e.TB.Scheduler.register({ id: 'probe', priority: 1, tick: () => { ticks++; return null; } });
+  e.TB.Scheduler.start();
+  await e.advance(10 * 60000 - 2000);
+  // Old loop: one pass every 8-9 s = ~70 passes. New: wakes at the timer, plus
+  // at most one 30 s safety check per window.
+  assert.ok(ticks <= 22, `only ${ticks} evaluation passes in 10 minutes`);
+});
+
+await test('timers: the "Next action in" target equals the real wake time', async () => {
+  const e = freshEngine({ settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false } } });
+  const end = e.nowMs() + 90000;
+  e.TB.State.patch({ adventureReturnAt: end });
+  e.TB.Scheduler.register({ id: 'probe', priority: 1, tick: () => null });
+  e.TB.Scheduler.start();
+  await e.advance(1000);
+  const next = e.TB.Scheduler.status().nextAt;
+  assert.ok(next <= end + 400, 'never planned past the timer');
 });
 
 console.log(`\n${pass} engine checks passed.`);

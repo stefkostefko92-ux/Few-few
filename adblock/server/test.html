@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Is Supreme AdBlock working? A live demonstration</title>
+<meta name="description" content="A live demonstration, not a comparison: five checks that show whether your copy of Supreme AdBlock is blocking, hiding and cleaning on this page." />
+<meta name="keywords" content="Supreme AdBlock test, is my ad blocker working, ad blocker demonstration, Global Privacy Control check, tracking parameter removal, Carbon Stealth" />
+<meta name="author" content="Carbon Stealth" />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+<meta name="theme-color" content="#030303" />
+<link rel="canonical" href="https://adblock.carbonstealth.eu/test" />
+<link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+<link rel="icon" href="/icon-512.png" sizes="512x512" type="image/png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Supreme AdBlock — Carbon Stealth" />
+<meta property="og:title" content="Is Supreme AdBlock working? A live demonstration" />
+<meta property="og:description" content="Five live checks of your own copy of Supreme AdBlock. A demonstration, not a comparison. Nothing leaves the page." />
+<meta property="og:url" content="https://adblock.carbonstealth.eu/test" />
+<meta property="og:image" content="https://adblock.carbonstealth.eu/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Supreme AdBlock shield by Carbon Stealth — YouTube ads killed at the source, EasyList built in" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Is Supreme AdBlock working? A live demonstration" />
+<meta name="twitter:description" content="Five live checks of your own copy of Supreme AdBlock. A demonstration, not a comparison." />
+<meta name="twitter:image" content="https://adblock.carbonstealth.eu/og.png" />
+<meta name="twitter:image:alt" content="Supreme AdBlock shield by Carbon Stealth — YouTube ads killed at the source, EasyList built in" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://adblock.carbonstealth.eu/test#webpage",
+      "url": "https://adblock.carbonstealth.eu/test",
+      "name": "Is Supreme AdBlock working? A live demonstration",
+      "description": "A live demonstration, not a comparison: five checks that show whether your own copy of Supreme AdBlock is working.",
+      "inLanguage": "en",
+      "isPartOf": { "@id": "https://adblock.carbonstealth.eu/#site" },
+      "about": { "@id": "https://adblock.carbonstealth.eu/#app" },
+      "publisher": { "@id": "https://carbonstealth.eu/#organization" },
+      "breadcrumb": { "@id": "https://adblock.carbonstealth.eu/test#breadcrumb" },
+      "datePublished": "2026-10-24",
+      "dateModified": "2026-10-24"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://adblock.carbonstealth.eu/test#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Supreme AdBlock", "item": "https://adblock.carbonstealth.eu/" },
+        { "@type": "ListItem", "position": 2, "name": "Test", "item": "https://adblock.carbonstealth.eu/test" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{color-scheme:dark;
+    --bg:#030303; --bg2:#08090b; --panel:#0b0c0f; --line:#16181d; --line2:#22252c;
+    --cyan:#00e5ff; --cyan-deep:#00b8d4; --cream:#f5f5f0; --body:#d9d9d2; --muted:#a3a39c; --muted2:#8f8f87; --amber:#e6bd4a;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Inter",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--font);background:var(--bg);color:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .field{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+    radial-gradient(1100px 620px at 82% -12%,rgba(0,229,255,.12),transparent 60%),
+    radial-gradient(800px 520px at 6% 112%,rgba(0,255,136,.05),transparent 60%),var(--bg)}
+  a{color:var(--cyan);text-underline-offset:3px}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+  .skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--cyan);color:#001014;font-weight:800;padding:10px 16px;border-radius:10px;text-decoration:none}
+  .skip:focus{top:12px}
+  nav.top,.crumbs,main,footer{position:relative;z-index:1}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  nav.top{display:flex;align-items:center;gap:14px;max-width:1120px;margin:0 auto;padding:22px 24px 0}
+  nav.top .brand{display:flex;align-items:center;gap:12px;color:var(--cream);text-decoration:none}
+  nav.top .mark{width:34px;height:34px;filter:drop-shadow(0 0 12px rgba(0,229,255,.45))}
+  nav.top b{display:block;font-weight:800;letter-spacing:.4px;font-size:16px;line-height:1.1}
+  nav.top .tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--cyan);font-family:var(--mono)}
+  nav.top .sp{flex:1}
+  nav.top .links{display:flex;gap:22px}
+  nav.top .links a{font-size:13.5px;color:var(--muted);letter-spacing:.3px;text-decoration:none;padding:4px 0}
+  nav.top .links a:hover{color:var(--cream)}
+  nav.top .links a[aria-current="page"]{color:var(--cream);box-shadow:0 2px 0 var(--cyan)}
+  @media(max-width:860px){nav.top .links{display:none}}
+
+  .crumbs{max-width:1120px;margin:0 auto;padding:30px 24px 0;font-size:13.5px;color:var(--muted)}
+  .crumbs ol{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+  .crumbs li+li::before{content:"/";color:var(--muted2);margin-right:8px}
+  .crumbs a{color:var(--muted);text-decoration:none}
+  .crumbs a:hover{color:var(--cream);text-decoration:underline}
+
+  .hero{padding:22px 0 8px}
+  h1{font-size:clamp(38px,5.4vw,64px);line-height:1.03;font-weight:900;letter-spacing:-1.4px}
+  .lead{margin-top:20px;font-size:clamp(17px,2vw,19px);color:var(--muted);max-width:60ch}
+  .lead b{color:var(--cream);font-weight:600}
+
+  /* triage: the problems people actually bring, each a jump to its fix */
+  .triage{list-style:none;margin-top:34px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:940px){.triage{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.triage{grid-template-columns:1fr}}
+  .triage a{display:flex;flex-direction:column;gap:4px;height:100%;padding:18px 20px;border-radius:14px;border:1px solid var(--line2);
+    background:linear-gradient(180deg,var(--panel),var(--bg2));color:var(--cream);text-decoration:none;transition:border-color .2s,background .2s}
+  .triage a:hover{border-color:rgba(0,229,255,.55);background:linear-gradient(180deg,#0d1014,var(--bg2))}
+  .triage b{font-size:16.5px;font-weight:750;letter-spacing:-.1px}
+  .triage span{font-size:14px;color:var(--muted)}
+  .triage .mail{border-color:rgba(0,229,255,.38)}
+
+  section.blk{padding:64px 0 0;scroll-margin-top:16px}
+  .prose>*{max-width:760px}
+  h2{font-size:clamp(26px,3.3vw,36px);line-height:1.12;font-weight:850;letter-spacing:-.6px}
+  h3{font-size:18.5px;line-height:1.3;font-weight:750;letter-spacing:-.1px;margin-top:28px;color:var(--cream)}
+  p{color:var(--body);margin-top:12px}
+  h2+p{margin-top:14px}
+  h3+p{margin-top:6px}
+  p b,li b{color:var(--cream);font-weight:650}
+  .dots{list-style:none;margin-top:14px}
+  .dots li{position:relative;padding-left:24px;margin-top:10px;color:var(--body)}
+  .dots li::before{content:"";position:absolute;left:4px;top:.66em;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,.55)}
+  .steps{list-style:none;counter-reset:st;margin-top:18px}
+  .steps li{counter-increment:st;position:relative;padding-left:48px;margin-top:16px;color:var(--body);min-height:32px}
+  .steps li::before{content:counter(st);position:absolute;left:0;top:-2px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(0,229,255,.55);color:var(--cyan);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .limit{margin-top:18px;border:1px solid var(--line2);border-left:3px solid var(--amber);border-radius:12px;background:var(--panel);padding:16px 20px}
+  .limit p:first-child{margin-top:0}
+  .more{margin-top:16px;font-size:15px}
+  code{font-family:var(--mono);font-size:.88em;color:var(--cream);background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:5px;padding:1px 5px}
+  .contact{margin-top:20px;display:flex;flex-wrap:wrap;gap:12px}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;letter-spacing:.2px;text-decoration:none;border:1px solid transparent;transition:border-color .2s,box-shadow .2s,color .2s}
+  .btn.primary{background:linear-gradient(135deg,var(--cyan),var(--cyan-deep));color:#001014;box-shadow:0 10px 36px rgba(0,229,255,.25)}
+  .btn.primary:hover{box-shadow:0 14px 48px rgba(0,229,255,.42)}
+  .btn.ghost{background:rgba(255,255,255,.02);border-color:var(--line2);color:var(--cream)}
+  .btn.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+  .btn svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .facts{margin-top:16px;display:grid;grid-template-columns:max-content 1fr;gap:10px 22px}
+  .facts dt{color:var(--muted)}
+  .facts dd{color:var(--cream)}
+  @media(max-width:560px){.facts{grid-template-columns:1fr;gap:2px}.facts dd{margin-bottom:10px}}
+
+  footer{border-top:1px solid var(--line);margin-top:84px}
+  footer .row{max-width:1120px;margin:0 auto;padding:30px 24px;display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;color:var(--muted2);font-size:13px}
+  footer .who{display:flex;gap:12px;align-items:flex-start;max-width:560px}
+  footer .who img{width:26px;height:26px;flex:none;margin-top:2px}
+  footer .who p{color:var(--muted2);margin:0}
+  footer .who p+p{margin-top:4px}
+  footer nav{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}
+  footer a{color:var(--muted)}
+  footer nav a{text-decoration:none}
+  footer nav a:hover{text-decoration:underline}
+  footer a:hover{color:var(--cyan)}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+  /* /test: the live checks */
+  .rows{list-style:none;margin-top:26px;display:grid;gap:14px;max-width:820px}
+  .check{border:1px solid var(--line2);border-radius:14px;background:linear-gradient(180deg,var(--panel),var(--bg2));padding:18px 22px}
+  .check h3{margin-top:0}
+  .check p{margin-top:8px}
+  .check .what b,.check .not b{color:var(--cream)}
+  .check .not{color:var(--muted);font-size:14.5px}
+  .status{display:flex;gap:10px;align-items:baseline;font-weight:650;color:var(--cream)}
+  .status::before{content:"…";flex:none;width:1.4em;text-align:center;font-family:var(--mono);color:var(--muted)}
+  .status[data-state="working"]{color:#5cf2a6}
+  .status[data-state="working"]::before{content:"✓";color:#5cf2a6}
+  .status[data-state="off"]{color:var(--amber)}
+  .status[data-state="off"]::before{content:"✗";color:var(--amber)}
+  .status[data-state="todo"]::before{content:"→";color:var(--cyan)}
+  .status[data-state="unclear"]::before{content:"?";color:var(--muted)}
+  .summary{margin-top:26px;font-size:18px;font-weight:700;color:var(--cream)}
+  .demo-ad{margin-top:12px;padding:12px 16px;border:1px dashed var(--line2);border-radius:10px;color:var(--muted);font-size:14px}
+  .demo-cmp{margin-top:12px;padding:12px 16px;border:1px solid var(--line2);border-radius:10px;background:var(--bg2);display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:14px;color:var(--body)}
+  .demo-cmp p{margin:0}
+  .demo-cmp button{font:inherit;font-weight:700;padding:8px 16px;border-radius:9px;border:1px solid var(--line2);background:rgba(255,255,255,.04);color:var(--cream);cursor:pointer}
+  .note{margin-top:18px;max-width:760px}
+</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="field" aria-hidden="true"></div>
+
+  <nav class="top" aria-label="Main">
+    <a class="brand" href="/">
+      <img class="mark" src="/shield-96.webp?v=4c70aee9f0" alt="" width="34" height="34" />
+      <span><b>Supreme AdBlock</b><span class="tag">Carbon Stealth</span></span>
+    </a>
+    <span class="sp"></span>
+    <div class="links">
+      <a href="/youtube-ad-blocker">YouTube</a>
+      <a href="/cookie-banner-blocker">Cookie banners</a>
+      <a href="/#features">Features</a>
+      <a href="/test" aria-current="page">Test</a>
+      <a href="/support">Support</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+  </nav>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">Supreme AdBlock</a></li>
+      <li><span aria-current="page">Test</span></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+    <header class="hero">
+      <div class="wrap">
+        <h1>Is Supreme AdBlock working in this browser?</h1>
+        <p class="lead">This page is <b>a demonstration, not a comparison</b>. It shows that <b>your copy</b> of the extension is doing its job right now, on this page. It says nothing about any other blocker, and nothing about how much better or worse one is. This page cannot always tell which extension or browser feature passed a check. To see Supreme AdBlock alone, pause it from its popup and reload: rows 1 and 2 should change.</p>
+        <p class="summary" id="summary" role="status" aria-live="polite">Checking…</p>
+        <noscript><p class="note">The checks need JavaScript on this page. It is the only script here; it asks this server for two test files and keeps one flag in this tab's session storage, nothing else.</p></noscript>
+        <p class="note">Not installed yet? <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=test" target="_blank" rel="noopener">Get it from the Chrome Web Store</a>, then reload this page.</p>
+      </div>
+    </header>
+
+    <section class="blk" id="checks">
+      <div class="wrap">
+        <h2>The checks</h2>
+        <ol class="rows">
+          <li class="check" id="row-network">
+            <h3>1. Network blocking</h3>
+            <p class="what"><b>What it checks:</b> this page asks its own server for a test file whose address looks like an ad banner, and for a second file that does not. Blocking means the first request fails while the second one loads.</p>
+            <p class="status" id="st-network" data-state="waiting">Checking…</p>
+            <p class="not"><b>What it does not prove:</b> anything beyond one rule and one test file. It does not show that any particular ad network on any other site is stopped. It also cannot show that Supreme AdBlock, not another blocker or your browser, did it.</p>
+          </li>
+          <li class="check" id="row-hiding">
+            <h3>2. Element hiding</h3>
+            <p class="what"><b>What it checks:</b> the box below carries a name that the built-in generic hiding list covers. If the extension is active here, the box is hidden.</p>
+            <div id="ad-banner-top" class="demo-ad">A sample box with an ad-like name. If you can read this, nothing hid it.</div>
+            <p class="status" id="st-hiding" data-state="waiting">Checking…</p>
+            <p class="not"><b>What it does not prove:</b> that the ad on a given site is hidden. Sites use their own names, which depend on site-specific rules; this box does not test those. It also cannot show that Supreme AdBlock, not another blocker or your browser, did it.</p>
+          </li>
+          <li class="check" id="row-params">
+            <h3>3. Tracking parameters</h3>
+            <p class="what"><b>What it checks:</b> follow <a id="trk-link" href="/test?utm_source=demo&amp;fbclid=demo">this link</a>. Its address carries <code>utm_source</code> and <code>fbclid</code>. When you arrive, this page reports whether they are still in the address bar.</p>
+            <p class="status" id="st-params" data-state="todo">Follow the link above to see the result.</p>
+            <p class="not"><b>What it does not prove:</b> that every tracking parameter is removed. Only the names on the built-in list are, and only when a page is opened. It also cannot show that Supreme AdBlock, not another blocker or your browser, did it.</p>
+          </li>
+          <li class="check" id="row-gpc">
+            <h3>4. Global Privacy Control</h3>
+            <p class="what"><b>What it checks:</b> whether this page can read <code>navigator.globalPrivacyControl</code> as <code>true</code>, the browser signal that asks a site not to sell or share your data.</p>
+            <p class="status" id="st-gpc" data-state="waiting">Checking…</p>
+            <p class="not"><b>What it does not prove:</b> that a site respects it. The signal is a request, and some browsers send it without any extension, so this row cannot show that Supreme AdBlock sent it.</p>
+          </li>
+          <li class="check" id="row-cmp">
+            <h3>5. Cookie banner</h3>
+            <p class="what"><b>What it checks:</b> the banner below is a demo. Its Reject button reuses one button id of a widely used consent platform (an invisible name in the page code; nothing from that platform is loaded), and nothing else on this page is a banner. If the extension is on, it presses Reject by itself.</p>
+            <div id="demo-cmp" class="demo-cmp" role="region" aria-label="Demo cookie banner">
+              <p>Demo banner: nothing is stored.</p>
+              <button type="button" id="onetrust-reject-all-handler">Reject All</button>
+            </div>
+            <p class="status" id="st-cmp" data-state="waiting">Waiting for the extension to answer the banner…</p>
+            <p class="not"><b>What it does not prove:</b> that every banner on the web is answered, or that it is always refused. Real banners differ; when a banner has no Reject button the extension recognises, it presses Accept as a last resort (see <a href="/cookie-banner-blocker">how it answers banners</a>). It is built to press only controls it recognises as part of a consent banner. This page also cannot tell which extension pressed the button, only that one did while Supreme AdBlock's banner handling was on.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="blk" id="private">
+      <div class="wrap prose">
+        <h2>Nothing on this page is sent anywhere</h2>
+        <p>The checks run in your browser and read only this page. The two test files come from this same server, like any other file of this page. Our server counts nothing and keeps no log of these requests. Your own extension's counters in its popup may go up by one, as on any page, and stay on your device. The page keeps one flag in this tab's session storage to know you followed the link in check 3; it is gone when you close the tab. This page loads nothing from another site; only if you follow the Chrome Web Store link does Google see that you came from this page. See the <a href="/privacy">privacy policy</a>.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="notblocked">
+      <div class="wrap prose">
+        <h2>If a row says “Not blocked”</h2>
+        <ul class="dots">
+          <li>Protection may be switched off or paused. Open the popup and check the main switch.</li>
+          <li>This site may be on your allowed list. Allowing a site turns blocking off there on purpose.</li>
+          <li>The feature may be off in Settings: tracking-parameter clean-up, cookie banners or Global Privacy Control each have a switch.</li>
+          <li>Another extension or a browser setting may be in the way, or the page was opened before the extension finished starting. Reload once.</li>
+        </ul>
+        <p class="more">Still not working? See <a href="/support">support</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="row">
+      <div class="who">
+        <img src="/shield-96.webp?v=4c70aee9f0" alt="" width="26" height="26" />
+        <div>
+          <p><b style="color:var(--cream)">Supreme AdBlock</b> is made by Carbon Stealth VCC, UIC (ЕИК) 208725180</p>
+          <p>3 Samuil St., 2670 Bobov Dol, Bulgaria, <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a></p>
+        </div>
+      </div>
+      <nav aria-label="Footer">
+        <a href="/">Home</a>
+        <a href="/youtube-ad-blocker">YouTube ad blocker</a>
+        <a href="/cookie-banner-blocker">Cookie banner blocker</a>
+        <a href="/test">Test</a>
+        <a href="/support">Support</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/status">Status</a>
+        <a href="/for-it-admins">For IT admins</a>
+        <a href="/accessibility">Accessibility</a>
+        <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=test" target="_blank" rel="noopener">Chrome Web Store</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    "use strict";
+    var ROWS = ["network", "hiding", "params", "gpc", "cmp"];
+    var root = document.documentElement;
+    var summary = document.getElementById("summary");
+    // Only Supreme AdBlock sets this attribute (content.js), and only while protection is on for this site.
+    function ours() { return root.hasAttribute("data-tbab-on"); }
+    function set(row, state, text) {
+      var e = document.getElementById("st-" + row);
+      e.setAttribute("data-state", state);
+      e.textContent = text;
+    }
+    var UN = "Unclear: this passes, but Supreme AdBlock is not active on this page, so something else (another blocker or the browser) may be the cause.";
+
+    var probe = null, control = null, settled = false, armed = false, cmp = null, cmpOurs = false;
+
+    function load(src, done) {
+      var s = document.createElement("script");
+      s.onload = function () { done(true); };
+      s.onerror = function () { done(false); };
+      s.src = src;
+      document.head.appendChild(s);
+    }
+
+    function render() {
+      var mine = ours();
+      // 1. Network
+      if (probe !== null && control !== null && settled) {
+        if (!control) set("network", "unclear", "Unclear: even the control file did not load, so the network may be down.");
+        else if (probe) set("network", "off", "Not blocked: the ad-like file loaded.");
+        else if (mine) set("network", "working", "Blocked: the ad-like file failed to load, the control file loaded.");
+        else set("network", "unclear", UN);
+      }
+      // 2. Hiding
+      if (settled) {
+        var el = document.getElementById("ad-banner-top");
+        if (!el) set("hiding", "unclear", "Unclear: the sample box is gone from the page.");
+        else {
+          var cs = getComputedStyle(el);
+          if (cs.display !== "none" && cs.visibility !== "hidden") set("hiding", "off", "Not blocked: the sample box is visible.");
+          else if (mine) set("hiding", "working", "Hidden: the sample box is hidden.");
+          else set("hiding", "unclear", "Unclear: the box is hidden, but not by Supreme AdBlock (another blocker?).");
+        }
+        // 3. Tracking parameters
+        if (/[?&](utm_source|fbclid)=/.test(location.search)) set("params", "off", "Not blocked: the address still carries utm_source and fbclid.");
+        else if (armed) {
+          if (mine) set("params", "working", "Removed: you followed the link and arrived without utm_source and fbclid.");
+          else set("params", "unclear", UN);
+        }
+        // 4. Global Privacy Control
+        if (navigator.globalPrivacyControl !== true) set("gpc", "off", "Off: this page does not see Global Privacy Control.");
+        else if (mine) set("gpc", "working", "On: this page reads Global Privacy Control as true.");
+        else set("gpc", "unclear", UN);
+      }
+      // 5. Banner
+      if (cmp === "person") set("cmp", "unclear", "You pressed it yourself. Reload and wait to see whether the extension does.");
+      else if (cmp === "script") {
+        if (cmpOurs) set("cmp", "working", "Reject pressed by a script while Supreme AdBlock's banner handling is on here.");
+        else set("cmp", "unclear", "Unclear: the banner was pressed by a script, but not by Supreme AdBlock (another extension?).");
+      }
+      var w = 0, waiting = 0, todo = 0;
+      ROWS.forEach(function (r) {
+        var s = document.getElementById("st-" + r).getAttribute("data-state");
+        if (s === "working") w++;
+        if (s === "waiting") waiting++;
+        if (s === "todo") todo++;
+      });
+      if (waiting) summary.textContent = "Checking… " + w + " of " + ROWS.length + " passing so far.";
+      else summary.textContent = w + " of " + ROWS.length + (mine
+        ? " checks pass, and Supreme AdBlock is active on this page."
+        : " checks pass in this browser, but Supreme AdBlock is not active on this page. Another blocker or the browser itself may be passing them.") + (todo ? " Follow the link in check 3 for the last one." : "");
+    }
+
+    // 1. Network: a probe the bundled rule /ad-banner blocks, and a control no rule matches.
+    load("/test/ad-banner.js", function (ok) { probe = ok; render(); });
+    load("/test/page-check.js", function (ok) { control = ok; render(); });
+
+    // 2. Hiding: the extension's gate (data-tbab-on) settles a moment after load, so read late and follow changes.
+    window.addEventListener("load", function () { setTimeout(function () { settled = true; render(); }, 800); });
+    new MutationObserver(render).observe(root, { attributes: true, attributeFilter: ["data-tbab-on"] });
+
+    // 3. Tracking parameters: the link navigates to this page; the extension strips them in the redirect.
+    var KEY = "sa-demo-link";
+    try { armed = sessionStorage.getItem(KEY) === "1"; sessionStorage.removeItem(KEY); } catch (e) {}
+    document.getElementById("trk-link").addEventListener("click", function () {
+      try { sessionStorage.setItem(KEY, "1"); } catch (e) {}
+    });
+
+    // 5. The extension presses Reject on the demo banner. A press by a person does not count.
+    document.getElementById("onetrust-reject-all-handler").addEventListener("click", function (e) {
+      cmp = e.isTrusted ? "person" : "script";
+      cmpOurs = root.classList.contains("tbab-cookies");
+      render();
+    });
+    setTimeout(function () {
+      if (cmp === null) set("cmp", "off", "Not pressed: the banner was left as it was.");
+      render();
+    }, 5000);
+  })();
+  </script>
+</body>
+</html>

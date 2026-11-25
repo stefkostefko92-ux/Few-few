@@ -1,0 +1,80 @@
+// TEST-ONLY hardware fixtures. Hinge systems are the real ones (engine/data/hinge-systems.js); hinge families, handles,
+// slides and bed fittings are placeholders with the catalog's shape and are never shipped. Also the specs the output
+// tests run over, so the outputs and the CNC geometry are checked on the same models.
+import { createHash } from 'node:crypto';
+import { registerHingeSystems, registerHinges, registerHandles, registerSlideSystems, registerSlides, registerBedFittings } from '../../engine/hardware.js';
+import { SLIDE_SYSTEMS } from '../../engine/data/slide-systems.js';
+import { HINGE_SYSTEMS } from '../../engine/data/hinge-systems.js';
+import { TYPE_ORDER } from '../../engine/types.js';
+import { canonicalJson } from '../../engine/util.js';
+
+export const FIXTURE = {
+  hingeSystems: HINGE_SYSTEMS,
+  hinges: [
+    {
+      id: 'fx:blum', system: 'blum_clip_top', name: 'Панта (тест), Blum система', brand: 'Test', fixing: 'dowel',
+      variants: { full: { name: 'Панта покрит кант (тест)', brand: 'Test', mfrSku: 'FX-5', price: 2, currency: 'EUR' }, half: { name: 'Панта полупокрит кант (тест)', brand: 'Test', mfrSku: 'FX-6', price: 2, currency: 'EUR' } },
+    },
+    { id: 'fx:hettich', system: 'hettich_sensys', name: 'Панта (тест), Hettich система', brand: 'Test', fixing: 'screw', variants: { full: null, half: null } },
+    { id: 'fx:hettich-fix', system: 'hettich_sensys', name: 'Панта (тест), Hettich бърз монтаж Fix', brand: 'Test', fixing: 'fix', variants: {} },
+    { id: 'fx:gtv', system: 'gtv_euro35', name: 'Панта (тест), GTV система', brand: 'Test', fixing: 'screw', variants: {} },
+    { id: 'fx:salice', system: 'salice_series200', name: 'Панта (тест), Salice система', brand: 'Test', fixing: 'screw', variants: {} },
+  ],
+  handles: [
+    { id: 'fx:h128', name: 'Дръжка 128 (тест)', brand: 'Test', sku: 'FX-128', type: 'bar', holes: 2, spacing: 128, width: 12, drill: 5 },
+    { id: 'fx:knob', name: 'Топка (тест)', brand: 'Test', sku: 'FX-K', type: 'knob', holes: 1, width: 30, drill: 5 },
+  ],
+  slideSystems: SLIDE_SYSTEMS,
+  slides: [
+    { id: 'fx:h45', system: 'gtv_h45', name: 'Водач (тест), GTV H45 система', brand: 'Test', products: { 450: { name: 'Водач 450 (тест)', sku: 'FX-450', price: 5, currency: 'EUR' } } },
+    { id: 'fx:tandem', system: 'blum_tandem_560h', name: 'Водач (тест), TANDEM система', brand: 'Test', products: {} },
+  ],
+  bedFittings: [{ id: 'fx:bed', name: 'Връзка за легло (тест)', brand: 'Test', sku: 'FX-B' }],
+};
+
+export function registerFixtures() {
+  registerHingeSystems(FIXTURE.hingeSystems);
+  registerHinges(FIXTURE.hinges);
+  registerHandles(FIXTURE.handles);
+  registerSlideSystems(FIXTURE.slideSystems);
+  registerSlides(FIXTURE.slides);
+  registerBedFittings(FIXTURE.bedFittings);
+}
+
+// Every furniture type, then variants for the other branches: GRBL with an 8 mm cutter and no onion skin, a bed without
+// a footboard, cut sizes without band compensation, the other hinge makers.
+export const OUTPUT_SPECS = [
+  ...TYPE_ORDER.map((type) => ({ type })),
+  { type: 'wardrobe', width: 3000, post: 'grbl', tool: 8, onion: false, hinge: 'fx:hettich' },
+  { type: 'bed', mattressW: 900, footHeight: 0 },
+  { type: 'kitchen', modules: 6, bandCompensation: false, hinge: 'fx:gtv' },
+  // Г and П kitchens: the walls in their own coordinates, the blind fronts, the worktop in pieces (kitchen.js)
+  { type: 'kitchen', shape: 'left', handle: 'fx:knob' },
+  { type: 'kitchen', shape: 'u', post: 'grbl', tool: 8 },
+  { type: 'wardrobe', hinge: 'fx:salice' },
+  // rooms (room.js): the default one wall; a П room with pieces on all three walls, on GRBL
+  { type: 'room' },
+  { type: 'room', shape: 'u', roomWidth: 5000, roomDepth: 3500, post: 'grbl', items: [{ type: 'wardrobe', wall: 'A', x: 700, params: { width: 2400 } }, { type: 'nightstand', wall: 'B', x: 800, params: {} }, { type: 'tv', wall: 'C', x: 800, params: {} }] },
+  // sliding doors (sliding.js): two carcasses, Planofit grooves wider than the cutter, on ISO and on GRBL
+  { type: 'wardrobe', doorType: 'sliding', height: 2200, width: 3000, columns: 4 },
+  { type: 'wardrobe', doorType: 'sliding', height: 2100, layout: 'hanging', post: 'grbl', tool: 8 },
+  { type: 'bookcase', columns: 3, hinge: 'fx:gtv' },
+  // a free carcass that uses every kind of cell and front, wider than one carcass, on GRBL
+  {
+    type: 'custom', width: 3000, height: 2200, depth: 600, post: 'grbl', hinge: 'fx:hettich',
+    grid: {
+      columns: [
+        { w: 450, cells: [{ h: 540, fill: 'drawers', n: 3 }, { h: null, fill: 'rail', n: 0 }], fronts: [{ from: 1, to: 1, kind: 'door', hinge: 'left' }] },
+        { w: null, cells: [{ h: 900, fill: 'shelves', n: 2 }, { h: null, fill: 'shelves', n: 3 }], fronts: [{ from: 0, to: 1, kind: 'doors2' }] },
+        { w: null, cells: [{ h: 400, fill: 'open', n: 0 }, { h: null, fill: 'shelves', n: 3 }], fronts: [{ from: 1, to: 1, kind: 'door', hinge: 'right' }] },
+        { w: 450, cells: [{ h: 300, fill: 'drawers', n: 2 }, { h: 300, fill: 'drawers', n: 1 }, { h: null, fill: 'rail', n: 0 }], fronts: [{ from: 2, to: 2, kind: 'door' }] },
+      ],
+    },
+  },
+];
+
+// A project with small parts (the drawer fronts and backs of the narrowest chest are under 0,02 m²): with the onion skin
+// they are a warning, without it a blocker.
+export const SMALL_PART_SPEC = { type: 'chest', width: 400 };
+
+export const outputMeta =(model) => ({ product: 'Korpora', hash: createHash('sha256').update(canonicalJson(model.spec)).digest('hex'), owner: 'Carbon Stealth VCC', date: '2026-10-02' });

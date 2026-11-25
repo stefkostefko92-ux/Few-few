@@ -1,0 +1,141 @@
+{
+  "rimborsi": {
+    "pagina": {
+      "titolo": "Rimborso",
+      "torna": "Pagamenti",
+      "pagato": "Pagato il {data}: {totale} € — {piano}",
+      "dovuto": "Rimborso dovuto (art. 12.9 delle Condizioni) alla cessazione del {data}: {importo} €",
+      "verifica": "Pagamento ricevuto senza che il piano sia partito: si restituisce per intero.",
+      "nonDovuto": "Per le condizioni non è dovuto alcun rimborso: l'azienda è attiva oppure il piano è già finito. Se rimborsi lo stesso, l'abbonamento dell'azienda non cambia da solo: impostalo dalla pagina dell'azienda.",
+      "massimo": "Su Revolut si possono restituire al massimo {max} € per questo pagamento.",
+      "riparto": "L'importo proposto va sugli ordini pagati, in quest'ordine:",
+      "parte": "{importo} € sull'ordine del {data}",
+      "revolutTitolo": "Rimborsa su Revolut",
+      "revolutTesto": "Il denaro torna sullo stesso mezzo di pagamento usato dal cliente. Revolut può impiegare fino a 2 giorni: il pagamento risulta rimborsato solo quando Revolut lo conferma, e allora il cliente riceve un'email.",
+      "importo": "Importo da rimborsare (€)",
+      "password": "La tua password",
+      "passwordHint": "Serve per confermare: un rimborso sposta denaro.",
+      "rimborsa": "Rimborsa su Revolut",
+      "manualeTitolo": "Già rimborsato fuori dal portale",
+      "manualeTesto": "Se hai già restituito il denaro in un altro modo, per esempio con un bonifico, registra qui l'importo. Il portale non muove denaro.",
+      "importoManuale": "Importo già rimborsato (€)",
+      "storia": "Rimborsi su Revolut per questo pagamento",
+      "nessuno": "Nessun rimborso su Revolut per questo pagamento.",
+      "colonna": {
+        "data": "Disposto il",
+        "importo": "Importo",
+        "ordine": "Sull'ordine del",
+        "stato": "Stato"
+      },
+      "stato": {
+        "IN_CORSO": "In corso",
+        "COMPLETATO": "Eseguito",
+        "FALLITO": "Non riuscito (codice {codice})"
+      },
+      "senzaRisposta": "Revolut non ha risposto: non sappiamo ancora se questo rimborso è partito. «Riprova» lo chiede di nuovo con la stessa chiave, così Revolut non rimborsa due volte.",
+      "riprova": "Riprova",
+      "chiuso": "Questo pagamento è già stato rimborsato: {importo} €.",
+      "nonRimborsabile": "Da qui si rimborsano solo i pagamenti ricevuti."
+    },
+    "esito": {
+      "completato": "Rimborso eseguito su Revolut.",
+      "inCorso": "Rimborso disposto su Revolut: l'esito arriva entro 2 giorni.",
+      "senzaRisposta": "Revolut non ha risposto. Guarda qui sotto e riprova.",
+      "rifiutato": "Revolut ha rifiutato il rimborso (codice {codice}). Non è cambiato nulla.",
+      "riprovato": "Abbiamo chiesto di nuovo a Revolut."
+    },
+    "errore": {
+      "password": "Password non corretta: il rimborso non è partito.",
+      "importo": "Scrivi un importo valido: su Revolut si possono restituire al massimo {max} € per questo pagamento.",
+      "inCorso": "Un rimborso di questo pagamento è già in corso.",
+      "stato": "Questo pagamento non si può rimborsare.",
+      "chiave": "Manca la chiave di Revolut per l'ambiente di questo pagamento."
+    },
+    "console": {
+      "rimborsa": "Rimborsa",
+      "apri": "Rimborsa {azienda}"
+    },
+    "webhookSenzaDispute": "Webhook registrato senza gli avvisi delle contestazioni: Revolut non li accetta per questa chiave o per questo ambiente.",
+    "mail": {
+      "eseguitoSubject": "Rimborso di {importo} € per {azienda}",
+      "eseguitoBody": "Ciao,\n\nabbiamo disposto il rimborso di {importo} € per l'abbonamento di {azienda} a Rilievi Impianti (art. 12.9 delle Condizioni generali di servizio).\n\nIl rimborso va sullo stesso mezzo di pagamento che hai usato, tramite Revolut. Di norma compare sull'estratto conto entro pochi giorni lavorativi: i tempi dipendono dalla banca che ha emesso la carta. Se dopo due settimane non lo vedi, rispondi a questa email indicando il riferimento {riferimento}.\n\nLa nota di credito ti arriva in un'email separata.\n\nCarbon Stealth VCC — https://carbonstealth.eu",
+      "masterSubject": "Rimborso eseguito: {azienda} — {importo} €",
+      "masterBody": "Revolut ha confermato il rimborso di {importo} € per {azienda}.\n\nPagamento del {data}, ordine Revolut {ordine}.\nLa nota di credito va emessa entro 5 giorni dal rimborso.\n\n{link}",
+      "fallitoSubject": "Rimborso non riuscito: {azienda} — {importo} €",
+      "fallitoBody": "Revolut non ha eseguito il rimborso di {importo} € per {azienda} (codice {codice}).\n\nIl pagamento non è cambiato: puoi riprovare, oppure restituire il denaro in un altro modo e registrarlo.\n\n{link}",
+      "contestazioneSubject": "Pagamento contestato: {azienda} — {importo} €",
+      "contestazioneBody": "Un cliente ha contestato un pagamento presso la sua banca (chargeback).\n\nAzienda: {azienda}\nImporto contestato: {importo} €\nStato: {stato}\nMotivo: {motivo}\nRispondere entro: {entro}\n\nSi risponde in Revolut Business, non dal portale. Il portale non cambia l'abbonamento da solo: decidi tu.\n\n{link}"
+    },
+    "contestazioni": {
+      "titolo": "Contestazioni",
+      "testo": "I pagamenti contestati dal cliente presso la sua banca (chargeback). Si risponde in Revolut Business entro la scadenza. Il portale non cambia nulla da solo: l'abbonamento e l'eventuale rimborso li decidi tu.",
+      "colonna": {
+        "aperta": "Aperta il",
+        "azienda": "Azienda",
+        "importo": "Importo",
+        "stato": "Stato",
+        "entro": "Rispondere entro",
+        "motivo": "Motivo"
+      },
+      "stato": {
+        "DA_RISPONDERE": "Da rispondere",
+        "IN_ESAME": "In esame",
+        "VINTA": "Vinta",
+        "PERSA": "Persa"
+      },
+      "senzaPagamento": "ordine non trovato nel portale",
+      "senzaData": "—"
+    },
+    "note": {
+      "titolo": "Note di credito",
+      "testo": "Per ogni rimborso e per ogni contestazione persa va emessa una nota di credito sulla fattura del piano, entro {giorni} giorni (art. 12.9 delle Condizioni; art. 115 della legge bulgara sull'IVA). Il portale non emette documenti: emetti la nota nel tuo programma di fatturazione, inviala al cliente e scrivi qui numero e data.",
+      "nessuna": "Nessuna nota di credito da emettere.",
+      "colonna": {
+        "evento": "Rimborso del",
+        "cliente": "Cliente",
+        "fattura": "Fattura",
+        "importo": "Importo della nota",
+        "entro": "Entro il",
+        "emissione": "Emissione"
+      },
+      "origine": {
+        "RIMBORSO": "Rimborso",
+        "CONTESTAZIONE": "Contestazione persa"
+      },
+      "contestazione": "Per una contestazione persa chiedi al commercialista se serve la nota di credito (art. 115) o un altro documento (artt. 126a–126b).",
+      "fattura": "n. {numero}",
+      "fatturaSenzaNumero": "emessa, numero non indicato",
+      "fatturaNon": "non ancora fatturato",
+      "conIva": "{imponibile} € + IVA {iva} € = {totale} €",
+      "senzaIva": "{totale} € (senza IVA)",
+      "scaduta": "termine superato",
+      "numero": "Numero della nota",
+      "data": "Data di emissione",
+      "segna": "Segna emessa",
+      "segnaPer": "Segna emessa la nota di credito per {cliente}",
+      "emessaIl": "n. {numero} del {data}",
+      "ultime": "Ultime emesse",
+      "esportaCsv": "Scarica le note di credito (CSV)",
+      "flash": {
+        "ok": "Nota di credito registrata.",
+        "errore": "Scrivi il numero della nota e una data valida, non futura."
+      },
+      "csv": {
+        "evento": "Rimborso del",
+        "entro": "Da emettere entro",
+        "origine": "Origine",
+        "azienda": "Azienda",
+        "ragioneSociale": "Ragione sociale",
+        "partitaIva": "Partita IVA",
+        "fattura": "Fattura n.",
+        "imponibile": "Imponibile a credito",
+        "iva": "IVA a credito",
+        "totale": "Totale a credito",
+        "regime": "Regime IVA",
+        "numero": "Nota di credito n.",
+        "emessa": "Emessa il"
+      },
+      "numeroBreve": "N. nota"
+    }
+  }
+}
