@@ -161,12 +161,16 @@ export async function dataVolume(container) {
 // Без зададена парола поведението е същото като преди.
 const WITH_AUTH = 'if [ -n "${REDIS_PASSWORD:-}" ]; then export REDISCLI_AUTH="$REDIS_PASSWORD"; fi; ';
 export const INFO_SH = WITH_AUTH + 'exec redis-cli INFO';
-// Кодът на изхода трябва да КАЗВА провала — иначе задачата е зелена без снимка.
-const FAIL_ON_REFUSAL = 'case "$out" in *NOAUTH*|*WRONGPASS*|*ERR*|*"Could not connect"*) exit 1;; esac';
-export const BGSAVE_SH = WITH_AUTH + 'out=$(redis-cli BGSAVE 2>&1); echo "$out"; ' + FAIL_ON_REFUSAL;
+// Кодът на изхода трябва да КАЗВА провала — иначе задачата е зелена без снимка. Успех е САМО по
+// позволен списък: „Background saving started“ или вече течаща снимка. Всичко друго — NOAUTH,
+// „Error: Connection reset“, празен отговор, липсващ redis-cli (127) — е червено, а кодът на
+// redis-cli не се губи (преглед на PR #322: списъкът с лоши думи пропускаше тези случаи).
+const OK_ONLY_ON_SAVE = 'rc=$?; echo "$out"; [ "$rc" -eq 0 ] || exit "$rc"; ' +
+  'case "$out" in *"Background saving started"*|*"already in progress"*) exit 0;; esac; exit 1';
+export const BGSAVE_SH = WITH_AUTH + 'out=$(redis-cli BGSAVE 2>&1); ' + OK_ONLY_ON_SAVE;
 // Системният Redis: паролата идва от конфига през REDISCLI_AUTH в средата на
 // задачата; портът е позиционен аргумент ($1), не текст в скрипта.
-export const HOST_BGSAVE_SH = 'out=$(redis-cli -h 127.0.0.1 -p "$1" BGSAVE 2>&1); echo "$out"; ' + FAIL_ON_REFUSAL;
+export const HOST_BGSAVE_SH = 'out=$(redis-cli -h 127.0.0.1 -p "$1" BGSAVE 2>&1); ' + OK_ONLY_ON_SAVE;
 
 const firstLine = (s) => String(s || '').split(/\r?\n/).map((l) => l.trim()).find(Boolean) || '';
 
@@ -179,6 +183,10 @@ export function readInfo(r) {
   }
   const err = firstLine(r.stderr);
   const out = firstLine(r.stdout);
+  // Пълен INFO печели пред предупреждение на stderr: парола в средата при Redis без requirepass
+  // дава „AUTH failed: … without any password configured“, а INFO пак минава (преглед на PR #322).
+  const full = parseInfo(r.stdout);
+  if (full.redis_version) return { ok: true, info: full };
   // Сгрешена парола: redis-cli казва WRONGPASS на stderr, а INFO пак дава NOAUTH.
   if (/WRONGPASS|^AUTH failed/i.test(err)) {
     return { ok: false, reason: 'auth', error: 'Паролата в REDIS_PASSWORD на контейнера не е вярна — Redis отказва INFO.' };
@@ -189,12 +197,8 @@ export function readInfo(r) {
   if (/^(ERR\b|Could not connect)/.test(out)) {
     return { ok: false, reason: 'error', error: 'redis-cli върна грешка', detail: out.slice(0, 200) };
   }
-  const info = parseInfo(r.stdout);
   // Отговор без нито едно поле на INFO не е „празен Redis" — не знаем нищо.
-  if (!info.redis_version) {
-    return { ok: false, reason: 'error', error: 'redis-cli не върна INFO', detail: out.slice(0, 200) };
-  }
-  return { ok: true, info };
+  return { ok: false, reason: 'error', error: 'redis-cli не върна INFO', detail: out.slice(0, 200) };
 }
 
 // Образ без `sh` (distroless): пада обратно към голото извикване, както преди.
