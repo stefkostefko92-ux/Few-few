@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1587 1122" width="1587" height="1122" role="img" aria-label="Macchina a stati del software di manovra (PLC)">
+<title>T13 — Macchina a stati del software di manovra (PLC)</title>
+<defs><marker id="ah-111827" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#111827"/></marker></defs>
+<rect width="1587" height="1122" fill="#ffffff"/>
+
+<rect x="8" y="8" width="1571" height="1106" fill="none" stroke="#111827" stroke-width="2"/>
+<rect x="14" y="14" width="1559" height="1094" fill="none" stroke="#111827" stroke-width="0.8"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="40" y="80" width="170" height="70" rx="6" fill="#eff6ff" stroke="#111827" stroke-width="1.6"/>
+<text x="125" y="104.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="125" dy="0">INIT / AUTOTEST</tspan></text>
+<text x="125" y="121.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="125" dy="0">verifica catena, bus,</tspan><tspan x="125" dy="13.75">parametri, posizione</tspan></text>
+<rect x="260" y="80" width="170" height="70" rx="6" fill="#eff6ff" stroke="#111827" stroke-width="1.6"/>
+<text x="345" y="106.1" font-size="11.6" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="345" dy="0">RIFERIMENTO</tspan></text>
+<text x="345" y="120.6" font-size="9.6" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="345" dy="0">corsa lenta fino al</tspan><tspan x="345" dy="12">finecorsa di rialzo/riduzione</tspan></text>
+<rect x="480" y="80" width="170" height="70" rx="6" fill="#ecfdf5" stroke="#111827" stroke-width="1.6"/>
+<text x="565" y="104.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="565" dy="0">FERMO AL PIANO</tspan></text>
+<text x="565" y="121.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="565" dy="0">porte aperte/chiuse</tspan><tspan x="565" dy="13.75">attesa chiamate</tspan></text>
+<rect x="700" y="80" width="170" height="70" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="785" y="104.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="785" dy="0">CHIUSURA PORTE</tspan></text>
+<text x="785" y="121.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="785" dy="0">con rilevamento ostacolo</tspan><tspan x="785" dy="13.75">e ritorno in apertura</tspan></text>
+<rect x="920" y="80" width="170" height="70" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="1005" y="104.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1005" dy="0">PARTENZA</tspan></text>
+<text x="1005" y="121.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1005" dy="0">freno/valvola, rampa,</tspan><tspan x="1005" dy="13.75">controllo catena</tspan></text>
+<rect x="1140" y="80" width="190" height="70" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="1235" y="104.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1235" dy="0">CORSA</tspan></text>
+<text x="1235" y="121.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1235" dy="0">velocità nominale,</tspan><tspan x="1235" dy="13.75">controllo posizione</tspan></text>
+<rect x="1140" y="220" width="190" height="70" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="1235" y="244.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1235" dy="0">DECELERAZIONE</tspan></text>
+<text x="1235" y="261.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1235" dy="0">da posizione di rallentamento</tspan><tspan x="1235" dy="13.75">alla velocità di livello</tspan></text>
+<rect x="920" y="220" width="170" height="70" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="1005" y="244.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1005" dy="0">LIVELLAMENTO</tspan></text>
+<text x="1005" y="261.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1005" dy="0">ingresso in zona porta</tspan><tspan x="1005" dy="13.75">stop di precisione</tspan></text>
+<rect x="700" y="220" width="170" height="70" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="785" y="244.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="785" dy="0">ARRESTO</tspan></text>
+<text x="785" y="261.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="785" dy="0">freno chiuso/valvola</tspan><tspan x="785" dy="13.75">verifica fermo</tspan></text>
+<rect x="480" y="220" width="170" height="70" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="565" y="252.4" font-size="12.9" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="565" dy="0">APERTURA PORTE</tspan></text>
+<text x="565" y="268.525" font-size="10.9" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="565" dy="0">sblocco solo in zona porta</tspan></text>
+<polyline points="210,115 260,115" fill="none" stroke="#111827" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<polyline points="430,115 480,115" fill="none" stroke="#111827" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<polyline points="650,115 700,115" fill="none" stroke="#111827" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<polyline points="870,115 920,115" fill="none" stroke="#111827" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<polyline points="1090,115 1140,115" fill="none" stroke="#111827" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<polyline points="1235,150 1235,220" fill="none" stroke="#111827" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<polyline points="1140,255 1090,255" fill="none" stroke="#111827" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<polyline points="920,255 870,255" fill="none" stroke="#111827" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<polyline points="700,255 650,255" fill="none" stroke="#111827" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<polyline points="565,220 565,150" fill="none" stroke="#111827" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<text x="500" y="192" font-size="10.5" text-anchor="start" font-weight="400" fill="#6b7280"><tspan x="500" dy="0">porte aperte → tempo di attesa</tspan></text>
+<rect x="40" y="340" width="1290" height="400" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="50" y="356" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="50" dy="0">Stati speciali (priorità decrescente dall'alto: sicurezza &gt; incendio &gt; recupero &gt; ispezione &gt; servizio)</tspan></text>
+<rect x="60" y="372" width="230" height="84" rx="6" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.6"/>
+<text x="175" y="403.875" font-size="13" text-anchor="middle" font-weight="700" fill="#b91c1c"><tspan x="175" dy="0">ARRESTO DI SICUREZZA</tspan></text>
+<text x="175" y="420.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="175" dy="0">catena aperta: il PLC non comanda,</tspan><tspan x="175" dy="13.75">registra quale tratto, attende</tspan></text>
+<rect x="310" y="372" width="230" height="84" rx="6" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.6"/>
+<text x="425" y="403.875" font-size="13" text-anchor="middle" font-weight="700" fill="#b91c1c"><tspan x="425" dy="0">MANOVRA ANTINCENDIO</tspan></text>
+<text x="425" y="420.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="425" dy="0">ritorno al piano designato,</tspan><tspan x="425" dy="13.75">porte aperte (EN 81-73)</tspan></text>
+<rect x="560" y="372" width="230" height="84" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="675" y="403.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="675" dy="0">RECUPERO / EMERGENZA</tspan></text>
+<text x="675" y="420.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="675" dy="0">senza rete: ARD o discesa</tspan><tspan x="675" dy="13.75">d'emergenza al piano più vicino</tspan></text>
+<rect x="810" y="372" width="230" height="84" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="925" y="403.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="925" dy="0">ISPEZIONE</tspan></text>
+<text x="925" y="420.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="925" dy="0">da cabina o tetto: comandi</tspan><tspan x="925" dy="13.75">ad azione mantenuta, bassa vel.</tspan></text>
+<rect x="1060" y="372" width="250" height="84" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="1185" y="403.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1185" dy="0">SERVIZIO / PARAMETRI</tspan></text>
+<text x="1185" y="420.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1185" dy="0">chiave in quadro + account:</tspan><tspan x="1185" dy="13.75">modifica parametri protetti</tspan></text>
+<text x="60" y="492" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="60" dy="0">Ingressi che fanno cambiare stato (esempi)</tspan></text>
+<text x="70" y="516" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="70" dy="0">• catena di sicurezza aperta (qualunque tratto)  → ARRESTO DI SICUREZZA (nessun comando di marcia)</tspan></text>
+<text x="70" y="540" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="70" dy="0">• chiave pompieri attiva al piano o in cabina  → MANOVRA ANTINCENDIO (annulla le chiamate)</tspan></text>
+<text x="70" y="564" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="70" dy="0">• mancanza rete e batteria presente  → RECUPERO; nessuna chiamata accettata</tspan></text>
+<text x="70" y="588" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="70" dy="0">• commutatore ISPEZIONE su tetto/fossa  → ISPEZIONE; le chiamate di piano sono ignorate</tspan></text>
+<text x="70" y="612" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="70" dy="0">• chiave SERVIZIO nel quadro  → servizio: marcia consentita solo in ispezione, scrittura parametri protetti</tspan></text>
+<text x="70" y="636" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="70" dy="0">• guasto non di sicurezza (es. encoder incoerente)  → FUORI SERVIZIO al piano con porte aperte, allarme remoto</tspan></text>
+<text x="70" y="660" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="70" dy="0">• timeout marcia (idraulico) o sovratemperatura olio  → ARRESTO, discesa al piano, poi FUORI SERVIZIO</tspan></text>
+<text x="70" y="684" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="70" dy="0">• reset: solo da quadro o da portale con ruolo «Manutentore» e solo per guasti non di sicurezza</tspan></text>
+<rect x="1350" y="80" width="210" height="250" rx="8" fill="none" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="1360" y="96" font-size="12" text-anchor="start" font-weight="700" fill="#c2410c"><tspan x="1360" dy="0">Cambiano tra i due impianti</tspan></text>
+<text x="1360" y="112" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1360" dy="0">PARTENZA / CORSA / ARRESTO:</tspan><tspan x="1360" dy="13.125">· trazione: freno + inverter</tspan><tspan x="1360" dy="13.125">   (rampa S, encoder)</tspan><tspan x="1360" dy="13.125">· idraulico: valvole di salita/</tspan><tspan x="1360" dy="13.125">   discesa, soft starter</tspan><tspan x="1360" dy="13.125">LIVELLAMENTO:</tspan><tspan x="1360" dy="13.125">· trazione: velocità di livello</tspan><tspan x="1360" dy="13.125">· idraulico: valvola di</tspan><tspan x="1360" dy="13.125">   livellamento + ri-livellamento</tspan><tspan x="1360" dy="13.125">RIFERIMENTO:</tspan><tspan x="1360" dy="13.125">· idraulico: pressione/temperatura</tspan></text>
+</g>
+
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="827" y="1010" width="746" height="98" fill="#fff" stroke="#111827" stroke-width="1.2"/>
+<line x1="827" y1="1042" x2="1573" y2="1042" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1010" x2="1437" y2="1108" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1075" x2="1573" y2="1075" stroke="#111827" stroke-width="0.8"/>
+<text x="837" y="1028" font-size="10" fill="#6b7280">QUADRO DI MANOVRA A PLC — PROGETTO DI FATTIBILITÀ · Carbon Stealth VCC</text>
+<text x="837" y="1062" font-size="17" font-weight="700" fill="#111827">Macchina a stati del software di manovra (PLC)</text>
+<text x="837" y="1084" font-size="11" fill="#374151">Manovra collettiva selettiva · stesso programma per trazione e idraulico (cambiano 3 blocchi)</text>
+<text x="837" y="1100" font-size="10" fill="#b45309">Schema di principio: non è un esecutivo. Lo firma un progettista abilitato.</text>
+<text x="1445" y="1026" font-size="10" fill="#6b7280">Tavola</text>
+<text x="1445" y="1056" font-size="26" font-weight="700">T13</text>
+<text x="1445" y="1090" font-size="10" fill="#6b7280">Rev. A · 2026-10-07</text>
+<text x="1445" y="1103" font-size="10" fill="#6b7280">A3 · senza scala</text>
+</g>
+</svg>

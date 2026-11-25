@@ -4,6 +4,7 @@
 
 import { esc, numeroIt, percentualeIt } from '../lib/format.js';
 import { page, kpi, siteUrl } from '../lib/site-ui.js';
+import { TITOLARE, telefoni, telHref } from '../lib/titolare.js';
 
 /** @typedef {import('../lib/models.js').Validazione} Validazione */
 /** @typedef {import('../lib/models.js').AppMatch} AppMatch */
@@ -204,20 +205,47 @@ SHA-256 delle fonti vedi <a href="verifiche.html">Dati e verifiche</a>.</p>
  * @param {{ titolare?: Titolare }} [p]
  * @returns {string}
  */
-export function renderNoteLegali({ titolare = {} } = {}) {
-  // реквизити на титуляря (GDPR чл. 13(1)(a)/(b)) — попълват се в config.json
+export function renderNoteLegali({ titolare = TITOLARE } = {}) {
+  // реквизити на доставчика (D.Lgs. 70/2003 чл. 7; GDPR чл. 13(1)(a)/(b)) и отговорното лице (QRG: при YMYL без
+  // отговорно лице и контакт = „Lowest“) — един източник: config.json → src/lib/titolare.js
+  const nome = esc(titolare.nome || 'Carbon Stealth VCC');
   const sede = titolare.indirizzo ? `, con sede in ${esc(titolare.indirizzo)}` : '';
-  const eik = titolare.eik ? ` — n. reg./VAT ${esc(titolare.eik)}` : '';
-  const contatto = titolare.email
-    ? ` Contatto diretto: <a href="mailto:${esc(titolare.email)}">${esc(titolare.email)}</a>${titolare.telefono ? ` · tel. ${esc(titolare.telefono)}` : ''}.`
-    : ` Contatto: tramite <a href="https://carbonstealth.eu">carbonstealth.eu</a>.`;
+  const nomeLegale = titolare.nomeLegale
+    ? ` (${esc(titolare.nomeLegale)}${titolare.formaGiuridica ? `, ${esc(titolare.formaGiuridica)}` : ''})`
+    : '';
+  const telHtml = telefoni(titolare)
+    .map((n) => `<a href="${telHref(n)}">${esc(n)}</a>`)
+    .join(' · ');
+  const righe = [
+    titolare.responsabile
+      ? `<dt>Responsabile dei contenuti</dt><dd>${esc(titolare.responsabile)}${titolare.ruolo ? `, ${esc(titolare.ruolo)} di ${nome}` : ''}</dd>`
+      : '',
+    titolare.email ? `<dt>Email</dt><dd><a href="mailto:${esc(titolare.email)}">${esc(titolare.email)}</a></dd>` : '',
+    telHtml ? `<dt>Telefono</dt><dd>${telHtml}</dd>` : '',
+    titolare.indirizzo ? `<dt>Sede</dt><dd>${esc(titolare.indirizzo)}</dd>` : '',
+    titolare.eik
+      ? `<dt>Numero di registrazione (EIK)</dt><dd>${esc(titolare.eik)}${titolare.registro ? ` — ${esc(titolare.registro)}` : ''}</dd>`
+      : '',
+    titolare.partitaIva ? `<dt>Partita IVA UE (VIES)</dt><dd>${esc(titolare.partitaIva)}</dd>` : '',
+  ].filter(Boolean);
+  const contatti = righe.length
+    ? `
+<h2 id="contatti">Contatti e responsabile</h2>
+<dl>
+  ${righe.join('\n  ')}
+</dl>
+<p class="small">Per segnalare un errore nei dati o chiedere una rettifica, vedi <a href="#rettifiche">Rettifiche</a>.</p>`
+    : `
+<h2 id="contatti">Contatti</h2>
+<p>Tramite <a href="https://carbonstealth.eu">carbonstealth.eu</a>.</p>`;
   const body = `
 <h1>Note legali</h1>
 <h2>Titolare</h2>
-<p>Questo sito è pubblicato da <strong>${esc(titolare.nome || 'Carbon Stealth VCC')}</strong>${sede}${eik}
-(<a href="https://carbonstealth.eu">carbonstealth.eu</a>).${contatto}
+<p>Questo sito è pubblicato da <strong>${nome}</strong>${nomeLegale}${sede}
+(<a href="https://carbonstealth.eu">carbonstealth.eu</a>). Responsabile e recapiti: <a href="#contatti">Contatti</a>.
 Progetto di <strong>trasparenza civica senza scopo di lucro</strong>. Non è una testata giornalistica registrata ai sensi
 dell’art. 5 della L. 47/1948 e non costituisce prodotto editoriale periodico.</p>
+${contatti}
 
 <h2>Riutilizzo dei dati elaborati</h2>
 <p class="small">I dataset derivati pubblicati in <a href="dati.html">Dati aperti</a> sono riutilizzabili citando la fonte
@@ -256,14 +284,14 @@ prima rigenerazione del sito.</p>
 <p>I contenuti sono forniti «così come sono», a fini informativi e di trasparenza. Non sostituiscono le fonti ufficiali
 né i controlli della Corte dei conti o dell’ANAC.</p>
 `;
-  return page({ title: 'Note legali — Ospedali Trasparenti', description: 'Titolare, natura dei contenuti, fonti, licenze e rettifiche.', active: '', body });
+  return page({ title: 'Note legali — Ospedali Trasparenti', description: 'Titolare, responsabile e contatti, natura dei contenuti, fonti, licenze e rettifiche.', active: '', canonical: 'note-legali.html', body });
 }
 
 /**
  * @param {{ titolare?: Titolare, hosting?: Hosting }} [p]
  * @returns {string}
  */
-export function renderPrivacy({ titolare = {}, hosting = {} } = {}) {
+export function renderPrivacy({ titolare = TITOLARE, hosting = {} } = {}) {
   const sede = titolare.indirizzo ? `, con sede in ${esc(titolare.indirizzo)}` : '';
   const contattoHtml = titolare.email
     ? `<a href="mailto:${esc(titolare.email)}">${esc(titolare.email)}</a>`
@@ -320,5 +348,5 @@ protezione dei dati personali</strong> (<a href="https://www.garanteprivacy.it/"
 <h2>Log di hosting</h2>
 ${hostingHtml}
 `;
-  return page({ title: 'Privacy — Ospedali Trasparenti', description: 'Nessun cookie o tracciamento. Trattamento dei dati di terzi e diritti.', active: '', body });
+  return page({ title: 'Privacy — Ospedali Trasparenti', description: 'Nessun cookie o tracciamento. Trattamento dei dati di terzi e diritti.', active: '', canonical: 'privacy.html', body });
 }

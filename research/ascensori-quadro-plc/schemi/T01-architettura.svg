@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1587 1122" width="1587" height="1122" role="img" aria-label="Architettura generale a blocchi">
+<title>T01 — Architettura generale a blocchi</title>
+<defs><marker id="ah-b91c1c" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker><marker id="ah-7e22ce" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7e22ce"/></marker><marker id="ah-1d4ed8" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1d4ed8"/></marker><marker id="ah-15803d" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker><marker id="ah-111827" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#111827"/></marker><marker id="ah-c2410c" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker><marker id="ah-be185d" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#be185d"/></marker></defs>
+<rect width="1587" height="1122" fill="#ffffff"/>
+
+<rect x="8" y="8" width="1571" height="1106" fill="none" stroke="#111827" stroke-width="2"/>
+<rect x="14" y="14" width="1559" height="1094" fill="none" stroke="#111827" stroke-width="0.8"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<text x="40" y="52" font-size="13" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="40" dy="0">ALIMENTAZIONE</tspan></text>
+<rect x="40" y="64" width="180" height="60" rx="6" fill="#fef2f2" stroke="#111827" stroke-width="1.6"/>
+<text x="130" y="91.625" font-size="12" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="130" dy="0">Rete 3~ 400 V + N + PE</tspan></text>
+<text x="130" y="106.625" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="130" dy="0">dal quadro generale edificio</tspan></text>
+<rect x="40" y="170" width="180" height="78" rx="6" fill="#fef2f2" stroke="#111827" stroke-width="1.6"/>
+<text x="130" y="200.625" font-size="11" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="130" dy="0">QS1 sezionatore generale</tspan></text>
+<text x="130" y="214.375" font-size="9" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="130" dy="0">lucchettabile · differenziale</tspan><tspan x="130" dy="11.25">selettivo (tipo B con VVVF)</tspan></text>
+<rect x="40" y="300" width="180" height="70" rx="6" fill="#fef2f2" stroke="#111827" stroke-width="1.6"/>
+<text x="130" y="324.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="130" dy="0">QS2 luce e FM</tspan></text>
+<text x="130" y="341.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="130" dy="0">cabina e vano</tspan><tspan x="130" dy="13.75">circuito separato</tspan></text>
+<polyline points="130,124 130,170" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-b91c1c)"/>
+<polyline points="130,148 24,148 24,335 40,335" fill="none" stroke="#b91c1c" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-b91c1c)"/>
+<circle cx="130" cy="148" r="3" fill="#b91c1c"/>
+<polyline points="220,209 250,209" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-b91c1c)"/>
+<rect x="250" y="40" width="780" height="568" rx="8" fill="#fcfcfd" stroke="#111827" stroke-width="1.2"/>
+<text x="260" y="56" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="260" dy="0">QUADRO DI MANOVRA</tspan></text>
+<rect x="272" y="64" width="224" height="46" rx="6" fill="#ecfdf5" stroke="#111827" stroke-width="1.6"/>
+<text x="384" y="84.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="384" dy="0">SMPS 48 V c.c. (SELV)</tspan></text>
+<text x="384" y="100.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="384" dy="0">alimenta la catena di sicurezza</tspan></text>
+<rect x="520" y="64" width="224" height="46" rx="6" fill="#eff6ff" stroke="#111827" stroke-width="1.6"/>
+<text x="632" y="84.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="632" dy="0">SMPS 24 V c.c. (PELV)</tspan></text>
+<text x="632" y="100.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="632" dy="0">logica · bus · sensori</tspan></text>
+<rect x="768" y="64" width="240" height="46" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="888" y="84.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="888" dy="0">ARD + batteria</tspan></text>
+<text x="888" y="100.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="888" dy="0">recupero · luce emergenza · allarme</tspan></text>
+<rect x="272" y="150" width="224" height="100" rx="6" fill="#eff6ff" stroke="#111827" stroke-width="1.6"/>
+<text x="384" y="182.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="384" dy="0">PLC standard</tspan></text>
+<text x="384" y="198.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="384" dy="0">(non di sicurezza)</tspan><tspan x="384" dy="13.75">CPU IEC 61131-3 · I/O digitali</tspan><tspan x="384" dy="13.75">contatore veloce · master CAN</tspan></text>
+<rect x="520" y="150" width="224" height="100" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="632" y="182.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="632" dy="0">Gateway web</tspan></text>
+<text x="632" y="198.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="632" dy="0">HTTPS · ruoli · log · 2FA</tspan><tspan x="632" dy="13.75">Wi-Fi locale a tempo</tspan><tspan x="632" dy="13.75">nessuna scrittura sicurezza</tspan></text>
+<rect x="768" y="150" width="240" height="100" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="888" y="182.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="888" dy="0">Router industriale 5G</tspan></text>
+<text x="888" y="198.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="888" dy="0">SIM · firewall · VPN in uscita</tspan><tspan x="888" dy="13.75">nessuna porta aperta</tspan><tspan x="888" dy="13.75">da Internet</tspan></text>
+<polyline points="496,200 520,200" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<polyline points="520,200 496,200" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<text x="508" y="194" font-size="9" text-anchor="middle" font-weight="600" fill="#7e22ce"><tspan x="508" dy="0">Modbus</tspan></text>
+<polyline points="744,200 768,200" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<polyline points="768,200 744,200" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<rect x="272" y="290" width="224" height="74" rx="6" fill="#ecfdf5" stroke="#111827" stroke-width="1.6"/>
+<text x="384" y="316.9625" font-size="12.9" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="384" dy="0">Catena di sicurezza</tspan></text>
+<text x="384" y="333.0875" font-size="10.9" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="384" dy="0">da SMPS 48 V · contatti ad apertura</tspan><tspan x="384" dy="13.625">positiva in serie · cablata</tspan></text>
+<rect x="520" y="290" width="224" height="74" rx="6" fill="#ecfdf5" stroke="#111827" stroke-width="1.6"/>
+<text x="632" y="316.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="632" dy="0">Modulo certificato CE</tspan></text>
+<text x="632" y="333.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="632" dy="0">bypass porte · UCM (SIL 2)</tspan><tspan x="632" dy="13.75">prosp. A.1 di EN 81-20</tspan></text>
+<rect x="768" y="290" width="240" height="74" rx="6" fill="#ecfdf5" stroke="#111827" stroke-width="1.6"/>
+<text x="888" y="319.4125" font-size="10.1" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="888" dy="0">Interblocco di potenza</tspan></text>
+<text x="888" y="332.0375" font-size="8.1" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="888" dy="0">trazione: 2 contattori OPPURE STO SIL 3</tspan><tspan x="888" dy="10.125">idraulico: 2 contattori / 2 dispositivi in serie</tspan></text>
+<polyline points="384,250 384,290" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-1d4ed8)"/>
+<text x="422" y="270" font-size="10" text-anchor="middle" font-weight="600" fill="#1d4ed8"><tspan x="422" dy="0">lettura tratti</tspan></text>
+<polyline points="496,327 520,327" fill="none" stroke="#15803d" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-15803d)"/>
+<polyline points="744,327 768,327" fill="none" stroke="#15803d" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-15803d)"/>
+<rect x="272" y="440" width="140" height="90" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="342" y="475.75" font-size="12" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="342" dy="0">Trazione</tspan></text>
+<text x="342" y="490.75" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="342" dy="0">inverter VVVF</tspan><tspan x="342" dy="12.5">2 contattori o STO</tspan></text>
+<rect x="424" y="440" width="140" height="90" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="494" y="475.75" font-size="12" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="494" dy="0">Idraulico</tspan></text>
+<text x="494" y="490.75" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="494" dy="0">soft starter</tspan><tspan x="494" dy="12.5">blocco valvole</tspan></text>
+<rect x="576" y="440" width="140" height="90" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="646" y="475.75" font-size="12" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="646" dy="0">Porte</tspan></text>
+<text x="646" y="490.75" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="646" dy="0">operatore con</tspan><tspan x="646" dy="12.5">inverter proprio</tspan></text>
+<rect x="728" y="440" width="140" height="90" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="798" y="475.75" font-size="12" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="798" dy="0">Master CAN</tspan></text>
+<text x="798" y="490.75" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="798" dy="0">125 kbit/s</tspan><tspan x="798" dy="12.5">botoniere · piani</tspan></text>
+<rect x="880" y="440" width="128" height="90" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="944" y="475.75" font-size="12" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="944" dy="0">Teleallarme</tspan></text>
+<text x="944" y="490.75" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="944" dy="0">EN 81-28</tspan><tspan x="944" dy="12.5">citofono 4G/5G</tspan></text>
+<polyline points="888,364 888,396 342,396" fill="none" stroke="#15803d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="342,396 342,440" fill="none" stroke="#15803d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-15803d)"/>
+<polyline points="494,396 494,440" fill="none" stroke="#15803d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-15803d)"/>
+<text x="540" y="392" font-size="10" text-anchor="start" font-weight="400" fill="#15803d"><tspan x="540" dy="0">abilitazione (solo uno dei due: trazione OPPURE idraulico)</tspan></text>
+<polyline points="272,200 262,200 262,420 840,420" fill="none" stroke="#1d4ed8" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="412,420 412,440" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-1d4ed8)"/>
+<polyline points="564,420 564,440" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-1d4ed8)"/>
+<polyline points="716,420 716,440" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-1d4ed8)"/>
+<polyline points="868,420 868,440" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-1d4ed8)"/>
+<text x="300" y="414" font-size="10" text-anchor="start" font-weight="400" fill="#1d4ed8"><tspan x="300" dy="0">comandi logici (24 V) dal PLC</tspan></text>
+<text x="1060" y="52" font-size="13" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="1060" dy="0">IMPIANTO</tspan></text>
+<rect x="1060" y="64" width="250" height="96" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="1185" y="94.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1185" dy="0">Macchina</tspan></text>
+<text x="1185" y="110.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1185" dy="0">TRAZIONE: argano geared + freno</tspan><tspan x="1185" dy="13.75">encoder · PTC</tspan><tspan x="1185" dy="13.75">IDRAULICO: pompa + motore + valvole</tspan></text>
+<rect x="1060" y="184" width="250" height="104" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="1185" y="218.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1185" dy="0">Vano di corsa</tspan></text>
+<text x="1185" y="234.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1185" dy="0">stop fossa/testata · finecorsa</tspan><tspan x="1185" dy="13.75">sensori zona porta · serrature piano</tspan><tspan x="1185" dy="13.75">limitatore velocità · paracadute</tspan></text>
+<rect x="1060" y="312" width="250" height="112" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="1185" y="350.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1185" dy="0">Cabina (cavo mobile)</tspan></text>
+<text x="1185" y="366.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1185" dy="0">COP + display · ispezione</tspan><tspan x="1185" dy="13.75">operatore porte · pesacarico</tspan><tspan x="1185" dy="13.75">citofono · luce emergenza</tspan></text>
+<rect x="1060" y="448" width="250" height="84" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="1185" y="479.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1185" dy="0">Piani 1…12 (… fino a 24)</tspan></text>
+<text x="1185" y="496.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1185" dy="0">botoniere su bus CAN</tspan><tspan x="1185" dy="13.75">serrature · chiave pompieri</tspan></text>
+<polyline points="1030,112 1060,112" fill="none" stroke="#111827" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-111827)"/>
+<polyline points="1030,236 1060,236" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-15803d)"/>
+<polyline points="1030,368 1060,368" fill="none" stroke="#c2410c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-c2410c)"/>
+<polyline points="1060,368 1030,368" fill="none" stroke="#c2410c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-c2410c)"/>
+<polyline points="1030,490 1060,490" fill="none" stroke="#c2410c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-c2410c)"/>
+<polyline points="1060,490 1030,490" fill="none" stroke="#c2410c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-c2410c)"/>
+<text x="1034" y="106" font-size="9" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="1034" dy="0">400 V</tspan></text>
+<text x="1340" y="52" font-size="13" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="1340" dy="0">REMOTO</tspan></text>
+<rect x="1340" y="64" width="210" height="80" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="1445" y="93.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1445" dy="0">Server portale (VPS UE)</tspan></text>
+<text x="1445" y="110.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1445" dy="0">WireGuard · reverse proxy</tspan><tspan x="1445" dy="13.75">login + 2FA · audit</tspan></text>
+<rect x="1340" y="196" width="210" height="76" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="1445" y="223.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1445" dy="0">Smartphone / PC</tspan></text>
+<text x="1445" y="240.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1445" dy="0">solo browser · HTTPS</tspan><tspan x="1445" dy="13.75">utente · manutentore</tspan></text>
+<rect x="1340" y="324" width="210" height="76" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="1445" y="351.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1445" dy="0">Smartphone in loco</tspan></text>
+<text x="1445" y="368.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1445" dy="0">Wi-Fi WPA3 del quadro</tspan><tspan x="1445" dy="13.75">chiave + PIN a tempo</tspan></text>
+<polyline points="1445,144 1445,196" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<text x="1473" y="170" font-size="11" text-anchor="middle" font-weight="600" fill="#7e22ce"><tspan x="1473" dy="0">HTTPS</tspan></text>
+<polyline points="1340,104 1325,104 1325,30 1018,30 1018,200 1008,200" fill="none" stroke="#be185d" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-be185d)"/>
+<text x="1170" y="24" font-size="10.5" text-anchor="middle" font-weight="600" fill="#be185d"><tspan x="1170" dy="0">5G → VPN WireGuard (connessione in uscita dal quadro)</tspan></text>
+<polyline points="1340,362 1330,362 1330,300 1022,300 1022,216 1008,216" fill="none" stroke="#be185d" stroke-width="2" stroke-dasharray="2 4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-be185d)"/>
+<text x="1176" y="294" font-size="10" text-anchor="middle" font-weight="400" fill="#be185d"><tspan x="1176" dy="0">Wi-Fi locale</tspan></text>
+<rect x="40" y="630" width="990" height="360" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="50" y="646" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="50" dy="0">Principi di progetto (perché è la via più economica che resta a norma)</tspan></text>
+<text x="58" y="662" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="58" dy="0">1. Il PLC è STANDARD: comanda manovra, porte, posizione, parametri. Non fa mai parte del circuito di sicurezza (T04/T05 e 02-normativa).</tspan></text>
+<text x="58" y="698" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="58" dy="0">2. Ciò che è di sicurezza resta cablato (contatti ad apertura positiva in serie) o è un modulo certificato già acquistato (bypass, UCM, rallentamento ai piani estremi).</tspan></text>
+<text x="58" y="734" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="58" dy="0">3. Il PLC LEGGE ogni tratto della catena per la diagnosi (es. «porta piano 7 aperta»): non la scavalca mai.</tspan></text>
+<text x="58" y="770" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="58" dy="0">4. Il remoto è solo diagnostica e parametri non critici: nessun comando di marcia, nessuna scrittura su parametri di sicurezza;</tspan></text>
+<text x="58" y="806" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="58" dy="0">    la modifica di parametri protetti richiede la chiave fisica nel quadro (modalità servizio).</tspan></text>
+<text x="58" y="842" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="58" dy="0">5. Da 12 a 24 fermate si aggiungono nodi di piano sullo stesso bus CAN e al più un modulo di botoniera in cabina (T16).</tspan></text>
+<text x="58" y="878" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="58" dy="0">6. Trazione e idraulico condividono PLC, bus, web, remoto, allarme: cambiano l'azionamento (T02/T03) e la catena (T04/T05).</tspan></text>
+<text x="58" y="914" font-size="12" text-anchor="start" font-weight="400" fill="#111827"><tspan x="58" dy="0">7. Modernizzazione (UNI 10411): stesso hardware; cambiano documenti, verifica straordinaria e le edizioni «del tempo» (02-normativa).</tspan></text>
+<rect x="1330" y="640" width="230" height="148" rx="4" fill="#fff" stroke="#6b7280" stroke-width="1"/>
+<text x="1338" y="655" font-size="11" text-anchor="start" font-weight="700" fill="#111827"><tspan x="1338" dy="0">Legenda</tspan></text>
+<line x1="1340" y1="672" x2="1376" y2="672" stroke="#111827" stroke-width="3" stroke-linecap="round"/>
+<text x="1384" y="676" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1384" dy="0">Potenza 400 V c.a.</tspan></text>
+<line x1="1340" y1="690" x2="1376" y2="690" stroke="#b91c1c" stroke-width="3" stroke-linecap="round"/>
+<text x="1384" y="694" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1384" dy="0">Rete a monte</tspan></text>
+<line x1="1340" y1="708" x2="1376" y2="708" stroke="#15803d" stroke-width="3" stroke-linecap="round"/>
+<text x="1384" y="712" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1384" dy="0">Catena di sicurezza 48 V c.c.</tspan></text>
+<line x1="1340" y1="726" x2="1376" y2="726" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+<text x="1384" y="730" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1384" dy="0">Logica 24 V c.c.</tspan></text>
+<line x1="1340" y1="744" x2="1376" y2="744" stroke="#c2410c" stroke-width="3" stroke-linecap="round"/>
+<text x="1384" y="748" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1384" dy="0">Bus CAN</tspan></text>
+<line x1="1340" y1="762" x2="1376" y2="762" stroke="#7e22ce" stroke-width="3" stroke-linecap="round"/>
+<text x="1384" y="766" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1384" dy="0">Ethernet / VPN</tspan></text>
+<line x1="1340" y1="780" x2="1376" y2="780" stroke="#be185d" stroke-width="3" stroke-dasharray="6 4" stroke-linecap="round"/>
+<text x="1384" y="784" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1384" dy="0">Radio (5G / Wi-Fi)</tspan></text>
+</g>
+
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="827" y="1010" width="746" height="98" fill="#fff" stroke="#111827" stroke-width="1.2"/>
+<line x1="827" y1="1042" x2="1573" y2="1042" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1010" x2="1437" y2="1108" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1075" x2="1573" y2="1075" stroke="#111827" stroke-width="0.8"/>
+<text x="837" y="1028" font-size="10" fill="#6b7280">QUADRO DI MANOVRA A PLC — PROGETTO DI FATTIBILITÀ · Carbon Stealth VCC</text>
+<text x="837" y="1062" font-size="17" font-weight="700" fill="#111827">Architettura generale a blocchi</text>
+<text x="837" y="1084" font-size="11" fill="#374151">PLC standard + catena di sicurezza cablata + moduli certificati · trazione e idraulico</text>
+<text x="837" y="1100" font-size="10" fill="#b45309">Schema di principio: non è un esecutivo. Lo firma un progettista abilitato.</text>
+<text x="1445" y="1026" font-size="10" fill="#6b7280">Tavola</text>
+<text x="1445" y="1056" font-size="26" font-weight="700">T01</text>
+<text x="1445" y="1090" font-size="10" fill="#6b7280">Rev. A · 2026-10-07</text>
+<text x="1445" y="1103" font-size="10" fill="#6b7280">A3 · senza scala</text>
+</g>
+</svg>

@@ -10,6 +10,10 @@ const FALLBACK = {
   reviewBlocked: "$1 requests blocked so far",
   allowedFor: "Allowed · $1 min left", hiddenHere: "Elements you hid here: $1 · Undo the last",
   conn_block: "Block here", conn_blocked: "Blocked here", conn_hint: "Block what this site loads from $1",
+  receiptText: "$1 requests blocked · $2 cookie banners answered · about $3 of data saved (an estimate)",
+  shareCopied: "Link copied",
+  modeBasicDesc: "Network blocking only: the lightest, almost nothing breaks. YouTube keeps its own protection.",
+  managedNote: "Set by your organization",
 };
 
 const toggle = $("toggle");
@@ -22,8 +26,7 @@ const savedTime = $("savedTime");
 const siteHost = $("siteHost");
 const allowToggle = $("allowToggle");
 const allowLabel = $("allowLabel");
-const cosmToggle = $("cosmToggle");
-const cosmLabel = $("cosmLabel");
+const modeSel = $("modeSel"); // 6.0: "Protection here"
 const listDot = $("listDot");
 
 let currentHost = null;
@@ -72,15 +75,27 @@ function load() {
 
       listDot.textContent = t("filtersCount", [(res.filterCount || 0).toLocaleString(UI_LANG)]);
       renderPause(res.pausedUntil || 0);
+      // 6.1: an administrator's policy — what it locks is drawn disabled (the service worker refuses it anyway)
+      const locks = res.managed || {};
+      const managedLock = (el) => { el.disabled = true; el.title = t("managedNote"); };
+      if (locks.pause) { managedLock(toggle); managedLock(pauseBtn); }
 
       $("reportBtn").hidden = !currentHost;
       if (currentHost) {
         siteHost.textContent = currentHost;
         allowToggle.checked = !res.allowed;
         setAllowLabel(!res.allowed);
-        cosmToggle.checked = !res.noCosmetics;
-        setCosmLabel(!res.noCosmetics);
-        cosmToggle.disabled = !!res.allowed;
+        modeSel.value = res.effectiveMode || "standard";
+        modeSel.disabled = !!res.allowed;
+        const covered = (list) => (list || []).some((d) => currentHost === d || currentHost.endsWith("." + d));
+        if (locks.exceptions || covered(locks.siteModes)) managedLock(modeSel);
+        // the policy allows this site (no taking it out), or users may not allow sites at all
+        if ((res.allowed && covered(locks.allowlist)) || (!res.allowed && locks.exceptions)) managedLock(allowToggle);
+        // Basic: nothing of ours runs on the page — no picker, and what it hid would not apply
+        if (res.effectiveMode === "basic") {
+          $("pickBtn").disabled = true;
+          $("pickBtn").title = t("modeBasicDesc");
+        }
         // allowed for a while (the repair page's "for 1 hour"): the label says how long is left
         if (res.allowed && res.allowedUntil > Date.now()) {
           allowLabel.textContent = t("allowedFor", [String(Math.max(1, Math.round((res.allowedUntil - Date.now()) / 60000)))]);
@@ -88,16 +103,19 @@ function load() {
       } else {
         siteHost.textContent = t("thisPage");
         allowToggle.disabled = true;
-        cosmToggle.disabled = true;
+        modeSel.value = res.mode || "standard"; // no site here (a browser page): the level for every site
+        modeSel.disabled = true;
       }
 
       // what the picker hid on this site: one click brings the last one back
       renderUndo(currentHost ? res.hiddenHere || 0 : 0);
       siteBlocked = Array.isArray(res.siteBlocked) ? res.siteBlocked : [];
-      // ★ преди мерене (заема място в долната лента), картата след него (покрива каквото покрива)
+      // ★ и „Сподели“ преди мерене (заемат място в долната лента), картата след него (покрива каквото покрива)
       renderRate(res.review);
+      $("share").hidden = !res.shareUrl;
+      shareUrl = res.shareUrl || "";
       fitPopup();
-      showReviewCard(res.review, res.blockedTotal);
+      showCard(res);
     });
     loadLog();
   });
@@ -164,7 +182,7 @@ function fitPopup() {
   if (document.body.getBoundingClientRect().bottom > 600) root.classList.add("tight");
   const foot = document.querySelector(".foot");
   foot.classList.remove("compact");
-  const labels = [...foot.querySelectorAll(".links a:not([hidden]) span")];
+  const labels = [...foot.querySelectorAll(".links > :not([hidden]) span")];
   if (labels.some((s) => s.scrollWidth > s.clientWidth + 1)) {
     foot.classList.add("compact");
     for (const s of labels) if (!s.parentElement.title) s.parentElement.title = s.textContent.trim();
@@ -183,10 +201,6 @@ function fitPopup() {
 
 function setAllowLabel(blocking) {
   allowLabel.textContent = blocking ? t("blocking") : t("allowed");
-}
-
-function setCosmLabel(on) {
-  cosmLabel.textContent = on ? t("on") : t("off");
 }
 
 toggle.addEventListener("change", () => {
@@ -209,11 +223,11 @@ allowToggle.addEventListener("change", () => {
   chrome.runtime.sendMessage({ type: "setAllow", host: currentHost, allow: !blocking }, reloadActiveTab);
 });
 
-cosmToggle.addEventListener("change", () => {
+// 6.0: "Protection here" — the site's mode (Basic replaced "Hide ad boxes here: Off");
+// the page reloads so the new scripts (or none) apply
+modeSel.addEventListener("change", () => {
   if (!currentHost) return;
-  const on = cosmToggle.checked;
-  setCosmLabel(on);
-  chrome.runtime.sendMessage({ type: "setNoCosmetics", host: currentHost, off: !on }, reloadActiveTab);
+  chrome.runtime.sendMessage({ type: "setSiteMode", host: currentHost, mode: modeSel.value }, reloadActiveTab);
 });
 
 const pauseBtn = $("pauseBtn");
@@ -266,6 +280,17 @@ function renderConnections(rows) {
     name.className = "host";
     name.textContent = host;
     name.title = host;
+    // who is behind it (popup/companies.js; an unknown host gets no label, never a guess)
+    const cell = document.createElement("span");
+    cell.className = "cell";
+    cell.append(name);
+    const company = globalThis.SA_COMPANIES ? SA_COMPANIES.companyOf(host) : "";
+    if (company) {
+      const co = document.createElement("span");
+      co.className = "co";
+      co.textContent = company;
+      cell.append(co);
+    }
     const cnt = document.createElement("span");
     cnt.className = "type";
     cnt.textContent = n ? "×" + n.toLocaleString(UI_LANG) : "";
@@ -286,7 +311,7 @@ function renderConnections(rows) {
         if (r && r.ok) { siteBlocked = r.hosts; show(block); }
       });
     });
-    if (n) li.append(name, cnt, btn); else li.append(name, btn);
+    if (n) li.append(cell, cnt, btn); else li.append(cell, btn);
     ul.appendChild(li);
   }
 }
@@ -330,12 +355,49 @@ $("reportBtn").addEventListener("click", () => {
   window.close();
 });
 
-// Отзив в Chrome Web Store: тиха ★ в долната лента + най-много два пъти карта след реална полза.
-// Кога — решава service worker-ът (reviewDue в background.js), тук само се рисува; Настройки махат
-// и двете. Нищо не се праща никъде: линкът отваря страницата с отзивите в магазина, нищо повече.
-const review = $("review");
-let reviewShown = false;
+// Листовете отдолу — отзивът, „Сайтовете се чупят?“ и месечната разписка: най-много ЕДИН на отваряне,
+// отзивът с предимство (кога — решава service worker-ът: reviewDue / helpDue / receiptOf; тук само
+// се рисува). Покритото от листа става inert (WCAG 2.4.11), фокусът се връща в съдържанието.
+let sheetShown = false; // load() се вика пак след пауза — веднъж на отваряне
+let openSheetEl = null;
 
+function openSheet(el) {
+  sheetShown = true;
+  openSheetEl = el;
+  el.hidden = false;
+  // offsetTop, не getBoundingClientRect: анимацията на влизане го отмества с transform
+  const top = el.offsetTop;
+  for (const x of document.querySelectorAll("main > *, .foot")) {
+    if (!x.hidden && x.getBoundingClientRect().bottom > top) x.inert = true;
+  }
+}
+
+function closeSheet() {
+  const el = openSheetEl;
+  if (!el || el.hidden || el.classList.contains("out")) return;
+  const hadFocus = el.contains(document.activeElement);
+  const done = () => {
+    el.hidden = true;
+    el.classList.remove("out");
+    document.querySelectorAll("[inert]").forEach((x) => (x.inert = false));
+    if (hadFocus) document.querySelector("main").focus({ preventScroll: true }); // не на body: Tab продължава от съдържанието
+  };
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
+  el.classList.add("out");
+  setTimeout(done, 200);
+}
+addEventListener("keydown", (e) => { if (e.key === "Escape" && openSheetEl && !openSheetEl.hidden) { e.preventDefault(); closeSheet(); } });
+
+function showCard(res) {
+  if (sheetShown) return;
+  const rv = res.review;
+  if (rv && rv.url && rv.on && rv.ask) return showReviewCard(rv, res.blockedTotal);
+  if (res.help && res.help.ask && currentHost) return showHelpCard();
+  if (res.receipt && res.receipt.ask) return showReceiptCard(res.receipt);
+}
+
+// Отзив в Chrome Web Store: тиха ★ в долната лента + най-много два пъти карта след реална полза.
+// Настройки махат и двете. Нищо не се праща никъде: линкът отваря страницата с отзивите в магазина.
 function renderRate(rv) {
   if (!rv || !rv.url || !rv.on) return;
   $("rate").href = rv.url;
@@ -343,32 +405,10 @@ function renderRate(rv) {
 }
 
 function showReviewCard(rv, blocked) {
-  if (!rv || !rv.url || !rv.on || !rv.ask || reviewShown) return; // load() се вика пак след пауза — веднъж на отваряне
-  reviewShown = true;
   $("reviewTitle").textContent = t("reviewBlocked", [blocked.toLocaleString(UI_LANG)]);
   $("reviewGo").href = rv.url;
-  review.hidden = false;
-  // каквото листът покрива, не взема фокус (WCAG 2.4.11) — става inert, докато листът е тук
-  // (offsetTop, не getBoundingClientRect: анимацията на влизане го отмества с transform)
-  const top = review.offsetTop;
-  for (const el of document.querySelectorAll("main > *, .foot")) {
-    if (!el.hidden && el.getBoundingClientRect().bottom > top) el.inert = true;
-  }
+  openSheet($("review"));
   chrome.runtime.sendMessage({ type: "review", action: "shown" });
-}
-
-function closeReview() {
-  if (review.hidden || review.classList.contains("out")) return;
-  const hadFocus = review.contains(document.activeElement);
-  const done = () => {
-    review.hidden = true;
-    review.classList.remove("out");
-    document.querySelectorAll("[inert]").forEach((el) => (el.inert = false));
-    if (hadFocus) document.querySelector("main").focus({ preventScroll: true }); // не на body: Tab продължава от съдържанието
-  };
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
-  review.classList.add("out");
-  setTimeout(done, 200);
 }
 
 // отзивът е оставен (или поне отворен) — картата повече не идва; ★ остава, ако някой иска да го смени
@@ -383,12 +423,56 @@ function goReview(e) {
 }
 $("reviewGo").addEventListener("click", goReview);
 $("rate").addEventListener("click", goReview);
-$("reviewLater").addEventListener("click", closeReview);
+$("reviewLater").addEventListener("click", closeSheet);
 $("reviewNever").addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "review", action: "done" });
-  closeReview();
+  closeSheet();
 });
-addEventListener("keydown", (e) => { if (e.key === "Escape" && !review.hidden) { e.preventDefault(); closeReview(); } });
+
+// „Сайтовете се чупят?“ — веднъж изобщо; бутонът отваря поправките за този сайт
+function showHelpCard() {
+  openSheet($("help"));
+  chrome.runtime.sendMessage({ type: "card", card: "help", action: "shown" });
+}
+$("helpGo").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("report/report.html?tab=" + currentTabId) });
+  window.close();
+});
+$("helpLater").addEventListener("click", closeSheet);
+$("helpNever").addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "card", card: "help", action: "never" });
+  closeSheet();
+});
+
+// месечната разписка — само числа от това устройство; данните са приблизителни (размерът на блокирана
+// заявка не се знае), затова текстът казва „около“
+function showReceiptCard(r) {
+  $("receiptText").textContent = t("receiptText", [
+    Math.round(r.blocked || 0).toLocaleString(UI_LANG), Math.round(r.cookies || 0).toLocaleString(UI_LANG), fmtData(r.mb || 0),
+  ]);
+  openSheet($("receipt"));
+  chrome.runtime.sendMessage({ type: "card", card: "receipt", action: "shown" });
+}
+$("receiptClose").addEventListener("click", closeSheet);
+$("receiptNever").addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "card", card: "receipt", action: "never" });
+  closeSheet();
+});
+
+// „Сподели“ — копира чистия адрес на листинга; нищо не се праща, без параметри в адреса
+let shareUrl = "";
+const shareLabel = $("share").querySelector("span");
+let shareTimer = 0;
+$("share").addEventListener("click", async () => {
+  if (!shareUrl) return;
+  try { await navigator.clipboard.writeText(shareUrl); } catch { return; }
+  if (!shareLabel.dataset.orig) shareLabel.dataset.orig = shareLabel.textContent; // a second click within the 1.6 s keeps the real label
+  clearTimeout(shareTimer);
+  shareLabel.textContent = t("shareCopied");
+  $("shareStatus").textContent = t("shareCopied");
+  fitPopup(); // the longer label may need the icon-only footer for a moment
+  shareTimer = setTimeout(() => { shareLabel.textContent = shareLabel.dataset.orig; $("shareStatus").textContent = ""; fitPopup(); }, 1600);
+});
 
 // 3D щитът (popup/shield3d.js) се зарежда чак СЛЕД първото рисуване: още една заявка към
 // разширението на критичния път струва ~40 ms до първия кадър (измерено), а статичният кадър

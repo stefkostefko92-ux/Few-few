@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1587 1122" width="1587" height="1122" role="img" aria-label="Catena di sicurezza — ascensore elettrico (trazione)">
+<title>T04 — Catena di sicurezza — ascensore elettrico (trazione)</title>
+<defs><marker id="ah-15803d" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker></defs>
+<rect width="1587" height="1122" fill="#ffffff"/>
+
+<rect x="8" y="8" width="1571" height="1106" fill="none" stroke="#111827" stroke-width="2"/>
+<rect x="14" y="14" width="1559" height="1094" fill="none" stroke="#111827" stroke-width="0.8"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="30" y="40" width="120" height="40" rx="6" fill="#ecfdf5" stroke="#15803d" stroke-width="1.6"/>
+<text x="90" y="57.875" font-size="11" text-anchor="middle" font-weight="700" fill="#15803d"><tspan x="90" dy="0">SMPS 48 V</tspan></text>
+<text x="90" y="71.625" font-size="9" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="90" dy="0">SELV · fusibile</tspan></text>
+<polyline points="90,80 90,80 170,80 170,120 190,120" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="160" y="74" font-size="10" text-anchor="start" font-weight="700" fill="#15803d"><tspan x="160" dy="0">+48 V</tspan></text>
+<text x="30" y="118" font-size="12" text-anchor="start" font-weight="700" fill="#15803d"><tspan x="30" dy="0">TRATTO A</tspan></text>
+<text x="30" y="134" font-size="9.5" text-anchor="start" font-weight="400" fill="#6b7280"><tspan x="30" dy="0">arresti e ispezione</tspan></text>
+<line x1="190" y1="120" x2="200" y2="120" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="236" y1="120" x2="246" y2="120" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="200" cy="120" r="2.4" fill="#15803d"/>
+<circle cx="236" cy="120" r="2.4" fill="#15803d"/>
+<line x1="200" y1="120" x2="236" y2="108" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="232" y1="108" x2="236" y2="108" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="218" cy="106" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="218" y="142" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="218" dy="0">STOP</tspan><tspan x="218" dy="11.875">fossa</tspan></text>
+<line x1="246" y1="120" x2="260" y2="120" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="260" y1="120" x2="270" y2="120" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="306" y1="120" x2="316" y2="120" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="270" cy="120" r="2.4" fill="#15803d"/>
+<circle cx="306" cy="120" r="2.4" fill="#15803d"/>
+<line x1="270" y1="120" x2="306" y2="108" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="302" y1="108" x2="306" y2="108" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="288" cy="106" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="288" y="142" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="288" dy="0">STOP</tspan><tspan x="288" dy="11.875">tetto</tspan></text>
+<line x1="316" y1="120" x2="330" y2="120" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="330" y1="120" x2="340" y2="120" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="376" y1="120" x2="386" y2="120" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="340" cy="120" r="2.4" fill="#15803d"/>
+<circle cx="376" cy="120" r="2.4" fill="#15803d"/>
+<line x1="340" y1="120" x2="376" y2="108" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="372" y1="108" x2="376" y2="108" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="358" cy="106" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="358" y="142" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="358" dy="0">Ispez.</tspan><tspan x="358" dy="11.875">tetto</tspan></text>
+<line x1="386" y1="120" x2="400" y2="120" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="400" y1="120" x2="410" y2="120" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="446" y1="120" x2="456" y2="120" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="410" cy="120" r="2.4" fill="#15803d"/>
+<circle cx="446" cy="120" r="2.4" fill="#15803d"/>
+<line x1="410" y1="120" x2="446" y2="108" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="442" y1="108" x2="446" y2="108" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="428" cy="106" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="428" y="142" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="428" dy="0">STOP</tspan><tspan x="428" dy="11.875">spazi</tspan></text>
+<polyline points="456,120 1010,120 1010,215 1006,215" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="30" y="213" font-size="12" text-anchor="start" font-weight="700" fill="#15803d"><tspan x="30" dy="0">TRATTO B</tspan></text>
+<text x="30" y="229" font-size="9.5" text-anchor="start" font-weight="400" fill="#6b7280"><tspan x="30" dy="0">limitatori e extracorsa</tspan></text>
+<line x1="934" y1="215" x2="944" y2="215" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="980" y1="215" x2="990" y2="215" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="944" cy="215" r="2.4" fill="#15803d"/>
+<circle cx="980" cy="215" r="2.4" fill="#15803d"/>
+<line x1="944" y1="215" x2="980" y2="203" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="976" y1="203" x2="980" y2="203" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="962" cy="201" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="962" y="237" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="962" dy="0">Limit.</tspan><tspan x="962" dy="11.875">velocità</tspan></text>
+<line x1="934" y1="215" x2="920" y2="215" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="864" y1="215" x2="874" y2="215" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="910" y1="215" x2="920" y2="215" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="874" cy="215" r="2.4" fill="#15803d"/>
+<circle cx="910" cy="215" r="2.4" fill="#15803d"/>
+<line x1="874" y1="215" x2="910" y2="203" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="906" y1="203" x2="910" y2="203" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="892" cy="201" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="892" y="237" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="892" dy="0">Para-</tspan><tspan x="892" dy="11.875">cadute</tspan></text>
+<line x1="864" y1="215" x2="850" y2="215" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="794" y1="215" x2="804" y2="215" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="840" y1="215" x2="850" y2="215" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="804" cy="215" r="2.4" fill="#15803d"/>
+<circle cx="840" cy="215" r="2.4" fill="#15803d"/>
+<line x1="804" y1="215" x2="840" y2="203" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="836" y1="203" x2="840" y2="203" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="822" cy="201" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="822" y="237" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="822" dy="0">Fine-</tspan><tspan x="822" dy="11.875">corsa alto</tspan></text>
+<line x1="794" y1="215" x2="780" y2="215" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="724" y1="215" x2="734" y2="215" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="770" y1="215" x2="780" y2="215" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="734" cy="215" r="2.4" fill="#15803d"/>
+<circle cx="770" cy="215" r="2.4" fill="#15803d"/>
+<line x1="734" y1="215" x2="770" y2="203" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="766" y1="203" x2="770" y2="203" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="752" cy="201" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="752" y="237" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="752" dy="0">Fine-</tspan><tspan x="752" dy="11.875">corsa basso</tspan></text>
+<line x1="724" y1="215" x2="710" y2="215" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="654" y1="215" x2="664" y2="215" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="700" y1="215" x2="710" y2="215" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="664" cy="215" r="2.4" fill="#15803d"/>
+<circle cx="700" cy="215" r="2.4" fill="#15803d"/>
+<line x1="664" y1="215" x2="700" y2="203" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="696" y1="203" x2="700" y2="203" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="682" cy="201" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="682" y="237" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="682" dy="0">Ammor-</tspan><tspan x="682" dy="11.875">tizzatori</tspan></text>
+<polyline points="654,215 170,215 170,310 190,310" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="30" y="308" font-size="12" text-anchor="start" font-weight="700" fill="#15803d"><tspan x="30" dy="0">TRATTO C</tspan></text>
+<text x="30" y="324" font-size="9.5" text-anchor="start" font-weight="400" fill="#6b7280"><tspan x="30" dy="0">serrature piano</tspan></text>
+<line x1="190" y1="310" x2="200" y2="310" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="236" y1="310" x2="246" y2="310" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="200" cy="310" r="2.4" fill="#15803d"/>
+<circle cx="236" cy="310" r="2.4" fill="#15803d"/>
+<line x1="200" y1="310" x2="236" y2="298" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="232" y1="298" x2="236" y2="298" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="218" cy="296" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="218" y="332" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="218" dy="0">Serr.</tspan><tspan x="218" dy="11.875">P1</tspan></text>
+<line x1="246" y1="310" x2="260" y2="310" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="260" y1="310" x2="270" y2="310" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="306" y1="310" x2="316" y2="310" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="270" cy="310" r="2.4" fill="#15803d"/>
+<circle cx="306" cy="310" r="2.4" fill="#15803d"/>
+<line x1="270" y1="310" x2="306" y2="298" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="302" y1="298" x2="306" y2="298" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="288" cy="296" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="288" y="332" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="288" dy="0">Serr.</tspan><tspan x="288" dy="11.875">P2</tspan></text>
+<line x1="316" y1="310" x2="330" y2="310" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="330" y1="310" x2="340" y2="310" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="376" y1="310" x2="386" y2="310" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="340" cy="310" r="2.4" fill="#15803d"/>
+<circle cx="376" cy="310" r="2.4" fill="#15803d"/>
+<line x1="340" y1="310" x2="376" y2="298" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="372" y1="298" x2="376" y2="298" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="358" cy="296" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="358" y="332" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="358" dy="0">Serr.</tspan><tspan x="358" dy="11.875">P3</tspan></text>
+<line x1="386" y1="310" x2="400" y2="310" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<rect x="400" y="296" width="56" height="28" rx="3" fill="#fff" stroke="#15803d" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="428" y="315" font-size="14" text-anchor="middle" font-weight="700" fill="#15803d"><tspan x="428" dy="0">…</tspan></text>
+<text x="428" y="340" font-size="9" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="428" dy="0">altre</tspan></text>
+<line x1="456" y1="310" x2="470" y2="310" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<line x1="470" y1="310" x2="480" y2="310" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="516" y1="310" x2="526" y2="310" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="480" cy="310" r="2.4" fill="#15803d"/>
+<circle cx="516" cy="310" r="2.4" fill="#15803d"/>
+<line x1="480" y1="310" x2="516" y2="298" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="512" y1="298" x2="516" y2="298" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="498" cy="296" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="498" y="332" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="498" dy="0">Serr.</tspan><tspan x="498" dy="11.875">P12</tspan></text>
+<line x1="526" y1="310" x2="540" y2="310" stroke="#15803d" stroke-width="2.4" stroke-linecap="round"/>
+<rect x="540" y="296" width="56" height="28" rx="3" fill="#fff" stroke="#15803d" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="568" y="315" font-size="14" text-anchor="middle" font-weight="700" fill="#15803d"><tspan x="568" dy="0">…</tspan></text>
+<text x="568" y="340" font-size="9" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="568" dy="0">…P24</tspan></text>
+<polyline points="596,310 1010,310 1010,405 1006,405" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="30" y="403" font-size="12" text-anchor="start" font-weight="700" fill="#15803d"><tspan x="30" dy="0">TRATTO D</tspan></text>
+<text x="30" y="419" font-size="9.5" text-anchor="start" font-weight="400" fill="#6b7280"><tspan x="30" dy="0">porta cabina</tspan></text>
+<line x1="934" y1="405" x2="944" y2="405" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="980" y1="405" x2="990" y2="405" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="944" cy="405" r="2.4" fill="#15803d"/>
+<circle cx="980" cy="405" r="2.4" fill="#15803d"/>
+<line x1="944" y1="405" x2="980" y2="393" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<line x1="976" y1="393" x2="980" y2="393" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<circle cx="962" cy="391" r="2.8" fill="none" stroke="#15803d" stroke-width="1"/>
+<text x="962" y="427" font-size="9.5" text-anchor="middle" font-weight="400" fill="#111827"><tspan x="962" dy="0">Porta</tspan><tspan x="962" dy="11.875">cabina</tspan></text>
+<circle cx="1010" cy="120" r="3" fill="#1d4ed8"/>
+<polyline points="1010,120 1090,120" fill="none" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="3 3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-1d4ed8)"/>
+<rect x="1096" y="104" width="120" height="32" rx="4" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<text x="1156" y="125" font-size="11" text-anchor="middle" font-weight="700" fill="#1d4ed8"><tspan x="1156" dy="0">I01 · tratto A</tspan></text>
+<circle cx="1010" cy="215" r="3" fill="#1d4ed8"/>
+<polyline points="1010,215 1090,215" fill="none" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="3 3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-1d4ed8)"/>
+<rect x="1096" y="199" width="120" height="32" rx="4" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<text x="1156" y="220" font-size="11" text-anchor="middle" font-weight="700" fill="#1d4ed8"><tspan x="1156" dy="0">I02 · tratto B</tspan></text>
+<circle cx="1010" cy="310" r="3" fill="#1d4ed8"/>
+<polyline points="1010,310 1090,310" fill="none" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="3 3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-1d4ed8)"/>
+<rect x="1096" y="294" width="120" height="32" rx="4" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<text x="1156" y="315" font-size="11" text-anchor="middle" font-weight="700" fill="#1d4ed8"><tspan x="1156" dy="0">I03 · tratto C</tspan></text>
+<circle cx="1010" cy="405" r="3" fill="#1d4ed8"/>
+<polyline points="1010,405 1090,405" fill="none" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="3 3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-1d4ed8)"/>
+<rect x="1096" y="389" width="120" height="32" rx="4" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<text x="1156" y="410" font-size="11" text-anchor="middle" font-weight="700" fill="#1d4ed8"><tspan x="1156" dy="0">I04 · tratto D</tspan></text>
+<text x="1096" y="82" font-size="11" text-anchor="start" font-weight="700" fill="#1d4ed8"><tspan x="1096" dy="0">PLC: lettura per diagnosi</tspan></text>
+<text x="1096" y="96" font-size="9.5" text-anchor="start" font-weight="400" fill="#6b7280"><tspan x="1096" dy="0">(interfaccia isolata, T06)</tspan></text>
+<rect x="176" y="260" width="850" height="195" rx="8" fill="none" stroke="#b45309" stroke-width="1.3" stroke-dasharray="7 4"/>
+<text x="190" y="256" font-size="10.5" text-anchor="start" font-weight="700" fill="#b45309"><tspan x="190" dy="0">zona ponticellabile: SOLO dal modulo CE e dal BYPASS di manutenzione</tspan></text>
+<polyline points="934,405 170,405 170,500" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="30" y="500" width="280" height="70" rx="6" fill="#ecfdf5" stroke="#15803d" stroke-width="1.6"/>
+<text x="170" y="532.625" font-size="12" text-anchor="middle" font-weight="700" fill="#15803d"><tspan x="170" dy="0">Interfaccia di sicurezza</tspan></text>
+<text x="170" y="547.625" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="170" dy="0">relè a contatti guidati o uscite del modulo CE</tspan></text>
+<polyline points="170,570 170,610" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-15803d)"/>
+<rect x="30" y="610" width="460" height="70" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="260" y="642.625" font-size="12" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="260" dy="0">KM1 · KM2 · KB1 · KB2 · STO</tspan></text>
+<text x="260" y="657.625" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="260" dy="0">tolgono coppia e chiudono i freni; retroazione al modulo e al PLC</tspan></text>
+<rect x="520" y="500" width="330" height="94" rx="6" fill="#fff" stroke="#15803d" stroke-width="1.6"/>
+<text x="685" y="530.875" font-size="12" text-anchor="middle" font-weight="700" fill="#15803d"><tspan x="685" dy="0">Modulo certificato CE</tspan></text>
+<text x="685" y="545.875" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="685" dy="0">anticipo apertura e rilivellamento</tspan><tspan x="685" dy="12.5">2 sensori di zona porta · esame di tipo</tspan><tspan x="685" dy="12.5">SIL minimo: prospetto A.1 (02-normativa)</tspan></text>
+<rect x="880" y="500" width="250" height="94" rx="6" fill="#fff7ed" stroke="#b45309" stroke-width="1.6"/>
+<text x="1005" y="530.875" font-size="12" text-anchor="middle" font-weight="700" fill="#b45309"><tspan x="1005" dy="0">BYPASS di manutenzione</tspan></text>
+<text x="1005" y="545.875" font-size="10" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1005" dy="0">nel quadro, solo ispezione/emergenza</tspan><tspan x="1005" dy="12.5">cicalino e luce lampeggiante</tspan><tspan x="1005" dy="12.5">sotto la cabina</tspan></text>
+<polyline points="685,500 685,455" fill="none" stroke="#b45309" stroke-width="1.8" stroke-dasharray="5 3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-b45309)"/>
+<polyline points="1005,500 1005,455" fill="none" stroke="#b45309" stroke-width="1.8" stroke-dasharray="5 3" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-b45309)"/>
+<rect x="30" y="720" width="1500" height="260" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="40" y="736" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="40" dy="0">Punti di norma da rispettare (solo numero e valore; testo e dettagli: 02-normativa e base privata)</tspan></text>
+<text x="46" y="752" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">EN 81-20:2020 5.11.2.2.1 — contatto di sicurezza: IP ≥ 4X, ≥ 10⁶ cicli · 5.11.2.2.2 — apertura positiva · 5.11.2.2.3 — isolamento 250 V (IP4X) / 500 V.</tspan></text>
+<text x="46" y="780" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">5.11.2.1.2 — collegamenti in parallelo e prelievi di informazioni dalla catena: la lettura del PLC (I01…I04) va fatta con interfaccia isolata e guasto analizzato</tspan></text>
+<text x="46" y="808" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">             secondo 5.11.2.3.2 e 5.11.2.3.3, oppure con modulo di monitoraggio certificato (scelta di progetto, da far validare).</tspan></text>
+<text x="46" y="836" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">5.12.1.4 — porte aperte in zona di sbloccaggio: livellamento ≤ 0,80 m/s, rilivellamento ≤ 0,30 m/s · 5.12.1.8 — bypass di manutenzione, ≥ 55 dB(A) a 1 m sotto la cabina.</tspan></text>
+<text x="46" y="864" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">5.12.1.9 — controllo dei contatti porta in zona di sbloccaggio · 5.12.1.11 — dispositivi di arresto (EN 60947-5-5), vietati in cabina (5.12.1.11.3).</tspan></text>
+<text x="46" y="892" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">5.11.2.6 — PESSRAL: SIL minimo dal prospetto A.1; EN 81-50:2020 5.15/5.16 · 5.11.2.3.5 — targa e n° del certificato di esame di tipo sui dispositivi con elettronica.</tspan></text>
+<text x="46" y="920" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">5.11.1.2 — elenco dei guasti da considerare (a…j): l'analisi di guasto dell'intero quadro va nel fascicolo tecnico.</tspan></text>
+<rect x="1300" y="500" width="230" height="76" rx="4" fill="#fff" stroke="#6b7280" stroke-width="1"/>
+<text x="1308" y="515" font-size="11" text-anchor="start" font-weight="700" fill="#111827"><tspan x="1308" dy="0">Legenda</tspan></text>
+<line x1="1310" y1="532" x2="1346" y2="532" stroke="#15803d" stroke-width="3" stroke-linecap="round"/>
+<text x="1354" y="536" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1354" dy="0">Catena 48 V c.c. (cablata)</tspan></text>
+<line x1="1310" y1="550" x2="1346" y2="550" stroke="#1d4ed8" stroke-width="3" stroke-dasharray="3 3" stroke-linecap="round"/>
+<text x="1354" y="554" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1354" dy="0">Lettura per diagnosi</tspan></text>
+<line x1="1310" y1="568" x2="1346" y2="568" stroke="#b45309" stroke-width="3" stroke-dasharray="5 3" stroke-linecap="round"/>
+<text x="1354" y="572" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1354" dy="0">Ponticello consentito</tspan></text>
+</g>
+
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="827" y="1010" width="746" height="98" fill="#fff" stroke="#111827" stroke-width="1.2"/>
+<line x1="827" y1="1042" x2="1573" y2="1042" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1010" x2="1437" y2="1108" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1075" x2="1573" y2="1075" stroke="#111827" stroke-width="0.8"/>
+<text x="837" y="1028" font-size="10" fill="#6b7280">QUADRO DI MANOVRA A PLC — PROGETTO DI FATTIBILITÀ · Carbon Stealth VCC</text>
+<text x="837" y="1062" font-size="17" font-weight="700" fill="#111827">Catena di sicurezza — ascensore elettrico (trazione)</text>
+<text x="837" y="1084" font-size="11" fill="#374151">Contatti ad apertura positiva in serie · bypass porte solo con modulo certificato · il PLC legge, non scavalca</text>
+<text x="837" y="1100" font-size="10" fill="#b45309">Schema di principio: non è un esecutivo. Lo firma un progettista abilitato.</text>
+<text x="1445" y="1026" font-size="10" fill="#6b7280">Tavola</text>
+<text x="1445" y="1056" font-size="26" font-weight="700">T04</text>
+<text x="1445" y="1090" font-size="10" fill="#6b7280">Rev. A · 2026-10-07</text>
+<text x="1445" y="1103" font-size="10" fill="#6b7280">A3 · senza scala</text>
+</g>
+</svg>

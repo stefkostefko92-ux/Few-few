@@ -9,14 +9,37 @@ import type { SeededRng } from "../../kernel/rng.js";
 
 /**
  * Бинго (Bingo) — N-player broadcast draw (§4.17). Each player gets a 5x5 card
- * (center free). A shared, pre-seeded draw order reveals numbers 1..75; the
- * only action is DRAW (any seat may advance, or a bot/host). A player wins when
- * a full row, column, or diagonal is marked; simultaneous bingos on the same
- * ball all win. Cards are public, but the FUTURE draw order is not: redact
- * strips `drawOrder` so no client can precompute the winner (§7.2).
+ * (center free). Числата 1..75 се теглят от СЪРВЪРА по таймер (`serverAction`
+ * — стаята прилага `DRAW` на всеки BINGO_DRAW_MS); никой играч не тегли.
+ *
+ * Всеки играч САМ маркира изтеглените числа на своята карта (`MARK`) — сървърът
+ * валидира, че числото е изтеглено, на неговата карта е и не е в наказание; по
+ * избор `AUTO` включва помощно автомаркиране (само маркирането — викането остава
+ * ръчно). Играчът ВИКА „Бинго!“ (`BINGO`): сървърът проверява линия (ред, колона
+ * или диагонал) от НЕГОВИТЕ маркировки — сегашното печелившо правило.
+ *
+ * Вярно „Бинго!“ спира тегленето; до следващия тик (BINGO_CLOSE_MS) и други с
+ * вярна линия могат да извикат — всички верни викания на същото число печелят
+ * (както при едновременно бинго досега). Невярно „Бинго!“ → наказание: играчът
+ * пропуска следващите PENALTY_DRAWS тегления — не може да маркира и вика, а
+ * числата, изтеглени през наказанието, НЕ важат за него (не може да ги маркира
+ * и по-късно). Изчерпан барабан без вярно бинго → реми за всички.
+ *
+ * Действията на играчите носят `seat`; `validate` го сверява с истинското място
+ * (сокетът), така че никой не може да маркира чужда карта. `legalActions` е
+ * празно за всички (иначе стаята би „дала хода“ на един играч и пуснала часовник
+ * за него); ботовете действат чрез `bot()` в паузата преди следващото теглене.
+ * Cards and marks are public, but the FUTURE draw order is not: redact strips
+ * `drawOrder` so no client can precompute the winner (§7.2).
  */
 
 const FREE = -1;
+/** Интервал между две тегления (ms). */
+export const BINGO_DRAW_MS = 4000;
+/** Прозорец след първото вярно „Бинго!“, в който и други могат да извикат (ms). */
+export const BINGO_CLOSE_MS = 2500;
+/** Невярно „Бинго!“ → пропуск на толкова тегления. */
+export const BINGO_PENALTY_DRAWS = 3;
 
 export interface BingoState {
   cards: number[][]; // per seat: 25 cells (index 12 = FREE)
@@ -24,15 +47,37 @@ export interface BingoState {
   drawn: number[]; // numbers drawn so far
   pos: number; // index into drawOrder
   seats: number;
-  winners: Seat[]; // every seat that completed a line on the winning ball
+  /** Маркирани клетки (индекси 0..24, без свободното поле) — по място. */
+  marks: number[][];
+  /** Помощно автомаркиране, включено от играча. */
+  auto: boolean[];
+  /** Наказание: мястото е блокирано, докато `drawn.length < blockedUntil[seat]`. */
+  blockedUntil: number[];
+  /** Числа, изтеглени по време на наказание — не важат за това място. */
+  voided: number[][];
+  /** Брой неверни викания (за показване). */
+  falseCalls: number[];
+  /** Вярно „Бинго!“ е извикано — тегленето спря, тече прозорецът за още викания. */
+  closing: boolean;
+  winners: Seat[]; // every seat with a valid call on the winning ball
   winner: Seat | null; // first winner (kept for compatibility)
   done: boolean;
 }
 
-export type BingoAction = { type: "DRAW" };
+export type BingoAction =
+  | { type: "DRAW" } // само сървърът (serverAction)
+  | { type: "CLOSE" } // само сървърът (serverAction)
+  | { type: "MARK"; seat: Seat; cell: number }
+  | { type: "BINGO"; seat: Seat }
+  | { type: "AUTO"; seat: Seat; on: boolean };
 export type BingoEvent =
   | { type: "DRAW"; number: number }
-  | { type: "WIN"; seat: Seat };
+  | { type: "MARK"; seat: Seat; cell: number }
+  | { type: "AUTO"; seat: Seat; on: boolean }
+  | { type: "BINGO_CALL"; seat: Seat; valid: boolean }
+  | { type: "PENALTY"; seat: Seat; until: number }
+  | { type: "WIN"; seat: Seat }
+  | { type: "NO_WINNER" };
 
 const LINES: number[][] = buildLines();
 
@@ -56,6 +101,49 @@ function makeCard(rng: SeededRng): number[] {
   return card;
 }
 
+const isSeat = (state: BingoState, s: unknown): s is Seat =>
+  typeof s === "number" && Number.isInteger(s) && s >= 0 && s < state.seats;
+
+/** Мястото е в наказание (пропуска тегления). */
+export function bingoBlocked(state: BingoState, seat: Seat): boolean {
+  return state.drawn.length < (state.blockedUntil[seat] ?? 0);
+}
+
+/** Може ли `seat` да маркира клетка `cell` сега. */
+function canMark(state: BingoState, seat: Seat, cell: number): boolean {
+  if (state.done || bingoBlocked(state, seat)) return false;
+  if (!Number.isInteger(cell) || cell < 0 || cell >= 25 || cell === 12) return false;
+  const n = state.cards[seat]![cell]!;
+  if (!state.drawn.includes(n)) return false;
+  if (state.voided[seat]!.includes(n)) return false;
+  return !state.marks[seat]!.includes(cell);
+}
+
+/** Има ли `seat` пълна линия от СОБСТВЕНИТЕ си маркировки. */
+export function bingoHasLine(state: BingoState, seat: Seat): boolean {
+  const marked = new Set(state.marks[seat]);
+  marked.add(12);
+  return LINES.some((line) => line.every((cell) => marked.has(cell)));
+}
+
+function canCall(state: BingoState, seat: Seat): boolean {
+  if (state.done || bingoBlocked(state, seat)) return false;
+  return !state.winners.includes(seat);
+}
+
+function cloneState(s: BingoState): BingoState {
+  return {
+    ...s,
+    drawn: s.drawn.slice(),
+    marks: s.marks.map((m) => m.slice()),
+    auto: s.auto.slice(),
+    blockedUntil: s.blockedUntil.slice(),
+    voided: s.voided.map((v) => v.slice()),
+    falseCalls: s.falseCalls.slice(),
+    winners: s.winners.slice(),
+  };
+}
+
 export const bingoEngine: GameEngine<BingoState, BingoAction, BingoEvent> = {
   init(opts: InitOpts, rng: SeededRng): BingoState {
     const seats = Math.min(Math.max(opts.seats, 1), 8);
@@ -67,54 +155,134 @@ export const bingoEngine: GameEngine<BingoState, BingoAction, BingoEvent> = {
       drawn: [],
       pos: 0,
       seats,
+      marks: Array.from({ length: seats }, () => []),
+      auto: new Array<boolean>(seats).fill(false),
+      blockedUntil: new Array<number>(seats).fill(0),
+      voided: Array.from({ length: seats }, () => []),
+      falseCalls: new Array<number>(seats).fill(0),
+      closing: false,
       winners: [],
       winner: null,
       done: false,
     };
   },
 
-  legalActions(state, seat) {
-    // Any seat on turn 0 may advance the shared draw; we keep it to seat 0 so the
-    // realtime host / a single bot drives draws deterministically.
-    if (state.done || seat !== 0) return [];
-    return state.pos < state.drawOrder.length ? [{ type: "DRAW" }] : [];
+  // Никой играч няма „ход“ — всички действат едновременно чрез `validate`.
+  legalActions: () => [],
+
+  validate(state, seat, action) {
+    if (state.done || typeof action !== "object" || action === null) return false;
+    const a = action as { type?: unknown; seat?: unknown; cell?: unknown; on?: unknown };
+    // DRAW/CLOSE идват само от сървъра; клиентът действа само за своето място.
+    if (a.seat !== seat || !isSeat(state, a.seat)) return false;
+    if (a.type === "MARK") return typeof a.cell === "number" && canMark(state, seat, a.cell);
+    if (a.type === "BINGO") return canCall(state, seat);
+    if (a.type === "AUTO") return typeof a.on === "boolean" && a.on !== state.auto[seat];
+    return false;
+  },
+
+  serverAction(state) {
+    if (state.done) return null;
+    if (state.closing || state.pos >= state.drawOrder.length) {
+      return { action: { type: "CLOSE" }, delayMs: BINGO_CLOSE_MS };
+    }
+    return { action: { type: "DRAW" }, delayMs: BINGO_DRAW_MS };
   },
 
   reduce(state, action) {
     if (state.done) throw new IllegalActionError("Game over");
-    if (action.type !== "DRAW") throw new IllegalActionError("Only DRAW");
-    if (state.pos >= state.drawOrder.length) throw new IllegalActionError("Bag empty");
+    const next = cloneState(state);
+    const events: BingoEvent[] = [];
 
-    const next: BingoState = { ...state, drawn: state.drawn.slice() };
-    const number = next.drawOrder[next.pos]!;
-    next.drawn.push(number);
-    next.pos += 1;
-    const events: BingoEvent[] = [{ type: "DRAW", number }];
+    switch (action.type) {
+      case "DRAW": {
+        if (next.closing) throw new IllegalActionError("Round is closing");
+        if (next.pos >= next.drawOrder.length) throw new IllegalActionError("Bag empty");
+        const number = next.drawOrder[next.pos]!;
+        // Числото пада по време на наказанието ли е → не важи за наказания.
+        for (let s = 0; s < next.seats; s++) {
+          if (bingoBlocked(next, s)) next.voided[s]!.push(number);
+        }
+        next.drawn.push(number);
+        next.pos += 1;
+        events.push({ type: "DRAW", number });
+        // Помощно автомаркиране — само ако мястото не е в наказание.
+        for (let s = 0; s < next.seats; s++) {
+          if (!next.auto[s]) continue;
+          const cell = next.cards[s]!.indexOf(number);
+          if (cell >= 0 && canMark(next, s, cell)) {
+            next.marks[s]!.push(cell);
+            events.push({ type: "MARK", seat: s, cell });
+          }
+        }
+        return { state: next, events };
+      }
+      case "CLOSE": {
+        if (!next.closing && next.pos < next.drawOrder.length) {
+          throw new IllegalActionError("Nothing to close");
+        }
+        next.done = true;
+        if (next.winners.length === 0) events.push({ type: "NO_WINNER" });
+        return { state: next, events };
+      }
+      case "MARK": {
+        if (!isSeat(next, action.seat) || !canMark(next, action.seat, action.cell)) {
+          throw new IllegalActionError("Cannot mark");
+        }
+        next.marks[action.seat]!.push(action.cell);
+        events.push({ type: "MARK", seat: action.seat, cell: action.cell });
+        return { state: next, events };
+      }
+      case "AUTO": {
+        if (!isSeat(next, action.seat)) throw new IllegalActionError("Bad seat");
+        next.auto[action.seat] = action.on === true;
+        events.push({ type: "AUTO", seat: action.seat, on: next.auto[action.seat]! });
+        return { state: next, events };
+      }
+      case "BINGO": {
+        const seat = action.seat;
+        if (!isSeat(next, seat) || !canCall(next, seat)) throw new IllegalActionError("Cannot call");
+        const valid = bingoHasLine(next, seat);
+        events.push({ type: "BINGO_CALL", seat, valid });
+        if (valid) {
+          next.winners.push(seat);
+          if (next.winner === null) next.winner = seat;
+          next.closing = true; // тегленето спира; другите имат прозорец до CLOSE
+          events.push({ type: "WIN", seat });
+          return { state: next, events };
+        }
+        next.falseCalls[seat] = (next.falseCalls[seat] ?? 0) + 1;
+        next.blockedUntil[seat] = next.drawn.length + BINGO_PENALTY_DRAWS;
+        events.push({ type: "PENALTY", seat, until: next.blockedUntil[seat]! });
+        return { state: next, events };
+      }
+      default:
+        throw new IllegalActionError("Unknown bingo action");
+    }
+  },
 
-    // Check every seat for a completed line — simultaneous bingos ALL win
-    // (real bingo splits the prize; no seat-order tiebreak).
-    const drawnSet = new Set(next.drawn);
-    const winners: Seat[] = [];
-    for (let seat = 0; seat < next.seats; seat++) {
-      if (hasBingo(next.cards[seat]!, drawnSet)) winners.push(seat);
+  /** Бот: маркира едно изтеглено число на ход, а с пълна линия вика „Бинго!“.
+   *  Стаята го пуска в паузата преди следващото теглене — естествено закъснение. */
+  bot(state, seat) {
+    if (state.done || !isSeat(state, seat) || bingoBlocked(state, seat)) return null;
+    if (!state.winners.includes(seat) && bingoHasLine(state, seat)) return { type: "BINGO", seat };
+    const card = state.cards[seat]!;
+    for (let cell = 0; cell < 25; cell++) {
+      if (cell !== 12 && state.drawn.includes(card[cell]!) && canMark(state, seat, cell)) {
+        return { type: "MARK", seat, cell };
+      }
     }
-    if (winners.length > 0) {
-      for (const seat of winners) events.push({ type: "WIN", seat });
-      return { state: { ...next, winners, winner: winners[0]!, done: true }, events };
-    }
-    if (next.pos >= next.drawOrder.length) {
-      // Exhausted with no bingo (extremely unlikely) -> most marks wins (ties share).
-      const most = mostMarks(next, drawnSet);
-      for (const seat of most) events.push({ type: "WIN", seat });
-      return { state: { ...next, winners: most, winner: most[0] ?? 0, done: true }, events };
-    }
-    return { state: next, events };
+    return null;
   },
 
   isTerminal: (s) => s.done,
 
   score(state): SeatScore[] {
-    const winners = new Set(state.winners.length > 0 ? state.winners : [state.winner ?? 0]);
+    // Изчерпан барабан без вярно бинго → реми за всички.
+    if (state.winners.length === 0) {
+      return state.cards.map((_, seat) => ({ seat, result: "draw", points: 0 }));
+    }
+    const winners = new Set(state.winners);
     return state.cards.map((_, seat) => ({
       seat,
       result: winners.has(seat) ? "win" : "loss",
@@ -122,26 +290,10 @@ export const bingoEngine: GameEngine<BingoState, BingoAction, BingoEvent> = {
     }));
   },
 
-  // Cards and drawn balls are public, but the pre-seeded FUTURE sequence must
-  // never leave the server — a client could otherwise precompute the winner.
+  // Cards, marks and drawn balls are public, but the pre-seeded FUTURE sequence
+  // must never leave the server — a client could otherwise precompute the winner.
   redact: (s) => ({ ...s, drawOrder: [] }),
 };
-
-function marked(card: number[], cell: number, drawn: Set<number>): boolean {
-  return card[cell] === FREE || drawn.has(card[cell]!);
-}
-
-function hasBingo(card: number[], drawn: Set<number>): boolean {
-  return LINES.some((line) => line.every((cell) => marked(card, cell, drawn)));
-}
-
-function mostMarks(state: BingoState, drawn: Set<number>): Seat[] {
-  const counts = state.cards.map(
-    (card) => card.filter((_, cell) => marked(card, cell, drawn)).length,
-  );
-  const bestN = Math.max(...counts);
-  return counts.flatMap((n, s) => (n === bestN ? [s] : []));
-}
 
 function buildLines(): number[][] {
   const lines: number[][] = [];

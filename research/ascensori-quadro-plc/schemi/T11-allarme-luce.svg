@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1587 1122" width="1587" height="1122" role="img" aria-label="Allarme EN 81-28, luce di emergenza e batteria">
+<title>T11 — Allarme EN 81-28, luce di emergenza e batteria</title>
+<defs><marker id="ah-b45309" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b45309"/></marker><marker id="ah-be185d" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#be185d"/></marker></defs>
+<rect width="1587" height="1122" fill="#ffffff"/>
+
+<rect x="8" y="8" width="1571" height="1106" fill="none" stroke="#111827" stroke-width="2"/>
+<rect x="14" y="14" width="1559" height="1094" fill="none" stroke="#111827" stroke-width="0.8"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="40" y="100" width="200" height="80" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="140" y="137.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="140" dy="0">Caricabatterie</tspan></text>
+<text x="140" y="153.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="140" dy="0">da QF5 (a monte del generale)</tspan></text>
+<rect x="320" y="100" width="200" height="80" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="420" y="137.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="420" dy="0">Batteria</tspan></text>
+<text x="420" y="153.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="420" dy="0">12 V · ricarica automatica</tspan></text>
+<polyline points="240,140 320,140" fill="none" stroke="#b45309" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-b45309)"/>
+<rect x="620" y="60" width="280" height="70" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="760" y="84.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="760" dy="0">Luce di emergenza</tspan></text>
+<text x="760" y="101.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="760" dy="0">≥ 5 lx per 1 h (5.4.10.4)</tspan><tspan x="760" dy="13.75">inserzione automatica</tspan></text>
+<rect x="620" y="150" width="280" height="70" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="760" y="174.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="760" dy="0">Comunicatore / citofono</tspan></text>
+<text x="760" y="191.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="760" dy="0">fonia bidirezionale permanente</tspan><tspan x="760" dy="13.75">SIM propria 4G/5G (EN 81-28)</tspan></text>
+<rect x="620" y="240" width="280" height="70" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="760" y="272.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="760" dy="0">Discesa / apertura di emergenza</tspan></text>
+<text x="760" y="288.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="760" dy="0">YV4 (idraulico) · porte</tspan></text>
+<polyline points="520,140 570,140 570,95 620,95" fill="none" stroke="#b45309" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-b45309)"/>
+<polyline points="520,140 570,185 620,185" fill="none" stroke="#b45309" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-b45309)"/>
+<polyline points="570,140 570,275 620,275" fill="none" stroke="#b45309" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-b45309)"/>
+<rect x="1000" y="100" width="240" height="80" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="1120" y="130.3125" font-size="12.5" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1120" dy="0">Pulsante giallo (cabina)</tspan></text>
+<text x="1120" y="145.9375" font-size="10.5" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1120" dy="0">campana · conferma visiva + acustica</tspan><tspan x="1120" dy="13.125">(EN 81-70 5.4.4.3)</tspan></text>
+<rect x="1000" y="210" width="240" height="80" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="1120" y="240.3125" font-size="12.5" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1120" dy="0">Allarme fossa e tetto</tspan></text>
+<text x="1120" y="255.9375" font-size="10.5" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1120" dy="0">dove si può restare</tspan><tspan x="1120" dy="13.125">intrappolati (5.2.1.6)</tspan></text>
+<polyline points="1000,140 960,140 960,185 900,185" fill="none" stroke="#b45309" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-b45309)"/>
+<polyline points="1000,250 960,250 960,190" fill="none" stroke="#b45309" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="1320" y="130" width="220" height="100" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="1430" y="170.3125" font-size="12.5" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1430" dy="0">Centro di soccorso</tspan></text>
+<text x="1430" y="185.9375" font-size="10.5" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1430" dy="0">riconoscimento ≤ 5 min</tspan><tspan x="1430" dy="13.125">arrivo ≤ 1 h (B.3, informativo)</tspan></text>
+<polyline points="900,196 1320,196" fill="none" stroke="#be185d" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-be185d)"/>
+<text x="1280" y="212" font-size="11" text-anchor="middle" font-weight="600" fill="#be185d"><tspan x="1280" dy="0">5G (rete mobile)</tspan></text>
+<rect x="40" y="340" width="760" height="330" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="50" y="356" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="50" dy="0">Dimensionamento della batteria (esempio con ipotesi, da rifare con i dati reali)</tspan></text>
+<text x="56" y="376" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="56" dy="0">Ipotesi: luce di emergenza 6 W · comunicatore 10 W in conversazione + 3 W a riposo · ventola esclusa.</tspan></text>
+<text x="56" y="412" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="56" dy="0">Durata richiesta: 1 h (EN 81-20 5.4.10.4); 3 h se l'impianto deve rispettare DM 236/1989 8.1.12.</tspan></text>
+<text x="56" y="448" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="56" dy="0">Energia ≈ (6 + 13) W × 3 h = 57 Wh.</tspan></text>
+<text x="56" y="484" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="56" dy="0">Capacità = E / (V × profondità di scarica × rendimento) = 57 / (12 × 0,8 × 0,85) ≈ 7 Ah.</tspan></text>
+<text x="56" y="520" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="56" dy="0">Con margini di invecchiamento (−20 %) e temperatura: 9 … 12 Ah. Sostituzione periodica a programma.</tspan></text>
+<text x="56" y="556" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="56" dy="0">Avviso di autonomia sotto 1 h inviato al soccorso (EN 81-28:2004 4.1.3).</tspan></text>
+<text x="56" y="592" font-size="11.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="56" dy="0">Il generale aperto non toglie luce di cabina, allarme e prese (EN 81-20 5.10.5.1.1).</tspan></text>
+<rect x="830" y="340" width="720" height="330" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="840" y="356" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="840" dy="0">Punti di norma (numero, termine, valore)</tspan></text>
+<text x="846" y="376" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="846" dy="0">EN 81-28:2004 4.1.1 invio e ritentativi · 4.1.2 fine allarme solo dall'impianto · 4.1.3 batteria, avviso &lt; 1 h</tspan></text>
+<text x="846" y="412" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="846" dy="0">4.1.5 filtro allarmi indebiti (mai in manutenzione) · 4.2.1 autotest almeno ogni 3 giorni · 4.2.5 parametri protetti</tspan></text>
+<text x="846" y="448" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="846" dy="0">4.2.2 interfaccia con i circuiti di sicurezza (5.11.2.1.2 di EN 81-20) · 5.2 fonia guasta → impianto fuori servizio</tspan></text>
+<text x="846" y="484" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="846" dy="0">EN 81-20:2020 5.12.3.1 teleallarme · 5.12.3.2 citofono se corsa &gt; 30 m · 5.12.1.1.1 giallo solo per l'allarme</tspan></text>
+<text x="846" y="520" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="846" dy="0">EN 81-70:2005 5.4.4.3 pittogrammi giallo/verde · 35–65 dB(A) · DM 236/1989 8.1.12 luce ≥ 3 h; citofono 1,10–1,30 m</tspan></text>
+<text x="846" y="556" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="846" dy="0">Nota di mercato: EN 81-28:2022 non è nei testi appresi; la trasmissione cellulare è fuori ambito della norma.</tspan></text>
+<rect x="1300" y="760" width="230" height="58" rx="4" fill="#fff" stroke="#6b7280" stroke-width="1"/>
+<text x="1308" y="775" font-size="11" text-anchor="start" font-weight="700" fill="#111827"><tspan x="1308" dy="0">Legenda</tspan></text>
+<line x1="1310" y1="792" x2="1346" y2="792" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+<text x="1354" y="796" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1354" dy="0">Batteria / emergenza</tspan></text>
+<line x1="1310" y1="810" x2="1346" y2="810" stroke="#be185d" stroke-width="3" stroke-dasharray="6 4" stroke-linecap="round"/>
+<text x="1354" y="814" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1354" dy="0">Rete mobile</tspan></text>
+</g>
+
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="827" y="1010" width="746" height="98" fill="#fff" stroke="#111827" stroke-width="1.2"/>
+<line x1="827" y1="1042" x2="1573" y2="1042" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1010" x2="1437" y2="1108" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1075" x2="1573" y2="1075" stroke="#111827" stroke-width="0.8"/>
+<text x="837" y="1028" font-size="10" fill="#6b7280">QUADRO DI MANOVRA A PLC — PROGETTO DI FATTIBILITÀ · Carbon Stealth VCC</text>
+<text x="837" y="1062" font-size="17" font-weight="700" fill="#111827">Allarme EN 81-28, luce di emergenza e batteria</text>
+<text x="837" y="1084" font-size="11" fill="#374151">Il comunicatore ha SIM e batteria proprie, separato dal router 5G del quadro</text>
+<text x="837" y="1100" font-size="10" fill="#b45309">Schema di principio: non è un esecutivo. Lo firma un progettista abilitato.</text>
+<text x="1445" y="1026" font-size="10" fill="#6b7280">Tavola</text>
+<text x="1445" y="1056" font-size="26" font-weight="700">T11</text>
+<text x="1445" y="1090" font-size="10" fill="#6b7280">Rev. A · 2026-10-07</text>
+<text x="1445" y="1103" font-size="10" fill="#6b7280">A3 · senza scala</text>
+</g>
+</svg>

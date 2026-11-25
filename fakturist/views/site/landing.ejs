@@ -1,0 +1,85 @@
+<%#
+  Страница за рекламите и търсачките (src/seo/landing.ts): съдържанието е в речника `site.<page>.*`, числата от
+  плановете — от базата. Отговорът е отпред (summary), разделите са въпроси (AEO), стъпките — и HowTo в JSON-LD.
+-%>
+<%
+  const esc = (text) => String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  // „SAF-T“ не се къса на дефиса в заглавието (Дизайнера, 25.11.2026).
+  const keepWhole = (text) => esc(text).replace(/SAF-T/g, '<span class="nw">SAF-T</span>');
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dayText = (iso) => { const [y, m, d] = iso.split('-'); return lang === 'bg' ? `${d}.${m}.${y}` : `${Number(d)} ${months[Number(m) - 1]} ${y}`; };
+  const related = ['freeInvoicing', 'proforma', 'vatLedgers', 'saft', 'einvoicing2028', 'accountants', 'pricing'].filter((id) => id !== page);
+-%>
+<%- include('../partials/site-head') %>
+<main id="main">
+
+<article class="article" aria-labelledby="h1">
+  <header class="page-head">
+    <div class="wrap">
+      <h1 id="h1"><%- keepWhole(t('site.' + page + '.title')) %></h1>
+      <%# Отговорът отпред — над сгъвката, до бутона (рекламен трафик; Дизайнера, 25.11.2026). -%>
+      <p class="summary lead" data-speakable><%= t('site.' + page + '.summary', landingParams) %></p>
+      <p class="byline">
+        <span><%= t('site.einvoicing2028.byline.author') %>: <a href="<%= company.url %>" rel="author"><%= company.name %></a></span>
+        <span><%= t('site.einvoicing2028.byline.updated') %>: <time datetime="<%= contentUpdated %>"><%= dayText(contentUpdated) %></time></span>
+      </p>
+<% if (locals.registrationOpen !== false) { -%>
+      <p class="landing-cta">
+        <a class="btn" href="<%= appUrls.register %>"><%= t('site.cta.registerFree') %></a>
+        <a class="link" href="<%= urls.pricing %>"><%= t('site.landing.seePrices') %></a>
+      </p>
+<% } -%>
+    </div>
+  </header>
+
+  <div class="wrap article-grid">
+    <aside class="toc" aria-label="<%= t('site.einvoicing2028.toc') %>">
+      <p class="toc-title"><%= t('site.einvoicing2028.toc') %></p>
+      <ol>
+<% for (const s of sections) { -%>
+        <li><a href="#<%= s.id %>"><%= s.title %></a></li>
+<% } -%>
+      </ol>
+    </aside>
+
+    <div class="prose">
+<% for (const s of sections) { -%>
+      <h2 id="<%= s.id %>"><%= s.title %></h2>
+<% for (const p of s.paragraphs) { -%>
+      <p><%= p %></p>
+<% } -%>
+<% if (s.list.length > 0) { -%>
+      <ul class="included">
+<% for (const item of s.list) { -%>
+        <li><%= item %></li>
+<% } -%>
+      </ul>
+<% } -%>
+<% if (s.link && urls[s.link.page]) { -%>
+      <p><a class="link" href="<%= urls[s.link.page] %>"><%= s.link.text %></a></p>
+<% } -%>
+<% if (s.steps.length > 0) { -%>
+      <ol class="steps">
+<% for (const step of s.steps) { -%>
+        <li><%= step %></li>
+<% } -%>
+      </ol>
+<% } -%>
+<% } -%>
+<% if (locals.registrationOpen !== false) { -%>
+      <p class="landing-cta"><a class="btn" href="<%= appUrls.register %>"><%= t('site.cta.registerFree') %></a></p>
+<% } -%>
+      <h2 id="see-also"><%= t('site.landing.seeAlso') %></h2>
+      <ul class="sources">
+<% for (const id of related) { -%>
+        <li><a class="link" href="<%= urls[id] %>"><%= t('site.nav.' + id) %></a></li>
+<% } -%>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<%- include('../partials/site-faq') %>
+<%- include('../partials/site-cta') %>
+</main>
+<%- include('../partials/site-foot') %>
