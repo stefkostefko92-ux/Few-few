@@ -29,7 +29,7 @@ const schema = z
     HMAC_KEY: hexKey('HMAC_KEY'),
     TOTP_ISSUER: z.string().min(1).max(40).default('Korpora'),
     SMTP_HOST: optionalText(),
-    /** Brevo приема 2525 — Hetzner блокира 25/465/587. */
+    /** Brevo приема 2525 (STARTTLS). */
     SMTP_PORT: z.coerce.number().int().positive().default(2525),
     SMTP_SECURE: flag.default('false'),
     SMTP_USER: optionalText(),

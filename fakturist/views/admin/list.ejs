@@ -1,0 +1,26 @@
+<%- include('../partials/app-head', { title: resource.label[lang] }) %>
+<h1><%= resource.label[lang] %></h1>
+<%- include('_nav') %>
+<form method="get" class="search-row" role="search">
+  <label class="sr-only" for="q"><%= t('admin.search') %></label>
+  <input id="q" name="q" value="<%= q %>" placeholder="<%= resource.search.join(', ') %>">
+  <button type="submit"><%= t('admin.searchButton') %></button>
+</form>
+<p class="muted"><%= t('admin.records', { count: total }) %></p>
+<div class="table-wrap"><table>
+  <thead><tr><% resource.columns.forEach((c) => { %><th scope="col"><%= c %></th><% }) %><th scope="col"><span class="sr-only"><%= t('admin.open') %></span></th></tr></thead>
+  <tbody>
+  <% rows.forEach((row) => { const id = String(row[resource.idField || 'id']); %>
+    <tr>
+      <% resource.columns.forEach((c) => { %><td class="mono"><%- include('_value', { value: row[c] }) %></td><% }) %>
+      <td><a href="/admin/<%= resource.editor === 'plan' ? 'planove/' + encodeURIComponent(row.code) : 'r/' + resource.slug + '/' + encodeURIComponent(id) %>"><%= t('admin.open') %></a></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<nav class="pager" aria-label="<%= t('admin.page', { page, pages }) %>">
+  <% if (page > 1) { %><a href="?q=<%= encodeURIComponent(q) %>&amp;p=<%= page - 1 %>"><%= t('admin.prev') %></a><% } %>
+  <span><%= t('admin.page', { page, pages }) %></span>
+  <% if (page < pages) { %><a href="?q=<%= encodeURIComponent(q) %>&amp;p=<%= page + 1 %>"><%= t('admin.next') %></a><% } %>
+</nav>
+<%- include('../partials/app-foot') %>

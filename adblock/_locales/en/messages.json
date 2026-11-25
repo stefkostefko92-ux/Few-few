@@ -879,5 +879,65 @@
   "welTest": {
     "message": "See it working on a test page",
     "description": "Welcome page: link to the website's demonstration page."
+  },
+  "modeHere": {
+    "message": "Protection here",
+    "description": "Popup: label of the per-site protection level picker (short)."
+  },
+  "modeBasic": {
+    "message": "Basic",
+    "description": "Protection level: network blocking only."
+  },
+  "modeStandard": {
+    "message": "Standard",
+    "description": "Protection level: the default."
+  },
+  "modeStrict": {
+    "message": "Strict",
+    "description": "Protection level: also inside embedded frames."
+  },
+  "opt_mode": {
+    "message": "Protection level",
+    "description": "Settings: card title for the protection level."
+  },
+  "opt_mode_sub": {
+    "message": "For every site. To set one site apart, open the extension on that site.",
+    "description": "Settings: the level applies to all sites; one site can differ."
+  },
+  "modeHint": {
+    "message": "Basic: network blocking only. Standard: recommended. Strict: also inside frames. The page reloads.",
+    "description": "Popup: tooltip of the level picker."
+  },
+  "modeBasicDesc": {
+    "message": "Network blocking only: the lightest, almost nothing breaks. YouTube keeps its own protection.",
+    "description": "Settings + popup tooltip: what Basic does."
+  },
+  "modeStandardDesc": {
+    "message": "Recommended: full protection on the page itself.",
+    "description": "Settings: what Standard does."
+  },
+  "modeStrictDesc": {
+    "message": "Also inside embedded frames: hides the most, uses the most memory.",
+    "description": "Settings: what Strict does."
+  },
+  "opt_who": {
+    "message": "Who we stopped",
+    "description": "Settings: card title — the companies whose requests were blocked."
+  },
+  "opt_who_sub": {
+    "message": "The companies whose servers we kept your browser from contacting in the last 30 days. Counted on this device only, per company and day: no addresses, no sites.",
+    "description": "Settings: what the card shows and what is stored (nothing leaves the device)."
+  },
+  "opt_who_empty": {
+    "message": "Nothing counted yet. Browse for a while and look again.",
+    "description": "Settings: the card before anything was counted."
+  },
+  "opt_who_row": {
+    "message": "Requests: $1 · Days: $2",
+    "description": "Settings: one company's row. $1 = blocked requests, $2 = days seen (of the last 30)."
+  },
+  "managedNote": {
+    "message": "Set by your organization",
+    "description": "Popup + Settings: on a control an administrator's policy locks (enterprise)."
   }
 }

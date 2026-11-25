@@ -456,13 +456,49 @@ const LEGACY_WATCHED = [
 // - ld.so.preload — класическото място за руткит (зарежда се във ВСЕКИ процес);
 // - nginx/conf.d — включва се в http контекста като sites-enabled;
 // - ключовете на root — нов ред там е постоянен вход, без парола и без лог за вход.
+// - ключовете на всеки потребител и личните crontab-и — същият постоянен вход като
+//   ключовете на root, само през друг акаунт (`*` е точно един сегмент от пътя).
 const WATCHED = [
   ...LEGACY_WATCHED,
   '/etc/ssh/sshd_config.d',
   '/etc/ld.so.preload',
   '/etc/nginx/conf.d',
   '/root/.ssh/authorized_keys',
+  '/home/*/.ssh/authorized_keys',
+  '/var/spool/cron/crontabs',
 ];
+
+// `*` в следен път = един сегмент (име на потребител). Разгъва се при всеки отпечатък,
+// затова нов потребител с ключ излиза като „добавен", не като „нов за наблюдението".
+export function expandWatched(pattern) {
+  if (!pattern.includes('*')) return [pattern];
+  const parts = pattern.split('/');
+  let paths = [''];
+  for (const part of parts.slice(1)) {
+    const next = [];
+    for (const base of paths) {
+      if (part !== '*') {
+        next.push(`${base}/${part}`);
+        continue;
+      }
+      let names = [];
+      try {
+        names = fs.readdirSync(base || '/');
+      } catch {
+        /* нечетима папка — нищо за разгъване */
+      }
+      for (const n of names) next.push(`${base}/${n}`);
+    }
+    paths = next;
+  }
+  return paths;
+}
+
+export function rootCovers(root, p) {
+  if (!root.includes('*')) return p === root || p.startsWith(root + '/');
+  const re = new RegExp('^' + root.split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[^/]+') + '(/.*)?$');
+  return re.test(p);
+}
 const MAX_FILES = 2000;
 
 function hashFile(p) {
@@ -507,7 +543,7 @@ function walk(target, out, depth = 0) {
 
 export function snapshotEtc() {
   const files = new Map();
-  for (const t of WATCHED) walk(t, files);
+  for (const t of WATCHED) for (const p of expandWatched(t)) walk(p, files);
   return { takenAt: new Date().toISOString(), watched: [...WATCHED], files: Object.fromEntries(files) };
 }
 
@@ -536,7 +572,7 @@ export function diffEtc(stateDir) {
   // нов за наблюдението. Казва се отделно и не вдига аларма; влиза при следващия
   // отпечатък.
   const roots = Array.isArray(base.watched) ? base.watched : LEGACY_WATCHED;
-  const covered = (p) => roots.some((r) => p === r || p.startsWith(r + '/'));
+  const covered = (p) => roots.some((r) => rootCovers(r, p));
   const newlyTracked = [];
   for (const [p, h] of Object.entries(now.files)) {
     const b = base.files[p];

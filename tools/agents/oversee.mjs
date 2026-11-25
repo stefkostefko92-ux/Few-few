@@ -28,10 +28,11 @@ import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
 import {
   MERGE_THRESHOLD, AGENT_DESC_MAX,
-  jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject, plainScalarHazard, repeatsLearnProtocol,
+  jaccardSets, toks, hasSource, sectionBullets, extractBalancedObject, plainScalarHazard, repeatsLearnProtocol,
   yamlPlainCut,
 } from "./oversee-lib.mjs";
-import { classify } from "./memory-freshness.mjs"; // ЕДНА дефиниция за „просрочена поука" — тази на гейта
+import { dueOf } from "./memory-freshness.mjs"; // ЕДНА дефиниция за „просрочена поука" — тази на гейта
+import { frontmatterIssues } from "./frontmatter-fields.mjs"; // грешно поле харнесът пропуска тихо
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -55,12 +56,10 @@ const read = (p) => (existsSync(p) ? readFileSync(p, "utf8") : null);
 // #4 постнота на дефиницията: раздутото разрежда адхеренцията (както „CLAUDE.md < 200 реда").
 // Праг над реалното p75 (~144) — флагва само истинските извънредни случаи, не всекидневния ръст.
 const DEF_LINE_WARN = 200;
-// #2 явна повторна проверка: поука може да носи „re-verify: YYYY-MM-DD"; минала дата → застаряла,
-// независимо дали е време-чувствителна по регекс. Дава ръчен контрол над TTL за критични факти.
-const REVERIFY_RE = /re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i;
+// #2 явна повторна проверка („re-verify: YYYY-MM-DD“) се съди в `dueOf` на memory-freshness.
 
 // „Не-агентски" файлове в директориите
-const NOT_AGENT_DEF = new Set(["README.md", "_orchestration.md"]);
+const NOT_AGENT_DEF = new Set(["README.md", "_orchestration.md", "_teams.md"]);
 const NOT_AGENT_MEM = new Set(["SECURITY.md", "PROTOCOL.md", "PROCEDURE.md", "_shared.md"]);
 
 // --- Събери източниците на истина ---
@@ -171,14 +170,12 @@ for (const id of allIds) {
     // 3409/4031 (85%) „застарели" тук срещу 0 просрочени в гейта в един и същ ден. Същият клас
     // дефект като source-parity/secret-parity: две истини за едно нещо произвеждат тих отпад.
     // Изричен „re-verify: ДАТА" в поуката побеждава класа (както и в memory-freshness).
+    // От 2026-10-24 и срокът, не само класът: тук се смяташе наново от датата на научаването и
+    // пресверена поука оставаше „просрочена“ — втора истина, точно като преди класовете.
     let stale = 0;
     for (const b of verified) {
-      const d = lessonDate(b);
-      const rv = b.match(REVERIFY_RE);
-      const explicitDue = rv && daysSince(rv[1], TODAY) > 0;
-      const cls = classify(b);
-      const implicitStale = !rv && d && cls.days != null && daysSince(d, TODAY) > cls.days;
-      if (explicitDue || implicitStale) stale++;
+      const d = dueOf(b);
+      if (d?.due && d.due < TODAY) stale++;
     }
     r.stale = stale;
     if (stale) r.warn.push(`${stale}/${verified.length} просрочени поуки (по класовете на memory-freshness или с минала re-verify дата)`);
@@ -198,6 +195,13 @@ for (const id of allIds) {
     const defLines = def.split("\n").length;
     r.defLines = defLines;
     if (defLines > DEF_LINE_WARN) r.warn.push(`дефиниция ${defLines} реда (>${DEF_LINE_WARN}) — раздутото разрежда адхеренцията; премести исторически „vX.Y" секции в паметта/докове`);
+    // Доктрината и процедурата идват като умението agent-doctrine (`skills:`) — без него агентът тръгва без тях.
+    const fmBlock = def.split(/^---\s*$/m)[1] || "";
+    if (!/^skills:\s*\n(?:[ \t]+-[ \t]+\S+\s*\n)*?[ \t]+-[ \t]+agent-doctrine\s*$/m.test(fmBlock))
+      r.hard.push("няма agent-doctrine в skills: — агентът тръгва без доктрината за сигурност и процедурата");
+    // Коренният CLAUDE.md (~4,7k т) не трябва на агента: общите му правила идват през _shared.md (A/B 2026-10-27).
+    if (!/^omitClaudeMd:\s*true\s*$/m.test(fmBlock)) r.warn.push("без omitClaudeMd: true — плаща коренния CLAUDE.md при всеки старт");
+    for (const issue of frontmatterIssues(fmBlock)) r.hard.push(`frontmatter: ${issue}`);
     if (repeatsLearnProtocol(def)) r.hard.push("дефиницията преповтаря цикъла за учене (```learn схема) — той живее само в _memory/PROCEDURE.md; остави един ред с доменния гейт за „verified“");
     // Описанието: по него главната сесия избира агента и го плаща на всеки ход.
     const desc = ((def.split(/^---\s*$/m)[1] || "").match(/^description:[ \t]*(.*)$/m) || [])[1];
@@ -218,6 +222,13 @@ const team = [];
 if (fallbackOk === false) { team.push({ level: "hard", msg: "FALLBACK в index.html НЕ съвпада с agents.json" }); hardFails++; }
 if (fallbackOk === null) { team.push({ level: "warn", msg: "не намерих FALLBACK блок в index.html" }); warns++; }
 if (!securityDoctrine) { team.push({ level: "hard", msg: "липсва доктрината _memory/SECURITY.md (инжектира се във всеки агент)" }); hardFails++; }
+// При включени agent teams именуваният агент става teammate, а на teammate харнесът НЕ прилага `skills:` от
+// дефиницията (code.claude.com/docs/en/agent-teams) — доктрината тихо отпада. Проектът го държи изключено.
+try {
+  const st = JSON.parse(readFileSync(join(ROOT, ".claude", "settings.json"), "utf8"));
+  if (st.env?.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS !== "0") { team.push({ level: "hard", msg: "settings.json не държи CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=\"0\" — при agent teams teammate-ите тръгват без agent-doctrine (skills: не важи за тях)" }); hardFails++; }
+} catch { /* settings.json се проверява другаде */ }
+if (!existsSync(join(ROOT, ".claude", "skills", "agent-doctrine", "SKILL.md"))) { team.push({ level: "hard", msg: "липсва умението agent-doctrine (доктрина + процедура за всеки агент) — node tools/agents/doctrine-skill.mjs --write" }); hardFails++; }
 if (!procedureDoctrine) { team.push({ level: "hard", msg: "липсва общата процедура _memory/PROCEDURE.md (единен цикъл + HANDOFF, инжектира се във всеки агент)" }); hardFails++; }
 // Fail-loud при ТОЧЕН сблъсък (не near-dup): два агента с еднакъв accent/name чупят разпознаваемостта.
 const dupKey = (k) => { const seen = new Set(), dups = new Set(); for (const a of aj.agents) { const v = a[k]; if (v == null) continue; if (seen.has(v)) dups.add(v); else seen.add(v); } return [...dups]; };

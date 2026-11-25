@@ -373,3 +373,52 @@ describe("реми: сигурност и бот", () => {
     expect(rummyEngine.bot!(s, 0, rng())).toEqual({ type: "DISCARD", card: "KCa" });
   });
 });
+
+describe("реми: проверка на хода от гледната точка на играча", () => {
+  // Изгледът (RummyView) предлага полагане/долепване/смяна на жокер/отваряне
+  // само ако rummyEngine.validate ги приема върху СКРИТОТО състояние, което
+  // клиентът има. Иначе масата предлагаше ходове, които сървърът отказва
+  // („Невалиден ход“) — напр. смяна, след която жокерът няма приложение.
+  it("validate върху redact(състоянието) дава същия отговор като на сървъра", () => {
+    let checked = 0;
+    for (const seed of ["view-a", "view-b", "view-c", "view-d"]) {
+      const r = new SeededRng(seed);
+      let s = rummyEngine.init({ seats: 2 }, r);
+      for (let step = 0; step < 4_000 && !s.done; step++) {
+        const seat = s.turn;
+        const a = rummyEngine.bot!(s, seat, r)!;
+        if (a.type === "OPEN" || a.type === "MELD" || a.type === "LAYOFF" || a.type === "SWAP") {
+          const view = rummyEngine.redact(s, seat);
+          expect(rummyEngine.validate!(view, seat, a)).toBe(rummyEngine.validate!(s, seat, a));
+          // …и за всяка карта от ръката върху всяка комбинация (долепване/смяна).
+          for (const card of s.hands[seat]!) {
+            for (const m of s.melds) {
+              const lay: RummyAction = { type: "LAYOFF", meldId: m.id, cards: [card] };
+              const swap: RummyAction = { type: "SWAP", meldId: m.id, card };
+              expect(rummyEngine.validate!(view, seat, lay)).toBe(rummyEngine.validate!(s, seat, lay));
+              expect(rummyEngine.validate!(view, seat, swap)).toBe(rummyEngine.validate!(s, seat, swap));
+              checked += 2;
+            }
+          }
+        }
+        s = rummyEngine.reduce(s, a, r).state;
+      }
+    }
+    expect(checked).toBeGreaterThan(100);
+  });
+
+  it("смяната на жокер изисква взетият жокер да може да се положи веднага", () => {
+    // Масата: група 7♠7♥* и пълна група 9♠9♥9♦9♣; в ръката 7♦ и K♣ (без комбинация).
+    // След смяната жокерът може да отиде само обратно в групата със седмиците —
+    // тя вече има 7♠7♥7♦ (3 карти) → приема жокер като 4-ти: смяната е валидна.
+    const melds: RummyMeld[] = [
+      { id: 1, owner: 1, kind: "set", cards: ["7Sa", "7Ha", "*1"] },
+      { id: 2, owner: 1, kind: "set", cards: ["9Sa", "9Ha", "9Da", "9Ca"] },
+    ];
+    const ok = makeState({ hands: [["7Da", "KCa"], ["2Ca"]], opened: [true, true], melds, nextMeldId: 3 });
+    expect(rummyEngine.validate!(ok, 0, { type: "SWAP", meldId: 1, card: "7Da" })).toBe(true);
+    // С една-единствена карта в ръката смяна няма (жокерът не може да се положи).
+    const lone = makeState({ hands: [["7Da"], ["2Ca"]], opened: [true, true], melds, nextMeldId: 3 });
+    expect(rummyEngine.validate!(lone, 0, { type: "SWAP", meldId: 1, card: "7Da" })).toBe(false);
+  });
+});

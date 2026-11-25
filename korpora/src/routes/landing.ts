@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { COMPANY, LEGAL_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { applyLocale } from '../http/locale.js';
-import { LOCALES, ogLocale, translatorFor, type Locale } from '../i18n.js';
+import { DEFAULT_LOCALE, LOCALES, ogLocale, translatorFor, type Locale } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { formatLifetimeTimes, priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
 import { retentionText } from '../retention.js';
@@ -75,7 +75,8 @@ function landing(locale: Locale) {
       prices,
       vatPercent: VAT_BG_PERCENT,
       trialDays: TRIAL_DAYS,
-      assets: landingAssets(),
+      assets: landingAssets(locale),
+      media: (name: string) => `/media/${mediaName(name, locale)}`,
       storyExample: EXAMPLE,
       lineup: furnitureLineup(),
       faqIds: FAQ_IDS,
@@ -119,26 +120,31 @@ for (const page of LEGAL) {
 
 /**
  * Чертежът на вратата за витрината — самостоятелни SVG файлове, заредени като <img> (вътрешният им стил не
- * опира в CSP на страницата): целият лист и два изрязани изгледа от него.
+ * опира в CSP на страницата): целият лист и два изрязани изгледа от него. Надписите са на езика на
+ * витрината: `door-drawing.svg` на български, `door-drawing.en.svg` и `door-drawing.it.svg` (`mediaName`).
  */
+/** Името на файла с чертежа на езика: българският е без наставка (адресите отпреди езиците остават). */
+export const mediaName = (name: string, locale: Locale): string =>
+  locale === DEFAULT_LOCALE ? `${name}.svg` : `${name}.${locale}.svg`;
 const DRAWINGS = ['door-drawing', 'door-elevation', 'door-cup'] as const;
-for (const name of DRAWINGS) {
-  landingRouter.get(`/media/${name}.svg`, (_req, res) => {
-    const door = landingAssets().door;
-    if (!door) {
-      res.status(404).end();
-      return;
-    }
-    const svg =
-      name === 'door-elevation'
-        ? door.elevation.svg
-        : name === 'door-cup'
-          ? door.cup.svg
-          : door.svg;
-    res
-      .type('image/svg+xml')
-      .set('Cache-Control', 'public, max-age=86400')
-      .set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'")
-      .send(svg);
-  });
-}
+for (const name of DRAWINGS)
+  for (const locale of LOCALES) {
+    landingRouter.get(`/media/${mediaName(name, locale)}`, (_req, res) => {
+      const door = landingAssets(locale).door;
+      if (!door) {
+        res.status(404).end();
+        return;
+      }
+      const svg =
+        name === 'door-elevation'
+          ? door.elevation.svg
+          : name === 'door-cup'
+            ? door.cup.svg
+            : door.svg;
+      res
+        .type('image/svg+xml')
+        .set('Cache-Control', 'public, max-age=86400')
+        .set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'")
+        .send(svg);
+    });
+  }

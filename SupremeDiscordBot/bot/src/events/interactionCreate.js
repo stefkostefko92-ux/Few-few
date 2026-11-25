@@ -14,6 +14,13 @@ import { priorityField } from "../utils/priority.js";
 import { startSetupWizard, handleSetupComponent } from "../commands/setup.js";
 import { isStaffMember } from "../utils/staffCheck.js";
 import { t, resolveLang, resolveLangSync, resolveLangForGuild } from "../i18n/index.js";
+import { roleAssignabilityReason } from "../utils/reactionRoles.js";
+import { loadPanel, capped, TIMED_OUT, PRE_ACK_CAP_MS } from "../utils/panelCache.js";
+import { closeTicket, reopenTicketChannel, CLOSE_REASON_MAX } from "../utils/ticketLifecycle.js";
+import { logTicketEvent, parseColor } from "../utils/ticketLog.js";
+import { describeTicketError, limitText, describeActionConflict } from "../utils/ticketErrors.js";
+import { invalidateTicketChannel } from "../utils/ticketCaches.js";
+import { loadVerificationPanelCapped } from "../utils/verificationPanelCache.js";
 
 // ─── Blacklist TTL кеш ──────────────────────────────────────────────────────
 // Всяка slash команда проверява blacklist статуса срещу backend-а. Синхронният
@@ -23,13 +30,37 @@ import { t, resolveLang, resolveLangSync, resolveLangForGuild } from "../i18n/in
 const blacklistCache = new Map(); // userId → { blacklisted, expiresAt }
 const BLACKLIST_CACHE_TTL = 60 * 1000; // 1 минута
 
+// Т13: заявката пред първия отговор е с ТАВАН (2 s) — Discord дава 3 s, а axios
+// чака 10. При изтичане пропада „отворено“ (както и при срив на бекенда), а
+// заявката довършва и пълни кеша за следващия път.
 async function isBlacklistedCached(userId) {
   const now = Date.now();
   const cached = blacklistCache.get(userId);
   if (cached && cached.expiresAt > now) return cached.blacklisted;
-  const blacklisted = await isBlacklisted(userId);
-  blacklistCache.set(userId, { blacklisted, expiresAt: now + BLACKLIST_CACHE_TTL });
-  return blacklisted;
+  const lookup = isBlacklisted(userId).then((blacklisted) => {
+    blacklistCache.set(userId, { blacklisted, expiresAt: Date.now() + BLACKLIST_CACHE_TTL });
+    return blacklisted;
+  });
+  lookup.catch(() => {}); // късен отказ след тавана не бива да е unhandled
+  return capped(lookup, PRE_ACK_CAP_MS, false).catch(() => false);
+}
+
+// Т9: черният списък важи за ВСЕКИ път на отваряне на тикет/кандидатура — не само
+// за slash и контекстни команди. Бутон, меню, формуляр на бутон и модал го
+// заобикаляха (основният път за отваряне). Връща false след ephemeral отказ.
+const OPENING_PREFIXES = ["panel_button:", "panel_select:", "form_direct:", "form_modal:", "ctxticket_panel:"];
+function isOpeningComponent(interaction) {
+  const id = interaction.customId;
+  if (!id || !(interaction.isMessageComponent?.() || interaction.isModalSubmit?.())) return false;
+  return id === "panel_select_multi" || OPENING_PREFIXES.some((p) => id.startsWith(p));
+}
+export async function preflight(interaction) {
+  if (!(await isBlacklistedCached(interaction.user.id))) return true;
+  await interaction.reply({
+    content: t("error.blacklisted", resolveLangSync(interaction)),
+    flags: MessageFlags.Ephemeral,
+  }).catch(() => {});
+  return false;
 }
 
 // Периодично почистване, за да не расте Map-ът безкрайно.
@@ -57,7 +88,7 @@ export default {
           blacklisted = await isBlacklistedCached(interaction.user.id);
         } catch { /* backend unreachable — allow the command */ }
         if (blacklisted) {
-          const lang = await resolveLang(interaction);
+          const lang = resolveLangSync(interaction); // пред първия отговор — без мрежа
           return interaction.reply({
             content: t("error.blacklisted", lang),
             flags: MessageFlags.Ephemeral,
@@ -87,6 +118,9 @@ export default {
         await handleSetupComponent(interaction);
         return;
       }
+
+      // ── Т9: един preflight за всеки път на отваряне (blacklist) ────────────
+      if (isOpeningComponent(interaction) && !(await preflight(interaction))) return;
 
       // ── Panel Buttons ───────────────────────────────────────────────────────
       if (interaction.isButton() && interaction.customId.startsWith("panel_button:")) {
@@ -173,39 +207,16 @@ export default {
 
       // ── /help category dropdown ────────────────────────────────────────────
       if (interaction.isStringSelectMenu() && interaction.customId === "help:category") {
-        const { COMMAND_CATALOG } = await import("../utils/commandsCatalog.js");
-        const selected = interaction.values[0];
-        const cat = COMMAND_CATALOG.find((c) => c.category === selected);
+        // Същият embed като /help category:… — на езика на човека (един builder в help.js).
+        const lang = await resolveLang(interaction);
+        const { catalogFor } = await import("../utils/commandsCatalogL10n/index.js");
+        const { buildCategoryEmbed, buildSelect, buildLinkRow } = await import("../commands/help.js");
+        const catalog = catalogFor(lang);
+        const cat = catalog.find((c) => c.key === interaction.values[0]);
         if (!cat) {
-          const lang = await resolveLang(interaction);
           return interaction.reply({ content: t("error.categoryNotFound", lang), flags: MessageFlags.Ephemeral });
         }
-        const { default: helpCmd } = await import("../commands/help.js");
-        // Re-render the same embed the /help command would produce for this category
-        const embed = {
-          title: `${cat.icon} ${cat.category}`,
-          description: cat.description,
-          color: BRAND,
-          fields: [],
-        };
-        (cat.commands || []).forEach((cmd) => {
-          const body = [
-            `**Usage**: \`${cmd.signature}\``,
-            cmd.description,
-            cmd.permission ? `_Permission: ${cmd.permission}_` : null,
-            cmd.dashboard ? `🖥️ **Dashboard**: ${cmd.dashboard}` : null,
-          ].filter(Boolean).join("\n");
-          embed.fields.push({ name: cmd.name, value: body.slice(0, 1024), inline: false });
-        });
-        (cat.dashboardOnly || []).forEach((item) => {
-          embed.fields.push({
-            name: `🖥️ ${item.feature} (dashboard)`,
-            value: `${item.description}\n_${item.dashboard}_`.slice(0, 1024),
-            inline: false,
-          });
-        });
-        // Keep the original select menu so user can pick another category
-        await interaction.update({ embeds: [embed], components: interaction.message.components });
+        await interaction.update({ embeds: [buildCategoryEmbed(cat, lang)], components: [buildSelect(catalog, lang, cat.key), buildLinkRow(lang)] });
         return;
       }
 
@@ -307,35 +318,62 @@ export default {
 // every "decide-then-respond" flow in this file already accepts (e.g. the
 // verification gate check before createTicketFromPanel's own defer upstream).
 async function handlePanelButtonClick(interaction, panelId, buttonId) {
-  let panel;
-  try {
-    panel = await getPanel(panelId);
-  } catch (err) {
+  // Т13: заявката за панела е с таван 2 s. Кешираният панел е мигновен; при
+  // студен кеш и бавен бекенд отговаряме с defer (не с „interaction failed“) и
+  // довършваме по СЪЩАТА заявка — без втора.
+  const pending = loadPanel(panelId, interaction.guildId);
+  pending.catch(() => {});
+  let loaded = await capped(pending.then((p) => ({ panel: p }), (error) => ({ error })), PRE_ACK_CAP_MS, TIMED_OUT);
+  let deferred = false;
+  if (loaded === TIMED_OUT) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
+    deferred = true;
+    loaded = await pending.then((p) => ({ panel: p }), (error) => ({ error }));
+  }
+
+  const ack = async () => {
+    if (!deferred) {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+      deferred = true;
+    }
+  };
+  const lang = resolveLangSync(interaction);
+
+  if (loaded.error) {
+    await ack().catch(() => {});
     // 404 → the panel really is gone; anything else (timeout/5xx) is a
     // backend hiccup, not a missing panel — don't tell the user to re-spawn it.
-    const notFound = err?.response?.status === 404;
+    const notFound = loaded.error?.response?.status === 404;
     return interaction.editReply(
-      friendlyError(err, interaction, notFound ? "Panel not found. Ask an admin to re-spawn it." : undefined)
+      friendlyError(loaded.error, interaction, notFound ? t("tkt.panelGone", lang) : undefined)
     );
   }
+  const panel = loaded.panel;
 
   const button = panel.buttons.find((b) => b.id === buttonId);
   if (!button) {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-    return interaction.editReply("❌ Button configuration not found.");
+    await ack();
+    return interaction.editReply(t("tkt.buttonNotFound", lang));
+  }
+
+  // Т9: верификационната врата и за бутон с формуляр (синхронна — няма мрежа),
+  // ПРЕДИ modal/DM сесия; не само в createTicketFromPanel.
+  const gate = checkVerificationGate(interaction, panel);
+  if (!gate.allowed) {
+    if (deferred) return interaction.editReply({ content: gate.message });
+    return interaction.reply({ content: gate.message, flags: MessageFlags.Ephemeral });
   }
 
   if (button.formId && button.form) {
-    if (isModalEligibleForm(button.form)) {
+    if (!deferred && isModalEligibleForm(button.form)) {
       await interaction.showModal(buildFormModal(button.form, panelId, buttonId));
       return;
     }
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    await ack();
     await interaction.editReply(t("form.dmCheck", await resolveLang(interaction)));
     await runFormSession(interaction, button.form, panel);
   } else {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    await ack();
     await createTicketFromPanel(interaction, panel, null);
   }
 }
@@ -383,7 +421,7 @@ async function handleFormModalSubmit(interaction) {
 
   let panel;
   try {
-    panel = await getPanel(panelId);
+    panel = await getPanel(panelId, { serverId: interaction.guildId });
   } catch (err) {
     return interaction.editReply(friendlyError(err, interaction, "Panel not found. Ask an admin to re-spawn it."));
   }
@@ -393,6 +431,11 @@ async function handleFormModalSubmit(interaction) {
   if (!form || form.id !== formId) {
     return interaction.editReply(t("form.notAvailable", lang));
   }
+
+  // Т9: верификационната врата и тук (клиентът може да е изпратил модала със
+  // стара версия на панела, а правата му да са се променили между двата клика).
+  const gate = checkVerificationGate(interaction, panel);
+  if (!gate.allowed) return interaction.editReply({ content: gate.message });
 
   const questions = [...form.questions].sort((a, b) => a.order - b.order).slice(0, MODAL_MAX_QUESTIONS);
   const answers = {};
@@ -424,7 +467,9 @@ async function handleFormModalSubmit(interaction) {
 
   let result;
   try {
-    result = await submitFormAnswers(interaction.client, session);
+    // `interaction` е и контекстът на тикета: същият път като бутон без формуляр
+    // (ред в базата, номер, Close/Claim, отговорите вътре), а отказът му е ephemeral.
+    result = await submitFormAnswers(interaction.client, session, interaction);
   } catch (err) {
     console.error("Failed to submit modal form:", err.message);
     return interaction.editReply(t("form.submitFailed", lang));
@@ -437,6 +482,8 @@ async function handleFormModalSubmit(interaction) {
     return interaction.editReply(rejectionText(result, lang));
   }
 
+  // Тикетът сам отговаря (`ticket.opened` с канала или обяснение за отказа).
+  if (result?.kind === "ticket") return;
   await interaction.editReply(t("form.submittedConfirm", lang));
 }
 
@@ -487,7 +534,7 @@ export async function handleCreateTicketFromMessageContextMenu(interaction) {
   const quotedMessage = `**${target.author?.tag || "Unknown user"}**: ${target.content || "*[no text content]*"}`;
 
   if (panels.length === 1) {
-    const panel = await getPanel(panels[0].id).catch(() => panels[0]);
+    const panel = await getPanel(panels[0].id, { serverId: interaction.guildId }).catch(() => panels[0]);
     return createTicketFromPanel(interaction, panel, null, { quotedMessage });
   }
 
@@ -523,7 +570,7 @@ export async function handleOpenTicketForUserContextMenu(interaction) {
   const onBehalfOf = interaction.targetUser;
 
   if (panels.length === 1) {
-    const panel = await getPanel(panels[0].id).catch(() => panels[0]);
+    const panel = await getPanel(panels[0].id, { serverId: interaction.guildId }).catch(() => panels[0]);
     return createTicketFromPanel(interaction, panel, null, { onBehalfOf });
   }
 
@@ -547,7 +594,7 @@ async function handleCtxTicketPanelSelect(interaction) {
 
   let panel;
   try {
-    panel = await getPanel(interaction.values[0]);
+    panel = await getPanel(interaction.values[0], { serverId: interaction.guildId });
   } catch (err) {
     return interaction.editReply(friendlyError(err, interaction, "Panel not found."));
   }
@@ -657,22 +704,37 @@ async function handleFormDirectClick(interaction, formId) {
 //   right after the welcome embed (Message context-menu path).
 
 async function createTicketFromPanel(interaction, panel, formAnswers, opts = {}) {
-  const { onBehalfOf, quotedMessage } = opts;
+  const { onBehalfOf, quotedMessage, reason: openReason } = opts;
   const creator = onBehalfOf || interaction.user;
   const guild = interaction.guild;
   let channel;
+  // `lang` — към човека (неговия клиент → сървъра); `guildLang` — видимото в канала.
+  const lang = await resolveLang(interaction);
+  const guildLang = await resolveLangForGuild(guild.id);
+  // Отказ: показва се на човека и върнатият резултат казва на викача (DM сесията)
+  // да не твърди „подадено“.
+  const refuse = async (payload) => { await interaction.editReply(payload); return { ok: false }; };
 
   // ─── v1.7 Verification gate ───────────────────────────────────────────────
   // Check user has all required verification roles before doing anything else.
-  const gate = checkVerificationGate(interaction, panel);
+  // (Не при „от името на“: проверката би гледала ролите на персонала, не на създателя.)
+  const gate = onBehalfOf ? { allowed: true } : checkVerificationGate(interaction, panel);
   if (!gate.allowed) {
-    return interaction.editReply({ content: gate.message });
+    return refuse({ content: gate.message });
   }
 
-  // ─── Per-user ticket limit check (server-level) ───────────────────────────
-  // Backend enforces the final limit on createTicket call, but pre-check saves
-  // a wasted channel creation if the user is clearly over.
-  // (Real enforcement happens atomically in the API.)
+  // ─── Т12: лимитът на тикети ПРЕДИ създаването на канал ──────────────────────
+  // Преди: каналът се създаваше и се трие при всеки отказ (rate limit + шум в
+  // одитния дневник). Авторитетната проверка остава в `POST /ticket/create`
+  // (advisory lock) — тук е само бърза предварителна; при срив на проверката
+  // продължаваме (fail-open), бекендът пак ще откаже.
+  const limit = await api
+    .get("/bot/ticket/precheck", { params: { serverId: guild.id, panelId: panel.id, creatorId: creator.id }, timeout: 4000 })
+    .then((r) => r.data)
+    .catch(() => ({ allowed: true }));
+  if (limit && limit.allowed === false) {
+    return refuse(limitText(limit, lang));
+  }
 
   const channelNamePrefix   = (panel.channelNamePrefix || "ticket").toLowerCase().replace(/[^a-z0-9-]/g, "");
   const padding             = panel.counterPadding ?? 4;
@@ -723,7 +785,7 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
     // membership: the creator + cached members of the support roles.
     const parentChannel = interaction.channel;
     if (!parentChannel?.threads) {
-      return interaction.editReply("❌ This channel doesn't support threads. Ask an admin to switch the panel to channel mode or re-spawn it in a text channel.");
+      return refuse(t("tkt.err.noThreads", lang));
     }
     try {
       channel = await parentChannel.threads.create({
@@ -743,11 +805,8 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
         }
       }
     } catch (err) {
-      console.error("Failed to create ticket thread:", err.message);
-      return interaction.editReply(
-        `❌ Failed to create ticket thread: ${err.message}\n` +
-        `Ensure the bot has **Create Private Threads** and **Manage Threads** permission in this channel.`
-      );
+      console.error("Failed to create ticket thread:", err?.code, err?.message);
+      return refuse(describeTicketError(err, lang, { thread: true }));
     }
   } else {
     // Full channel mode with proper permission overwrites
@@ -773,12 +832,10 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
         permissionOverwrites,
       });
     } catch (err) {
-      console.error("Failed to create ticket channel:", err.message);
-      return interaction.editReply(
-        `❌ Failed to create ticket channel: ${err.message}\n` +
-        `Ensure the bot has **Manage Channels** permission` +
-        (openCategory ? ` on the category <#${openCategory}>.` : ` in this server, or configure a category in the panel settings.`)
-      );
+      // Т12: 30013 (пълна категория/сървър), 50013 (права), 10003/10011 (изтрит
+      // канал/роля), 50035 (невалидни данни) → преведено обяснение за админа.
+      console.error("Failed to create ticket channel:", err?.code, err?.message);
+      return refuse(describeTicketError(err, lang));
     }
   }
 
@@ -796,7 +853,7 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
       panel.id,
       creator.id,
       channel.id,
-      null
+      openReason || null
     );
   } catch (err) {
     console.error(`[ticket] регистрацията се провали за guild=${guild.id} panel=${panel.id}: ${err?.message}`);
@@ -804,15 +861,18 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
       // Ако и чистенето не мине, поне оставяме следа — иначе каналът виси нямо.
       console.error(`[ticket] осиротял канал ${channel.id} НЕ можа да бъде изтрит: ${delErr?.message}`);
     });
-    const lang = await resolveLang(interaction);
-    return interaction.editReply(t("error.ticketCreateFailed", lang));
+    return refuse(t("error.ticketCreateFailed", lang));
   }
 
-  // Backend may refuse due to limits
+  // Backend may refuse due to limits (race между precheck и създаването) —
+  // каналът не остава; текстът е преведен (не суровият английски на бекенда).
   if (ticketResult?.code === "MAX_TICKETS_REACHED" || ticketResult?.code === "PANEL_LIMIT_REACHED") {
     await channel.delete().catch(() => {});
-    await interaction.editReply(`⚠️ ${ticketResult.error}`);
-    return;
+    return refuse(limitText(ticketResult, lang));
+  }
+  if (!ticketResult?.id) {
+    await channel.delete().catch(() => {});
+    return refuse(t("error.ticketCreateFailed", lang));
   }
 
   const ticketNumber = ticketResult?.number;
@@ -830,6 +890,9 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
     server: { id: guild.id, name: guild.name },
     panel:  { name: panel.name },
     supportRoleIds: panel.supportRoleIds || [],
+    // Т18: `{ticket.reason}` и `{server.members}` бяха празни.
+    reason: openReason || "",
+    memberCount: guild.memberCount,
   };
 
   const welcomeContent = interpolate(panel.welcomeMessage || defaultWelcomeMessage(), ctx);
@@ -838,21 +901,21 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
   // Staff mention above the embed (so they get notified)
   const staffMention = (panel.supportRoleIds || []).map((r) => `<@&${r}>`).join(" ");
 
-  // Action buttons (Close, Claim, Transcript)
+  // Action buttons (Close, Claim, Transcript) — на езика на сървъра (Т17)
   const actionRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`ticket:close:${ticketResult.id}`)
-      .setLabel("Close")
+      .setLabel(t("tkt.btnClose", guildLang))
       .setStyle(4) // Danger
       .setEmoji("🔒"),
     new ButtonBuilder()
       .setCustomId(`ticket:claim:${ticketResult.id}`)
-      .setLabel("Claim")
+      .setLabel(t("tkt.btnClaim", guildLang))
       .setStyle(2) // Secondary
       .setEmoji("👋"),
     new ButtonBuilder()
       .setCustomId(`ticket:transcript:${ticketResult.id}`)
-      .setLabel("Transcript")
+      .setLabel(t("tkt.btnTranscript", guildLang))
       .setStyle(2)
       .setEmoji("📜"),
   );
@@ -873,8 +936,9 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
     components: [actionRow],
   });
 
-  // Pin the welcome message so it's always easy to find
-  welcomeMessage.pin().catch(() => {});
+  // Закачване на приветствието: тих провал. От 2026 закачането иска правото
+  // PinMessages (не Manage Messages) — добавя се в поканата/проверката от З12.
+  welcomeMessage?.pin?.()?.catch?.(() => {});
 
   // ─── On-behalf-of note (User context menu "Open ticket for user") ─────────
   if (onBehalfOf) {
@@ -898,18 +962,18 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
   }
 
   // ─── Form answers (if this panel button opened a form first) ───────────────
-  if (formAnswers) {
+  if (formAnswers && Object.keys(formAnswers).length) {
     const transcript = Object.entries(formAnswers)
       .map(([question, answer]) => `**${question}**\n${answer}`)
       .join("\n\n");
 
     await channel.send({
       embeds: [{
-        title: "📋 Form Submission",
+        title: t("tkt.formSubmission", guildLang),
         description: transcript.slice(0, 4096),
         color: welcomeColor,
       }],
-    });
+    }).catch(() => {});
   }
 
   // ─── Knowledge Base auto-suggestion (v32, Premium/Free — gated by article count,
@@ -919,6 +983,7 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
   // quoted message > form answers > panel name (always available as a last resort).
   const kbQuery = quotedMessage
     || (formAnswers ? Object.values(formAnswers).join(" ") : null)
+    || openReason
     || panel.name
     || "";
   suggestAndPostKbArticle(channel, guild.id, kbQuery).catch(() => {});
@@ -947,7 +1012,9 @@ async function createTicketFromPanel(interaction, panel, formAnswers, opts = {})
     }).catch(() => {});
   }
 
-  await interaction.editReply(t("ticket.opened", await resolveLang(interaction), { channel: String(channel) }));
+  invalidateTicketChannel(channel.id);
+  await interaction.editReply(t("ticket.opened", lang, { channel: String(channel) }));
+  return { ok: true, channel, ticket: ticketResult };
 }
 
 // ─── Knowledge Base auto-suggestion (v32) ──────────────────────────────────
@@ -1018,65 +1085,46 @@ async function handleKbFeedback(interaction, articleId, helpful) {
   }
 }
 
-function parseColor(hex) {
-  if (!hex) return BRAND;
-  const clean = hex.replace("#", "");
-  const n = parseInt(clean, 16);
-  return Number.isFinite(n) ? n : BRAND;
-}
-
-async function logTicketEvent(guild, logChannelId, eventType, data) {
-  const logChannel = guild.channels.cache.get(logChannelId) || await guild.channels.fetch(logChannelId).catch(() => null);
-  if (!logChannel) return;
-
-  const { ticketNumber, padding = 4, channel, user, actor, reason, color, extra } = data;
-  const ticketTag = `#${String(ticketNumber ?? "").padStart(padding, "0")}`;
-
-  const icons = {
-    OPEN:       "🎫",
-    CLOSE:      "🔒",
-    REOPEN:     "🔓",
-    CLAIM:      "👋",
-    UNCLAIM:    "✋",
-    DELETE:     "🗑️",
-    RENAME:     "✏️",
-    TRANSCRIPT: "📜",
-  };
-
-  const lines = [
-    channel ? `**Channel**: ${channel}` : null,
-    user ? `**User**: <@${user.id}> (${user.username})` : null,
-    actor && (!user || actor.id !== user.id) ? `**By**: <@${actor.id}>` : null,
-    reason ? `**Reason**: ${reason}` : null,
-    extra ? `**Info**: ${extra}` : null,
-  ].filter(Boolean).join("\n");
-
-  await logChannel.send({
-    embeds: [{
-      title: `${icons[eventType] || "ℹ️"} Ticket ${eventType} · ${ticketTag}`,
-      description: lines,
-      color: color ?? BRAND,
-      timestamp: new Date().toISOString(),
-    }],
-  }).catch(() => {});
-}
-
 // Export so ticketHandler can use it too
 export { logTicketEvent, parseColor, createTicketFromPanel };
 
 // ─── Application Review Buttons ───────────────────────────────────────────────
 
-async function handleAppReview(interaction, appId, action) {
-  if (!interaction.member.permissions.has("ManageGuild")) {
-    return interaction.reply({
-      content: "❌ You need Manage Server permission to review applications.",
-      flags: MessageFlags.Ephemeral,
-    });
+// Т11: „мениджърите на кандидатури“ (ролите от формуляра, „can review alongside admins“) ревюират
+// редом с хората с Manage Server. Админът минава без заявка; за останалите ботът пита бекенда кои са
+// ролите на формуляра (скоуп по serverId, таван 2 s пред първия отговор) — при мълчание: отказ.
+async function canReviewApplications(interaction, appId) {
+  if (interaction.member?.permissions?.has("ManageGuild")) return true;
+  try {
+    const res = await capped(
+      api.get(`/bot/application/${appId}/reviewers`, { params: { serverId: interaction.guildId } }),
+      PRE_ACK_CAP_MS,
+      null,
+    );
+    const managers = res?.data?.managerRoleIds || [];
+    const mine = interaction.member?.roles?.cache;
+    return managers.some((r) => mine?.has?.(String(r)));
+  } catch {
+    return false;
   }
+}
+
+// Какво да чуе ревюърът при отказ от бекенда — без суровото съобщение.
+function reviewErrorKey(err) {
+  if (err?.response?.status === 409) return "app.review.alreadyReviewed"; // Т6: вече е решена
+  if (err?.response?.data?.code === "SELF_REVIEW") return "app.review.selfReview";
+  return "app.review.error";
+}
+
+export async function handleAppReview(interaction, appId, action) {
+  const lang = await capped(resolveLang(interaction), 800, resolveLangSync(interaction));
 
   // ── Open a ticket (discussion канал с кандидата, решението остава PENDING) ──
   if (action === "discuss") {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    if (!(await canReviewApplications(interaction, appId))) {
+      return interaction.editReply(t("app.review.noPermission", lang));
+    }
     try {
       const { data } = await api.post(`/bot/application/${appId}/discuss`, {
         serverId: interaction.guildId,
@@ -1084,14 +1132,16 @@ async function handleAppReview(interaction, appId, action) {
         reviewerTag: interaction.user.username,
       });
       await interaction.editReply(
-        data.alreadyExists
-          ? `💬 Discussion channel already open: <#${data.channelId}>`
-          : `✅ Discussion channel opened: <#${data.channelId}>`
+        t(data.alreadyExists ? "app.review.discussExists" : "app.review.discussOpened", lang, { channel: `<#${data.channelId}>` })
       );
     } catch (err) {
-      await interaction.editReply(`❌ Error: ${err?.response?.data?.error || err.message}`);
+      await interaction.editReply(t(reviewErrorKey(err), lang)).catch(() => {});
     }
     return;
+  }
+
+  if (!(await canReviewApplications(interaction, appId))) {
+    return interaction.reply({ content: t("app.review.noPermission", lang), flags: MessageFlags.Ephemeral });
   }
 
   // ── Approve / Deny → модал с причина, решението пада в modal submit-а ───────
@@ -1100,33 +1150,26 @@ async function handleAppReview(interaction, appId, action) {
   const isApprove = action === "approve";
   const modal = new ModalBuilder()
     .setCustomId(`app_review_modal:${appId}:${action}`)
-    .setTitle(isApprove ? "Approve application" : "Deny application");
+    .setTitle(t(isApprove ? "app.review.approveTitle" : "app.review.denyTitle", lang));
 
   const reasonInput = new TextInputBuilder()
     .setCustomId("reason")
-    .setLabel(isApprove ? "Reason / note for approval" : "Reason for denial")
+    .setLabel(t(isApprove ? "app.review.approveLabel" : "app.review.denyLabel", lang))
     .setStyle(TextInputStyle.Paragraph)
     .setRequired(true)
     .setMaxLength(1000)
-    .setPlaceholder(
-      isApprove
-        ? "Sent to the applicant in their DM ({note} in custom messages)."
-        : "Sent to the applicant so they know why."
-    );
+    .setPlaceholder(t(isApprove ? "app.review.approvePlaceholder" : "app.review.denyPlaceholder", lang));
 
   modal.addComponents(new ActionRowBuilder().addComponents(reasonInput));
   await interaction.showModal(modal);
 }
 
-async function handleAppReviewModalSubmit(interaction, appId, action) {
-  if (!interaction.member.permissions.has("ManageGuild")) {
-    return interaction.reply({
-      content: "❌ You need Manage Server permission to review applications.",
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
+export async function handleAppReviewModalSubmit(interaction, appId, action) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  const lang = await resolveLang(interaction);
+  if (!(await canReviewApplications(interaction, appId))) {
+    return interaction.editReply(t("app.review.noPermission", lang));
+  }
   const note = interaction.fields.getTextInputValue("reason")?.trim() || null;
 
   try {
@@ -1136,12 +1179,9 @@ async function handleAppReviewModalSubmit(interaction, appId, action) {
       serverId: interaction.guildId,
       reviewerId: interaction.user.id,
       reviewerTag: interaction.user.username,
+      // Собствената си кандидатура решава само човек с Manage Server (бекендът отказва иначе).
+      reviewerIsAdmin: !!interaction.member?.permissions?.has("ManageGuild"),
     });
-
-    const actionLabels = {
-      approve: "✅ Approved",
-      deny: "❌ Denied",
-    };
 
     // Disable all buttons on the review embed. Модалът е отворен от бутон на
     // съобщение → interaction.message е наличен на ModalSubmitInteraction.
@@ -1158,18 +1198,19 @@ async function handleAppReviewModalSubmit(interaction, appId, action) {
       await interaction.message.edit({ components: disabledRows }).catch(() => {});
       await interaction.message.reply({
         embeds: [buildStatusEmbed(
-          actionLabels[action] || action,
-          `Application ${action}d by **${interaction.user.username}**` +
-            (note ? `\n**Reason:** ${note.slice(0, 900)}` : ""),
+          t(action === "approve" ? "app.review.approvedTitle" : "app.review.deniedTitle", lang),
+          t(action === "approve" ? "app.review.approvedBy" : "app.review.deniedBy", lang, { user: interaction.user.username }) +
+            (note ? `\n${t("app.review.reasonLine", lang, { note: note.slice(0, 900) })}` : ""),
           action === "approve" ? SUCCESS : action === "deny" ? DANGER : INFO,
           { client: interaction.client }
         )],
       }).catch(() => {});
     }
 
-    await interaction.editReply("✅ Done!");
+    await interaction.editReply(t("app.review.done", lang));
   } catch (err) {
-    await interaction.editReply(`❌ Error: ${err?.response?.data?.error || err.message}`);
+    // Т6: вторият ревюър (409) чува ясно „вече е прегледана“; суровото съобщение не стига до човека.
+    await interaction.editReply(t(reviewErrorKey(err), lang)).catch(() => {});
   }
 }
 
@@ -1185,23 +1226,44 @@ function isTicketStaff(interaction, panel) {
 }
 
 // Единен ephemeral отказ за тикет действия без права.
+// Пред първия отговор → синхронен език (без мрежа, Т13).
 async function denyTicketAction(interaction) {
-  const lang = await resolveLang(interaction);
   return interaction.reply({
-    content: t("ticket.staffOnly", lang),
+    content: t("ticket.staffOnly", resolveLangSync(interaction)),
     flags: MessageFlags.Ephemeral,
   });
 }
 
+// Отговор, който е валиден във всяко състояние на interaction-а: преди ack →
+// reply, след defer → editReply, след reply → followUp. (Преди: `reply` след
+// defer хвърляше и грешката се глътваше — човекът виждаше само „thinking“.)
+async function answer(interaction, payload) {
+  const p = typeof payload === "string" ? { content: payload } : payload;
+  if (interaction.deferred) return interaction.editReply({ ...p, components: p.components ?? [] });
+  if (interaction.replied) return interaction.followUp({ ...p, flags: MessageFlags.Ephemeral });
+  return interaction.reply({ ...p, flags: MessageFlags.Ephemeral });
+}
+
 async function handleTicketAction(interaction, action, ticketId) {
   try {
-    const lang = await resolveLang(interaction);
-    // Look up the ticket + its panel (for config)
-    const { data: ticket } = await api.get(`/bot/ticket/${ticketId}`).catch(() => ({ data: null }));
-    if (!ticket) {
-      return interaction.reply({ content: t("ticket.notFound", lang), flags: MessageFlags.Ephemeral });
+    const syncLang = resolveLangSync(interaction);
+    // Т13: заявката пред първия отговор е с таван 2.5 s (Discord: 3 s).
+    let ticket;
+    try {
+      ({ data: ticket } = await api.get(`/bot/ticket/${ticketId}`, { timeout: 2500 }));
+    } catch (err) {
+      const notFound = err?.response?.status === 404;
+      return interaction.reply({
+        content: t(notFound ? "ticket.notFound" : "tkt.slow", syncLang),
+        flags: MessageFlags.Ephemeral,
+      });
     }
-    const panel = ticket.panel || (ticket.panelId ? await api.get(`/bot/panel/${ticket.panelId}`).then(r => r.data).catch(() => null) : null);
+    // Изолация: бутон от друг сървър (или копиран customId) не пипа чужд тикет.
+    if (!ticket || (ticket.serverId && ticket.serverId !== interaction.guildId)) {
+      return interaction.reply({ content: t("ticket.notFound", syncLang), flags: MessageFlags.Ephemeral });
+    }
+    // Т5: панелът идва изчистен по план от бекенда (един `getPanel` за всички пътища).
+    const panel = ticket.panel || null;
 
     // ── Authz (OWASP A01) ────────────────────────────────────────────────
     // Всяко действие, което променя/чете тикета, изисква права на support
@@ -1233,14 +1295,15 @@ async function handleTicketAction(interaction, action, ticketId) {
         return handleTicketDelete(interaction, ticket, panel);
       case "delete-cancel": return interaction.update({ components: [] }).catch(() => {});
       default:
-        return interaction.reply({ content: t("ticket.unknownAction", lang), flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: t("ticket.unknownAction", syncLang), flags: MessageFlags.Ephemeral });
     }
   } catch (err) {
     console.error("[ticket-action]", action, err?.response?.data || err?.message);
-    return interaction.reply({
-      content: `❌ Error: ${err?.response?.data?.error || err.message}`,
-      flags: MessageFlags.Ephemeral,
-    }).catch(() => {});
+    // Сурово `err.message`/английски текст на бекенда не стига до човека (Т17).
+    const lang = resolveLangSync(interaction);
+    const code = err?.response?.data?.code;
+    const text = code ? describeActionConflict(code, lang) : t("tkt.err.generic", lang);
+    return answer(interaction, text).catch(() => {});
   }
 }
 
@@ -1258,7 +1321,7 @@ async function handleTicketClosePrompt(interaction, ticket, panel) {
     panel:  { name: panel?.name },
   };
   const askMsg = interpolate(panel?.closeAskMessage || defaultCloseAskMessage(), ctx);
-  const lang = await resolveLang(interaction);
+  const lang = resolveLangSync(interaction);
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId(`ticket:close-confirm:${ticket.id}`).setLabel(t("ticket.closeConfirmYes", lang)).setStyle(4).setEmoji("🔒"),
@@ -1271,226 +1334,69 @@ async function handleTicketClosePrompt(interaction, ticket, panel) {
   });
 }
 
-// Exported so /ticket close (ticket.js) shares the exact same close behavior
-// as the Close button — archive + mod buttons, never an outright delete.
+// Т2: бутонът Close, `/ticket close` и (през `closeTicket`) таблото, неактивността
+// и напусналият създател минават през ЕДНАТА функция в utils/ticketLifecycle.js.
+// Тук е само обвивката за interaction: defer → затваряне → отговор.
 export async function handleTicketCloseFinalize(interaction, ticket, panel, reason = null) {
   if (!interaction.deferred && !interaction.replied) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
   }
   const lang = await resolveLang(interaction);
-  console.log(`[ticket:close] 🔵 START — ticketId=${ticket.id}`);
+  const safeReason = reason ? String(reason).slice(0, CLOSE_REASON_MAX) : null;
 
-  // Call backend to close (sets status=CLOSED, closedAt, closeReason, generates transcript)
-  let closeResult;
+  let result;
   try {
-    const { data } = await api.post(`/bot/ticket/${ticket.id}/close`, {
+    result = await closeTicket(interaction.client, {
+      ticketId: ticket.id,
+      guildId: interaction.guildId,
       closedById: interaction.user.id,
-      reason,
+      reason: safeReason,
+      source: "manual",
+      channel: interaction.channel,
+      lang: await resolveLangForGuild(interaction.guildId),
     });
-    closeResult = data;
-    console.log(`[ticket:close] ✅ Backend OK — archiveUrl=${data?.archiveUrl}, fullArchiveUrl=${data?.fullArchiveUrl}, transcriptChannelId=${data?.transcriptChannelId}`);
   } catch (err) {
-    console.error(`[ticket:close] ❌ Backend FAILED:`, err?.response?.data || err.message);
+    console.error(`[ticket:close] backend failed:`, err?.response?.data || err?.message);
     return interaction.editReply(friendlyError(err, interaction));
   }
 
-  const channel = interaction.channel;
-  const guild = interaction.guild;
-  const isThread = typeof channel?.isThread === "function" && channel.isThread();
-
-  // Move to closed category (if configured). Threads have no setParent — their
-  // "closed" state is archive+lock instead (done at the end of this function,
-  // after the close message has been posted into the thread).
-  if (!isThread && panel?.categoryClosedId && channel?.parent?.id !== panel.categoryClosedId) {
-    await channel.setParent(panel.categoryClosedId, { lockPermissions: false }).catch(() => {});
+  if (!result.ok) {
+    return interaction.editReply({ content: describeActionConflict(result.code, lang), components: [] });
   }
-
-  // Revoke send permissions for the ticket creator (so they can't spam after close)
-  if (ticket.creatorId && channel?.permissionOverwrites) {
-    await channel.permissionOverwrites.edit(ticket.creatorId, {
-      SendMessages: false,
-    }).catch(() => {});
-  }
-
-  // ─── Auto-post transcript link to transcriptChannelId ──────────────────────
-  const transcriptChannelId = panel?.transcriptChannelId || closeResult?.transcriptChannelId;
-  let transcriptUrl = closeResult?.fullArchiveUrl;
-
-  // Ensure transcriptUrl is absolute — Discord embed URL field requires http(s)://
-  if (transcriptUrl && !transcriptUrl.startsWith("http")) {
-    console.warn(`[ticket:close] ⚠️ transcriptUrl is relative (${transcriptUrl}) — Discord will reject embed URL. Skipping embed URL field.`);
-    transcriptUrl = null;
-  }
-
-  console.log(`[ticket:close] Transcript post — channelId=${transcriptChannelId}, url=${transcriptUrl}`);
-
-  if (transcriptChannelId && transcriptUrl) {
-    try {
-      const transcriptChannel = await guild.channels.fetch(transcriptChannelId).catch((e) => {
-        console.error(`[ticket:close] ❌ Cannot fetch transcript channel ${transcriptChannelId}:`, e.message);
-        return null;
-      });
-      if (!transcriptChannel) {
-        console.warn(`[ticket:close] ⚠️ Transcript channel ${transcriptChannelId} not found in guild ${guild.id}`);
-      } else if (!transcriptChannel.isTextBased?.()) {
-        console.warn(`[ticket:close] ⚠️ Channel ${transcriptChannelId} is not text-based (type=${transcriptChannel.type})`);
-      } else {
-        // Verify bot has SendMessages permission
-        const me = guild.members.me || await guild.members.fetchMe().catch(() => null);
-        const perms = me ? transcriptChannel.permissionsFor(me) : null;
-        if (perms && !perms.has("SendMessages")) {
-          console.error(`[ticket:close] ❌ Bot missing SendMessages permission in transcript channel ${transcriptChannelId}`);
-        } else {
-          const creatorMention = ticket.creatorId ? `<@${ticket.creatorId}>` : "unknown";
-          const ticketLabel = ticket.number != null
-            ? `#${String(ticket.number).padStart(panel?.counterPadding ?? 4, "0")}`
-            : ticket.id.slice(-8);
-
-          const sent = await transcriptChannel.send({
-            embeds: [{
-              title: `📜 Ticket Transcript — ${ticketLabel}`,
-              description:
-                `**Channel:** ${channel.name}\n` +
-                `**Creator:** ${creatorMention}\n` +
-                `**Closed by:** <@${interaction.user.id}>\n` +
-                `**Panel:** ${panel?.name || "Unknown"}`,
-              color: BRAND,
-              url: transcriptUrl,
-              timestamp: new Date().toISOString(),
-              footer: { text: `Ticket ID: ${ticket.id}` },
-            }],
-            components: [new ActionRowBuilder().addComponents(
-              new ButtonBuilder()
-                .setStyle(5) // LINK
-                .setLabel("📜 View Transcript")
-                .setURL(transcriptUrl)
-            )],
-          });
-          console.log(`[ticket:close] ✅ Transcript embed posted — messageId=${sent.id}`);
-        }
-      }
-    } catch (err) {
-      console.error(`[ticket:close] ❌ Failed to post transcript:`, err.message, err.code);
-    }
-  } else {
-    console.log(`[ticket:close] ℹ️ No transcript post — channelId=${transcriptChannelId ? "set" : "missing"}, url=${transcriptUrl ? "set" : "missing"}`);
-  }
-
-  // Post "moderator message" with Reopen / Delete / Transcript buttons
-  const modRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`ticket:reopen:${ticket.id}`).setLabel("Reopen").setStyle(3).setEmoji("🔓"),
-    new ButtonBuilder().setCustomId(`ticket:delete:${ticket.id}`).setLabel("Delete").setStyle(4).setEmoji("🗑️"),
-    new ButtonBuilder().setCustomId(`ticket:transcript:${ticket.id}`).setLabel("View Transcript").setStyle(2).setEmoji("📜"),
-  );
-  const closeHeader = reason ? `Closed by <@${interaction.user.id}>.\n**Reason:** ${reason}` : `Closed by <@${interaction.user.id}>.`;
-  const closeEmbedDesc = transcriptUrl
-    ? `${closeHeader}\n\n[📜 View Full Transcript](${transcriptUrl})\n\nModerators: use the buttons below.`
-    : `${closeHeader}\n\nModerators: use the buttons below.`;
-
-  await channel.send({
-    embeds: [{
-      title: "🔒 Ticket Closed",
-      description: closeEmbedDesc,
-      color: DANGER,
-      timestamp: new Date().toISOString(),
-    }],
-    components: [modRow],
-  }).catch((e) => console.error(`[ticket:close] ❌ Failed to post close message in channel:`, e.message));
-
-  // DM the creator
-  if (panel?.dmOnClose && panel?.dmOnCloseMessage) {
-    try {
-      const creator = await interaction.client.users.fetch(ticket.creatorId).catch(() => null);
-      if (creator) {
-        const { interpolate } = await import("../utils/variables.js");
-        const ctx = {
-          user:   { id: ticket.creatorId },
-          ticket: { id: ticket.id, number: ticket.number, padding: panel?.counterPadding ?? 4 },
-          server: { id: interaction.guildId, name: guild?.name },
-          panel:  { name: panel?.name },
-        };
-        await creator.send({
-          embeds: [{
-            description: interpolate(panel.dmOnCloseMessage, ctx),
-            color: BRAND,
-            footer: { text: guild?.name },
-          }],
-        });
-      }
-    } catch { /* DMs disabled */ }
-  }
-
-  // Feedback prompt (if enabled)
-  if (panel?.feedbackEnabled && ticket.creatorId) {
-    try {
-      const creator = await interaction.client.users.fetch(ticket.creatorId).catch(() => null);
-      if (creator) {
-        const row = new ActionRowBuilder().addComponents(
-          [1, 2, 3, 4, 5].map((n) => new ButtonBuilder()
-            .setCustomId(`feedback:${ticket.id}:${n}`)
-            .setLabel(`${n} ${"⭐".repeat(n)}`)
-            .setStyle(2))
-        );
-        await creator.send({
-          embeds: [{
-            title: "How was your support experience?",
-            description: `Please rate the service you received in ticket **#${String(ticket.number ?? "").padStart(panel?.counterPadding ?? 4, "0")}**.`,
-            color: BRAND,
-            footer: { text: guild?.name },
-          }],
-          components: [row],
-        });
-      }
-    } catch { /* DMs disabled */ }
-  }
-
-  // Log event
-  if (panel?.logChannelId) {
-    await logTicketEvent?.(guild, panel.logChannelId, "CLOSE", {
-      ticketNumber: ticket.number, padding: panel?.counterPadding ?? 4,
-      channel, user: { id: ticket.creatorId, username: "user" }, actor: interaction.user,
-      color: DANGER,
-    }).catch(() => {});
-  }
-
-  // Threads have no category/permission-overwrite based "closed" state —
-  // lock + archive instead, done LAST so the close/transcript messages above
-  // still land while the thread is open.
-  if (isThread) {
-    await channel.setLocked(true).catch(() => {});
-    await channel.setArchived(true).catch(() => {});
-  }
-
-  await interaction.editReply(t("ticket.closedConfirm", lang));
+  const warn = result.warnings?.length ? `\n${t("tkt.closedWithWarnings", lang)}` : "";
+  await interaction.editReply({ content: `${t("ticket.closedConfirm", lang)}${warn}`, components: [] });
 }
 
 async function handleTicketClaim(interaction, ticket, panel) {
   // Проверката за права остава ПРЕДИ defer (ephemeral отказ).
   if (!isTicketStaff(interaction, panel)) {
-    const lang = await resolveLang(interaction);
-    return interaction.reply({ content: t("ticket.claimStaffOnly", lang), flags: MessageFlags.Ephemeral });
+    return interaction.reply({ content: t("ticket.claimStaffOnly", resolveLangSync(interaction)), flags: MessageFlags.Ephemeral });
   }
 
-  // Defer преди backend заявката — claim обявата е публична, затова defer публичен.
-  await interaction.deferReply().catch(() => {});
+  // Т4: defer е ЕФИМЕРЕН — отказ („Premium“, „вече е поет“, „затворен“) се вижда
+  // само на персонала, не в канала на клиента. Успехът се обявява публично долу.
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
   const lang = await resolveLang(interaction);
 
   try {
     await api.post(`/bot/ticket/${ticket.id}/claim`, { userId: interaction.user.id });
   } catch (err) {
-    return interaction.editReply({ content: `❌ ${err?.response?.data?.error || err.message}` });
+    const code = err?.response?.data?.code;
+    return interaction.editReply({ content: code ? describeActionConflict(code, lang) : t("tkt.err.generic", lang) });
   }
 
-  await interaction.editReply({
+  const announce = {
     embeds: [{
-      description: t("ticket.claimedConfirm", lang, { user: `<@${interaction.user.id}>` }),
+      description: t("ticket.claimedConfirm", await resolveLangForGuild(interaction.guildId), { user: `<@${interaction.user.id}>` }),
       color: BRAND,
     }],
-  });
+    allowedMentions: { parse: [] },
+  };
+  await interaction.channel.send(announce).catch(() => {});
+  await interaction.editReply({ content: t("tkt.claimedAck", lang) });
 
   if (panel?.logChannelId) {
-    const { logTicketEvent } = await import("./interactionCreate.js").catch(() => ({}));
-    await logTicketEvent?.(interaction.guild, panel.logChannelId, "CLAIM", {
+    await logTicketEvent(interaction.guild, panel.logChannelId, "CLAIM", {
       ticketNumber: ticket.number, padding: panel?.counterPadding ?? 4,
       channel: interaction.channel, actor: interaction.user, color: BRAND,
     }).catch(() => {});
@@ -1508,60 +1414,70 @@ async function handleTicketTranscript(interaction, ticket, panel) {
       await interaction.editReply(t("ticket.transcriptSaved", lang));
     }
   } catch (err) {
-    await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+    await interaction.editReply(t("tkt.err.generic", lang));
   }
 }
 
+// Т3: нишката се отключва/разархивира с setLocked/setArchived — БЕЗ setParent и
+// permissionOverwrites (ThreadChannel ги няма: синхронен TypeError, който .catch
+// не хваща). Съществената стъпка за нишка е ПРЕДИ записа в базата: при провал
+// базата и Discord не се разминават.
 async function handleTicketReopen(interaction, ticket, panel) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   const lang = await resolveLang(interaction);
+  const channel = interaction.channel;
+
+  if (ticket.status && ticket.status !== "CLOSED") {
+    return interaction.editReply(describeActionConflict("NOT_CLOSED", lang));
+  }
+
+  let discordStep;
+  try {
+    discordStep = await reopenTicketChannel(channel, panel, ticket);
+  } catch (err) {
+    console.error(`[ticket:reopen] Discord step failed: ${err?.code} ${err?.message}`);
+    return interaction.editReply(describeTicketError(err, lang, { thread: true }));
+  }
 
   try {
     await api.post(`/bot/ticket/${ticket.id}/reopen`, { reopenerId: interaction.user.id });
   } catch (err) {
-    return interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+    // Базата отказа (напр. вече е отворен) → връщаме нишката в затворено състояние.
+    if (typeof channel?.isThread === "function" && channel.isThread()) {
+      await channel.setLocked(true).catch(() => {});
+      await channel.setArchived(true).catch(() => {});
+    }
+    const code = err?.response?.data?.code;
+    return interaction.editReply(code ? describeActionConflict(code, lang) : t("tkt.err.generic", lang));
   }
 
-  const channel = interaction.channel;
-
-  // Move back to open category
-  const openCategory = panel?.categoryOpenId || panel?.categoryId;
-  if (openCategory && channel?.parent?.id !== openCategory) {
-    await channel.setParent(openCategory, { lockPermissions: false }).catch(() => {});
-  }
-
-  // Restore creator's SendMessages
-  if (ticket.creatorId && channel?.permissionOverwrites) {
-    await channel.permissionOverwrites.edit(ticket.creatorId, {
-      SendMessages: true,
-    }).catch(() => {});
-  }
+  invalidateTicketChannel(channel?.id || ticket.channelId);
 
   await channel.send({
     embeds: [{
-      title: t("ticket.reopenedTitle", lang),
-      description: t("ticket.reopenedBody", lang, { user: `<@${interaction.user.id}>` }),
+      title: t("ticket.reopenedTitle", await resolveLangForGuild(interaction.guildId)),
+      description: t("ticket.reopenedBody", await resolveLangForGuild(interaction.guildId), { user: `<@${interaction.user.id}>` }),
       color: SUCCESS,
       timestamp: new Date().toISOString(),
     }],
-  });
+  }).catch(() => {});
 
   if (panel?.logChannelId) {
-    const { logTicketEvent } = await import("./interactionCreate.js").catch(() => ({}));
-    await logTicketEvent?.(interaction.guild, panel.logChannelId, "REOPEN", {
+    await logTicketEvent(interaction.guild, panel.logChannelId, "REOPEN", {
       ticketNumber: ticket.number, padding: panel?.counterPadding ?? 4,
       channel, actor: interaction.user, color: SUCCESS,
     }).catch(() => {});
   }
 
-  await interaction.editReply(t("ticket.reopenedConfirm", lang));
+  const warn = discordStep?.warnings?.length ? `\n${t("tkt.closedWithWarnings", lang)}` : "";
+  await interaction.editReply(`${t("ticket.reopenedConfirm", lang)}${warn}`);
 }
 
 // Deletion is destructive and irreversible — same two-step confirm pattern as
 // close (handleTicketClosePrompt/Finalize above), so a stray click can't wipe
 // a ticket channel.
 async function handleTicketDeletePrompt(interaction, ticket, panel) {
-  const lang = await resolveLang(interaction);
+  const lang = resolveLangSync(interaction);
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId(`ticket:delete-confirm:${ticket.id}`).setLabel(t("ticket.deleteConfirmYes", lang)).setStyle(4).setEmoji("🗑️"),
     new ButtonBuilder().setCustomId(`ticket:delete-cancel:${ticket.id}`).setLabel(t("ticket.closeConfirmCancel", lang)).setStyle(2)
@@ -1584,18 +1500,18 @@ async function handleTicketDelete(interaction, ticket, panel) {
   // Generate transcript before delete (fire-and-forget)
   api.post(`/bot/ticket/${ticket.id}/transcript`, {}).catch(() => {});
 
-  // Backend hard-delete + event logging
+  // Backend soft-delete (ARCHIVED) + webhook TICKET_DELETE
   try {
     await api.post(`/bot/ticket/${ticket.id}/delete`, { deleterId: interaction.user.id });
   } catch { /* ignore — delete channel anyway */ }
 
+  invalidateTicketChannel(interaction.channelId);
   setTimeout(async () => {
     await interaction.channel.delete("Ticket deleted by staff").catch(() => {});
   }, 5000);
 
   if (panel?.logChannelId) {
-    const { logTicketEvent } = await import("./interactionCreate.js").catch(() => ({}));
-    await logTicketEvent?.(interaction.guild, panel.logChannelId, "DELETE", {
+    await logTicketEvent(interaction.guild, panel.logChannelId, "DELETE", {
       ticketNumber: ticket.number, padding: panel?.counterPadding ?? 4,
       channel: interaction.channel, actor: interaction.user, color: DANGER,
     }).catch(() => {});
@@ -1617,6 +1533,7 @@ async function handleFeedback(interaction, ticketId, rating) {
   // за да не изтече 3-секундният бюджет преди backend заявката. После editReply
   // редактира съобщението с бутоните.
   await interaction.deferUpdate().catch(() => {});
+  const lang = resolveLangSync(interaction);
   try {
     await api.post(`/bot/ticket/${ticketId}/feedback`, {
       rating,
@@ -1624,13 +1541,13 @@ async function handleFeedback(interaction, ticketId, rating) {
     });
     await interaction.editReply({
       embeds: [{
-        description: `Thanks for your feedback! You rated **${rating} / 5** ${"⭐".repeat(rating)}`,
+        description: t("tkt.feedbackThanks", lang, { rating, stars: "⭐".repeat(rating) }),
         color: SUCCESS,
       }],
       components: [],
     });
   } catch (err) {
-    await interaction.followUp({ content: `❌ ${err?.response?.data?.error || err.message}`, flags: MessageFlags.Ephemeral });
+    await interaction.followUp({ content: t("tkt.err.generic", lang), flags: MessageFlags.Ephemeral });
   }
 }
 
@@ -1641,14 +1558,13 @@ async function handleFeedback(interaction, ticketId, rating) {
 const pendingMathChallenges = new Map(); // `${userId}:${panelId}` → { answer, expiresAt }
 const MATH_CHALLENGE_TTL = 5 * 60 * 1000;
 
-async function handleVerificationStart(interaction, panelId) {
-  const lang = await resolveLang(interaction);
-  let panel;
-  try {
-    const { data } = await api.get(`/verification/bot/${panelId}`);
-    panel = data;
-  } catch {
-    return interaction.reply({ content: t("verify.panelNotFound", lang), flags: MessageFlags.Ephemeral });
+export async function handleVerificationStart(interaction, panelId) {
+  // В3: нито един hop без таван пред първия отговор. Езикът е от локала на човека (синхронно),
+  // панелът — от кеш с таван 2 s; при изтичане честно „опитай пак“ вместо „interaction failed“.
+  const lang = resolveLangSync(interaction);
+  const panel = await loadVerificationPanelCapped(panelId);
+  if (!panel) {
+    return interaction.reply({ content: t(panel === false ? "verify.panelNotFound" : "verify.error", lang), flags: MessageFlags.Ephemeral });
   }
 
   // Anti-bot: minimum account age
@@ -1703,32 +1619,26 @@ async function handleVerificationStart(interaction, panelId) {
 }
 
 async function handleVerificationMathSubmit(interaction, panelId) {
+  // Модалът вече е отговорен; defer първо, после всичко останало (В3).
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
   const lang = await resolveLang(interaction);
   const challengeKey = `${interaction.user.id}:${panelId}`;
   const challenge = pendingMathChallenges.get(challengeKey);
   pendingMathChallenges.delete(challengeKey);
   if (!challenge || challenge.expiresAt <= Date.now()) {
-    return interaction.reply({
-      content: t("verify.challengeExpired", lang),
-      flags: MessageFlags.Ephemeral,
-    });
+    return interaction.editReply({ content: t("verify.challengeExpired", lang) });
   }
 
   const userAnswer = interaction.fields.getTextInputValue("answer").trim();
   const correct = userAnswer === challenge.answer;
 
-  let panel;
-  try {
-    const { data } = await api.get(`/verification/bot/${panelId}`);
-    panel = data;
-  } catch {
-    return interaction.reply({ content: t("verify.panelNotFound", lang), flags: MessageFlags.Ephemeral });
-  }
+  const panel = await loadVerificationPanelCapped(panelId, 8000);
+  if (!panel) return interaction.editReply({ content: t(panel === false ? "verify.panelNotFound" : "verify.error", lang) });
 
   await completeVerification(interaction, panel, correct, userAnswer);
 }
 
-async function completeVerification(interaction, panel, success, answer) {
+export async function completeVerification(interaction, panel, success, answer) {
   // Defer преди backend заявката + прилагането на ролите (може да отнеме >3s).
   // Извиква се от бутон (BUTTON/REACTION) и от modal submit (MATH) — и двата
   // очакват отговор до 3s, затова ack-ваме ephemeral веднага, после editReply.
@@ -1747,10 +1657,11 @@ async function completeVerification(interaction, panel, success, answer) {
     });
     result = data;
   } catch (err) {
+    // З11: суровото err.message / текстът на бекенда не стига до човека.
     if (err?.response?.status === 429) {
-      return interaction.editReply({ content: `❌ ${err.response.data.error}` });
+      return interaction.editReply({ content: t("verify.cooldown", lang, { minutes: err.response.data?.cooldownMinutes ?? panel.cooldownMinutes ?? 5 }) });
     }
-    return interaction.editReply({ content: `❌ ${err?.message || "Error"}` });
+    return interaction.editReply({ content: t("verify.error", lang) });
   }
 
   if (!success) {
@@ -1761,15 +1672,40 @@ async function completeVerification(interaction, panel, success, answer) {
 
   // Success — apply roles
   const member = interaction.member;
+  // В2: вече държи всички роли за даване → нищо не се пипа. Без това свалена „Verified“ или
+  // наказателна роля от `removeRoleIds` се връщаше с един клик.
+  const grant = result.grantRoleIds || [];
+  if (grant.length > 0 && grant.every((r) => member.roles.cache.has(r))) {
+    return interaction.editReply({ content: t("verify.alreadyVerified", lang) });
+  }
   const added = [];
   const failed = [];
+  const botMember = interaction.guild?.members?.me;
   for (const roleId of (result.grantRoleIds || [])) {
+    // Същият гард като autorole, лепкавите роли, реакциите и играта: опасна,
+    // управлявана или над бота роля НЕ се дава. Без него човек само с Manage
+    // Server слагаше роля с Administrator в панела и се верифицираше сам
+    // (червен екип, 10.10.2026).
+    const role = interaction.guild?.roles?.cache?.get(roleId)
+      || await interaction.guild?.roles?.fetch(roleId).catch(() => null);
+    const unsafe = roleAssignabilityReason(role, botMember);
+    if (unsafe) { failed.push({ roleId, reason: unsafe }); continue; }
     try {
       await member.roles.add(roleId, "Verified via Supreme Bot");
       added.push(roleId);
     } catch (err) {
       failed.push({ roleId, reason: err.message });
     }
+  }
+  // В1: имаше роли за даване, а нито една не е дадена → НЕ е успех. Човекът остава заключен,
+  // затова му казваме истината, а екипът получава предупреждение в лог канала.
+  if (grant.length > 0 && added.length === 0) {
+    await interaction.editReply({ content: t("verify.noRolesGiven", lang) });
+    await postVerifyLog(interaction, result.logChannelId, {
+      description: t("verify.logNoRoles", lang, { user: `<@${interaction.user.id}>`, panel: panel.name }),
+      color: WARNING,
+    });
+    return;
   }
   for (const roleId of (result.removeRoleIds || [])) {
     await member.roles.remove(roleId, "Verified via Supreme Bot").catch(() => {});
@@ -1811,6 +1747,14 @@ async function completeVerification(interaction, panel, success, answer) {
       }
     } catch {}
   }
+}
+
+async function postVerifyLog(interaction, logChannelId, { description, color }) {
+  if (!logChannelId) return;
+  try {
+    const logCh = await interaction.guild.channels.fetch(logChannelId).catch(() => null);
+    if (logCh) await logCh.send({ embeds: [{ description, color, timestamp: new Date().toISOString() }] });
+  } catch { /* лог каналът е само сигнал */ }
 }
 
 // ─── Panel handler: verification gate (v1.7) ─────────────────────────────────
@@ -1858,32 +1802,31 @@ async function handlePollVote(interaction, pollId, optionIdx) {
   }
 }
 
-async function handleGiveawayEnter(interaction, giveawayId) {
+export async function handleGiveawayEnter(interaction, giveawayId) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  const lang = await resolveLang(interaction);
   try {
+    // Р1 / А4: ролите на човека се пращат ПРЕДИ записа — бекендът решава (403 ROLE_REQUIRED,
+    // fail closed). Преди това записът ставаше първо и се „връщаше“ с втори toggle.
     const { data } = await api.post(`/bot/giveaway/${giveawayId}/enter`, {
+      serverId: interaction.guildId,
       userId: interaction.user.id,
+      memberRoleIds: [...(interaction.member?.roles?.cache?.keys?.() ?? [])].map(String),
     });
 
-    // Check required roles AFTER entry — simpler than pre-check; backend allows entry
-    // then bot verifies here and removes if missing roles
-    if (data.entered && data.requiredRoleIds?.length > 0) {
-      const missing = data.requiredRoleIds.filter((r) => !interaction.member.roles.cache.has(r));
-      if (missing.length > 0) {
-        // Remove the entry and tell the user
-        await api.post(`/bot/giveaway/${giveawayId}/enter`, { userId: interaction.user.id }).catch(() => {});
-        return interaction.editReply(`❌ You need these roles to enter: ${missing.map((r) => `<@&${r}>`).join(", ")}`);
-      }
-    }
-
     // Refresh the giveaway message
-    const { data: g } = await api.get(`/bot/giveaway/${giveawayId}`);
+    const { data: g } = await api.get(`/bot/giveaway/${giveawayId}`, { params: { serverId: interaction.guildId } });
     const { buildGiveawayMessage } = await import("../commands/giveaway.js");
     const { embeds, components } = buildGiveawayMessage(g, g.entryCount);
     await interaction.message.edit({ embeds, components }).catch(() => {});
 
-    await interaction.editReply(data.entered ? "🎉 You're entered! Good luck!" : "You left the giveaway.");
+    await interaction.editReply(data.entered ? t("giveaway.entered", lang) : t("giveaway.left", lang));
   } catch (err) {
-    await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+    const body = err?.response?.data;
+    if (err?.response?.status === 403 && body?.error === "ROLE_REQUIRED") {
+      const roles = (body.missingRoleIds || body.requiredRoleIds || []).filter((r) => /^\d{17,20}$/.test(String(r))).map((r) => `<@&${r}>`).join(", ");
+      return interaction.editReply(t("giveaway.rolesRequired", lang, { roles }));
+    }
+    await interaction.editReply(t("giveaway.error", lang)).catch(() => {});
   }
 }

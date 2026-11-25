@@ -3,6 +3,10 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
+import { isLocale } from '@/i18n/locales';
+import { profileHasActiveBlock } from '@/lib/profile-blocks';
+import { RETENTION_DAYS, daysAgo } from '@/lib/retention-days';
+import { clientIpKey, rateLimit } from '@/lib/rate-limit';
 
 const messageSchema = z.object({
   name: z.string().trim().max(100).optional(),
@@ -24,7 +28,7 @@ export async function submitContactAction(formData: FormData): Promise<void> {
   // се чистят при всяко ново изпращане — без отделен cron.
   await prisma.contactMessage
     .deleteMany({
-      where: { createdAt: { lt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) } },
+      where: { createdAt: { lt: daysAgo(RETENTION_DAYS.contactMessage) } },
     })
     .catch(() => undefined);
 
@@ -40,14 +44,21 @@ export async function submitContactAction(formData: FormData): Promise<void> {
     where: { slug },
     select: { id: true, published: true, bannedAt: true },
   });
-  if (profile?.published && !profile.bannedAt) {
+  // Само профил с активен FORM блок приема съобщения; лимит по IP.
+  if (
+    profile?.published &&
+    !profile.bannedAt &&
+    (await profileHasActiveBlock(profile.id, 'FORM')) &&
+    rateLimit(`contact:${await clientIpKey()}`, 5, 10 * 60_000)
+  ) {
     await prisma.contactMessage.create({
       data: {
         profileId: profile.id,
         name: parsed.data.name || null,
         email: parsed.data.email || null,
         message: parsed.data.message,
-        locale: hl || null,
+        // hl идва от формата — само валиден език (иначе до ~9 MB низ на запис).
+        locale: isLocale(hl) ? hl : null,
       },
     });
   }

@@ -21,29 +21,59 @@ jobs:
   behavioral:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # Само четене: тук е ключът и се изпълнява инсталираният CLI — без право за запис в репото.
     permissions:
-      contents: write # САМО за да върне trend.jsonl — виж стъпката „Запази тренда"
+      contents: read
+    outputs:
+      has_key: ${{ steps.key.outputs.has_key }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2, пинат по SHA
-      - name: Claude Code CLI (headless)
-        if: ${{ env.HAS_KEY == 'true' }}
-        run: npm install -g @anthropic-ai/claude-code
+        with:
+          persist-credentials: false
+      - name: Има ли ключ?
+        id: key
         env:
           HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        run: echo "has_key=$HAS_KEY" >> "$GITHUB_OUTPUT"
+      - name: Claude Code CLI (headless)
+        if: ${{ steps.key.outputs.has_key == 'true' }}
+        # Точна версия (npm registry 2026-11-15; MIN_CLI в tools/lib/cli-version.mjs е 2.1.319).
+        # Без --ignore-scripts: postinstall (install.cjs) връзва нативния бинар. Ъпгрейд — ръчно, с ревю.
+        run: npm install -g @anthropic-ai/claude-code@2.1.325
       - name: Headless рън на критичните агенти + скориране + верификатор
         run: node tools/agents/evals/headless-run.mjs
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Тренд като artifact (за job-а, който го връща в репото)
+        if: ${{ steps.key.outputs.has_key == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: eval-trend
+          path: tools/agents/evals/trend.jsonl
+          if-no-files-found: error
+          retention-days: 3
 
-      # Одит Кръг 8 (2026-08-04): дотук евалът пишеше `evals/trend.jsonl` ВЪТРЕ в runner-а и
-      # файлът умираше с него — нито артефакт, нито комит, а правата бяха само `read`. Значи
-      # месечният рън харчеше API пари и ИЗПАРЯВАШЕ резултата си: трендът в git стоеше празен,
-      # макар механизмът да съществува. Поведенческа регресия НЕ може да се види от една точка —
-      # тренд без история е нула. Затова резултатът се връща в репото.
-      - name: Запази тренда (иначе измерването изпарява)
-        if: ${{ env.HAS_KEY == 'true' }}
-        env:
-          HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+  # Одит Кръг 8 (2026-08-04): евалът пишеше `evals/trend.jsonl` ВЪТРЕ в runner-а и файлът умираше
+  # с него — месечният рън харчеше API пари и ИЗПАРЯВАШЕ резултата си. Поведенческа регресия не
+  # се вижда от една точка — тренд без история е нула. Затова резултатът се връща в репото.
+  # Запазването е ОТДЕЛЕН job: contents: write е само тук, а ключът и инсталираният CLI са в job-а
+  # горе (без права за запис). Този job няма достъп до ANTHROPIC_API_KEY.
+  record-trend:
+    name: Запази тренда (иначе измерването изпарява)
+    needs: behavioral
+    if: ${{ needs.behavioral.outputs.has_key == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write # САМО за `git push` на trend.jsonl
+    steps:
+      # persist-credentials по подразбиране (true) НАРОЧНО: стъпката по-долу прави `git push`.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2, пинат по SHA
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: eval-trend
+          path: tools/agents/evals
+      - name: Комитни тренда
         run: |
           if git diff --quiet -- tools/agents/evals/trend.jsonl; then
             echo "trend.jsonl без промяна — няма какво да се запази."

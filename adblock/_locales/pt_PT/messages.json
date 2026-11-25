@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Veja-o a funcionar numa página de teste"
+  },
+  "modeHere": {
+    "message": "Proteção aqui"
+  },
+  "modeBasic": {
+    "message": "Básica"
+  },
+  "modeStandard": {
+    "message": "Padrão"
+  },
+  "modeStrict": {
+    "message": "Rigorosa"
+  },
+  "opt_mode": {
+    "message": "Nível de proteção"
+  },
+  "opt_mode_sub": {
+    "message": "Para todos os sites. Para dar a um site o seu próprio nível, abra a extensão nesse site."
+  },
+  "modeHint": {
+    "message": "Básica: só bloqueio na rede. Padrão: recomendada. Rigorosa: também dentro de frames. A página é recarregada."
+  },
+  "modeBasicDesc": {
+    "message": "Só bloqueio na rede: a mais leve, quase nada se estraga. O YouTube mantém a sua própria proteção."
+  },
+  "modeStandardDesc": {
+    "message": "Recomendada: proteção completa na própria página."
+  },
+  "modeStrictDesc": {
+    "message": "Também dentro de frames incorporados: oculta mais e usa mais memória."
+  },
+  "opt_who": {
+    "message": "Quem travámos"
+  },
+  "opt_who_sub": {
+    "message": "As empresas cujos servidores impedimos o seu navegador de contactar nos últimos 30 dias. Contado só neste dispositivo, por empresa e por dia: sem endereços, sem sites."
+  },
+  "opt_who_empty": {
+    "message": "Ainda nada contado. Navegue um pouco e volte a ver."
+  },
+  "opt_who_row": {
+    "message": "Pedidos: $1 · Dias: $2"
+  },
+  "managedNote": {
+    "message": "Definido pela sua organização"
   }
 }

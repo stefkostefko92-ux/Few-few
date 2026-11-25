@@ -1,0 +1,26 @@
+<%- include('../partials/top', { titleKey: 'aziende.new', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/aziende"><%= t('aziende.back') %></a>
+    <h1><%= t('aziende.new') %></h1>
+    <p class="page-head__sub"><%= t('aziende.subtitle') %></p>
+  </div>
+</div>
+<form class="form" method="post" action="/aziende" enctype="multipart/form-data" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error) %></h2></div><% } %>
+  <div class="field">
+    <label class="field__label" for="name"><%= t('aziende.name') %></label>
+    <input class="input" id="name" name="name" type="text" required minlength="2" maxlength="120" autocomplete="organization" value="<%= form.name %>"<% if (error === 'aziende.error.name' || error === 'aziende.error.nameTaken') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+  </div>
+  <div class="field">
+    <label class="field__label" for="logo"><%= t('aziende.logo') %></label>
+    <input class="file-input" id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp" aria-describedby="logo-hint"<% if (error && error.startsWith('aziende.error.logo')) { %> aria-invalid="true"<% } %>>
+    <p class="field__hint" id="logo-hint"><%= t('aziende.logoHint', { kb: maxKb }) %></p>
+  </div>
+  <div class="toolbar">
+    <button class="btn btn--primary" type="submit"><%= t('aziende.create') %></button>
+    <a class="btn btn--ghost" href="/aziende"><%= t('common.cancel') %></a>
+  </div>
+</form>
+<%- include('../partials/bottom') %>
