@@ -1,0 +1,5 @@
+<%- include('../partials/app-head', { title: t('app.termination.blockedTitle') }) %>
+<h1><%= t('app.termination.blockedTitle') %></h1>
+<p><%= t('app.termination.blockedText') %></p>
+<% if (orgId) { %><p><a class="button" href="/app/o/<%= orgId %>/prekratyavane"><%= t('app.termination.details') %></a> <a href="/app/o/<%= orgId %>"><%= t('app.termination.back') %></a></p><% } %>
+<%- include('../partials/app-foot') %>

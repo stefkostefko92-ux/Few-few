@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { textsUnder, type Locale } from '../src/i18n.js';
 import { ROOT } from '../src/paths.js';
 
 /**
@@ -26,6 +27,21 @@ export async function browserModule<T extends object>(
 
 function exports<T>(mod: unknown, names: readonly string[]): mod is T {
   return typeof mod === 'object' && mod !== null && names.every((name) => name in mod);
+}
+
+/**
+ * The editor's own words (editor/text.js) for the modules a test runs: on the page they come from the server
+ * (`editor.ui.*` and the names of the furniture groups), here from the same dictionary.
+ */
+export async function editorWords(locale: Locale = 'bg'): Promise<void> {
+  const { setEditorText } = await editorModule<{
+    setEditorText(text: Record<string, string>, lang: string): void;
+  }>('text.js', ['setEditorText']);
+  const groups = Object.entries(textsUnder(locale, 'furniture.group.')).map(([k, v]) => [
+    `group.${k}`,
+    v,
+  ]);
+  setEditorText({ ...textsUnder(locale, 'editor.ui.'), ...Object.fromEntries(groups) }, locale);
 }
 
 /** dom.js reads matchMedia when it loads; anything else a test needs is passed in. */

@@ -5,5 +5,14 @@ import home from './bg/home.mjs';
 import products from './bg/products.mjs';
 import pages from './bg/pages.mjs';
 import legal from './bg/legal.mjs';
+import families from './bg/families.mjs';
+import guides from './bg/guides.mjs';
 
-export default { ...common, ...home, ...products, ...pages, ...legal };
+// Страниците по семейства добавят свои адреси и мета към общите (families.mjs).
+export default {
+  ...common, ...home, ...products, ...pages, ...legal,
+  families: families.families,
+  guides: guides.guides,
+  slugs: { ...common.slugs, ...families.familySlugs, ...guides.guideSlugs },
+  meta: { ...common.meta, ...families.familyMeta, ...guides.guideMeta },
+};

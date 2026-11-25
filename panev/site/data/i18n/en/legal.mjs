@@ -3,7 +3,7 @@
 export default {
   privacyPage: {
     title: 'Privacy notice',
-    updated: 'Last updated: July 2026',
+    updated: 'Last updated: November 2026',
     intro: 'Notice provided under Articles 13–14 of Regulation (EU) 2016/679 (“GDPR”) for users of panevascensori.it.',
     sections: [
       {
@@ -20,7 +20,7 @@ export default {
       },
       {
         h: 'Retention',
-        p: 'Messages are kept for a maximum of 24 months from the enquiry; in case of an order, commercial and tax documentation is kept for the statutory periods (10 years).',
+        p: 'Messages are kept for a maximum of 24 months from the enquiry; the IP address recorded with a message is deleted after 30 days; in case of an order, commercial and tax documentation is kept for the statutory periods (10 years).',
       },
       {
         h: 'Recipients',
@@ -34,7 +34,7 @@ export default {
   },
   termsPage: {
     title: 'Commercial terms',
-    updated: '2026 price list — the valid commercial offer prevails.',
+    updated: '2027 price list — the valid commercial offer prevails.',
     sections: [
       {
         h: 'Scope',
@@ -42,11 +42,11 @@ export default {
       },
       {
         h: 'Prices',
-        p: 'Prices in euro, excl. VAT, per single unit, as per the 2026 price list. Items marked “on request” are quoted per job. Volume and recurring-supply discounts on request. Subject to change.',
+        p: 'Prices in euro, excl. VAT, per single unit, as per the 2027 price list. Items marked “on request” are quoted per job. Volume and recurring-supply discounts on request. Subject to change.',
       },
       {
         h: 'Shipping',
-        p: 'Free across Italy for orders above € 500 (excl. VAT); below that threshold shipping costs are borne by the customer and are stated in the order confirmation. Standard delivery 2 – 5 working days; express 24 – 48 h on request.',
+        p: 'Free across Italy for orders above € 500 (excl. VAT); below that threshold shipping costs are borne by the customer and are stated in the order confirmation. Standard delivery in about 2 – 3 working weeks; express in 1 week on request.',
       },
       {
         h: 'Payment',

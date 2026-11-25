@@ -1,4 +1,4 @@
-// Every one of the fleet's 28 accents (agents-dashboard/agents.json) must resolve to a full,
+// Every one of the fleet's accents (agents-dashboard/agents.json) must resolve to a full,
 // valid jelly ramp — a bad/edge-case accent must never leave a token `undefined` (which three.js
 // silently reads as black, the "the whole mascot went dark" defect) or an invalid hex.
 import test from 'node:test';
@@ -13,8 +13,8 @@ const AGENTS = JSON.parse(readFileSync(path.join(ROOT, 'agents-dashboard/agents.
 const HEX6 = /^#[0-9a-fA-F]{6}$/;
 const TOKENS = ['deep', 'bottle', 'neon', 'olive', 'pale', 'softOlive', 'bg', 'ink', 'inkSoft', 'eye', 'gold'];
 
-test('agents.json really has the full 28-agent fleet (this test is only meaningful at that count)', () => {
-  assert.equal(AGENTS.length, 28);
+test('agents.json still has the full fleet (at least the 28 agents this test was written for)', () => {
+  assert.ok(AGENTS.length >= 28, `fleet shrank to ${AGENTS.length}`);
 });
 
 test('every fleet accent tints to a complete, valid palette', () => {

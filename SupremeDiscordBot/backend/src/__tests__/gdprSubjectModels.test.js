@@ -19,7 +19,8 @@ const gdpr = readFileSync(join(SRC, "routes", "gdpr.js"), "utf8");
 const gamePrivacy = readFileSync(join(SRC, "lib", "game", "privacy.js"), "utf8");
 const exportAndErase = gdpr + "\n" + gamePrivacy;
 
-const SUBJECT_FIELD = /^\s*(userId|fromUserId|toUserId)\s+String/m;
+// v53: attackerId/defenderId (битките) също са Discord ID на субекта.
+const SUBJECT_FIELD = /^\s*(userId|fromUserId|toUserId|attackerId|defenderId)\s+String/m;
 // Модели, чийто userId НЕ е субект на таблото, или които са съзнателно извън
 // експорта (с причина). Всеки ред тук е решение, не пропуск.
 // Днес е празно — всеки модел е покрит.
@@ -32,7 +33,7 @@ const lower = (n) => n[0].toLowerCase() + n.slice(1);
 
 describe("чл. 15 и чл. 17 от таблото покриват всеки модел със субект", () => {
   it("схемата има такива модели, включително играта (иначе тестът е сляп)", () => {
-    expect(models).toEqual(expect.arrayContaining(["MemberProgress", "MemberCompanion", "ShopPurchase", "TriviaAnswer", "CompanionTrade"]));
+    expect(models).toEqual(expect.arrayContaining(["MemberProgress", "MemberCompanion", "ShopPurchase", "TriviaAnswer", "CompanionTrade", "CompanionBattle"]));
   });
 
   it("всеки такъв модел се чете в експорта", () => {
@@ -43,11 +44,14 @@ describe("чл. 15 и чл. 17 от таблото покриват всеки �
   it("експортът и изтриването от таблото минават през общия модул на играта", () => {
     expect(gdpr).toMatch(/gameDataFor\(userId\)/);
     expect(gdpr).toMatch(/server_season_game:\s*game/);
-    expect(gdpr).toMatch(/gameEraseSteps\(tx, userId\)/);
+    // А7: изтриването от таблото е eraseDiscordUser (lib/dsr.js), което ползва
+    // същите стъпки на играта.
+    expect(gdpr).toMatch(/eraseDiscordUser\(userId/);
+    expect(readFileSync(join(SRC, "lib", "dsr.js"), "utf8")).toMatch(/gameEraseSteps\(tx, uid\)/);
   });
 
   it("всеки модел на играта с субект има стъпка за изтриване", () => {
-    for (const m of ["memberProgress", "gameXpGrant", "memberCompanion", "shopPurchase", "questContribution", "triviaAnswer", "companionTrade"]) {
+    for (const m of ["memberProgress", "gameXpGrant", "memberCompanion", "shopPurchase", "questContribution", "triviaAnswer", "companionTrade", "companionBattle"]) {
       expect(gamePrivacy, `${m}: няма deleteMany`).toMatch(new RegExp(`tx\\.${m}\\.deleteMany`));
     }
   });

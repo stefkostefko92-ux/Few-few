@@ -16,6 +16,7 @@ import { prisma } from "../lib/prisma.js";
 import { requireApiKey } from "../lib/apiKeyAuth.js";
 import { getServerTier } from "../lib/premium.js";
 import { withIconUrl } from "../lib/discordCdn.js";
+import { publicTicket } from "../lib/publicApiQuery.js";
 
 const router = Router();
 
@@ -86,7 +87,8 @@ router.get("/tickets", requireApiKey("tickets:read"), async (req, res, next) => 
     ]);
 
     res.json({
-      data: tickets,
+      // Без шифрования транскрипт и токена за архива — виж publicTicket().
+      data: tickets.map(publicTicket),
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (err) { next(err); }
@@ -103,7 +105,7 @@ router.get("/tickets/:id", requireApiKey("tickets:read"), async (req, res, next)
       },
     });
     if (!ticket) return res.status(404).json({ error: "Ticket not found" });
-    res.json(ticket);
+    res.json(publicTicket(ticket));
   } catch (err) { next(err); }
 });
 

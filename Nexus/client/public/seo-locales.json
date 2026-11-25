@@ -1,0 +1,17 @@
+{
+  "en": {
+    "html": "en",
+    "title": "Nexus Dominion — Free Browser MMORPG",
+    "description": "Server-authoritative turn-based MMORPG. Four classes, 500 levels of roster, ELO arena, real-time auction, five-tier guilds. Free, browser-based, no installer."
+  },
+  "it": {
+    "html": "it-IT",
+    "title": "Nexus Dominion — MMORPG da browser, gratuito",
+    "description": "MMORPG con combattimenti a turni validati dal server. Quattro classi, 500 livelli di mostri, arena ELO, casa d'aste in tempo reale, gilde a cinque livelli. Gratuito, senza installazione."
+  },
+  "bg": {
+    "html": "bg-BG",
+    "title": "Nexus Dominion — Безплатна браузърна ММОРПГ",
+    "description": "Пошагова ММОРПГ, валидирана на сървъра. Четири класа, 500 нива монстри, ELO арена, аукцион в реално време, гилдии на пет нива. Безплатна, без инсталация."
+  }
+}

@@ -83,8 +83,8 @@ function legSprite(colour: string, second: boolean, s: number, dpr: number): { i
   return { img, pad };
 }
 
-/** One leg of a stitch, stamped from its sprite. */
-function paintLeg(
+/** One leg of a stitch, stamped from its sprite. Also used by promo/ (the film). */
+export function paintLeg(
   ctx: CanvasRenderingContext2D, x: number, y: number, s: number, colour: string,
   second: boolean, jitter: number,
 ) {

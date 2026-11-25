@@ -1,0 +1,27 @@
+<%
+  // „Buono di lavoro“ (routes/impostazioni-buono.ts): кодът на модула горе вдясно и клаузата долу на листа.
+  const b = buono;
+  const aria = (key) => b.errors[key] ? ' aria-invalid="true" aria-describedby="hint-buono-' + key + ' err-buono-' + key + '"' : ' aria-describedby="hint-buono-' + key + '"';
+%><section aria-labelledby="h-buono">
+  <h2 class="section__title" id="h-buono"><%= t('impostazioni.pagine.buoni.titolo') %></h2>
+  <p><%= t('buoni.impostazioni.intro') %></p>
+  <form class="form" method="post" action="/impostazioni/buono" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <div class="field field--wide">
+      <label class="field__label" for="f-buono-codice"><%= t('buoni.impostazioni.codice') %></label>
+      <input class="input" id="f-buono-codice" name="codice" type="text" maxlength="<%= maxCodice %>" autocomplete="off" value="<%= b.values.codice %>"<%- aria('codice') %>>
+      <p class="field__hint" id="hint-buono-codice"><%= t('buoni.impostazioni.codiceHint', { max: maxCodice }) %></p>
+      <% if (b.errors.codice) { %><p class="field__error" id="err-buono-codice"><%= t('buoni.impostazioni.errore', { max: maxCodice }) %></p><% } %>
+    </div>
+    <div class="field field--wide">
+      <label class="field__label" for="f-buono-clausola"><%= t('buoni.impostazioni.clausola') %></label>
+      <textarea class="input" id="f-buono-clausola" name="clausola" rows="6" maxlength="<%= maxClausola %>"<%- aria('clausola') %>><%= b.values.clausola %></textarea>
+      <p class="field__hint" id="hint-buono-clausola"><%= t('buoni.impostazioni.clausolaHint', { max: maxClausola }) %></p>
+      <% if (b.errors.clausola) { %><p class="field__error" id="err-buono-clausola"><%= t('buoni.impostazioni.errore', { max: maxClausola }) %></p><% } %>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit"><%= t('buoni.impostazioni.salva') %></button>
+    </div>
+  </form>
+</section>

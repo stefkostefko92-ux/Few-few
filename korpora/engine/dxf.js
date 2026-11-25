@@ -1,23 +1,27 @@
 // DXF R12 (ASCII) of one nested sheet. Layer names carry the operation: DRILL_D<Ø>_Z-<depth>,
-// GROOVE_W<width>_Z-<depth>, CONTOUR_D<tool>_Z-<depth>, so CAM software can map layers to tools without guessing.
-// R12 names allow only A–Z 0–9 $ _ - (31 characters), so a decimal point is written as '_': Z-18.3 → Z-18_3.
+// MANUAL_DRILL_D<Ø>_Z-<depth> (no tool in the library: drilled by hand), GROOVE_W<width>_Z-<depth>,
+// CONTOUR_D<tool>_Z-<depth>, so CAM software can map layers to tools without guessing. R12 names allow only
+// A–Z 0–9 $ _ - (31 characters), so a decimal point is written as 'P' — '_' already separates the fields: Ø4.5 → D4P5,
+// Z-18.6 → Z-18P6. Units are millimetres; R12 has no $INSUNITS (it came with AC1015), so README says it instead.
 import { sheetOps, num, SPOIL } from './cam.js';
 import { asciiName } from './util.js';
 
 const COLORS = [3, 4, 5, 6, 1, 2, 30, 40, 140, 200, 210, 230];
-const zTxt = (v) => num(v).replace(/\.$/, '').replace('.', '_');
+const zTxt = (v) => num(v).replace(/\.$/, '').replace('.', 'P');
 
 export function toDxf(model, sheet) {
   const ops = sheetOps(model, sheet);
   const { T } = ops;
   const tool = model.spec.tool;
   const contourLayer = `CONTOUR_D${tool}_Z-${zTxt(T + SPOIL)}`;
-  const layers = new Map([['SHEET', 8], [contourLayer, 7], ['LABELS', 2]]);
-  const holeLayer = (h) => `DRILL_D${zTxt(h.d)}_Z-${zTxt(h.depth)}`;
+  const layers = new Map([['0', 7], ['SHEET', 8], [contourLayer, 7], ['LABELS', 2]]);
+  const fixed = layers.size;
+  const manual = new Set(ops.manual);
+  const holeLayer = (h) => `${manual.has(h) ? 'MANUAL_' : ''}DRILL_D${zTxt(h.d)}_Z-${zTxt(h.depth)}`;
   const grooveLayer = (g) => `GROOVE_W${zTxt(g.w)}_Z-${zTxt(g.depth)}`;
   const allHoles = [...ops.drillOps.flatMap((o) => o.holes), ...ops.manual];
   for (const name of [...allHoles.map(holeLayer), ...ops.grooves.map(grooveLayer)].sort()) {
-    if (!layers.has(name)) layers.set(name, COLORS[(layers.size - 3) % COLORS.length]);
+    if (!layers.has(name)) layers.set(name, COLORS[(layers.size - fixed) % COLORS.length]);
   }
   const out = [];
   const g = (code, value) => out.push(String(code).padStart(3, ' '), String(value));
@@ -35,6 +39,10 @@ export function toDxf(model, sheet) {
   for (const [name, color] of layers) {
     g(0, 'LAYER'); g(2, name); g(70, 0); g(62, color); g(6, 'CONTINUOUS');
   }
+  g(0, 'ENDTAB');
+  // the text style the labels use (TEXT defaults to STANDARD)
+  g(0, 'TABLE'); g(2, 'STYLE'); g(70, 1);
+  g(0, 'STYLE'); g(2, 'STANDARD'); g(70, 0); g(40, '0.0'); g(41, '1.0'); g(50, '0.0'); g(71, 0); g(42, '2.5'); g(3, 'txt'); g(4, '');
   g(0, 'ENDTAB');
   g(0, 'ENDSEC');
   g(0, 'SECTION'); g(2, 'ENTITIES');
@@ -62,5 +70,6 @@ export function toDxf(model, sheet) {
   }
   g(0, 'ENDSEC');
   g(0, 'EOF');
-  return { text: `${out.join('\n')}\n`, layers: [...layers.keys()] };
+  // layer 0 is in the table for the readers that expect it; the files' own layers are the operations
+  return { text: `${out.join('\n')}\n`, layers: [...layers.keys()].filter((l) => l !== '0') };
 }

@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { registerFixtures } from './fixtures.mjs';
+import { assertWellFormed } from './check.mjs';
 import { buildModel } from '../../engine/model.js';
 import { TYPE_ORDER } from '../../engine/types.js';
 import { drawingAssembly } from '../../engine/drawing-assembly.js';
@@ -14,22 +15,6 @@ import { partHoles } from '../../engine/drill.js';
 
 registerFixtures();
 const meta = { product: 'Korpora', hash: 'a'.repeat(64), owner: 'Carbon Stealth VCC', date: '2026-10-02' };
-
-/** A small well-formedness check: every opened tag is closed in order (no XML parser in Node). */
-function assertWellFormed(svg, label) {
-  assert.match(svg, /^<svg[\s>]/, `${label}: does not start with <svg`);
-  assert.ok(svg.trimEnd().endsWith('</svg>'), `${label}: does not end with </svg>`);
-  assert.ok(!/NaN|undefined|Infinity/.test(svg), `${label}: broken number`);
-  const body = svg.replace(/<style>[\s\S]*?<\/style>/g, '').replace(/<!--[\s\S]*?-->/g, '');
-  const stack = [];
-  for (const m of body.matchAll(/<(\/?)([a-zA-Z][\w:-]*)[^>]*?(\/?)>/g)) {
-    const [, closing, name, selfClosing] = m;
-    if (selfClosing) continue;
-    if (closing) assert.equal(stack.pop(), name, `${label}: </${name}> closes the wrong tag`);
-    else stack.push(name);
-  }
-  assert.equal(stack.length, 0, `${label}: unclosed tags ${stack.join(',')}`);
-}
 
 for (const type of TYPE_ORDER) {
   test(`${type}: assembly and part drawings`, () => {

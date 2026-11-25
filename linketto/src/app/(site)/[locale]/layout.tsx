@@ -1,10 +1,19 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { dirFor, isLocale } from '@/i18n/locales';
 import { fontVariables } from '@/app/fonts';
 import { SITE_URL } from '@/lib/seo';
+import { ThemeScript } from '@/components/ui/ThemeScript';
 import '../../globals.css';
+
+export const viewport: Viewport = {
+  colorScheme: 'light dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f8f9fb' },
+    { media: '(prefers-color-scheme: dark)', color: '#080b11' },
+  ],
+};
 
 export async function generateMetadata({
   params,
@@ -35,10 +44,16 @@ export default async function LocaleLayout({
     notFound();
   }
   return (
-    <html lang={locale} dir={dirFor(locale)} className={fontVariables}>
-      <body className="min-h-screen bg-slate-50 font-ui text-slate-900">
-        {children}
-      </body>
+    <html
+      lang={locale}
+      dir={dirFor(locale)}
+      className={fontVariables}
+      suppressHydrationWarning
+    >
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="min-h-screen bg-bg font-ui text-fg">{children}</body>
     </html>
   );
 }

@@ -1,0 +1,43 @@
+<%
+  // Полетата на ред от ценоразписа — за новия (listino.ejs) и за промяната (voce.ejs).
+  const v = (k) => typeof values[k] === 'string' ? values[k] : '';
+  const msg = (k) => {
+    const code = errors[k];
+    if (!code) return '';
+    if (code === 'tooLong') return t('preventivi.errore.tooLong', { max: max[k] });
+    if (code === 'duplicato') return t('preventivi.listino.errore.duplicato');
+    if (code === 'range') return t('preventivi.listino.errore.pieno', { n: maxVoci });
+    if (code === 'decimal' || code === 'option') return t('preventivi.errore.' + k);
+    return t('preventivi.errore.required');
+  };
+  const aria = (k) => errors[k] ? ' aria-invalid="true" aria-describedby="err-voce-' + k + '"' : '';
+%><div class="grid grid--righe">
+  <div class="field">
+    <label class="field__label" for="f-voce-codice"><%= t('preventivi.colonna.codice') %></label>
+    <input class="input" id="f-voce-codice" name="codice" type="text" maxlength="<%= max.codice %>" autocomplete="off" value="<%= v('codice') %>"<%- aria('codice') %>>
+    <div class="field__piede"><% if (msg('codice')) { %><p class="field__error" id="err-voce-codice"><%= msg('codice') %></p><% } %></div>
+  </div>
+  <div class="field">
+    <label class="field__label" for="f-voce-unita"><%= t('preventivi.colonna.unita') %></label>
+    <input class="input" id="f-voce-unita" name="unita" type="text" maxlength="<%= max.unita %>" autocomplete="off" placeholder="pz, h, m, a corpo" value="<%= v('unita') %>"<%- aria('unita') %>>
+    <div class="field__piede"><% if (msg('unita')) { %><p class="field__error" id="err-voce-unita"><%= msg('unita') %></p><% } %></div>
+  </div>
+  <div class="field field--wide">
+    <label class="field__label" for="f-voce-descrizione"><%= t('preventivi.colonna.descrizione') %></label>
+    <input class="input" id="f-voce-descrizione" name="descrizione" type="text" maxlength="<%= max.descrizione %>" autocomplete="off" value="<%= v('descrizione') %>"<%- aria('descrizione') %>>
+    <div class="field__piede"><% if (msg('descrizione')) { %><p class="field__error" id="err-voce-descrizione"><%= msg('descrizione') %></p><% } %></div>
+  </div>
+  <div class="field">
+    <label class="field__label" for="f-voce-prezzo"><%= t('preventivi.colonna.prezzoEuro') %></label>
+    <input class="input importo" id="f-voce-prezzo" name="prezzo" type="text" inputmode="decimal" maxlength="16" autocomplete="off" value="<%= v('prezzo') %>"<%- aria('prezzo') %>>
+    <div class="field__piede"><% if (msg('prezzo')) { %><p class="field__error" id="err-voce-prezzo"><%= msg('prezzo') %></p><% } %></div>
+  </div>
+  <div class="field">
+    <label class="field__label" for="f-voce-iva"><%= t('preventivi.colonna.ivaPercento') %></label>
+    <select class="select" id="f-voce-iva" name="iva"<%- aria('iva') %>>
+      <% for (const a of aliquote) { %><option value="<%= a %>"<% if (String(a) === (v('iva') || '22')) { %> selected<% } %>><%= a %> %</option>
+      <% } %>
+    </select>
+    <div class="field__piede"><% if (msg('iva')) { %><p class="field__error" id="err-voce-iva"><%= msg('iva') %></p><% } %></div>
+  </div>
+</div>
