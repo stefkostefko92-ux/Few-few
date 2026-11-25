@@ -15771,7 +15771,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 231
+        "lessons": 232
       },
       "evolution": [
         {
@@ -15887,9 +15887,20 @@
           "date": "2026-11-25",
           "event": "v23.3 — учене",
           "detail": "Научи: В Zod 4 `ZodError.flatten()`, `.format()` и `.strict()` са остарели, но не са махнати, …"
+        },
+        {
+          "version": "23.4.0",
+          "date": "2026-11-25",
+          "event": "v23.4 — учене",
+          "detail": "Научи: zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
