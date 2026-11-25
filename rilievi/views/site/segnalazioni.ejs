@@ -1,0 +1,97 @@
+<%
+  // Сигнали за незаконно съдържание (routes/segnalazioni.ts; чл. 11, 12 и 16 Рег. (ЕС) 2022/2065): формулярът
+  // работи без JavaScript; при грешка страницата се връща с обобщение отгоре и съобщение до всяко поле.
+  const s = 'segnalazioni.';
+  const f = s + 'modulo.';
+  const sbagliati = campi.filter((k) => errori[k]);
+  const err = (k) => (errori[k] ? t(s + 'errore.' + errori[k]) : '');
+  const aria = (k, hint) => {
+    const ids = [hint ? 'sg-' + k + '-hint' : null, errori[k] ? 'err-sg-' + k : null].filter(Boolean).join(' ');
+    return (ids ? ' aria-describedby="' + ids + '"' : '') + (errori[k] ? ' aria-invalid="true"' : '');
+  };
+%><%- include('top', { pageTitle: t(s + 'meta.title'), description: t(s + 'meta.description'), keywords: t(s + 'meta.keywords'), extraSheets: ['site-percorso', 'site-legale', 'site-segnalazioni'] }) %>
+<div class="prose legale-pagina">
+  <nav class="percorso" aria-label="<%= t('novita.percorso') %>">
+    <ol>
+      <li><a href="<%= homePath %>">Rilievi Impianti</a></li>
+      <li><a href="<%= segnalazioniPath %>" aria-current="page"><%= t(s + 'nav') %></a></li>
+    </ol>
+  </nav>
+  <h1><%= t(s + 'titolo') %></h1>
+  <p class="legale-pagina__lead"><%= t(s + 'intro') %></p>
+  <p class="prose__updated"><time datetime="<%= aggiornato.toISOString().slice(0, 10) %>"><%= t(s + 'aggiornato', { data: fmt.dayLong(aggiornato) }) %></time></p>
+
+  <section aria-labelledby="cosa">
+    <h2 id="cosa"><%= t(s + 'cosa.titolo') %></h2>
+    <p><%= t(s + 'cosa.testo', { email: contactEmail }) %></p>
+  </section>
+
+  <section aria-labelledby="modulo">
+    <h2 id="modulo"><%= t(f + 'titolo') %></h2>
+    <form class="segnala" method="post" action="/segnalazioni#modulo" novalidate>
+      <input type="hidden" name="_csrf" value="<%= preCsrf %>">
+      <% if (errore) { %><div class="errors" role="alert"><h3><%= t(s + 'errore.' + errore, { email: contactEmail }) %></h3></div><% } %>
+      <% if (sbagliati.length) { %><div class="errors" role="alert" id="segnala-errori" tabindex="-1">
+        <h3><%= t(f + 'errori', { n: sbagliati.length }) %></h3>
+        <ul>
+          <% for (const k of sbagliati) { %><li><a href="#sg-<%= k %>"><%= err(k) %></a></li>
+          <% } %>
+        </ul>
+      </div><% } %>
+      <div class="field">
+        <label class="field__label" for="sg-dove"><%= t(f + 'dove.label') %></label>
+        <textarea class="textarea" id="sg-dove" name="dove" rows="3" required maxlength="<%= limiti.dove %>"<%- aria('dove', true) %>><%= valori.dove %></textarea>
+        <p class="field__hint" id="sg-dove-hint"><%= t(f + 'dove.hint') %></p>
+        <% if (errori.dove) { %><p class="field__error" id="err-sg-dove"><%= err('dove') %></p><% } %>
+      </div>
+      <div class="field">
+        <label class="field__label" for="sg-motivo"><%= t(f + 'motivo.label') %></label>
+        <textarea class="textarea" id="sg-motivo" name="motivo" rows="6" required maxlength="<%= limiti.motivo %>"<%- aria('motivo', true) %>><%= valori.motivo %></textarea>
+        <p class="field__hint" id="sg-motivo-hint"><%= t(f + 'motivo.hint') %></p>
+        <% if (errori.motivo) { %><p class="field__error" id="err-sg-motivo"><%= err('motivo') %></p><% } %>
+      </div>
+      <div class="field">
+        <label class="tick" for="sg-minori"><input id="sg-minori" type="checkbox" name="minori" value="si"<% if (valori.minori) { %> checked<% } %> aria-describedby="sg-minori-hint"><span class="tick__box" aria-hidden="true"></span><span><%= t(f + 'minori.label') %></span></label>
+        <p class="field__hint" id="sg-minori-hint"><%= t(f + 'minori.hint') %></p>
+      </div>
+      <div class="field">
+        <label class="field__label" for="sg-nome"><%= t(f + 'nome.label') %></label>
+        <input class="input" id="sg-nome" name="nome" type="text" autocomplete="name" maxlength="<%= limiti.nome %>" value="<%= valori.nome %>"<%- aria('nome', false) %>>
+        <% if (errori.nome) { %><p class="field__error" id="err-sg-nome"><%= err('nome') %></p><% } %>
+      </div>
+      <div class="field">
+        <label class="field__label" for="sg-email"><%= t(f + 'email.label') %></label>
+        <input class="input" id="sg-email" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="<%= limiti.email %>" value="<%= valori.email %>"<%- aria('email', true) %>>
+        <p class="field__hint" id="sg-email-hint"><%= t(f + 'email.hint') %></p>
+        <% if (errori.email) { %><p class="field__error" id="err-sg-email"><%= err('email') %></p><% } %>
+      </div>
+      <div class="field">
+        <label class="tick" for="sg-buonaFede"><input id="sg-buonaFede" type="checkbox" name="buonaFede" value="si" required<%- aria('buonaFede', false) %>><span class="tick__box" aria-hidden="true"></span><span><%= t(f + 'buonaFede.label') %></span></label>
+        <% if (errori.buonaFede) { %><p class="field__error" id="err-sg-buonaFede"><%= err('buonaFede') %></p><% } %>
+      </div>
+      <div class="hp" aria-hidden="true">
+        <label for="sg-<%= trappola %>"><%= t(f + 'trappola') %></label>
+        <input id="sg-<%= trappola %>" name="<%= trappola %>" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <p class="muted"><%= t(f + 'privacy') %> <a href="<%= privacyPath %>"><%= t('privacy.title') %></a></p>
+      <div><button class="btn btn--primary btn--lg" type="submit"><%= t(f + 'invia') %></button></div>
+    </form>
+  </section>
+
+  <section aria-labelledby="dopo">
+    <h2 id="dopo"><%= t(s + 'dopo.titolo') %></h2>
+    <p><%= t(s + 'dopo.testo') %></p>
+  </section>
+
+  <section aria-labelledby="ricorso">
+    <h2 id="ricorso"><%= t(s + 'ricorso.titolo') %></h2>
+    <p><%= t(s + 'ricorso.testo', { email: contactEmail }) %></p>
+  </section>
+
+  <section aria-labelledby="contatto">
+    <h2 id="contatto"><%= t(s + 'contatto.titolo') %></h2>
+    <p><%= t(s + 'contatto.testo', { email: contactEmail }) %></p>
+    <p><a href="mailto:<%= contactEmail %>"><%= contactEmail %></a> · <a href="<%= condizioniPath %>"><%= t('legale.pagina.title') %></a></p>
+  </section>
+</div>
+<%- include('bottom') %>

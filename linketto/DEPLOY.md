@@ -3,130 +3,220 @@
 Чеклист за първо пускане (Фаза 0). Тайните живеят **само на сървъра**
 (mode 600), никога в репото или в deploy архива.
 
-## 0. Предпускови гейтове (одит 2026-07-09 — 5 агента)
+## 0. Предпускови гейтове
 
-**Пускаме DIGITAL + COURSE. Членствата (MEMBERSHIP) са изключени** зад флаг
-`MEMBERSHIPS_ENABLED=false` (`src/lib/plans.ts`) до правния пакет — не се
-създават. Кодът им е готов и проверен на живо; пускат се при `true`.
+> **Плащания: Revolut Business вместо Stripe (2026-11-14, `docs/revolut-migration-spec.md` §7).**
+> Решения на собственика: **О-1** — продажбите ПРЕЗ Linketto са спрени; продуктът на профила е
+> витрина със СОБСТВЕН линк за плащане на създателя (без комисиона, без доставка, без ДДС от наша
+> страна). **О-2** — плановете са **предплатени периоди** (1/3/6/12 мес., −0/10/15/20 %) +
+> „Основател“ €49 завинаги, еднократно плащане през Revolut Merchant API, **без абонамент и без
+> автоматично таксуване**, напомняне по имейл 7 дни и 1 ден преди края. **О-4** — Linketto не е
+> пуснат, няма платили → Stripe е махнат изцяло (кодът, `stripe` пакетът, env). Stripe колоните в
+> схемата остават празни (адитивно; махане — отделна миграция със съгласие).
 
-**Затворено в кода:** webhook `customer.subscription.updated` (отнема достъп
-при спряло плащане), атомарен брояч на промо кодове, поправен open-redirect в
-`/buyer/verify`, детайлната аналитика/CSV износ уважават избрания профил,
-hreflang без диалектите, robots за `/buyer` `/s` `/unsubscribe`, поправена
-cookie/privacy политика (строго необходими бисквитки + бюлетин/купувачи +
-обхват Resend), поправено счупено ДДС изречение в разписката.
+**Блокери преди „live“ (собственик/консултант):**
+1. **ДДС** (`TAX.md`, `src/lib/vat.ts`): под €10 000 трансгранични B2C продажби (текущата и
+   предходната година, чл. 20б ЗДДС) — българско ДДС 20 %, цените са крайни. **Над прага продажбата
+   спира** (fail closed, `error=payments`), докато в кода няма проверена таблица на ставките по
+   държави (OSS). Данъчен консултант потвърждава прага и регистрацията. **Прагът е общ за цялото
+   дружество** (всички продукти на Carbon Stealth VCC), а `vat.ts` брои само поръчките на Linketto —
+   ако другите продукти вече го изчерпват, OSS регистрация и таблица на ставките преди пускането.
+2. **Revolut Business акаунт с Merchant API** (Production): ключ + уебхук (§3); приемният тест в
+   Sandbox (§8) минава зелено.
+3. **Brevo:** потвърден домейн на подателя (SPF/DKIM) + DPA. Brevo добавя **собствен**
+   `List-Unsubscribe` към всеки имейл — питай поддръжката дали отписване от него спира и
+   транзакционните имейли (напомнянията за плана); ако да — поискай изключването му за
+   транзакционния поток.
+4. **Правно:** `legal.*` са обновени на bg/en; it/es/de/fr — родно през Преводача след прегледа на
+   Правния Разбирач (дотогава падат към en). Жив юрист/DPO преди масов трафик.
 
-**Втори (дълбок) одит — също затворено в кода:** refund/chargeback отнема
-достъпа до курса (webhook + админ/продавач refund); `/delivery` отказва
-върнати/оспорени покупки; CAS срещу двойно теглене на реферал бонуса;
-CSV износът неутрализира формула-инжекция; magic-link токенът е хеширан в
-БД; сървърен гейт на checkout-а (само от FREE) + **Stripe Customer Portal**
-за самостоятелна смяна/отмяна на план; заявките за час (BOOKING) се чистят
-след 12 мес. и са декларирани в политиката; декларирана е и третата
-бисквитка `NEXT_LOCALE` (езикова, до 12 мес.); аналитиката не брои върнати
-продажби.
+**Затворено (14.11.2026):**
+- **Функция за отказ** (чл. 11а Дир. 2011/83, изм. с Дир. 2023/2673 — в сила от 19.06.2026): бутон
+  „Откажете се от договора тук“ в таблото (секция „План“) през целия 14-дневен срок → потвърждение →
+  имейл с потвърждение на получаването; връщането тръгва автоматично (иначе — аларма до админа).
+- **Мотиви при бан** (DSA чл. 17): категория + обосновка (+ правно основание при незаконно
+  съдържание) са задължителни; собственикът получава изложение на мотивите по имейл И го вижда в
+  таблото. Леки нарушения (спам, друго) — първо „Предупреди“ (7 дни срок), както обещават ОУ;
+  тежки (фишинг, представяне, незаконно) — веднага. Неизпратена бележка се вижда в админа.
+  Linketto е микропредприятие → без задължение за чл. 20/21/24(5) (чл. 19).
+- **Потвърждението за отказ** се проследява (`withdrawalAckSentAt`); неизпратеното го праща cron-ът,
+  а алармата казва на админа. Срокът за отказ се смята за най-широката часова зона в ЕС.
+- **Собствен домейн с TXT проверка** — публично се показва само проверен домейн.
+- **Насрочване** в часовата зона на браузъра (не на сървъра).
+- **Аларми до админите** (ADMIN_EMAILS, през Brevo): платена неприложена поръчка, неуспешен refund,
+  отказ от договор, грешки в cron-а.
+- **Кликове по продукт** (анонимно, `/u/<slug>/p/<id>` → линка за плащане) в таблото и аналитиката.
+- **Интеграционни тестове на плащанията** срещу реален Postgres (CI има postgres service).
 
-**БЛОКЕРИ за собственика/юриста преди „live":**
-0. **ДАНЪЦИ (2026-07-10 — виж [`TAX.md`](TAX.md)):** по чл. 9а Регл.
-   282/2011 **платформата е ДДС длъжник за продажбите в магазина** (deemed
-   supplier; C-695/20 Fenix). **Кодовият слой е ГОТОВ** (separate charges &
-   transfers — ДДС остава при нас, продавачът получава нето − комисиона;
-   Stripe Tax зад `STRIPE_TAX_ENABLED=1`; ДДС ред + непрекъсната номерация
-   в разписката; „цените са крайни с вкл. ДДС" на витрината/plans;
-   tax_id_collection за B2B reverse charge). **Преди магазинът на живо:**
-   жив данъчен консултант потвърждава (чл. 9а + **чл. 97а спешно** +
-   OSS/микропраг €10 000), регистрации в НАП, после в Stripe Dashboard:
-   Settings → Tax (активирай) + Registrations (BG + OSS) + плановите
-   Price ID-та стават **tax-inclusive** → чак тогава `STRIPE_TAX_ENABLED=1`.
-   Плановете може по-рано (микропраг) — пак след данъчния.
-1. **Env:** `RESEND_API_KEY` + `EMAIL_FROM` (без тях курсовете са недоставими)
-   и `STRIPE_*` live ключове; Stripe webhook с новите събития (§3).
-2. **Правно:** политиката за поверителност/бисквитки е обновена родно на
-   **bg/en/it/es/de/fr** (Преводача, не машинно — бюлетин/чл. 28, buyer
-   identity, Resend обхват, „две бисквитки"). Остава **жив преглед от
-   юрист/DPO** преди масов трафик (роля администратор↔обработващ за бюлетина
-   по чл. 28; ДДС deemed-supplier по чл. 9а Регл. 282/2011 — потвърди с
-   данъчен). `legal.*` са чернови по правилото на продукта.
-3. **Stripe test mode:** мини приемния тест (§8) с реален курс — magic-link
-   имейлът трябва да пристигне и да отключи `/learn`.
+**Остава отворено (не блокира):**
+- CSP е само **Report-Only** (стъпка 1, nginx; §7 „CSP“) — нищо не блокира, докладите са в дневника на app.
+  Принудителна политика с nonce — след преглед на докладите от живия трафик.
+- Ограничителят на публичните форми и входа е в паметта на процеса (`src/lib/limiter.ts`) — при
+  повече от един инстанс се заменя с Redis.
 
-**За членствата (когато `MEMBERSHIPS_ENABLED=true`):** добави преддоговорна
-информация за авто-подновяване/период/отказ (Дир. 2011/83 чл. 6), buyer път
-за отмяна (Stripe Billing Portal), разделен waiver по тип продукт — всичко с
-правен преглед. Дребни (след старт): idempotency ключове на checkout/refunds,
-rate-limit на публичните форми, хеширане на magic-токена.
+## 0а. Чеклист за първия деплой (по ред)
+
+Всяка стъпка има проверка; следващата — чак когато предишната е зелена.
+
+1. **Сървърът:** `apt-get install -y age` (за бекъпа), nginx ≥ 1.24, Docker Engine ≥ 29.5.1, certbot. DNS A/AAAA за
+   `piuma.carbonstealth.eu` → VPS (IP-то — от DNS: `getent hosts piuma.carbonstealth.eu`).
+2. **Код в `main`** (команди за деплой само от `main`), после
+   `sudo REF=main PROJECTS="linketto" bash /opt/few-few/current/deploy/fetch-deploy.sh`. Първият пробег създава
+   файла с тайните (600) с генерируемите: `POSTGRES_PASSWORD`, `CRON_SECRET`, `SETTINGS_KEY`, `APP_DB_PASSWORD`
+   (ролята на приложението, §7), `PUBLIC_BASE_URL`, `REVOLUT_ENV=sandbox`. **Копие офлайн** (без `SETTINGS_KEY`
+   2FA и шифрованите ключове стават нечетими).
+3. **Ръчните ключове** (§2; после `cd "$(cat /opt/few-few/shared/linketto/last-good)" && sudo docker compose up -d app`):
+   - `PUBLIC_BASE_URL=https://piuma.carbonstealth.eu` (canonical, имейли, връщането от Revolut, уебхукът);
+   - `ADMIN_EMAILS` — само твои адреси (т. 6 и бележката в §2);
+   - `REVOLUT_ENV=sandbox` + Sandbox `REVOLUT_SECRET_KEY` (или от админ панела — шифрован);
+   - `BREVO_API_KEY` + `EMAIL_FROM` от **потвърден домейн**. DNS на домейна на подателя (сменя собственикът): първо
+     **SPF** (`include:` на Brevo) и **DKIM** (записите от Brevo → Senders & Domains); после **DMARC** поетапно
+     `p=none; rua=mailto:<твой адрес>` → `p=quarantine` → `p=reject` — към следващия етап само когато отчетите
+     (`rua`) показват, че цялата легитимна поща минава с подравнени SPF/DKIM. Проверка: писмо „Забравена парола“ до
+     себе си → в заглавията `spf=pass`, `dkim=pass`, `dmarc=pass`;
+   - `BACKUP_AGE_RECIPIENTS` — **публичният** age ключ (§7 „Бекъпи“); частният остава при теб;
+   - по избор `GEMINI_API_KEY` + `GEMINI_PAID_TIER=1` (само платен акаунт с DPA), `PROFILE_HOST`.
+4. **HTTPS:** `deploy/https-setup.sh` (§7). После
+   `curl -sI https://piuma.carbonstealth.eu/bg | grep -i content-security-policy-report-only` → редът е там.
+5. **Уебхукът на Revolut (Sandbox):** админ панел → „Плащания и имейл“ → „Регистрирай уебхука“ (§3).
+6. **Първият админ:** регистрация с адрес от `ADMIN_EMAILS` → връзката за потвърждение на имейла се отваря **в същия
+   браузър** (потвърждението важи само в сесията на същия потребител — `lib/verify-email-policy.ts`) → „Сигурност“ →
+   2FA (TOTP) → резервните кодове офлайн → изход и вход с код → `/bg/admin` се отваря.
+7. **Таймерите:** `systemctl list-timers 'linketto-cron-*'` → пет (планове, отчет, срокове, бекъп, IP база).
+   `sudo systemctl start linketto-cron@backup && journalctl -u linketto-cron@backup -n 5` → ред `backup: … шифровано`.
+8. **Проверено възстановяване** от твоята машина (§7 „Бекъпи“) → зелено.
+9. **Мониторинг:** след merge в `main` — Actions → „linketto health“ → Run workflow → зелено (§7 „Мониторинг“).
+10. **Приемният тест в Sandbox** (§8) → зелено. **Чак тогава** Revolut production (§8а).
 
 ## 1. База данни (PostgreSQL, ЕС регион)
 
 ```bash
-# Създай базата и приложи миграциите
+# Бекъп, после миграциите
 DATABASE_URL="postgresql://…" npx prisma migrate deploy
 ```
 
-Миграциите са в `prisma/migrations/` (една начална `…_init`). `migrate deploy`
-е идемпотентен — безопасно се преизпълнява.
+`migrate deploy` е идемпотентен. Миграциите на Revolut (`20261114180000_revolut_plan_orders`),
+седмичния отчет (`20261114120000_weekly_digest`) и отказ/DSA/домейн/кликове
+(`20261114200000_withdrawal_dsa_domain_clicks`, `20261114210000_domain_tokens_click_cascade`) са
+**адитивни** (нови таблици/nullable колони); последната дава токен на заварените собствени домейни и
+трие кликовете заедно с изтрит линк/продукт (иначе стават „прегледи“).
+Заварените собствени домейни се показват едва след TXT проверка от таблото на собственика.
 
-## 2. Environment (`.env` на сървъра)
+## 2. Environment (на сървъра, mode 600)
 
-Виж `.env.example` за пълния списък. Задължителни за магазина:
+Виж примерния файл в `linketto/` за пълния списък.
 
 | Ключ | Откъде | Бележка |
 |------|--------|---------|
-| `DATABASE_URL` | PostgreSQL в ЕС | — |
-| `PUBLIC_BASE_URL` | `https://linketto.carbonstealth.eu` | влиза в sitemap, canonical, Stripe redirect-и, имейли |
-| `STRIPE_SECRET_KEY` | Stripe Dashboard (live) | `sk_live_…` |
-| `STRIPE_WEBHOOK_SECRET` | Stripe → Webhooks (виж §3) | `whsec_…` |
-| `STRIPE_PRICE_PRO_*` / `STRIPE_PRICE_BUSINESS_*` | Stripe → Products → Prices | по един Price ID за всеки период: `_MONTHLY/_QUARTERLY/_SEMIANNUAL/_ANNUAL` (отстъпка 0/10/15/20%) |
-| `STRIPE_PRICE_FOUNDER` | Stripe → Products → Prices | еднократно плащане |
-| `RESEND_API_KEY` + `EMAIL_FROM` | resend.com | **ЗАДЪЛЖИТЕЛНИ** — без тях курсовете (достъп през magic-link имейл) са НЕДОСТАВИМИ и разписките/доставките не тръгват; **подпиши DPA + EU регион** |
-| `GEMINI_API_KEY` | aistudio.google.com | „Преведи с AI"; за ЕС ползвай **платен tier + DPA** (иначе входът се ползва за обучение) |
-| `ADMIN_EMAILS` | ти | запетая-разделени имейли с достъп до `/admin` |
+| `DATABASE_URL` | PostgreSQL в ЕС | локално/dev. **На сървъра app не го чете оттук**: `docker-compose.yml` го сглобява с ролята `linketto_app` (§7 „Роли в базата“); редът остава само за откат към release отпреди ролите |
+| `APP_DB_PASSWORD` | генерира се от `scripts/deploy.sh` (hex) | паролата на ролята на приложението `linketto_app` (без DDL); `POSTGRES_PASSWORD` (собственикът) стига само до `db` и `migrate` |
+| `BACKUP_AGE_RECIPIENTS` | `age-keygen -y <частен ключ>` на ТВОЯТА машина | **публичният** ключ (`age1…`, няколко — със запетая) за дневния шифрован бекъп. Празно = бекъпът пада (нешифрован не се пише). Частен ключ (`AGE-SECRET-KEY-…`) във файла = бекъпът отказва |
+| `PUBLIC_BASE_URL` | `https://piuma.carbonstealth.eu` | sitemap, canonical, redirect-а след плащане, имейли |
+| `SETTINGS_KEY` | `openssl rand -base64 32` (autodeploy го генерира, ако липсва) | шифрова TOTP секретите и ключовете от админ панела; **пази копие на `.env`** — без него 2FA и записаните ключове не се четат. Смяна: старият → `SETTINGS_KEY_OLD` |
+| `REVOLUT_SECRET_KEY` | Revolut Business → APIs → Merchant API | Production или Sandbox ключ (по `REVOLUT_ENV`). **Или** от админ панела → „Плащания и имейл“ (шифрован, с предимство пред `.env`) |
+| `REVOLUT_ENV` | ти | `production` = `merchant.revolut.com`; всичко друго = sandbox |
+| `REVOLUT_WEBHOOK_SECRET` | отговорът при създаване на уебхука (§3) | без него `/api/revolut/webhook` връща 503 и уреждането става само от cron-а (§9) |
+| `BREVO_API_KEY` + `EMAIL_FROM` | app.brevo.com → SMTP & API | напомнянията за плана, потвърждения за бюлетин, седмичен отчет; подателят — потвърден домейн; **DPA** |
+| `DATA_DIR` | абсолютна папка извън release-а, напр. `/var/lib/linketto` | **ЗАДЪЛЖИТЕЛНА на сървъра** — качените аватари/фонове (`DATA_DIR/uploads`); `./data` се губи при всеки нов release |
+| `GEMINI_API_KEY` | aistudio.google.com | „Преведи с AI", „Генерирай био“ и `/tools/bio`; за ЕС — **само платен tier + DPA** |
+| `GEMINI_PAID_TIER` | ти | `1` = ключът е на платен акаунт с DPA. Без него AI функциите са изключени (fail-closed) |
+| `ADMIN_EMAILS` | ти | запетая-разделени имейли с достъп до `/admin`. Достъпът иска и потвърден имейл + 2FA. **Преди първия деплой с 2FA** провери, че всеки адрес от списъка, който вече има акаунт, е твой: `SELECT email, "createdAt" FROM "User" WHERE lower(email) = ANY(...)` — първото включване на 2FA е „доверие при първа употреба“, а старите акаунти се маркират като потвърдени. След деплоя включи 2FA веднага. **Нов адрес в списъка по-късно:** първо провери, че няма акаунт с него (или че е твой) — иначе акаунт, регистриран преди това, става админ веднага |
+| `PROFILE_HOST` | кратък домейн, напр. `lnkt.to` | по избор — линковете за споделяне/QR/vCard стават `https://<хост>/<slug>`; нужни DNS, TLS и Nginx `server_name` |
+| `CRON_SECRET` | `openssl rand -hex 32` | дневните cron-ове (§9: отчет + планове) и подписът на линка за отписване; ≥24 знака; без него маршрутите са изключени (503) |
 
-## 3. Stripe webhook
+## 3. Revolut уебхук
 
-Stripe Dashboard → Developers → Webhooks → Add endpoint:
+**Най-лесно:** админ панел → „Плащания и имейл“ → „Регистрирай уебхука в Revolut“ (иска 2FA код):
+създава уебхука към `<PUBLIC_BASE_URL>/api/revolut/webhook` със събитията по-долу (без `DISPUTE_*`,
+ако Revolut ги откаже за средата; в продукция това праща и аларма до админите) и записва тайната
+шифрована. Ако за адреса вече има уебхук, бутонът не прави дубликат — взима тайната му от Revolut, а ако
+Revolut не я върне — постави я ръчно в полето „Тайна на уебхука“. Смяна на средата (sandbox ↔ продукция)
+изтрива старата тайна (уебхукът е към другата среда) — регистрирай го наново. При висящи поръчки
+(неплатени до 3 дни или връщане в ход) смяната на среда/ключ иска изрично потвърждение на броя.
 
-- **URL:** `https://linketto.carbonstealth.eu/api/stripe/webhook`
-- **Събития** (точно тези — кодът ги обработва):
-  - `checkout.session.completed`
-  - `checkout.session.async_payment_succeeded`
-  - `account.updated`
-  - `account.application.deauthorized`
-  - `customer.subscription.updated` (отнема достъп до членство при спряло плащане — всички dunning изходи)
-  - `customer.subscription.deleted`
-  - `charge.refunded`
-  - `charge.dispute.created`
-- Копирай `Signing secret` → `STRIPE_WEBHOOK_SECRET`.
-- Stripe Billing → Settings: dunning да завършва с **cancel** на абонамента (за да дойде `subscription.deleted`).
-- Stripe Billing → **Customer portal**: конфигурирай (еднократно) — бутонът
-  „Управление на абонамента" в дашборда го отваря за смяна на план/период,
-  начин на плащане, фактури и отмяна (изискване за лесен отказ от
-  авто-подновяване).
+Ръчно — еднократно през API-то на Revolut (Merchant API → Webhooks → „Create a webhook“):
+`POST /api/webhooks` с `Authorization: Bearer <REVOLUT_SECRET_KEY>`, `Revolut-Api-Version: 2026-08-17`
+(задължителен, ≥ 2024-09-01; старият път `/api/1.0/webhooks` вече го няма в спецификацията) и тяло
 
-## 4. Платежни методи
+```json
+{
+  "url": "https://piuma.carbonstealth.eu/api/revolut/webhook",
+  "events": [
+    "ORDER_COMPLETED", "ORDER_AUTHORISED", "ORDER_FAILED", "ORDER_CANCELLED",
+    "ORDER_PAYMENT_DECLINED", "ORDER_PAYMENT_FAILED",
+    "DISPUTE_ACTION_REQUIRED", "DISPUTE_UNDER_REVIEW", "DISPUTE_WON", "DISPUTE_LOST"
+  ]
+}
+```
 
-Stripe Dashboard → Settings → Payment methods → включи методите. Появяват се
-автоматично в checkout-а — нула код.
+Ако Revolut откаже събитията за спорове за този ключ/среда (`400`/`422` — напр. в Sandbox, където
+`/api/disputes` го няма), създай го без четирите `DISPUTE_*` (както прави rilievi); тогава споровете се
+гледат само в Revolut Business. Вече създаден уебхук се допълва с `PATCH /api/webhooks/{id}` и тяло
+`{"events": [...]}` (сменят се само подадените полета; тайната остава).
 
-- **Абонаментни планове** (Pro/Business/Founder): карти + wallets (Apple/Google
-  Pay), плюс каквото включиш (Revolut Pay, PayPal, SEPA, iDEAL…).
-- **Магазинът** (separate charges & transfers — плащането е при платформата,
-  виж TAX.md): платежните методи са тези на ПЛАТФОРМЕНИЯ акаунт — карти +
-  wallets, а PayPal/Revolut Pay стават възможни, ако ги включиш (провери на
-  живо; преводът към продавача е отделен transfer и не зависи от метода).
-- **Евтиният вариант за Revolut/PayPal без наша комисиона:** създателят слага
-  **TIP блок** с `revolut.me/<име>` или `paypal.me/<име>` — плащането е директно
-  към него (с официалните бранд икони), не минава през нас.
+към `https://merchant.revolut.com` (Sandbox: `https://sandbox-merchant.revolut.com`). Ключът се чете
+от файла с тайните на сървъра — не се пише в командния ред/историята. От отговора `signing_secret`
+→ `REVOLUT_WEBHOOK_SECRET`.
 
-## 5. Stripe Connect (магазинът)
+- **Ключът — без подписване на заявките.** Ако в Revolut Business за API ключа е включено подписване
+  на заявките, продукцията изисква `Revolut-Api-Timestamp`/`Revolut-Api-Signature` на всяка заявка —
+  кодът (`src/lib/revolut.ts`) не ги праща. Изключи го за този ключ (или първо добави подписването).
+- Подписът се проверява върху **суровото тяло** (`Revolut-Signature: v1=…`, HMAC-SHA256 на
+  `v1.{Revolut-Request-Timestamp}.{тяло}`, толеранс 5 мин.). Събитието носи само `order_id` —
+  състоянието се чете на живо с `GET /api/orders/{id}`; планът се дава само при `completed`, точна
+  сума и EUR, с условен запис `pending → completed` (повторно събитие не удължава два пъти).
+  **Единицата на timestamp-а** (ms или s) не е потвърдена от първоизточник — кодът приема и двете;
+  провери с реален уебхук в Sandbox (§8), иначе всеки уебхук пада с 401 и плановете идват само от cron-а.
+- Платена поръчка, която **не може да се приложи** (сумата не съвпада или междувременно е купен
+  по-висок план/„Основател“), става `conflict` („Платена, неприложена — върни“ в `/admin`) — без
+  промяна на плана; админът я връща.
+- `ORDER_PAYMENT_DECLINED`/`ORDER_PAYMENT_FAILED` идват и за refund поръчките: отказан refund може да
+  остане с поръчка в `processing`, а отказът е само в `payments[].state` (`declined`/`failed`) —
+  уреждането го чете оттам и връща поръчката към платена (аларма „Връщането на пари е неуспешно“).
+  От версия `2026-09-22` отказ при Revolut Pay идва и синхронно като `200` — кодът го третира като `400`.
+- **Спорове** (`DISPUTE_*`, тялото носи само `dispute_id`): порталът чете спора с
+  `GET /api/disputes/{id}` (само Production), записва всяко ново известие (състояние, подсъстояние,
+  срок) в `RevolutDispute` и праща аларма до `ADMIN_EMAILS` със срока за отговор. Аларма, която не е
+  тръгнала (Brevo, празен `ADMIN_EMAILS`), остава с `notifiedAt = NULL` и cron-ът (§9) я допраща при
+  всяко пускане, докато тръгне — затова `ADMIN_EMAILS` и Brevo са задължителни в продукция.
+  **Нищо не се отнема автоматично** — отговорът е в Revolut Business, а при загубен спор планът се
+  сменя ръчно от `/admin`. Спор, който не се чете (404/401), дава аларма само с id-то (без писмо →
+  409 и Revolut опитва пак).
+- **Refund без отговор** (таймаут, мрежа, 409, 429, 5XX): поръчката остава „в ход“ без refund id —
+  Revolut може вече да го е създал. `/admin` казва „в ход — натисни пак“ (`?error=refund-pending`), а
+  бутонът за връщане я повтаря със **същия** Idempotency-Key (без двойно връщане). Cron-ът (§9)
+  праща аларма веднъж за опит за такива поръчки, по-стари от 1 ч. Само изричен 4XX (без 409) или
+  отказано плащане я връща към „платена“. Refund, приет от Revolut за поръчка, която междувременно не
+  е „в ход“, дава аларма „Refund при Revolut без запис у нас“ — не се връща пак, сверява се ръчно.
+- Revolut повтаря доставката **само при 4XX/таймаут** (3 пъти през 10 мин.) — при вътрешна грешка
+  връщаме 409. Изпуснатото хваща cron-ът (§9), който проверява висящите поръчки на 15 мин. – 3 дни.
+- По избор: Nginx да приема `/api/revolut/webhook` само от IP адресите на Revolut (списъкът е в
+  документацията им за уебхуци) — подписът е основната защита.
 
-- Connect → Settings: активирай **Express** акаунти.
-- Магазинът ползва **separate charges & transfers** (TAX.md): плащането се
-  създава на платформения акаунт, делът на продавача (нето − комисиона)
-  заминава като `transfers.create` със `source_transaction` от webhook-а.
-  Нужна е само `transfers` capability на свързаните акаунти (Express я има).
-  Членствата (зад флаг) още ползват destination charges — данъчният им слой
-  предстои.
+## 4. Плащане на плановете
+
+Checkout-ът е хостваната страница на Revolut (`checkout_url` от `POST /api/orders`): карти, Apple
+Pay/Google Pay и Revolut Pay — включват се от Revolut Business → Merchant → Settings. Сумата се
+смята **само на сървъра** (`src/lib/plan-orders.ts`); референцията на поръчката е нашият
+`PlanOrder.id`. След всяко плащане клиентът получава **потвърждение по имейл** (траен носител:
+търговец, план, срок, сума с ДДС, право на отказ + формуляр; cron-ът праща пропуснатите).
+
+**Връщане на пари — само от `/admin`** → „Поръчки на планове“ → „Върни парите“: refund при Revolut с
+`Idempotency-Key` = id на поръчката. Revolut създава **refund поръчка**, която стига до краен статус до
+2 дни → поръчката е „Връщане при Revolut…“, докато не дойде `completed` (уебхук или cron); тогава
+планът се връща към този **отпреди** поръчката (отпада само платеното с нея) и реферал бонусът се
+сторнира. Приложените поръчки се връщат от най-новата назад (иначе грешка „първо по-новата“).
+Докато тече връщане, нова платена поръчка на същия потребител става „Платена, неприложена“
+(не се прилага върху поръчка, която се връща). Idempotency-Key е `<id>-<опит>`: повторен клик
+не връща два пъти, а нов опит след неуспешен refund праща нова заявка.
+Refund или спор, пуснати **от таблото на Revolut**, НЕ се синхронизират — не ги ползвай; спор
+(chargeback) — ръчно. Правото на отказ в 14 дни е с пълно връщане (Общите условия).
+
+## 5. Продукти на създателите
+
+Без плащания през нас: продуктът е заглавие, цена, описание и `https://` линк за плащане на
+създателя (`src/lib/external-url.ts`); на профила е `rel="nofollow noopener noreferrer ugc"`.
+**Евтиният вариант за бакшиши** остава TIP блокът с `revolut.me/<име>` или `paypal.me/<име>`.
 
 ## 6. Автоматичен избор на език по IP (CDN държавен хедър)
 
@@ -148,34 +238,286 @@ Stripe Dashboard → Settings → Payment methods → включи методи�
 cookie `NEXT_LOCALE` и винаги печели пред IP. Без CDN хедър сайтът пак
 работи — просто без геолокация.
 
-## 7. Build & run
+## 7. Build & run (Docker Compose през `deploy/autodeploy.sh`)
+
+Стекът: `docker-compose.yml` (`db` postgres:16-alpine + `app` от `Dockerfile`, non-root uid 1001,
+само `127.0.0.1:<HTTP_PORT>`, по подразбиране **4350** — 4340/4341/4342 на живия сървър са на
+rilievi/semki/fakturist; смяна = `HTTP_PORT` в `.env` + `proxy_pass` в vhost-а), Compose проект
+`linketto` (томът е `linketto_db`). `scripts/deploy.sh` спира ПРЕДИ бекъпа и билда (код 2), ако
+портът е зает от друг процес. На сървъра нищо не се
+строи на ръка — каноничният път е `deploy/fetch-deploy.sh` → `deploy/autodeploy.sh` (`deploy_linketto`):
 
 ```bash
-npm ci --omit=dev
-npm run build            # prisma generate + next build
-npm start                # или зад reverse proxy (Nginx) + systemd
+sudo REF=main PROJECTS="linketto" bash /opt/few-few/current/deploy/fetch-deploy.sh
 ```
 
-Health probe: `GET /api/health` → `{"status":"ok","db":"up"}` (503 при паднала база).
+Какво прави (`linketto/scripts/deploy.sh`, същият скрипт и за ръчен пробег от папката на release-а):
+`pg_dump | gzip` бекъп от **работещата** база (празен/без схема = спиране) → `docker compose build app` (старият
+app продължава) → база (тук се прилага новата ѝ конфигурация) → `prisma migrate deploy` с НОВИЯ образ през услугата
+`migrate` (ролята собственик) → ролята `linketto_app` и правата ѝ → `up -d app` → сонда `/api/health`
+с маркер `"app":"linketto"`. Провал на сондата → автоматичен откат на кода към последния работещ
+release (`/opt/few-few/shared/linketto/last-good`); провал на миграцията → работи старият код.
 
-## 8. Приемен тест преди реални пари (Stripe **test mode**)
+> **Откат през миграция `20261122100000_abuse_money`** (задържан реферален бонус): код отпреди
+> нея (`bce2436f56` и по-стар) при връщане на пари сваля бонус, който новият код още е задържал
+> (не е кредитиран) → отрицателен баланс у поканилия. Автоматичният откат на кода е безопасен само
+> докато няма платени поръчки с бонус; иначе — откат към release ≥ `50c73a7263` или поправка
+> напред. Обратното (стар код пише в новата схема) е покрито: `Referral.releasedAt` по
+> подразбиране е „освободен“.
 
-1. Регистрирай създател → създай профил + продукт (цена ≥ €3, delivery URL).
-2. Connect onboarding (test) → изчакай `account.updated` да отключи магазина.
-3. Отвори публичния профил → купи с тестова карта `4242 4242 4242 4242`.
-4. Провери: имейл с линка пристига (на езика на купувача); доставката
-   пренасочва към `deliveryUrl`; продажбата се вижда в дашборда; комисионата
-   е записана.
-5. Направи refund от дашборда на продавача → парите се връщат, `application_fee`
-   също.
-6. Тествай delayed метод (SEPA) → достъп се дава чак при
-   `async_payment_succeeded`.
+**Стабилни пътища (извън releases):** `/opt/few-few/shared/linketto/.env` (600, симлинк в release-а),
+`…/backups/` (последните 10 дъмпа отпреди деплой), `…/data/` (качените снимки, `DATA_DIR=/data` в
+контейнера, собственик 1001).
 
-Чак след зелен приемен тест — превключи на live ключове.
+**Пръв деплой:** autodeploy генерира `POSTGRES_PASSWORD`, `DATABASE_URL`, `CRON_SECRET`,
+`PUBLIC_BASE_URL`, `DATA_DIR`, `REVOLUT_ENV=sandbox` (нарочно — production едва след §8). Празни,
+попълват се ръчно (§2): `ADMIN_EMAILS`, `BREVO_API_KEY`, `EMAIL_FROM`, `REVOLUT_SECRET_KEY`,
+`REVOLUT_WEBHOOK_SECRET`, `GEMINI_API_KEY` + `GEMINI_PAID_TIER=1`, по избор `PROFILE_HOST`. След
+редакция: `cd "$(cat /opt/few-few/shared/linketto/last-good)" && sudo docker compose up -d app`
+(`env_file` се чете при пресъздаване на контейнера; `restart` не стига. `last-good`, не `current`:
+`current` се мести и при деплой на друг продукт, към release без симлинка `.env`).
+
+**Най-кратко (препоръчано):** `deploy/https-setup.sh` прави всичко по-долу с проверки и спира при първия
+проблем — деплой от `main`, vhost от `last-good`, слага издадения сертификат в правилния сайт и
+връща `conf.d/00-reject-unknown.conf`, ако certbot го е пипнал:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/stefkostefko92-ux/Few-few/main/linketto/deploy/https-setup.sh -o /root/linketto-https.sh && sudo bash /root/linketto-https.sh
+```
+
+**Ръчно:** DNS A/AAAA → VPS, после vhost + TLS. Vhost-ът се взема от последния работещ release
+(`last-good`, не `current`), а `proxy_pass` получава порта от `.env`:
+
+```bash
+P="$(sudo sed -n 's/^HTTP_PORT=//p' /opt/few-few/shared/linketto/.env | tail -1 | tr -dc '0-9')"; P="${P:-4350}"
+sudo sed "s/127\.0\.0\.1:4350/127.0.0.1:$P/g" "$(cat /opt/few-few/shared/linketto/last-good)/deploy/nginx.conf" | sudo tee /etc/nginx/sites-available/linketto >/dev/null
+sudo ln -sfn /etc/nginx/sites-available/linketto /etc/nginx/sites-enabled/linketto
+sudo nginx -t && sudo systemctl reload nginx
+# Пазач: без сайт с точно това име certbot слага сертификата в default/catch-all блока
+# (17.11.2026 — влезе в conf.d/00-reject-unknown.conf). Затова certbot тръгва САМО ако vhost-ът го носи.
+if sudo grep -q 'server_name piuma.carbonstealth.eu;' /etc/nginx/sites-enabled/linketto; then
+  sudo certbot --nginx -d piuma.carbonstealth.eu --redirect
+else
+  echo "СТОП: /etc/nginx/sites-enabled/linketto не носи piuma.carbonstealth.eu — деплоят мина ли? (last-good)"
+fi
+```
+
+**Cron (§9) — systemd таймери, инсталират се сами:** `linketto-cron-plans.timer` (всеки час :17),
+`linketto-cron-digest.timer` (08:10), `linketto-cron-retention.timer` (03:40, SQL сроковете от
+`retention-days.ts`), `linketto-cron-backup.timer` (02:50, шифрованият бекъп), `linketto-cron-geoip.timer`
+(месечно). Всички са с `RandomizedDelaySec` (jitter) и `Persistent=true`. `/api/cron/plans` е **на всеки час**, не
+дневно — висящите поръчки при Revolut (изпуснат уебхук) не бива да чакат до утре. `CRON_SECRET` се чете от файла с
+тайните (600) и стига до curl през stdin (`-K -`), не в argv. Ръчно: `sudo systemctl start
+linketto-cron@plans`; дневник: `journalctl -u 'linketto-cron@*' -n 50`; провал → `systemctl --failed`.
+
+**Провалена миграция:** приложението върви на стария код. Бекъпът е в
+`/opt/few-few/shared/linketto/backups/`; диагноза — `docker compose run --rm --no-deps -T migrate
+node_modules/.bin/prisma migrate status`; оправяне на миграцията или `prisma migrate resolve` — човек.
+
+**Дневници на nginx:** `/var/log/nginx/linketto/` — access без IP (`log_format linketto_noip`),
+ротация 7 дни (`deploy/logrotate.conf` → `/etc/logrotate.d/linketto`).
+
+Health probe: `GET /api/health` → `{"status":"ok","db":"up","app":"linketto"}` (503 при паднала база).
+
+### Роли в базата
+
+- `linketto` — собственикът (`POSTGRES_USER` на образа): миграциите (услугата `migrate`), бекъпът и сроковете
+  (през локалния сокет на `db`). Паролата му не стига до `app` (там `POSTGRES_PASSWORD` е празен).
+- `linketto_app` — приложението: `NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS`, само
+  `SELECT/INSERT/UPDATE/DELETE` по таблиците (и бъдещите — `ALTER DEFAULT PRIVILEGES`), без `CREATE` в схемата,
+  `_prisma_migrations` — само четене. Създава се и се пренастройва при **всеки** деплой, след миграциите.
+- **Първият деплой с ролите** там, където linketto вече върви: базата се пресъздава във вътрешната мрежа (томът
+  `linketto_db` остава) — старият app губи връзка с нея за десетина секунди, до вдигането на новия. Дъмпът е преди това.
+- **Откат към release отпреди ролите** работи: неговият compose чете `DATABASE_URL` (собственика) от файла с тайните
+  и вдига базата в старата мрежа. Не трий този ред, докато такъв откат е възможен.
+
+### Втвърдяване на контейнерите
+
+`app`, `db`, `migrate`: коренът е само за четене, пише се в томовете и в tmpfs (`app`: `/tmp` 32 MB,
+`/app/.next/cache` 64 MB — броят се към паметта); `cap_drop: [ALL]` (`db` връща само CHOWN/DAC_OVERRIDE/FOWNER/
+SETGID/SETUID за entrypoint-а), `no-new-privileges`; тавани: `app` 1 GB/2 CPU, `db` 512 MB/1 CPU, `pids_limit`, без
+swap над тавана. `mem_limit: 1g` при `MALLOC_ARENA_MAX=2`: измереният връх е 731–790 MB, плюс tmpfs ≤ 96 MB → остават
+~130 MB резерв. Кодът в образа е собственост на root; процесът е `next start` направо (без npm). `db` е само в
+`backend` (`internal: true`, без изход навън); `app` е и в `egress` (Revolut, Brevo, Gemini). Дневниците на Docker —
+до 3×10 MB на контейнер. Проверено локално (22.11.2026): `scripts/deploy.sh` два пъти с read-only `app`/`db`,
+страниците и `/_next/image` (пише в кеша) — без `EROFS`/`EACCES`. **След всяка промяна тук:** `up -d` → сонда →
+`docker compose logs app | grep -Ei 'EROFS|EACCES|Operation not permitted'`.
+
+### nginx — лимити, таймаути, кеш, скенери (`deploy/nginx.conf`)
+
+| Какво | Стойност | Защо |
+|---|---|---|
+| общ лимит | 20 r/s, burst 60 на IP | CGNAT: много хора през един IP |
+| `/api/` | 5 r/s, burst 20; тяло ≤ 1 MB | `/api/handle`, `/api/verify-email` и др. |
+| вход/регистрация/забравена/нова парола | 10 POST/мин, burst 10 | GET-овете не харчат лимита |
+| server actions (POST с `Next-Action`) | 3 r/s, burst 20 | таблото, формите, качването |
+| `/api/revolut/webhook` | без лимит, тяло ≤ 256 KB | защитата е подписът |
+| връзки | 40 на IP | slowloris |
+| тяло (страниците) | 10 MB | снимка ≤ 8 MB (`media.ts`), `bodySizeLimit` 9 MB |
+| таймаути | header 15 s, body 30 s, send 30 s, keepalive 30 s | между две четения, не за цялото качване |
+| кеш | `/_next/static` 30 дни; `/media` **10 мин.** | изтрита снимка не се сервира дълго от нас |
+| скенери | `/.env`, `/.git`, `/wp-*`, `*.php` … → 444 | `.well-known` минава |
+
+Отказ по лимит = 429 (в `access.log`, без IP). Кешът е в `/var/cache/nginx/linketto` — autodeploy и `https-setup.sh`
+създават папката (nginx прави само последната папка; без родителя `nginx -t` пада — проверено). **Cloudflare
+отпред** → първо `real_ip`, иначе всички делят лимита. Проверено: `nginx -t` на 1.24 (като на Ubuntu 24.04) и
+функционален тест с макет на app (444, 429 на 11-ия POST към входа, GET без лимит, 413 на `/api/`, кешът на `/media`,
+изчистен `X-Forwarded-For`).
+
+### CSP — Report-Only (решение, 22.11.2026)
+
+**Сега:** статична `Content-Security-Policy-Report-Only` от nginx за всички отговори, доклади → `POST /api/csp-report`
+(`report-uri` + `report-to`/`Reporting-Endpoints`) → ред `[csp-report] {"directive":…,"blocked":"https://хост",
+"page":"/u/*",…}` в `docker compose logs app`. В реда няма IP, user agent, slug, параметри или път на ресурса
+(`src/lib/csp-report.ts`; таван 300 реда/мин.). Заглавията в `next.config.mjs` (HSTS, X-Frame-Options и др.) са
+непроменени.
+**Защо не nonce в middleware сега:** (1) `matcher`-ът на middleware изключва `/u`, `/d`, `/s`, `/api` — публичните
+профили (основният трафик) щяха да останат без политика, а разширяването му пипа локализирания рутинг и
+пренаписването на собствените/кратките домейни; (2) nonce има само при динамично рендиране — статичните отговори
+биха докладвали всеки вграден скрипт на Next (шум без сигнал); (3) без живи тестове в браузър грешка в middleware
+чупи рутинга на целия сайт, а Report-Only в nginx не може да счупи нищо.
+**Какво хваща стъпка 1:** външни скриптове/връзки/рамки/форми (XSS, който зарежда от чужд хост, изтичане към чужд
+`connect-src`, `form-action`), `object-src`, `base-uri`. `'unsafe-inline'` за скриптове остава до стъпка 2.
+**Стъпка 2 (отделна задача):** 2–4 седмици доклади → nonce за динамичните страници + разширен matcher → пак
+Report-Only → чак после принудително. Преглед: `docker compose logs app | grep csp-report | sort | uniq -c | sort -rn`.
+
+### Бекъпи (шифровани) и проверено възстановяване
+
+- **Дневно 02:50** (`linketto-cron backup`): `pg_dump` (текстов, `--no-owner --no-privileges`) + `DATA_DIR/uploads`
+  (през контейнера на app — той е собственикът им) → **шифровано с age** към `BACKUP_AGE_RECIPIENTS` →
+  `/opt/few-few/shared/linketto/backups/daily/<UTC време>/` (700): `db.sql.gz.age`, `uploads.tar.gz.age`,
+  `manifest.txt.age` (брой редове по таблица, приложените миграции, брой снимки), `SHA256SUMS`. Нешифровано не стига
+  до диска (поток). Ротация: последните 14 (`LINKETTO_BACKUP_KEEP`). Без age или ключ unit-ът пада всяка нощ
+  (fail-closed, `systemctl --failed`). Без работещ app базата се бекъпва, а unit-ът пада („снимките НЕ са“).
+- **Ключът:** `age-keygen -o ~/.config/age/linketto-backup.txt` **на твоята машина**; публичният ред (`age1…`) →
+  `BACKUP_AGE_RECIPIENTS`. Частният — офлайн, в две копия: без него бекъпите не се четат.
+- **Извън сървъра:** наборите са шифровани — копирай ги където искаш (твоята машина, restic → S3/B2 в ЕС);
+  `tools/vps/backup-verify.sh backup` слага последния набор в restic.
+- **Проверено възстановяване — месечно и след промяна на схемата** (от твоята машина; ключът минава през SSH до
+  stdin на скрипта и не стига до диска на сървъра):
+  `ssh root@<сървър> 'bash /opt/few-few/current/tools/vps/backup-verify.sh linketto-verify --identity -' < ~/.config/age/linketto-backup.txt`.
+  sha256 → разшифроване в паметта → възстановяване във **временна** база (еднократен postgres контейнер без мрежа,
+  tmpfs) → броят редове по таблица и приложените миграции = манифеста → броят снимки. Живата база не се пипа; печатат
+  се само броеве. Проверено локално срещу истински дъмп (33 таблици, 22 миграции, 2 снимки).
+- **Възстановяване при инцидент** (човек, след бекъп на текущото): `age -d -i <ключ> db.sql.gz.age | gunzip | docker
+  compose exec -T db psql -U linketto -d linketto` в **празна** база → `scripts/deploy.sh` (миграциите на по-новия код и
+  правата на `linketto_app`); снимките — `tar -xz` в `DATA_DIR` със собственик 1001.
+- Дъмповете отпреди деплой (`backups/pre-deploy-*.sql.gz`, последните 10) остават нешифровани (700, root) — за бърз
+  откат на място без ключа на собственика.
+
+### Мониторинг
+
+- **Външна проба:** `.github/workflows/linketto-health.yml` (на 10 мин., от GitHub) →
+  `tools/vps/monitoring/probe-health.sh https://piuma.carbonstealth.eu/api/health '"app":"linketto"'`. Здрав = 200 +
+  `"status":"ok"` + маркерът (200 от чужд процес/прокси не е здрав; без `-k`). **Аларма:** issue `linketto-down` →
+  известие от GitHub по имейл; затваря се сам при възстановяване. Без външни услуги и без лични данни (в issue-то е
+  само HTTP кодът). Разписанието върви само от `main`.
+- **На хоста:** Uptime Kuma (`tools/vps/monitoring/`) — „HTTP(s) - Keyword“ към същия адрес с `"app":"linketto"`;
+  Beszel — диск/памет. Провалени таймери: `systemctl --failed`.
+
+## 8. Приемен тест преди реални пари (Revolut **Sandbox**)
+
+`REVOLUT_ENV=sandbox` + Sandbox ключ и уебхук към тестов адрес (§3).
+
+1. Регистрирай акаунт → дашборд → „План“ → Про, 3 месеца → пренасочване към Revolut checkout.
+2. Плати с тестова карта от документацията на Revolut Sandbox → връщане в дашборда
+   (`?upgraded=1`); след уебхука планът е PRO, „платен до“ = днес + 3 месеца; пристига имейлът
+   за потвърждение. **Провери в журнала, че уебхукът минава подписа** (не 401 — виж §3).
+3. В `/admin` → поръчката е „Платена“, ДДС 20 % е записан. Пусни уебхука повторно (или cron-а) —
+   планът **не** се удължава втори път.
+4. Купи пак Про, 1 месец → изтичането се мести с 1 месец от края (не от днес).
+5. Купи Бизнес → оставащите дни от Про се прехвърлят пропорционално.
+6. Изключи уебхука — празен `REVOLUT_WEBHOOK_SECRET` в `.env` **и** „Върни към .env“ за тайната в админ
+   панела (базата печели пред `.env`) → плати → изчакай 15 мин. и пусни cron-а (§9) ръчно → урежда.
+7. `/admin` → „Върни парите“ на последната поръчка → „Връщане при Revolut…“ → (уебхук/cron) „Върната“;
+   планът е този отпреди поръчката (след т. 4 — Про до предишната дата), бонусът е сторниран.
+   „Върни парите“ на по-стара поръчка преди по-новата → грешка „първо по-новата“.
+8. Започни PRO в един таб, купи „Основател“ в друг, после плати PRO таба → поръчката е „Платена,
+   неприложена“, планът остава „Основател“.
+9. Сложи `planExpiresAt` на утре в базата → cron → имейл „изтича след 1 ден“ (Brevo); на вчера →
+   cron → FREE и платените функции спират (домейн/бадж/излишни профили).
+10. Админ панел → „Плащания и имейл“ (Продавача): „Регистрирай уебхука“ → в Sandbox се очаква бележка „без
+    спорове“; плати → уебхукът минава подписа (204, не 401). Втори клик → без дубликат („намерен съществуващ“
+    или „постави тайната ръчно“). Грешен ключ → проверката след записа показва `revolut-fail` (401). Смяна на
+    средата при висяща поръчка → без отметката отказ, с нея — тайната на уебхука се трие от панела.
+
+11. **Отказ с частично връщане (чл. 11а/14(3)):** купи Про, 1 месец с отметката за ранно начало → уебхук → „Платена“
+    → табло → „План“ → „Откажете се от договора тук“ → „Потвърждавам отказа“ → имейл с потвърждение на получаването →
+    в `/admin` поръчката е „Връщане при Revolut…“ със сума = платеното минус пропорционалното за изминалите дни
+    (`refundCents`, `lib/withdrawal-refund.ts`) → уебхук за refund поръчката (или cron) → „Върната“, планът е този
+    отпреди поръчката.
+12. **Целият път наведнъж** на нов акаунт (регистрация → плащане → отказ → частично връщане → уебхук), с отворени
+    `docker compose logs -f app`: нито един 401 на уебхука, нито една аларма „неуспешен refund“.
+13. **„Приключи ръчно“** (docs/refund-manual-close-spec.md): поръчка „Връщане при Revolut…“ с refund id → в `/admin`
+    без отметката „Сверих…“ → отказ; с отметката, докато refund-ът при Revolut още тече → „Revolut още обработва“,
+    нищо не се сменя. Алармата „Връщане с различна сума“ (ако се появи) идва най-много веднъж на 24 ч за поръчка.
+
+Чак след зелен приемен тест — `REVOLUT_ENV=production` с Production ключ и уебхук (§8а).
+
+## 8а. Revolut production — кога и как
+
+**Кога** (всичко изпълнено): §8 е зелен изцяло (вкл. т. 10–12); ДДС прагът е потвърден от консултант (§0, т. 1);
+Brevo DPA + SPF/DKIM минават (DMARC поне `p=none` с отчети); правният преглед на ОУ/политиката е минал; проверено
+възстановяване от бекъп (§7 „Бекъпи“) е зелено; външният монитор е активен; Merchant акаунтът е одобрен за production, а
+за API ключа подписването на заявките е **изключено** (§3).
+
+**Как:**
+1. Без висящи Sandbox поръчки (или с изричното потвърждение на броя в панела).
+2. Админ панел → „Плащания и имейл“ → средата `production` + Production ключът (шифрован; 2FA код). Или във файла с
+   тайните `REVOLUT_ENV=production` + ключа → `docker compose up -d app` от `last-good`.
+3. „Регистрирай уебхука“ → в production очаквай и `DISPUTE_*`; тайната се записва шифрована.
+4. Реално плащане с твоя карта: Про, 1 месец (€4) → уебхук 204 → „Платена“ → имейлът за потвърждение → „Върни
+   парите“ → „Върната“. Провери в Revolut Business, че плащането и връщането са там.
+5. След следващия кръгъл час: `journalctl -u linketto-cron@plans -n 5` → `errors: 0`.
+Обратно към Sandbox: същият път; смяната на средата трие тайната на уебхука (§3) — регистрирай го наново.
 
 ## 9. Преди публичен старт (не блокират деплоя, но задължителни)
 
+- **Cron за сроковете на съхранение (дневно, `psql`) — вече е таймер** (`linketto-cron-retention.timer`, §7); SQL-ът
+  по-долу е в `deploy/linketto-cron.sh` (тестът `retention-cron.test.ts` го сверява). Политиката за
+  поверителност обещава срокове (`src/lib/retention-days.ts` е единният
+  източник). Приложението чисти лениво, но реалният гарант е cron:
+  ```sql
+  DELETE FROM "ClickEvent"     WHERE "createdAt" < now() - interval '396 days';
+  DELETE FROM "ContactMessage" WHERE "createdAt" < now() - interval '365 days';
+  DELETE FROM "Booking"        WHERE "createdAt" < now() - interval '365 days';
+  DELETE FROM "LoginEvent"     WHERE "createdAt" < now() - interval '90 days';
+  DELETE FROM "Subscriber"     WHERE "confirmedAt" IS NULL AND "createdAt" < now() - interval '30 days';
+  DELETE FROM "BuyerToken"     WHERE "expiresAt" < now() - interval '1 day';
+  DELETE FROM "BuyerSession"   WHERE "expiresAt" < now();
+  DELETE FROM "Session"        WHERE "expiresAt" < now();
+  DELETE FROM "SecurityEvent"  WHERE "createdAt" < now() - interval '90 days';
+  DELETE FROM "LoginChallenge" WHERE "expiresAt" < now();
+  DELETE FROM "UserToken"      WHERE "expiresAt" < now() - interval '1 day';
+  UPDATE "User"                SET "totpPendingSealed" = NULL WHERE "totpPendingSealed" IS NOT NULL AND "updatedAt" < now() - interval '1 day';
+  ```
+
+- **Cron за седмичния отчет (дневно, напр. 08:10):** `POST /api/cron/digest`
+  с хедър `Authorization: Bearer <CRON_SECRET>` (стойността — от `.env` на
+  сървъра, mode 600; никога в crontab в чист текст на споделена машина —
+  чети я от файла). Дневното пускане е нарочно: всеки получава най-много 1
+  отчет на ~седмица (`User.lastDigestAt`), партида до 300 на пускане; пращат
+  се само при реални посещения. Отказ — с 1 клик от имейла (RFC 8058
+  `List-Unsubscribe-Post`) или от таблото (секция „Езикова дупка“).
+- **Cron за предплатените планове — ЗАДЪЛЖИТЕЛНО на всеки час (напр. `17 * * * *`):**
+  `POST /api/cron/plans` с `Authorization: Bearer <CRON_SECRET>` (стойността — от файла с тайните,
+  mode 600). Стъпки: (1) висящите поръчки 15 мин. – 3 дни се проверяват в Revolut (изпуснат
+  уебхук — иначе клиентът чака до следващото пускане); (1б) висящите refund-и; (1в) неизпратените
+  потвърждения; (2) изтеклите PRO/BUSINESS → FREE + спиране на платените функции; (3) напомняния 7 дни
+  и 1 ден преди края (Brevo, етапът се резервира преди изпращането — без дубли). Отговор
+  `{reconciled, refunds, confirmed, downgraded, reminded, errors}`; `500` при грешка в някой ред
+  (останалите минават) — алармирай по него.
+- **Кратък домейн (`PROFILE_HOST`, по избор):** след DNS + TLS провери, че
+  `https://<хост>/<съществуващ slug>` показва профила, а `https://<хост>/`
+  пренасочва към основния сайт.
+- **IndexNow след деплой** (нови страници `/tools`, `/tools/qr`, `/tools/bio`,
+  `/vs/linktree`, `/vs/beacons` + sitemap):
+  `node tools/seo/indexnow.mjs https://piuma.carbonstealth.eu`.
+- **Сравнителните страници (`/vs/*`):** фактите за конкурентите са в
+  `src/lib/comparisons.ts` с дата на проверка — преглеждай ги поне веднъж на
+  тримесечие (цените им се менят; остарял факт = подвеждаща сравнителна реклама).
+
 - **Правен преглед:** текстовете в `messages/*.json` (`legal.*`) са изрядни, но
   минават през жив юрист/DPO преди масов трафик.
-- **Преводен одит:** през агента Преводач (bg → en → it/es/de/fr).
-- **Резервни копия** на базата (дневни, ЕС).
+- **Преводен одит:** през агента Преводач (`legal.*` — bg → en → it/es/de/fr; UI — всички 27 локала).
+- **Резервни копия** — дневни, шифровани, с проверено възстановяване (§7 „Бекъпи“); копие извън сървъра в ЕС.

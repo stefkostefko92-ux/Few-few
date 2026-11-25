@@ -1,0 +1,27 @@
+/* Чертежът на шахтата (views/site/_shaft.ejs) — във витрината (до картата раздел по раздел) и на входа.
+   Неподвижен: кабината стои на етаж 2. */
+
+.shaft {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  aspect-ratio: 440 / 760;
+  overflow: visible;
+}
+
+.shaft__hatch {
+  opacity: 0.55;
+}
+
+.shaft__floors text {
+  font-family: var(--font-cond);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.shaft__num {
+  fill: var(--bar);
+  font-family: var(--font-cond);
+  font-size: 13px;
+  font-weight: 600;
+}

@@ -90,7 +90,7 @@ export const PREMIUM_FEATURES = {
   "data.panelDuplicate":       { label: "Duplicate Panels",            category: "Data" },
   // v50 — Server Season (играта)
   "game.shop50":               { label: "50 Shop Items",               category: "Game" },
-  "game.levelRolesUnlimited":  { label: "Unlimited Level Roles",       category: "Game" },
+  "game.levelRolesUnlimited":  { label: "100 Level Roles",             category: "Game" },
   "game.companionsFull":       { label: "Full Companion Collection",   category: "Game" },
   "game.quests3":              { label: "3 Active Server Quests",      category: "Game" },
   "game.kbTrivia":             { label: "Knowledge Base Trivia",       category: "Game" },
@@ -208,12 +208,45 @@ export function sanitizePanelForTier(panel, plan) {
  */
 export const EXPORT_GRACE_DAYS = 30;
 
-/** Още ли е в прозореца за експорт този сървър? Котва: край на платения период. */
-export function inExportWindow(server, now = Date.now()) {
-  const anchor = [server?.accessUntil, server?.trialEndsAt]
+/**
+ * Котвата на прозореца: най-късният от края на платения период (Stripe),
+ * края на пробата и `paidAccessEndedAt` (край на Discord абонамент, А1).
+ * `paidAccessEndedAt` НЕ е `accessUntil`: то не вдига плана, само държи прозореца.
+ */
+function exportAnchor(server) {
+  return [server?.accessUntil, server?.trialEndsAt, server?.paidAccessEndedAt]
     .filter(Boolean)
     .sort((a, b) => b - a)[0];
+}
+
+/** Още ли е в прозореца за експорт този сървър? Котва: край на платения период. */
+export function inExportWindow(server, now = Date.now()) {
+  const anchor = exportAnchor(server);
   return !!anchor && anchor.getTime() + EXPORT_GRACE_DAYS * 86400_000 > now;
+}
+
+/**
+ * Същото правило като `inExportWindow`, но като Prisma `where` върху Server:
+ * сървърите, чийто прозорец за експорт е ЗАТВОРЕН (или никога не е имало платен
+ * период). За заявки, които трият данни на безплатни сървъри — те трябва да
+ * прескачат сървър, чийто план е свършил преди по-малко от 30 дни.
+ *
+ * ЗАЩО е отделна функция, а не проверка в цикъл: чистката избира ТИКЕТИ с
+ * `take: 500`; ако филтърът е след заявката, първите 500 може да са все на
+ * сървъри в прозореца и останалите никога няма да дойдат на ред.
+ */
+export function exportWindowClosedWhere(now = new Date()) {
+  const cutoff = new Date(now.getTime() - EXPORT_GRACE_DAYS * 86400_000);
+  const closed = (field) => ({ OR: [{ [field]: null }, { [field]: { lte: cutoff } }] });
+  return { AND: [closed("accessUntil"), closed("trialEndsAt"), closed("paidAccessEndedAt")] };
+}
+
+/** ISO краят на прозореца (за таблото: `exportUntil`) или null, ако няма/е изтекъл. */
+export function exportWindowUntil(server, now = Date.now()) {
+  const anchor = exportAnchor(server);
+  if (!anchor) return null;
+  const until = anchor.getTime() + EXPORT_GRACE_DAYS * 86400_000;
+  return until > now ? new Date(until).toISOString() : null;
 }
 
 // ─── Форми ────────────────────────────────────────────────────────────────────

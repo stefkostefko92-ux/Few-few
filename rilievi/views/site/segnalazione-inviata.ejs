@@ -1,0 +1,12 @@
+<%
+  // След пратен сигнал (routes/segnalazioni.ts): номерът му; не се обхожда.
+  const s = 'segnalazioni.inviata.';
+%><%- include('top', { pageTitle: t(s + 'title'), description: t('segnalazioni.meta.description'), noindex: true, extraSheets: ['site-percorso', 'site-legale'] }) %>
+<div class="prose legale-pagina">
+  <h1><%= t(s + 'titolo') %></h1>
+  <% if (riferimento) { %><p class="legale-pagina__lead"><%= t(s + 'testo', { riferimento }) %></p>
+  <% if (senzaEmail) { %><p><%= t(s + 'senzaEmail') %></p><% } %>
+  <% } else { %><p class="legale-pagina__lead"><%= t(s + 'generica') %></p><% } %>
+  <p><a href="<%= segnalazioniPath %>"><%= t(s + 'torna') %></a></p>
+</div>
+<%- include('bottom') %>

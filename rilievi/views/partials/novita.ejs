@@ -1,0 +1,29 @@
+<%
+  // Прозорецът с новините след обновяване (src/novita/popup.ts): отворен и без JavaScript — тогава не е
+  // модален, а „Ho capito“ праща формата и връща на същата страница. С novita.js е модален и всяко
+  // затваряне (бутонът, Esc, „Tutte le novità“) отбелязва новините като прочетени във фонов режим.
+  // Заглавието стои горе, бутоните — долу; превърта се само списъкът (фокусът на бутона не скрива заглавието).
+  const prima = novitaPopup.voci[0];
+%><dialog class="novita" data-novita open aria-labelledby="novita-titolo">
+  <h2 class="novita__titolo" id="novita-titolo"><%= t('novita.popup.titolo') %></h2>
+  <p class="novita__lead"><%= t('novita.popup.lead') %></p>
+  <div class="novita__corpo" tabindex="0" role="region" aria-labelledby="novita-titolo">
+  <ul class="novita__voci">
+    <% for (const voce of novitaPopup.voci) { %><li class="novita__voce" data-voce="<%= voce.id %>">
+      <h3 class="novita__nome"><%= t('novita.voci.' + voce.id + '.titolo') %></h3>
+      <p class="novita__area"><%= t('novita.voci.' + voce.id + '.area') %>, <time datetime="<%= voce.data %>"><%= fmt.dayLong(new Date(voce.data + 'T00:00:00Z')) %></time></p>
+      <p><%= t('novita.voci.' + voce.id + '.testo') %></p>
+    </li>
+    <% } %>
+  </ul>
+  <% if (novitaPopup.altre > 0) { %><p class="novita__altre"><%= t('novita.popup.altre', { n: novitaPopup.altre }) %></p><% } %>
+  </div>
+  <div class="novita__azioni">
+    <form method="post" action="/novita/lette" data-novita-form>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="torna" value="<%= novitaPopup.torna %>">
+      <button class="btn" type="submit" autofocus><%= t('novita.popup.ok') %></button>
+    </form>
+    <a class="btn btn--ghost" href="/novita#<%= prima.id %>" data-novita-tutte><%= t('novita.popup.tutte') %></a>
+  </div>
+</dialog>

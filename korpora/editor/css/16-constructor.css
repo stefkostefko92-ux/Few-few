@@ -1,0 +1,303 @@
+/* The constructor: the front view of a free carcass on the drawing sheet (the paper of the drawings: what is built is
+   shown as the shop will read it), the toolbar over it and the inspector beside it (under it on a narrow screen).
+   The fills of the cells take the drawing palette; the selection is the product's green, the keyboard's focus ink.
+   Strokes keep their width at any zoom (vector-effect), the handles take a finger (a wide invisible stroke). */
+.bld {
+  display: grid;
+  gap: 10px;
+}
+.bld-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+/* a phone: one row that scrolls sideways (the drawing stays in sight), the groups kept together */
+@media (max-width: 640px) {
+  .bld-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 4px;
+    margin-inline: -4px;
+    padding-inline: 4px;
+  }
+  .bld-bar > * {
+    flex: none;
+    scroll-snap-align: start;
+  }
+}
+.bld-sep {
+  width: 1px;
+  align-self: stretch;
+  margin-inline: 4px;
+  background: var(--line);
+}
+.bld-toggle {
+  margin-inline-start: auto;
+  align-items: center;
+}
+.bld-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+/* beside the drawing only where the drawing keeps room for its words (the rail takes 330 px of the window) */
+@media (min-width: 1280px) {
+  .bld-body {
+    grid-template-columns: minmax(0, 1fr) 270px;
+  }
+}
+.bld-front {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--sheet-line);
+  border-radius: var(--r);
+  background: var(--sheet);
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+}
+.c-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: min(68vh, 760px);
+  overflow: visible;
+  font-family: var(--f-ui);
+  user-select: none;
+}
+
+/* cells: the clear inside, tinted by what is in it (under everything); the button over everything, its focus ring
+   solid ink — not the dashes of a door's opening, not the green of the selection */
+.c-tint {
+  fill: transparent;
+}
+.c-tint.f-shelves {
+  fill: color-mix(in srgb, var(--t2) 12%, transparent);
+}
+.c-tint.f-drawers {
+  fill: color-mix(in srgb, var(--t5) 16%, transparent);
+}
+.c-tint.f-rail {
+  fill: color-mix(in srgb, var(--t3) 12%, transparent);
+}
+.c-tint.is-sel {
+  fill: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.c-cell {
+  cursor: pointer;
+  outline: none;
+}
+.c-hit {
+  fill: transparent;
+  pointer-events: all;
+}
+.c-cell:hover .c-hit {
+  fill: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.c-cell:focus-visible .c-hit {
+  stroke: var(--ink);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+/* the selection's frame, over the fronts */
+.c-sel {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.c-what,
+.c-size,
+.c-dim {
+  text-anchor: middle;
+  pointer-events: none;
+}
+.c-what {
+  fill: var(--ink);
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--sheet);
+  stroke-width: 0.22em;
+  stroke-linejoin: round;
+}
+.c-size {
+  paint-order: stroke;
+  stroke: var(--sheet);
+  stroke-width: 0.22em;
+  stroke-linejoin: round;
+}
+.c-size,
+.c-dim {
+  fill: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.c-dim.is-total {
+  fill: var(--ink);
+  font-weight: 600;
+}
+
+/* what is built: boards, shelves, rails, fronts (over the cells, without taking their clicks) */
+.c-board,
+.c-shelf,
+.c-front {
+  stroke: var(--ink-2);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.c-board {
+  fill: color-mix(in srgb, var(--ink) 16%, var(--sheet));
+}
+.c-board.is-fixed {
+  fill: color-mix(in srgb, var(--ink) 30%, var(--sheet));
+}
+.c-shelf {
+  fill: color-mix(in srgb, var(--t2) 45%, var(--sheet));
+}
+.c-rail {
+  stroke: color-mix(in srgb, var(--t3) 70%, var(--ink));
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.c-front {
+  fill: color-mix(in srgb, var(--sheet) 55%, transparent);
+}
+.c-front.is-drawer {
+  fill: color-mix(in srgb, var(--t5) 10%, color-mix(in srgb, var(--sheet) 55%, transparent));
+}
+.c-swing {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1;
+  stroke-dasharray: 5 4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* handles: the partitions and the fixed shelves. The zone takes the finger: the board and 9 px on each side, a
+   24 px target (WCAG 2.2, 2.5.8) that leaves most of a small cell to the cell; the grip says it moves */
+.c-handle {
+  touch-action: none;
+  outline: none;
+}
+.c-handle.is-x {
+  cursor: col-resize;
+}
+.c-handle.is-y {
+  cursor: row-resize;
+}
+.c-zone {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 18;
+  vector-effect: non-scaling-stroke;
+  pointer-events: all;
+}
+.c-bar {
+  fill: transparent;
+  pointer-events: none;
+}
+.c-grip {
+  fill: var(--ink-2);
+  pointer-events: none;
+}
+.c-handle:hover .c-bar {
+  fill: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.c-handle:focus-visible .c-bar {
+  fill: var(--accent);
+  stroke: var(--sheet);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.c-handle:focus-visible .c-grip {
+  fill: var(--accent-ink);
+}
+
+/* the inspector: the rail's fields, in a panel of its own */
+.bld-insp {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.bld-insp .group:first-child {
+  border-top: 0;
+}
+/* what is selected reads before the fields under it */
+.bld-insp .group h2 {
+  font-size: 13px;
+  color: var(--ink);
+}
+.bld-insp .field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  gap: 4px 10px;
+  align-items: center;
+  margin: 0;
+  font-size: 13px;
+}
+.bld-insp .field input[type='number'] {
+  font: 500 13px var(--f-mono);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 4px 6px;
+  width: 100%;
+  min-width: 0;
+  text-align: right;
+}
+.bld-insp .field input[type='number']:disabled {
+  background: var(--surface-2);
+}
+.bld-insp .lbl,
+.bld-insp .field label {
+  font-size: 13px;
+  font-weight: 400;
+}
+.bld-insp .hint:empty {
+  display: none;
+}
+.bld-insp [hidden] {
+  display: none;
+}
+
+/* a template: what personalizing does, and the button */
+.bld-intro {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.bld-intro p {
+  margin: 0;
+  max-width: 68ch;
+}
+.rail .bld-go {
+  justify-self: start;
+}
+
+/* the cell picked in 3D, named under the view with the way to the constructor */
+.pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.pick[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .c-hit,
+  .c-bar {
+    transition: fill 120ms ease-out;
+  }
+}

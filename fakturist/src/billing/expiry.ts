@@ -1,0 +1,79 @@
+import { Prisma } from '@prisma/client';
+import { prisma } from '../db.js';
+import { audit } from '../audit.js';
+
+/**
+ * Изтекъл платен период (SPEC 49): абонаментът става PAST_DUE и фирмата се връща на началния план
+ * (безплатният за фирма, „Кантора“ за кантора — както при регистрация). Документите и данните не се
+ * пипат; нов платен период идва само от нова поръчка. Безплатните абонаменти са със срок 100 години.
+ */
+export const FALLBACK_YEARS = 100;
+
+/** Началният план по вида на фирмата — както при регистрация. */
+export const startPlanFor = (kind: string): 'firm' | 'free' =>
+  kind === 'ACCOUNTING_FIRM' ? 'firm' : 'free';
+
+/** Краят на безсрочен абонамент (безплатният, началният, даденият „безсрочно“). */
+export function farEnd(now: Date): Date {
+  const end = new Date(now);
+  end.setUTCFullYear(end.getUTCFullYear() + FALLBACK_YEARS);
+  return end;
+}
+
+export async function expireSubscriptions(now = new Date()): Promise<number> {
+  const expired = await prisma.subscription.findMany({
+    where: { status: 'ACTIVE', currentPeriodEnd: { lte: now } },
+    select: { id: true, organizationId: true, planCode: true },
+    take: 200,
+  });
+  let count = 0;
+  for (const subscription of expired) {
+    // Едновременно активиране печели: уникалният индекс „един активен абонамент“ спира единия.
+    const done = await expireOne(subscription, now).catch((error: unknown) => {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        return false;
+      }
+      throw error;
+    });
+    if (done) count += 1;
+  }
+  return count;
+}
+
+async function expireOne(
+  subscription: { id: string; organizationId: string; planCode: string },
+  now: Date,
+): Promise<boolean> {
+  {
+    return prisma.$transaction(async (tx) => {
+      // Условно: ново плащане в същия момент (активиране) печели — то вече е отменило този запис.
+      const updated = await tx.subscription.updateMany({
+        where: { id: subscription.id, status: 'ACTIVE', currentPeriodEnd: { lte: now } },
+        data: { status: 'PAST_DUE' },
+      });
+      if (updated.count !== 1) return false;
+      const org = await tx.organization.findUniqueOrThrow({
+        where: { id: subscription.organizationId },
+        select: { kind: true },
+      });
+      const planCode = startPlanFor(org.kind);
+      await tx.subscription.create({
+        data: {
+          organizationId: subscription.organizationId,
+          planCode,
+          currentPeriodStart: now,
+          currentPeriodEnd: farEnd(now),
+        },
+      });
+      await audit(tx, {
+        actorId: null,
+        organizationId: subscription.organizationId,
+        action: 'billing.subscription.expired',
+        targetType: 'Subscription',
+        targetId: subscription.id,
+        details: { planCode: subscription.planCode, fallback: planCode },
+      });
+      return true;
+    });
+  }
+}

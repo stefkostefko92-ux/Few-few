@@ -1,0 +1,46 @@
+<%
+  // „Segnalazioni“ (routes/master-segnalazioni.ts): опашката за модериране — отворените първи.
+  const m = 'segnalazioni.master.';
+%><%- include('../partials/top', { titleKey: 'segnalazioni.master.titolo' }) %>
+<div class="page-head">
+  <div>
+    <a href="/master"><%= t('master.console.title') %></a>
+    <h1><%= t(m + 'titolo') %></h1>
+    <p class="page-head__sub"><%= t(m + 'sub') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <% for (const [chiave, righe, vuoto] of [['aperte', aperte, 'nessuna'], ['decise', chiuse, 'nessunaDecisa']]) { %><section class="panel" aria-labelledby="h-<%= chiave %>">
+    <h2 class="section__title" id="h-<%= chiave %>"><%= t(m + chiave) %></h2>
+    <% if (!righe.length) { %><p class="muted"><%= t(m + vuoto) %></p><% } else { %><div class="table-scorre"><table class="table table--stack">
+      <caption class="visually-hidden"><%= t(m + chiave) %></caption>
+      <thead><tr><th scope="col"><%= t(m + 'colonna.riferimento') %></th><th scope="col"><%= t(m + 'colonna.ricevuta') %></th><th scope="col"><%= t(m + 'colonna.stato') %></th><th scope="col"><%= t(m + 'colonna.esito') %></th></tr></thead>
+      <tbody>
+        <% for (const s of righe) { %><tr>
+          <th scope="row" data-label="<%= t(m + 'colonna.riferimento') %>"><a href="/master/segnalazioni/<%= s.id %>"><%= s.riferimento %></a></th>
+          <td data-label="<%= t(m + 'colonna.ricevuta') %>"><%= fmt.dateTime(s.createdAt) %></td>
+          <td data-label="<%= t(m + 'colonna.stato') %>"><%= t(m + 'stato.' + s.stato) %></td>
+          <td data-label="<%= t(m + 'colonna.esito') %>"><%= s.esito ? t(m + 'esitoPreso.' + s.esito) : '—' %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table></div><% } %>
+  </section>
+  <% } %>
+  <form class="panel form" method="post" action="/master/segnalazioni/iniziativa" novalidate aria-labelledby="h-iniziativa">
+    <h2 class="section__title" id="h-iniziativa"><%= t(m + 'iniziativa.titolo') %></h2>
+    <p class="muted"><%= t(m + 'iniziativa.intro') %></p>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field field--wide">
+      <label class="field__label" for="in-dove"><%= t(m + 'iniziativa.dove') %></label>
+      <input class="input" id="in-dove" name="dove" type="text" maxlength="2000" required aria-describedby="in-dove-hint">
+      <p class="field__hint" id="in-dove-hint"><%= t(m + 'iniziativa.doveHint') %></p>
+    </div>
+    <div class="field field--wide">
+      <label class="field__label" for="in-motivo"><%= t(m + 'iniziativa.motivo') %></label>
+      <textarea class="input" id="in-motivo" name="motivo" rows="4" maxlength="5000" required></textarea>
+    </div>
+    <div class="toolbar"><button class="btn" type="submit"><%= t(m + 'iniziativa.apri') %></button></div>
+  </form>
+</div>
+<%- include('../partials/bottom') %>
