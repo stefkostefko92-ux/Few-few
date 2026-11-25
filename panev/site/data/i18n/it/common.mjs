@@ -33,8 +33,8 @@ export default {
       ],
     },
     products: {
-      title: 'Listino staffe per ascensori 2026 | Panev Ascensori',
-      description: 'Listino 2026 IVA esclusa: staffe porte di piano A/B, supporti SU·SD·SC con staffa SG, staffe guida fisse e su misura. Ordina via email.',
+      title: 'Listino staffe per ascensori 2027 | Panev Ascensori',
+      description: 'Listino 2027 IVA esclusa: staffe porte di piano A/B, supporti SU·SD·SC con staffa SG, staffe guida fisse e su misura. Ordina via email.',
       keywords: [
         'listino staffe ascensori',
         'prezzi staffe porte di piano',
@@ -46,12 +46,12 @@ export default {
       ],
     },
     catalog: {
-      title: 'Catalogo staffe ascensori 2026 (PDF) | Panev Ascensori',
-      description: 'Catalogo tecnico 2026 delle staffe per ascensori: 72 pagine con viste 3D, quote in mm, codici e listino. Sfoglialo online o scarica il PDF.',
+      title: 'Catalogo staffe ascensori 2027 (PDF) | Panev Ascensori',
+      description: 'Catalogo tecnico 2027 delle staffe per ascensori: 72 pagine con viste 3D, quote in mm, codici e listino. Sfoglialo online o scarica il PDF.',
       keywords: [
         'catalogo staffe ascensori',
         'catalogo staffe ascensori PDF',
-        'catalogo tecnico ascensori 2026',
+        'catalogo tecnico ascensori 2027',
         'disegni di montaggio staffe',
         'listino staffe PDF',
         'Panev Ascensori',
@@ -96,7 +96,7 @@ export default {
     },
     viewer3d: {
       title: 'Staffe per ascensori in 3D: 48 articoli | Panev',
-      description: 'Le 48 staffe del catalogo 2026 in 3D: ruotale, passa da DX a SX, guardale montate con la regolazione e scarica una foto HD.',
+      description: 'Le 48 staffe del catalogo 2027 in 3D: ruotale, passa da DX a SX, guardale montate con la regolazione e scarica una foto HD.',
       keywords: [
         'staffe ascensori 3D',
         'modello 3D staffe porte di piano',

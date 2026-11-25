@@ -63,3 +63,15 @@ test("ядро без тест (31.10): PR по фискален код без �
   assert.ok(!decide({ kind: "code", products: ["CSPos"], ageDays: 1 }).agents.includes("izpitatelya"), "без ядро — без Изпитателя");
   assert.ok(!decide({ kind: "deps", products: ["CSPos"], ageDays: 1, coreNoTest: ["x"] }).agents.includes("izpitatelya"), "само зависимости — без Изпитателя");
 });
+
+test("Ultrareview по избор — само за код, който пипа ядро (не документи, зависимости, застарял PR или листа)", () => {
+  const core = ["CSPos/src/lib/money.ts"];
+  assert.equal(decide({ kind: "code", products: ["CSPos"], ageDays: 1, core }).ultrareview, true);
+  assert.equal(decide({ kind: "code", products: ["CSPos"], ageDays: 1, core, reviewed: ["kodadjiyata", "kasadjiyata"] }).ultrareview, true, "и вече прегледан от нашите — изборът остава");
+  assert.ok(!decide({ kind: "code", products: ["CSPos"], ageDays: 1, core: [] }).ultrareview, "листа");
+  assert.ok(!decide({ kind: "docs", products: ["CSPos"], ageDays: 1, core }).ultrareview, "документи");
+  assert.ok(!decide({ kind: "deps", products: ["CSPos"], ageDays: 1, core }).ultrareview, "зависимости");
+  assert.ok(!decide({ kind: "code", products: ["CSPos"], ageDays: STALE_DAYS + 1, core }).ultrareview, "застарял");
+  const [r] = triage([{ number: 7, title: "t", head: { ref: "x" } }], () => ({ files: ["CSPos/src/lib/money.ts", "CSPos/src/lib/money.test.ts"], ageDays: 0, sha: "abc" }));
+  assert.equal(r.ultrareview, true, "triage подава ядрото от git");
+});

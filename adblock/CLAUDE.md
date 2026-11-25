@@ -156,7 +156,8 @@ bash tools/package.sh                         # билд + самопровер�
 
 - **Режими (6.0).** content.js/.css, cosmetic_generic.css, cookies, antiadblock и picker НЕ са в manifest-а:
   SW ги регистрира по `lib/modes.js` (`syncPageScripts`, persistAcrossSessions). Basic — нищо наше на страницата
-  (и без main.js/uBO парчета/gpc.js, без meta.js; YouTube/Twitch остават — свой превключвател); Standard — само
+  (и без main.js/uBO парчета/gpc.js, без meta.js; YouTube/Twitch остават — свой превключвател: изключват се САМО
+  за разрешен сайт, никога по Basic — 6.1.1, гейт в tests/twitch.test.mjs + youtube.browser); Standard — само
   top frame + cookies.js в рамките на CMP-тата (`CMP_FRAME_HOSTS` == регекса в cookies.js, гейт); Strict — всички
   рамки (поведението на 5.8). **main.js следва същия план** (`-content` записите: Standard — главната рамка,
   Strict — всички, id `sa-scriptlets[-strict|-standard]`); uBO парчетата остават във всички рамки (поправки по
@@ -221,9 +222,22 @@ bash tools/package.sh                         # билд + самопровер�
   като НАШ код в `youtube_main.js` (само www.youtube.com, не за Premium): реклама, вшита в потока („SSAP, AD“ в
   `getStatsForNerds`) → `seekTo` до края ѝ през API-то на плейъра — единственото позволено превъртане, и никога ако
   „продължителността на рекламата“ е тази на клипа; `<video>` не се пипа. Отказ (UNPLAYABLE → answer/3037019 +
-  WEB_PAGE_TYPE_UNKNOWN, без captcha) или 0x0 за 10 s → `loadVideoById` на място със следващата форма
-  (channel → lactmilli → inline → yahi → както е), всяка веднъж, изчаква новия отговор (8 s); ПРЕДИ отказ заявката не
-  се пипа. „abnormality“ колбекът (иглата е сглобена, за да не я съдържа нашата функция) не тича. Аварийни стопове —
+  WEB_PAGE_TYPE_UNKNOWN, без captcha) или засядане на 0x0 → `loadVideoById` на място със следващата форма, всяка
+  веднъж, изчаква новия отговор (8 s); ПРЕДИ отказ/засядане заявката не се пипа. **6.1.1 — формите са тези на uBO
+  quick-fixes (2026-11):** watch channel → yahi → inline (isInlinePlaybackNoAd) → oaeb (params oAEBogYBLg) → както е;
+  embed channel → eafg (eAFgAQ); всяка с `#reloadxhr` referer (по него отговор на оформена заявка се познава в
+  `videostatsPlaybackUrl`). Смени ли uBO реда — същото тук + tests/youtube.test.mjs. Засядането: щом плейърът го
+  каже (`Map.prototype.has("onSnackbarMessage")` или самостоятелен Uint8Array от 104/105 байта в `push` — куките
+  само записват часа, четат през родните getter-и) и засядането се задържи 1 s, иначе след 10 s; дума отпреди
+  отговора на последния опит не се брои. Куките стоят САМО докато клипът тръгва (watch/embed, нов клип, опит) и се
+  махат след 2 s игра — `push` е най-горещата функция на страницата. Списъкът с форми е по клип. Всеки опит праща `tbab-yt-retry` на документа
+  (родният dispatchEvent, взет преди страницата) → `youtube_skip` рестартира часовника си (25 s спиране и 8 s
+  Playback ID; най-много 1/s и 20 на страница): bypass-ът от 6 ч е само след изчерпани опити. Отказ завършва с
+  един опит „както е“; засядане — с формите и после заявки както са, без нов опит. След опит в плейлист плейлистът се връща.
+  **Вграденият `ytInitialPlayerResponse` (пълно зареждане)** го чисти `youtube_main` при присвояване (неприсвоен
+  капан се маха при DOMContentLoaded) — правилата на uBO
+  за `www.youtube.com` НЕ тичат (двигателят търси правилата по хоста без „www.“ — отделен дефект, 21 www-ключа) и на
+  Basic изобщо ги няма. „abnormality“ колбекът (иглата е сглобена, за да не я съдържа нашата функция) не тича. Аварийни стопове —
   `youtube.noShapes` / `youtube.noSsapJump` (булеви). **Изключение от „никога googlevideo“:** само фалшивата заявка с
   `expire` в миналото — динамично правило 69998 от днешната дата (`fakeGvRule`, опреснява се на 12 ч), НИКОГА фиксиран
   регекс (този на uBO хваща истински заявки от януари 2027); RE2 има 2 KB лимит — `tests/ytrules.test.mjs`.

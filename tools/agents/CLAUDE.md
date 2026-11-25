@@ -236,7 +236,7 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 65): **агентски** — agent-doctrine (генериран, във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
+guardrails*. Ours (BG, vetted; 66): **агентски** — agent-doctrine (генериран, във всеки агент през `skills:`); **процедури** — deploy · prisma-migrate · quality-gate · verify ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
 razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · revolut-payment · motion-a11y · gdpr-launch · db-readonly ·
@@ -245,7 +245,7 @@ plus uchitel; **домейн** — youtube-reddit · fivem-mlo · fivem-clothing
 dpa-review · dsar-response · pia-generation · aia-generation · vendor-ai-review · marketing-claims-review ·
 humanizer · test-driven-development · seo-geo · seo-hreflang · pricing; (2026-11-08) — receiving-code-review ·
 discernment-nudge · improve-codebase-architecture; (2026-11-14) — ponytail-review ·
-observability-and-instrumentation · deprecation-and-migration · ui-ux-pro-max · archify-diagrams (tt-a1i/archify, Apache-2.0; каналите за обновления и марки по мрежа махнати; Летописецът); (2026-11-23) — model-na-zaplahite (openai/skills security-threat-model, Apache-2.0; докладът само в `.tmp/`; Стражата) · igrovo-studio (openai/plugins game-studio, MIT; 9 умения → 1 с `references/`, без imagegen и Python скриптовете; Дизайнера); (2026-10-31, правни) — use-case-triage ·
+observability-and-instrumentation · deprecation-and-migration · ui-ux-pro-max · archify-diagrams (tt-a1i/archify, Apache-2.0; каналите за обновления и марки по мрежа махнати; Летописецът); (2026-11-23) — model-na-zaplahite (openai/skills security-threat-model, Apache-2.0; докладът само в `.tmp/`; Стражата) · igrovo-studio (openai/plugins game-studio, MIT; 9 умения → 1 с `references/`, без imagegen и Python скриптовете; Дизайнера); (2026-11-24) — animacia (cth9191/animate + awesome-skills/manim-skill, MIT; canvas анимация с рендер без мрежа през `scripts/safe.mjs`, Manim само от lock файла; AI Studio); (2026-10-31, правни) — use-case-triage ·
 reg-gap-analysis · ai-inventory · saas-msa-review · nda-review · vendor-agreement-review · stakeholder-summary ·
 oss-review · ip-clause-review. Gate: `node tools/skills/lint.mjs` + `node tools/skills/trigger-check.mjs --check`
 (both fail-closed, in `gate.mjs`). **Author our own BG, verified skills — never import third-party
@@ -333,6 +333,9 @@ handoff, извличането на паметта — без самата па
 с ТЕКУЩИЯ агентски слой (старите клони носят стари куки и дефиниции), diff без lock файловете, само четящи Bash
 команди, таван на разхода. Присъдата (блокер/поправки/чисто) и находките → `REPORT.md`; кой sha е прегледан →
 `pr-reviews.json`; поуките → учебния hook (прегледът е продукционна работа, не оценка). Стъпка и в `commit-pr`.
+PR с код в ядрото носи и ред „Ultrareview по избор“ (`core-map.mjs` `ultrareviewHint`, 24.11.2026): платен
+втори преглед извън флота, пуска го само собственикът с `/code-review ultra <номер>` след изрично „да“. Claude
+Ship (Code Review, PR Steward, Approvals) е само за Team/Enterprise — на Ultra го няма (`claims.json`).
 
 **Доставката се мери през харнеса, не през функцията.** Стойност на `additionalContext` над 10 000 знака
 не влиза в контекста (Claude Code от 2.1.89, 01.04.2026 — https://code.claude.com/docs/en/changelog.md) — харнесът я записва във файл и подава само път +
