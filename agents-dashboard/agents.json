@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 741
+        "lessons": 742
       },
       "evolution": [
         {
@@ -2152,9 +2152,20 @@
           "date": "2026-11-25",
           "event": "v69.3 — учене",
           "detail": "Научи: В live-run worktree дори read-only `node tools/agents/rubric.mjs` и съставни команди с …"
+        },
+        {
+          "version": "69.4.0",
+          "date": "2026-11-25",
+          "event": "v69.4 — учене",
+          "detail": "Научи: .pr-review/461.diff (adblock 6.1.1) е пълен — 25 от 25 файла по 461.stat, около 149 KB,…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/461.diff (adblock 6.1.1) е пълен — 25 от 25 файла по 461.stat, около 149 KB,…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
