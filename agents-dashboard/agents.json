@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 771
+        "lessons": 772
       },
       "evolution": [
         {
@@ -2133,9 +2133,20 @@
           "date": "2026-11-25",
           "event": "v72.5 — учене",
           "detail": "Научи: .pr-review/323.diff (mastilko sec) съдържа 24 от 25 файла — lock файлът е само в .stat;… (+38 още)"
+        },
+        {
+          "version": "72.6.0",
+          "date": "2026-11-25",
+          "event": "v72.6 — учене",
+          "detail": "Научи: В deploy/autodeploy.sh release-ите имат обвивка (<TS>/<обвивка>/<продукт>/) при GitHub …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „В deploy/autodeploy.sh release-ите имат обвивка (<TS>/<обвивка>/<продукт>/) при GitHub …\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
