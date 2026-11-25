@@ -2199,6 +2199,11 @@
       "activity": [
         {
           "date": "2026-11-25",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Blender .blend файл, записан от bpy 5.x, е zstd-компресиран (магия 28 B5 2F FD), затова…\""
+        },
+        {
+          "date": "2026-11-25",
           "type": "learning",
           "summary": "Научи: „.pr-review/361.diff (arena minimon_fleece) е пълен — 29 diff заглавки при 29 файла в 36…\" · 1 в карантина"
         },
