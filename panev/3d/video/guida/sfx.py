@@ -1,14 +1,15 @@
 """The sounds of the counterweight-guide film, on the frames that show them (the shared sounds are in ../foley.py).
 The times are read from the source of steps.py and pose.py (they import bpy): move an action there and its sound
 moves with it. New here: the plumb line paying out of its reel, the SG landing on the SU's arm and sliding 20 mm along
-it, the 5 m T50 rail sliding down the SG's flange and coming to rest, the forged N1 clips seating on the rail's foot.
+it, the 5 m T50 rail set down far below (it is lowered 20 mm clear of the SG's flange: nothing touches on the way),
+the forged N1 clips seating on the rail's foot.
 The DX side works a beat behind and mostly off camera: in the close-ups on SX it is heard further off, on the right.
 render(n) → (dry, room send), both stereo."""
 import ast
 import os
 import numpy as np
-from dsp import SR, ns, times, noise, band, peak, shape, modal, burst, place
-from foley import tick, knock, clack, scrape, marker_dot, ratchet, drill, roughness
+from dsp import SR, ns, times, noise, lowpass, band, shape, modal, burst, place
+from foley import tick, knock, clack, scrape, marker_dot, ratchet, drill
 from timeline import TIMELINE
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -69,21 +70,13 @@ def clank(seed):
     return y
 
 
-def rail_slide(dur, seed):
-    """The rail's foot sliding down the SG's flange: rough steel-on-steel, coloured by the rail's own ringing."""
-    n = ns(dur)
-    speed = np.sin(np.pi * np.clip(times(n) / dur, 0, 1))
-    y = shape(noise(n, seed), lambda f: band(f, 250, 4500) * peak(f, 470, 8, 0.25) * peak(f, 1180, 7, 0.2)
-              * peak(f, 2230, 6, 0.2))
-    return y * roughness(n, 25, seed + 1) * speed
-
-
 def rail_rest(seed):
-    """The 5 m rail coming to rest on its line: a soft heavy thud and the long, low ring of the T."""
+    """The 5 m rail set down on its base, two metres below: a muffled heavy thud and the long, low ring of the T, its
+    highs lost on the way up the shaft."""
     y = modal((92, 236, 470, 790, 1180, 1650), (0.9, 0.8, 0.6, 0.45, 0.32, 0.22), (0.5, 1.0, 0.8, 0.5, 0.3, 0.18), 1.4,
               seed, 0.01)
     y[:ns(0.03)] += 0.3 * burst(0.03, 120, 1500, 0.015, seed + 1)
-    return y
+    return shape(y, lambda f: lowpass(f, 1600, 2))
 
 
 def bolts_in(dry, wet, table, seed, pan, gain=0.4):
@@ -124,9 +117,7 @@ def render(n):
             put(dry, wet, t1, tick(s0 + 8 + j, 0.6), 0.35, p, side)
         put(dry, wet, T["SG_IN"][side][1] - 0.2, scrape(0.2, 1500, 6000, s0 + 10, 120), 0.06, p, side)  # 5: the SG
         put(dry, wet, T["SG_IN"][side][1], clank(s0 + 11), 0.4, p, side)
-        a, b = T["RAIL_IN"][side]                                               # 6: the rail down its flange
-        put(dry, wet, a, rail_slide(b - a, s0 + 12), 0.12, p, side)
-        put(dry, wet, b, rail_rest(s0 + 13), 0.3, p, side)
+        put(dry, wet, T["RAIL_IN"][side][1], rail_rest(s0 + 13), 0.3, p, side)  # 6: the rail set down
         a, b = T["ALIGN"][side]                                                 # 7: the SG slid 20 mm to the foot
         put(dry, wet, a, scrape(b - a, 600, 5000, s0 + 14, 50), 0.15, p, side)
         put(dry, wet, b, tick(s0 + 15, 0.7), 0.3, p, side)
