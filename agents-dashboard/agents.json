@@ -4091,7 +4091,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 262
+        "lessons": 263
       },
       "evolution": [
         {
@@ -4567,9 +4567,20 @@
           "date": "2026-11-25",
           "event": "v25.6 — учене",
           "detail": "Научи: PR с реквизити на дружеството в eternaltouch (locales updateDate, home/footer/legal/pri…"
+        },
+        {
+          "version": "25.7.0",
+          "date": "2026-11-25",
+          "event": "v25.7 — учене",
+          "detail": "Научи: Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
