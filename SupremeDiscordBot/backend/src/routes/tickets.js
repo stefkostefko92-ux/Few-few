@@ -1,7 +1,7 @@
 // backend/src/routes/tickets.js
 import { Router } from "express";
 import { openTranscript } from "../lib/transcriptAtRest.js";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { notifyBotVerbose, sendTicketReply } from "../services/botNotifier.js";

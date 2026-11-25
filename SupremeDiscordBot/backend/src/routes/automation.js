@@ -4,7 +4,7 @@
 // this file is for dashboard UI.
 
 import { Router } from "express";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";

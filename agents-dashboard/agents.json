@@ -2138,13 +2138,8 @@
       "activity": [
         {
           "date": "2026-11-25",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „В bash кодът на изход на while цикъл е този на последната команда в последната итерация…\""
-        },
-        {
-          "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „.pr-review/323.diff (mastilko sec) съдържа 24 от 25 файла — lock файлът е само в .stat;…\" (+38 още) · 4 в карантина"
+          "summary": "Научи: „.pr-review/323.diff (mastilko sec) съдържа 24 от 25 файла — lock файлът е само в .stat;…\" (+38 още) · 5 в карантина"
         },
         {
           "date": "2026-11-24",
@@ -7490,13 +7485,8 @@
       "activity": [
         {
           "date": "2026-11-25",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Под set -e провал в `cmd && log` в тялото на while не спира функцията; статусът на функ…\""
-        },
-        {
-          "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „fakturist/deploy/deploy.sh връща код 0 и когато няма TLS сертификат за домейна (sync_ng…\" (+1 още) · 1 в карантина"
+          "summary": "Научи: „fakturist/deploy/deploy.sh връща код 0 и когато няма TLS сертификат за домейна (sync_ng…\" (+1 още) · 2 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -14720,28 +14710,17 @@
           "detail": "Научи: Към 2026-11-24 в Latest models на Anthropic стоят Fable 5.2 (claude-fable-5-2, $8/$40, … (+3 още)"
         },
         {
-          "version": "36.9.0",
-          "date": "2026-11-25",
-          "event": "v36.9 — учене",
-          "detail": "Научи: tools/seo/indexnow.mjs слага AbortSignal.timeout на всяко fetch (проба на ключа 10 s, s… (+9 още)"
-        },
-        {
           "version": "37.0.0",
           "date": "2026-11-25",
           "event": "v37.0 — учене",
-          "detail": "Научи: GENERIC_RULE в tools/security/secret-scan.mjs иска кавичка веднага след \":\" или \"=\" и п…"
+          "detail": "Научи: GENERIC_RULE в tools/security/secret-scan.mjs иска кавичка веднага след \":\" или \"=\" и п… (+10 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-25",
           "type": "learning",
-          "summary": "Научи: „GENERIC_RULE в tools/security/secret-scan.mjs иска кавичка веднага след \":\" или \"=\" и п…\""
-        },
-        {
-          "date": "2026-11-25",
-          "type": "learning",
-          "summary": "Научи: „tools/seo/indexnow.mjs слага AbortSignal.timeout на всяко fetch (проба на ключа 10 s, s…\" (+9 още)"
+          "summary": "Научи: „GENERIC_RULE в tools/security/secret-scan.mjs иска кавичка веднага след \":\" или \"=\" и п…\" (+10 още)"
         },
         {
           "date": "2026-11-24",
