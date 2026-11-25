@@ -162,3 +162,21 @@ test("guard-dangerous: вложена сесия на Claude Code от аген�
   for (const c of ["node tools/agents/live-gate.mjs", 'git commit -m "claude -p в описанието"', "ls ~/.claude/agents"])
     assert.equal(isCatastrophic(c), null, c);
 });
+
+// AI-джията, преглед на PR #482 (24.11.2026): `claude ultrareview` е съгласие за таксуване още при пускането,
+// а с --post публикува в PR без въпрос — от Bash на агент или на сесията това е платено изходящо действие без
+// „да“ на собственика. Пуска го само човек: `/code-review ultra <номер>` в своя терминал.
+test("guard-dangerous: платеният Ultrareview от Bash се спира — пуска го само собственикът", async () => {
+  const { isCatastrophic } = await import("../../.claude/hooks/guard-dangerous.mjs");
+  for (const c of ["claude ultrareview 482 --post", "claude ultrareview", "cd /x && claude ultrareview origin/main", "claude.exe ultrareview 12",
+    "sudo claude ultrareview 1", "claude --model opus ultrareview 482"])
+    assert.ok(isCatastrophic(c), c);
+  for (const c of ['git commit -m "claude ultrareview по избор"', "grep -rn ultrareview tools/agents", "node tools/agents/core-map.mjs --diff", 'echo "claude ultrareview"'])
+    assert.equal(isCatastrophic(c), null, c);
+  // Кодаджията, втори преглед на PR #482: регексът по началото на реда се заобикаляше — съди се по argv.
+  for (const c of ["/usr/local/bin/claude ultrareview 482 --post", "~/.local/bin/claude ultrareview", "FOO=1 claude ultrareview", "timeout 900 claude ultrareview",
+    "command claude ultrareview", "time claude ultrareview 1", "env -i claude ultrareview", "echo 1 | xargs claude ultrareview",
+    "if true; then claude ultrareview 1; fi", '"claude" ultrareview 482', "nice -n 5 claude ultrareview", "x=$(claude ultrareview 1)"])
+    assert.ok(isCatastrophic(c), c);
+  for (const c of ["claude --version", "claude mcp list", "ls ~/.local/bin/claude"]) assert.equal(isCatastrophic(c), null, c);
+});

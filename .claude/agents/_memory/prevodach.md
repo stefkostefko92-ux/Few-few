@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-24:** Във видеото на panev пренасянето на текста цепи само на обикновени интервали, затова двойки като „A + B“, „A DX“, „65 mm“ трябва да са с U+00A0 (в Python като  ), иначе се разделят на два реда в кадъра _(нови или променени надписи и редове в panev/3d/video/texts.py; verified; /home/user/Few-few/panev/3d/video/overlay.py:86 (wrap) + texts.py:14 (U+00A0 в „A + B“))_
+- **2026-11-24:** В italian текстовете на panev армировката е „ferri d’armatura“ (каталог и сайт), не „tondino“ — нови текстове следват тази дума _(IT текстове на panev (сайт, каталог, видео), които споменават армировка; verified; /home/user/Few-few/panev/site/data/i18n/it/guides.mjs:69; home.mjs:7,36,63,145)_
 - **2026-11-24:** Във видеото на panev заглавията на стъпките са безлични съществителни („Serraggio dei tasselli“), редовете са повелително на tu, а надписите за резултат описват състоянието („Staffa B in bolla“, „Soglia in bolla“); когато се говори за няколкото пластини A, е в множествено число („Piastre A in bolla e serraggio“) _(нови стъпки или надписи във видеото за монтаж в panev/3d/video; verified; /home/user/Few-few/panev/3d/video/texts.py:4-30)_
 - **2026-11-23:** В Supreme Bot всяка сума в € в FAQ на лендинга трябва да е цена на най-близкото споменато преди нея име на план; затова при превод на FAQ цената стои до правилното име на план, иначе тестът пада _(превод или редакция на FAQ с цени в SupremeDiscordBot/frontend/src/i18n/landing.js; verified; SupremeDiscordBot/frontend/src/__tests__/landing.test.js:150-194)_
 

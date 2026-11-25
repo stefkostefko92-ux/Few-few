@@ -41,6 +41,9 @@ export const CATASTROPHIC = [
   { re: /\b(?:powershell|pwsh)(?:\.exe)?\b[^\n]*\s-e(?:c|nc\w*)?\s+["']?[A-Za-z0-9+/=]{16,}/i, why: "кодирана PowerShell команда (-EncodedCommand крие какво се изпълнява)" },
   // Разбивача, 23.11.2026 (N4): агент, който пуска нова сесия на Claude Code (`claude -p`, с `--bare` — без куки
   // изобщо), минава покрай месечния таван и всички пазачи. Живият гейт я пуска през spawn в Node, не през Bash.
+  // AI-джията, преглед на PR #482 (24.11.2026): `claude ultrareview` е съгласие за таксуване още при пускането,
+  // а с --post публикува в PR без въпрос. Пуска го само собственикът (`/code-review ultra <номер>` в своя терминал).
+  { re: /(?:^|[;&|(]\s*|\n\s*|\b(?:sudo|exec|nohup|env)\s+)claude(?:\.exe)?\s+(?:[^\n;&|]*\s)?ultrareview\b/, why: "платен Ultrareview от агент (claude ultrareview) — таксува usage credits и с --post публикува в PR без въпрос; пуска го само собственикът: /code-review ultra <номер> в своя терминал" },
   { re: /(?:^|[;&|(]\s*|\n\s*|\b(?:sudo|exec|nohup|env)\s+)(?:claude(?:\.exe)?\s+(?:[^\n;&|]*\s)?(?:-p|--print|--bare)\b|npx\s+(?:-y\s+)?@anthropic-ai\/claude-code\b)/, why: "вложена сесия на Claude Code от агент (claude -p) — заобикаля тавана на разхода и пазачите" },
 ];
 
@@ -424,6 +427,16 @@ export function gitPushDanger(argv) {
   return null;
 }
 
+/** `claude … ultrareview` по argv — пълен път, VAR=, timeout, command, time, env, xargs, then и кавички не го
+ *  скриват (Кодаджията, втори преглед на PR #482: регексът по началото на реда се заобикаляше). Непокрито остава
+ *  alias или shell функция (`c(){ claude "$@"; }; c ultrareview`) — там помага питането за Bash. */
+export const ULTRAREVIEW_WHY = "платен Ultrareview от агент (claude ultrareview) — таксува usage credits и с --post публикува в PR без въпрос; пуска го само собственикът: /code-review ultra <номер> в своя терминал";
+export function claudeUltrareview(argv) {
+  const a = commandOf(argv);
+  if (!a.length || !/^claude(?:\.exe)?$/i.test(base(a[0]))) return null;
+  return a.slice(1).includes("ultrareview") ? ULTRAREVIEW_WHY : null;
+}
+
 const RUN_FLAG = /^--(?:server|cmd|command|exec|execute|run|shell)(?:=([\s\S]*))?$/;
 /** Низовете в argv, които програмата ще подаде на обвивка. */
 export function execStrings(argv) {
@@ -449,7 +462,7 @@ function wordDanger(s, depth) {
   let parsed;
   try { parsed = shellWords(s); } catch { return null; }
   for (const argv of parsed.cmds) {
-    const g = gitPushDanger(argv);
+    const g = gitPushDanger(argv) || claudeUltrareview(argv);
     if (g) return g;
     for (const inner of execStrings(argv)) { const why = isCatastrophic(inner, depth + 1); if (why) return why; }
   }
