@@ -7069,7 +7069,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 305
+        "lessons": 306
       },
       "evolution": [
         {
@@ -7491,9 +7491,20 @@
           "date": "2026-11-25",
           "event": "v27.9 — учене",
           "detail": "Научи: Защита на release по монтирани от Docker папки не пази release-а, от който идва само en… (+5 още)"
+        },
+        {
+          "version": "28.0.0",
+          "date": "2026-11-25",
+          "event": "v28.0 — учене",
+          "detail": "Научи: prune_releases в autodeploy.sh пази целта на всеки $SHARED_DIR/*/last-good (първия ред,…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „prune_releases в autodeploy.sh пази целта на всеки $SHARED_DIR/*/last-good (първия ред,…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
