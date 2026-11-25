@@ -26,6 +26,7 @@ async function computePending(isAdmin: boolean): Promise<Record<string, number>>
     );
     // Контактни съобщения: чакащи = необработени.
     pending["saobshteniya"] = await prisma.contactMessage.count({ where: { handled: false } });
+    pending["greshni-nomera"] = await prisma.phoneReport.count({ where: { resolved: false } });
     // Системни (само за администратор).
     if (isAdmin) {
       pending["signali"] = await prisma.complaint.count({ where: { status: "NEW" } });

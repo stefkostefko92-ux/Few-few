@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
+import { clientIpKey, rateLimit } from '@/lib/rate-limit';
 import { REPORT_CATEGORIES } from '@/lib/report';
 
 // DSA чл. 16 „уведомяване и действие“: публичен сигнал за профил.
@@ -28,6 +29,10 @@ export async function submitReportAction(formData: FormData): Promise<void> {
     message: formData.get('message'),
     email: formData.get('email') ?? '',
   });
+  // Сигналите бяха без лимит (червен екип): 5 на 10 мин. от адрес (/64).
+  if (!rateLimit(`report:${await clientIpKey()}`, 5, 10 * 60_000)) {
+    redirect('/');
+  }
   if (!parsed.success) {
     redirect('/');
   }

@@ -26,7 +26,7 @@ const CHECKS = [
   { id: 'text', why: 'текстът: съгласуване по число, терминология, речник', cmd: ['node', 'scripts/text-audit.mjs'] },
   { id: 'degraded', why: 'машина без инструменти: гърми ли, лъже ли с „нула проблема"', cmd: ['node', 'scripts/degraded-audit.mjs'] },
   { id: 'corrupt', why: 'повредени собствени файлове: вдига ли се и казва ли го', cmd: ['node', 'scripts/corrupt-audit.mjs'] },
-  { id: 'sweep', why: 'браузърна обиколка на 37-те секции × 3 езика', cmd: ['node', 'scripts/ui-sweep.mjs'], browser: true },
+  { id: 'sweep', why: 'браузърна обиколка на 40-те секции × 3 езика', cmd: ['node', 'scripts/ui-sweep.mjs'], browser: true },
   { id: 'a11y', why: 'достъпност: имена, контраст, цели, фокус, lang', cmd: ['node', 'scripts/a11y-audit.mjs'], browser: true },
 ];
 

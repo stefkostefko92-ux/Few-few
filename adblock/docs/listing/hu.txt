@@ -12,3 +12,4 @@ A Supreme AdBlock mindenhol blokkolja a hirdetéseket – YouTube-videóreklámo
 • Hibás a webhely? Egy kattintás megjavítja, vagy szóljon nekünk – semmi sem megy el anélkül, hogy előbb látná.
 • Az uBlock Originről, az AdGuardról vagy az Adblock Plusról vált át? Hozza át az engedélyezett webhelyeit és szűrőit egyetlen fájllal.
 • Lássa, mely más webhelyekhez kapcsolódik egy oldal, és egy kattintással blokkoljon közülük egyet csak ott.
+• Védelmi szint: Alap · Normál · Szigorú

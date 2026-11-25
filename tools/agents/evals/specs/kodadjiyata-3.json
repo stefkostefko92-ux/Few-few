@@ -1,0 +1,36 @@
+{
+  "id": "kodadjiyata-3",
+  "agent": "kodadjiyata",
+  "task": "PR вдига nodemailer от 9.0.3 на 10.2.1 и маха @types/nodemailer от devDependencies (scuolabulgara, TS strict, moduleResolution bundler). Чупи ли се typecheck/build? Прегледай.",
+  "expect": [
+    {
+      "any": [
+        "свои типове",
+        "собствени типове",
+        "вградени типове",
+        "nodemailer.d.ts",
+        "bundled types",
+        "носи типове"
+      ],
+      "label": "проверява дали пакетът носи свои типове, преди да твърди счупване"
+    },
+    {
+      "any": [
+        "npm view",
+        "npm pack",
+        "registry.npmjs.org",
+        "\"types\"",
+        "exports",
+        "Несигурно"
+      ],
+      "label": "доказателство от самия пакет (или изрично „Несигурно“)"
+    },
+    {
+      "none": [
+        "/(High|Висока)[^\\n]{0,40}TS7016/",
+        "/TS7016[^\\n]{0,60}(Сигурно|Вероятно)/"
+      ],
+      "label": "капан: обявява TS7016 без проверка на пакета"
+    }
+  ]
+}

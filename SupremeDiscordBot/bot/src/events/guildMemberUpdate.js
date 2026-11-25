@@ -26,6 +26,11 @@ export default {
       const guild = newMember.guild || oldMember.guild;
       if (!guild?.id) return;
 
+      // Частичен стар член = некеширан (Partials.GuildMember, В5): няма с какво да
+      // сравним. Без тази проверка всяка негова роля излизаше „добавена“, а
+      // псевдонимът — „сменен“, с до две заявки към одитния дневник за нищо.
+      if (oldMember.partial) return;
+
       // Гейт ПРЕДИ audit-log fetch (rate limit) — виж messageDelete.
       if (!(await isEventCategoryEnabled(guild.id, "members"))) return;
 
@@ -44,15 +49,19 @@ export default {
         if (added.length || removed.length) {
           // Един audit-log fetch покрива и добавени, и премахнати роли.
           const actor = await fetchAuditActor(guild, AuditLogEvent.MemberRoleUpdate, targetId);
-          const actorFields = {
-            actorId: actor?.executorId || null,
-            actorTag: actor?.executorTag || null,
-          };
+          // Роля, дадена или махната от самия бот (автоматични роли, запазени
+          // роли, реакции, верификация), не е действие на модератор (З14): без
+          // поле „Actor“, но с ясен източник — промяната остава в дневника.
+          const byBot = !!actor?.executorId && actor.executorId === client?.user?.id;
+          const actorFields = byBot
+            ? { actorId: null, actorTag: null }
+            : { actorId: actor?.executorId || null, actorTag: actor?.executorTag || null };
+          const source = byBot ? { source: "bot" } : {};
           if (added.length) {
-            await logServerEvent(client, guild, { ...base, action: "role_add", ...actorFields, metadata: { roleIds: added } });
+            await logServerEvent(client, guild, { ...base, action: "role_add", ...actorFields, metadata: { roleIds: added, ...source } });
           }
           if (removed.length) {
-            await logServerEvent(client, guild, { ...base, action: "role_remove", ...actorFields, metadata: { roleIds: removed } });
+            await logServerEvent(client, guild, { ...base, action: "role_remove", ...actorFields, metadata: { roleIds: removed, ...source } });
           }
         }
       }

@@ -3,7 +3,10 @@ import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../../lib/store";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
-import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
+import { sortNatural } from "../cards/sortHand";
+import { FeltTable, Seat, type SeatPos } from "../table/FeltTable";
+import { useNarrowTable } from "../table/useNarrowTable";
+import { SeatCount } from "./SeatCount";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useTableFx, Announcements, type BannerTone } from "../anim/useTableFx";
 import { useTrickDisplay, TrickCardSlot } from "../anim/useTrickDisplay";
@@ -15,6 +18,8 @@ interface Play {
 }
 interface TrickState {
   hands: string[][];
+  /** Козова боя на договора (бридж; null = без коз/още няма договор). */
+  trump?: string | null;
   trick: Play[];
   turn: number;
 }
@@ -65,6 +70,7 @@ export function FourPlayerTrick({
   const user = useAuthStore((s) => s.user);
   const tableRef = useRef<HTMLDivElement>(null);
   const { dealIn } = useCardAnimations(tableRef);
+  const narrow = useNarrowTable();
   const { banners } = useTableFx({ matchId: matchId ?? null, seat, scopeRef: tableRef, toBanner });
   // Event-buffered centre: played cards fly in, the full trick flies to its winner.
   const { displayTrick, registerHandOrigin, originFor, flight } = useTrickDisplay({
@@ -76,6 +82,10 @@ export function FourPlayerTrick({
   });
 
   const myTurn = state.turn === seat && playable.size > 0;
+  // Ръката по боя и сила (козът първи, A K Q … 2) — само показване.
+  const dealtHand = state.hands[seat];
+  const trump = state.trump;
+  const myHand = useMemo(() => sortNatural(dealtHand ?? [], trump), [dealtHand, trump]);
   const others = useMemo(() => [0, 1, 2, 3].filter((s) => s !== seat), [seat]);
 
   // A "deal" is any refill from empty — covers rubber deals 2..N, not just the first.
@@ -99,45 +109,56 @@ export function FourPlayerTrick({
   return (
     <div ref={tableRef} style={{ position: "relative" }}>
       <Announcements banners={banners} />
-      <FeltTable crest={crest} feltColor={feltColor} feltDark={feltDark}>
-        {others.map((s) => (
-          <Seat
-            key={s}
-            pos={relativePos4(s, seat)}
-            name={names(s)}
-            active={state.turn === s}
-            badge={seatBadge?.(s)}
-          >
-            <div style={{ display: "flex" }}>
-              {/* Face-down fan, capped so 13 cards never hit the centre trick.
-                  If redact left this hand OPEN (bridge dummy after the lead),
-                  show the real cards — uncapped, tighter overlap. */}
-              {(() => {
-                const cards = state.hands[s] ?? [];
-                const revealed = cards.some((c) => c !== "?");
-                const shown = revealed ? cards : cards.slice(0, 8);
-                return shown.map((card, i) => (
-                  <PlayingCard
-                    key={i}
-                    card={revealed ? card : "?"}
-                    size="sm"
-                    style={{ marginLeft: i ? (revealed ? -44 : -40) : 0 }}
-                  />
-                ));
-              })()}
-            </div>
-          </Seat>
-        ))}
+      <FeltTable crest={crest} feltColor={feltColor} feltDark={feltDark} className="aso-table--compact">
+        {others.map((s) => {
+          const pos = relativePos4(s, seat);
+          const cards = state.hands[s] ?? [];
+          return (
+            <Seat key={s} pos={pos} name={names(s)} active={state.turn === s} badge={seatBadge?.(s)}>
+              {/* Phones: a side seat is a name plate + card count (the fans
+                  met in the middle of a ~320px felt); an open dummy there is
+                  still shown in full in the dummy panel under the table. */}
+              {narrow && pos !== "top" ? (
+                <SeatCount count={cards.length} />
+              ) : (
+                <div style={{ display: "flex" }} data-zone={`seat-${pos}`}>
+                  {/* Face-down fan, capped so 13 cards never hit the centre trick.
+                      If redact left this hand OPEN (bridge dummy after the lead),
+                      show the real cards — uncapped, tighter overlap. */}
+                  {(() => {
+                    const revealed = cards.some((c) => c !== "?");
+                    const shown = revealed ? sortNatural(cards, trump) : cards.slice(0, 8);
+                    const overlap = revealed ? (narrow ? -50 : -44) : narrow ? -44 : -40;
+                    return shown.map((card, i) => (
+                      <PlayingCard
+                        key={i}
+                        card={revealed ? card : "?"}
+                        size="sm"
+                        style={{ marginLeft: i ? overlap : 0 }}
+                      />
+                    ));
+                  })()}
+                </div>
+              )}
+            </Seat>
+          );
+        })}
 
-        <TableCenter>
+        <div className="aso-table__center" data-zone="trick">
           {displayTrick.length === 0 ? (
             <span className="text-sm text-ink-muted">{emptyTrickLabel}</span>
           ) : (
             displayTrick.map((p) => (
-              <TrickCardSlot key={`${p.seat}-${p.card}`} play={p} originFor={originFor} flight={flight} />
+              <TrickCardSlot
+                key={`${p.seat}-${p.card}`}
+                play={p}
+                originFor={originFor}
+                flight={flight}
+                size={narrow ? "sm" : "md"}
+              />
             ))
           )}
-        </TableCenter>
+        </div>
 
         <Seat
           pos="bottom"
@@ -145,13 +166,13 @@ export function FourPlayerTrick({
           active={myTurn}
           badge={seatBadge?.(seat)}
         >
-          <div className="aso-myhand" style={{ display: "flex" }}>
-            {(state.hands[seat] ?? []).map((card, i) => (
+          <div className="aso-myhand" data-zone="hand" style={{ display: "flex" }}>
+            {myHand.map((card, i) => (
               <HandCard
-                key={`${card}-${i}`}
+                key={card}
                 card={card}
                 index={i}
-                count={(state.hands[seat] ?? []).length}
+                count={myHand.length}
                 playable={myTurn && playable.has(card)}
                 onPlay={handlePlay}
               />

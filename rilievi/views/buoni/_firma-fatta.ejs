@@ -1,0 +1,9 @@
+<%
+  // Подписът, който вече стои: щрихите (само валидният), кога и на чие устройство е взет; невалидният —
+  // с думи. „Togli la firma“ праща формата с мястото на подписа (`togli`) — записва и маха.
+%><div class="buono-firmata<%= stato.valida ? '' : ' buono-firmata--non-valida' %>" id="f-<%= name %>" tabindex="-1">
+  <% if (stato.valida && stato.path) { %><svg class="buono-firmata__svg" viewBox="0 0 600 200" role="img" aria-label="<%= label %>"><path d="<%= stato.path %>" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><% } %>
+  <p class="<%= stato.valida ? 'muted' : 'field__error' %>"><%= stato.valida ? t('buoni.firma.acquisita', { quando: fmt.dateTime(stato.quando), chi: stato.chi }) : t('buoni.firma.nonValida') %></p>
+  <% if (puoTogliere) { %><button class="btn btn--sm" type="submit" name="togli" value="<%= posto %>" formnovalidate><%- include('../partials/icon', { name: 'trash' }) %><%= t('buoni.firma.togli') %></button><% } %>
+  <% if (errore) { %><p class="field__error" id="err-<%= name %>"><%= errore %></p><% } %>
+</div>

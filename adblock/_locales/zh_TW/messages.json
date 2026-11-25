@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "在測試頁面查看實際效果"
+  },
+  "modeHere": {
+    "message": "本網站的防護"
+  },
+  "modeBasic": {
+    "message": "基本"
+  },
+  "modeStandard": {
+    "message": "標準"
+  },
+  "modeStrict": {
+    "message": "嚴格"
+  },
+  "opt_mode": {
+    "message": "防護等級"
+  },
+  "opt_mode_sub": {
+    "message": "套用至所有網站。若要為某個網站單獨設定，請在該網站上開啟擴充功能。"
+  },
+  "modeHint": {
+    "message": "基本：僅在網路層封鎖。標準：建議使用。嚴格：框架內也生效。頁面會重新載入。"
+  },
+  "modeBasicDesc": {
+    "message": "僅在網路層封鎖：最輕量，幾乎不會出問題。YouTube 保留自己的防護。"
+  },
+  "modeStandardDesc": {
+    "message": "建議使用：在頁面本身提供完整防護。"
+  },
+  "modeStrictDesc": {
+    "message": "嵌入的框架內也生效：隱藏最多，佔用記憶體也最多。"
+  },
+  "opt_who": {
+    "message": "我們封鎖了誰"
+  },
+  "opt_who_sub": {
+    "message": "過去 30 天內，我們阻止你的瀏覽器連線到其伺服器的公司。僅在此裝置上依公司和日期計數：不記錄網址，也不記錄網站。"
+  },
+  "opt_who_empty": {
+    "message": "還沒有統計到任何內容。瀏覽一陣子後再回來看看。"
+  },
+  "opt_who_row": {
+    "message": "請求：$1 · 天數：$2"
+  },
+  "managedNote": {
+    "message": "由貴機構設定"
   }
 }

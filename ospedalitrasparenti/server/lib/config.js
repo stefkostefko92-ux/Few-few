@@ -38,7 +38,7 @@ function loadDotEnv() {
   if (!existsSync(f)) return;
   let testo;
   // .env може да е root-owned (mode 600) под systemd — тайните идват от
-  // EnvironmentFile (чете се от systemd като root). Тогава www-data не може да
+  // EnvironmentFile (чете се от systemd като root). Тогава потребителят на сервиза не може да
   // отвори файла: best-effort, не спираме сервиза заради EACCES.
   try { testo = readFileSync(f, 'utf8'); } catch { return; }
   for (const line of testo.split('\n')) {

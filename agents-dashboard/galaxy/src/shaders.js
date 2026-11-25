@@ -31,11 +31,14 @@ void main(){
   vec2 q = vec2(fbm(p1+vec2(0.,uT*0.012), uOct), fbm(p1+vec2(5.2,1.3)-uT*0.010, uOct));
   float f = fbm(p1 + q*2.1 + uT*0.03, uOct);
   float dust = ridge(p1*1.7 + q*1.4, max(3, uOct-2));
-  vec3 nebCol = mix(vec3(0.015,0.02,0.05), vec3(0.34,0.10,0.46), smoothstep(0.15,0.85,f));
-  nebCol = mix(nebCol, vec3(0.02,0.42,0.55), pow(max(f,0.0),3.0)*0.75);
-  nebCol += vec3(0.30,0.10,0.42) * pow(max(f,0.0),4.0);
-  nebCol *= mix(1.0, 0.22, smoothstep(0.35,0.85,dust));
-  float nebA = smoothstep(0.30,0.92,f) * 0.85;
+  // Обсидиан + платина (собственика, 2026-11-14): грейдът напуска виолет→тюркоаз→магента и минава
+  // в сдържан студен диапазон — обсидианова основа, дълбоко шистово-синьо, студен тюркоаз на
+  // плътните възли и ЕДИН акцент (леден циан) само на върховете. По-тъмно и по-контрастно, не пъстро.
+  vec3 nebCol = mix(vec3(0.010,0.014,0.024), vec3(0.055,0.110,0.185), smoothstep(0.15,0.85,f));
+  nebCol = mix(nebCol, vec3(0.070,0.260,0.345), pow(max(f,0.0),3.0)*0.80);
+  nebCol += vec3(0.160,0.440,0.560) * pow(max(f,0.0),4.0) * 0.70;
+  nebCol *= mix(1.0, 0.20, smoothstep(0.35,0.85,dust));
+  float nebA = smoothstep(0.33,0.95,f) * 0.72;
   vec3 nebEmit = nebCol * nebA;
 
   vec3 starsEmit = starLayer(pc + par*0.02, 11.0, 46.0, uT, ${SPIKE_BRIGHT_THRESHOLD.toFixed(2)}) * 0.9;

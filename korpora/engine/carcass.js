@@ -1,21 +1,24 @@
 // Carcass furniture: sides, bottom, top (between / over / rails), partitions, a back per column, plinth or legs,
-// then the column interiors in two passes — fronts first (slide pilots, hinge plates), then the 32 mm system holes
+// sliding doors across the carcass (o.sliding; the interior stands o.frontZone behind the front edge), then the
+// column interiors in two passes — fronts first (slide pilots, hinge plates), then the 32 mm system holes
 // that avoid them and the shelves that sit on those holes — and last the confirmats into the edges of the panels the
 // interiors drilled, placed clear of every hole there.
 import { panel, groove, holeThrough } from './panel.js';
 import { r1, clamp } from './util.js';
 import { hasGrain, frontStock, STOCK } from './materials.js';
-import { GROOVE, HDF_T, SYSTEM, confirmat, confirmatZs, addHoleOnce, hasHole, clashes, boreClear, systemRows } from './joinery.js';
+import { GROOVE, HDF_T, confirmat, confirmatZs, boreClear, systemRows } from './joinery.js';
 import { buildDoors } from './fronts.js';
+import { blindFront } from './blind.js';
 import { buildDrawers } from './drawers.js';
 import { hangRail, RAIL } from './rail.js';
+import { shelvesInZone } from './shelves.js';
+import { cellFronts, cellInteriors, joinCellShelves } from './cells.js';
+import { buildSlidingDoors } from './sliding.js';
 
-const WORKTOP_SCREW = { d: 5, label: 'винт за плота 4×30', bom: 'Винт за ПДЧ 4×30 (плот през траверсите)' };
+const WORKTOP_SCREW = { d: 5 }; // the worktop screws through the rails: lbl.worktopScrew, hw.worktopScrews
 const RAIL_W = 100; // top rails of base cabinets
-const HINGE_CLEAR = 45; // shelves keep this distance (centre to centre) from hinges and their plates
 const RAIL_DROP = RAIL.topEdge + RAIL.h; // 90: no system holes or shelves above the lower edge of a hanging rail
 const MIN_PLINTH = 40; // lowest plinth board or legs the generator makes
-const PIN_RISE = 4; // a shelf rests on its pins, this far above the axis of the pin holes
 const CARCASS = STOCK.pb18; // every carcass board; the back is HDF in grooves
 
 export function buildCarcass(ctx, o) {
@@ -29,8 +32,7 @@ export function buildCarcass(ctx, o) {
   const key = (s) => `${mod}${s}`;
   let plinth = o.plinth ?? { type: 'none', h: 0 };
   if ((plinth.type === 'panel' || plinth.type === 'legs') && plinth.h > 0 && plinth.h < MIN_PLINTH) {
-    const what = plinth.type === 'panel' ? `${nm('Цокъл')} под ${MIN_PLINTH} mm не се прави` : `${nm('Крачета')} под ${MIN_PLINTH} mm не се слагат`;
-    ctx.warn('info', `${what} — корпусът стъпва направо на пода.`);
+    ctx.warn('info', ctx.t(plinth.type === 'panel' ? 'w.plinthTooLow' : 'w.legsTooLow', { what: nm(ctx.t(plinth.type === 'panel' ? 'part.plinth' : 'part.legs')), min: MIN_PLINTH }));
     plinth = { type: 'none', h: 0 };
   }
   const plinthH = plinth.type !== 'none' ? plinth.h : 0;
@@ -41,14 +43,16 @@ export function buildCarcass(ctx, o) {
   const bc = o.bands?.carcass ?? 1;
   const backFront = z0 + GROOVE.inset + HDF_T;
   const zEnd = z0 + D;
+  // the front of the interior: partitions, system holes, shelves and rails stand behind sliding doors (sliding.js)
+  const zIn = zEnd - (o.frontZone ?? 0);
   const carc = { stock: CARCASS.id, decor: o.carcassDecor, grain: hasGrain(o.carcassDecor), module: mod };
   const out = { panels: {}, columns: [], dims: { x0, y0, z0, W, H, D, T, c, Hc, plinthH, backFront } };
   const sideBands = { '+z': bc, ...(top === 'over' ? {} : { '+y': o.visibleTop ? bc : 0 }) };
   if (o.mount === 'wall') sideBands['-y'] = bc; // a wall cabinet is seen from below: the lower ends of its sides show
 
-  const sideL = panel(ctx, { ...carc, key: key('sideL'), name: nm('Страница лява'), role: 'side', box: { min: [x0, c, z0], max: [x0 + T, sideTop, zEnd] }, n: '+x', L: 'y', bands: sideBands, explode: [-1, 0, 0] });
-  const sideR = panel(ctx, { ...carc, key: key('sideR'), name: nm('Страница дясна'), role: 'side', box: { min: [x0 + W - T, c, z0], max: [x0 + W, sideTop, zEnd] }, n: '-x', L: 'y', bands: sideBands, explode: [1, 0, 0] });
-  const bottom = panel(ctx, { ...carc, key: key('bottom'), name: nm('Дъно'), role: 'bottom', box: { min: [x0 + T, c, z0], max: [x0 + W - T, c + T, zEnd] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, -0.6, 0] });
+  const sideL = panel(ctx, { ...carc, key: key('sideL'), name: nm(ctx.t('part.sideL')), role: 'side', box: { min: [x0, c, z0], max: [x0 + T, sideTop, zEnd] }, n: '+x', L: 'y', bands: sideBands, explode: [-1, 0, 0] });
+  const sideR = panel(ctx, { ...carc, key: key('sideR'), name: nm(ctx.t('part.sideR')), role: 'side', box: { min: [x0 + W - T, c, z0], max: [x0 + W, sideTop, zEnd] }, n: '-x', L: 'y', bands: sideBands, explode: [1, 0, 0] });
+  const bottom = panel(ctx, { ...carc, key: key('bottom'), name: nm(ctx.t('part.bottom')), role: 'bottom', box: { min: [x0 + T, c, z0], max: [x0 + W - T, c + T, zEnd] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, -0.6, 0] });
   out.panels = { sideL, sideR, bottom };
   const horizontals = [{ part: bottom, y: c + T / 2, zs: confirmatZs(z0 + 50, zEnd - 50) }];
 
@@ -57,15 +61,15 @@ export function buildCarcass(ctx, o) {
   if (top === 'between' || top === 'over') {
     const over = top === 'over';
     topPart = panel(ctx, {
-      ...carc, key: key('top'), name: nm(over ? 'Плот' : 'Таван'), role: 'top',
+      ...carc, key: key('top'), name: nm(ctx.t(over ? 'part.topOver' : 'part.top')), role: 'top',
       box: { min: [over ? x0 : x0 + T, c + Hc - T, z0], max: [over ? x0 + W : x0 + W - T, c + Hc, zEnd] },
       n: '-y', L: 'x', bands: over ? { '+z': bc, '-x': bc, '+x': bc } : { '+z': bc }, explode: [0, 1, 0],
     });
     if (!over) horizontals.push({ part: topPart, y: c + Hc - T / 2, zs: confirmatZs(z0 + 50, zEnd - 50) });
     out.panels.top = topPart;
   } else if (top === 'rails') {
-    const rf = panel(ctx, { ...carc, key: key('railF'), name: nm('Траверса предна'), role: 'rail', box: { min: [x0 + T, c + Hc - T, zEnd - RAIL_W], max: [x0 + W - T, c + Hc, zEnd] }, n: '-y', L: 'x', explode: [0, 1, 0.4] });
-    const rb = panel(ctx, { ...carc, key: key('railB'), name: nm('Траверса задна'), role: 'rail', box: { min: [x0 + T, c + Hc - T, backFront], max: [x0 + W - T, c + Hc, backFront + RAIL_W] }, n: '-y', L: 'x', explode: [0, 1, -0.4] });
+    const rf = panel(ctx, { ...carc, key: key('railF'), name: nm(ctx.t('part.railF')), role: 'rail', box: { min: [x0 + T, c + Hc - T, zEnd - RAIL_W], max: [x0 + W - T, c + Hc, zEnd] }, n: '-y', L: 'x', explode: [0, 1, 0.4] });
+    const rb = panel(ctx, { ...carc, key: key('railB'), name: nm(ctx.t('part.railB')), role: 'rail', box: { min: [x0 + T, c + Hc - T, backFront], max: [x0 + W - T, c + Hc, backFront + RAIL_W] }, n: '-y', L: 'x', explode: [0, 1, -0.4] });
     rails.push(rf, rb);
     horizontals.push({ part: rf, y: c + Hc - T / 2, zs: [zEnd - RAIL_W + 25, zEnd - 25] });
     horizontals.push({ part: rb, y: c + Hc - T / 2, zs: [backFront + 25, backFront + RAIL_W - 25] });
@@ -74,11 +78,11 @@ export function buildCarcass(ctx, o) {
     for (const r of rails) {
       const zc = (r.box.min[2] + r.box.max[2]) / 2;
       for (const sx of [x0 + T + 60, x0 + W - T - 60]) {
-        holeThrough(r, [sx, c + Hc - T, zc], WORKTOP_SCREW.d, 'screw', { hw: 'worktop', label: WORKTOP_SCREW.label });
+        holeThrough(r, [sx, c + Hc - T, zc], WORKTOP_SCREW.d, 'screw', { hw: 'worktop', label: ctx.t('lbl.worktopScrew') });
         out.topScrews.push([sx, c + Hc, zc]);
       }
     }
-    ctx.hw('worktopScrews', { name: WORKTOP_SCREW.bom, qty: out.topScrews.length, unit: 'бр.', group: 'Крепежи' });
+    ctx.hw('worktopScrews', { name: ctx.t('hw.worktopScrews'), qty: out.topScrews.length, unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
     Object.assign(out.panels, { railF: rf, railB: rb });
   }
   for (const h of horizontals) {
@@ -102,7 +106,7 @@ export function buildCarcass(ctx, o) {
     out.columns.push({ ...cw, index: i, xa: x, xb, left: i === 0 ? sideL : null, right: i === n - 1 ? sideR : null });
     x = xb;
     if (i < n - 1) {
-      const p = panel(ctx, { ...carc, key: key(`part${i + 1}`), name: nm(`Делител ${i + 1}`), role: 'partition', box: { min: [x, yInnerBottom, backFront], max: [x + T, yInnerTop, zEnd] }, n: '+x', L: 'y', bands: { '+z': bc }, explode: [0, 0, 0.35] });
+      const p = panel(ctx, { ...carc, key: key(`part${i + 1}`), name: nm(ctx.t('part.partition', { n: i + 1 })), role: 'partition', box: { min: [x, yInnerBottom, backFront], max: [x + T, yInnerTop, zIn] }, n: '+x', L: 'y', bands: { '+z': bc }, explode: [0, 0, 0.35] });
       partitions.push(p);
       out.columns[i].right = p;
       x += T;
@@ -114,7 +118,8 @@ export function buildCarcass(ctx, o) {
 
   buildBacks(ctx, { x0, W, T, c, Hc, z0, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm });
   buildPlinth(ctx, { ...o, plinth }, { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm });
-  if (o.mount === 'wall') ctx.hw('hangers', { name: 'Окачвач за горен шкаф (чифт)', qty: 1, unit: 'чифт', group: 'Обков' });
+  if (o.mount === 'wall') ctx.hw('hangers', { name: ctx.t('hw.hangers'), qty: 1, unit: ctx.t('u.pair'), group: ctx.t('g.hardware') });
+  if (o.sliding) buildSlidingDoors(ctx, o, { x0, W, T, c, Hc, zEnd, nm, key, mod });
 
   // interiors, pass 1: drawers and doors (slide pilots and hinge plates claim their holes first)
   const gap = o.gap ?? 3;
@@ -124,6 +129,11 @@ export function buildCarcass(ctx, o) {
   for (const [i, col] of out.columns.entries()) {
     col.fl = i === 0 ? x0 : partitions[i - 1].box.min[0] + T / 2;
     col.fr = i === n - 1 ? x0 + W : partitions[i].box.min[0] + T / 2;
+    if (col.cells) {
+      // a free carcass column (layout.js): its fixed shelves, then the drawers and doors of its cells
+      cellFronts(ctx, o, { i, n, col, xa: col.xa, xb: col.xb, fl: col.fl, fr: col.fr, c, Hc, yInnerTop, zEnd, backFront, T, nm, key, mod, left: col.left, right: col.right, bc, carc, hingeSides, ...front });
+      continue;
+    }
     col.drawers = Math.max(0, col.drawers ?? 0);
     col.dzH = col.drawers ? clamp(col.drawerZone ?? col.drawers * 180, 100, Hc) : 0;
     col.doors = col.drawers && col.dzH >= Hc - 1 ? 0 : col.doors ?? 0;
@@ -132,29 +142,26 @@ export function buildCarcass(ctx, o) {
     const a = { i, n, col, xa: col.xa, xb: col.xb, fl: col.fl, fr: col.fr, c, zEnd, backFront, T, nm, key, mod, left: col.left, right: col.right, ...front };
     if (col.drawers) buildDrawers(ctx, o, { ...a, dz0: col.dz0, dzH: col.dzH, drawers: col.drawers });
     const doorZone = col.drawersOnTop ? [c, col.dz0] : [c + col.dzH, c + Hc];
-    col.hingeYs = col.doors ? buildDoors(ctx, o, { ...a, dy0: doorZone[0] + gap / 2, dy1: doorZone[1] - gap / 2, hingeSides }) : [];
+    const dy = { dy0: doorZone[0] + gap / 2, dy1: doorZone[1] - gap / 2 };
+    // a blind corner cabinet (kitchen.js): the blind front first, the doors on the rest of the column
+    const span = col.blind ? blindFront(ctx, { ...a, ...dy, yTop: c + Hc - T }) : {};
+    col.hingeYs = col.doors ? buildDoors(ctx, o, { ...a, ...span, ...dy, hingeSides }) : [];
   }
   // pass 2: system holes where they do not clash, shelves on holes present on both sides, hanging rails
-  const rows = systemRows(zEnd, backFront);
+  const rows = systemRows(zIn, backFront);
   for (const [i, col] of out.columns.entries()) {
+    if (col.cells) {
+      cellInteriors(ctx, { i, n, col, c, yInnerTop, rows, T, backFront, zEnd, bc, carc, key, nm, mod });
+      continue;
+    }
     const zoneBottom = col.drawersOnTop ? c + T : c + col.dzH + (col.drawers ? 0 : T);
     const zoneTop = col.drawersOnTop ? col.dz0 : yInnerTop - (col.rail ? RAIL_DROP : 0);
-    const holeYs = [];
-    for (let y = c + SYSTEM.start; y <= yInnerTop - SYSTEM.start + 0.01; y += SYSTEM.pitch) if (y >= zoneBottom + 30 && y <= zoneTop) holeYs.push(r1(y));
-    const shelves = Math.max(0, col.shelves ?? 0);
-    if (shelves) {
-      for (const y of holeYs) {
-        for (const z of rows) {
-          for (const [p, fx] of [[col.left, col.xa], [col.right, col.xb]]) {
-            if (!clashes(p, [fx, y, z], SYSTEM.d)) addHoleOnce(p, [fx, y, z], SYSTEM.d, SYSTEM.depth, 'system', { hw: 'system' }, p.role === 'partition');
-          }
-        }
-      }
-    }
-    placeShelves(ctx, { col, i, n, shelves, holeYs, rows, zoneBottom, zoneTop, T, backFront, zEnd, bc, carc, key, nm });
-    if (col.rail) hangRail(ctx, { col, i, yInnerTop, backFront, zEnd, mod, nm });
+    shelvesInZone(ctx, { col, i, n, shelves: col.shelves, c, yInnerTop, zoneBottom, zoneTop, rows, T, backFront, zEnd: zIn, bc, carc, key, nm });
+    if (col.rail) hangRail(ctx, { col, i, yInnerTop, backFront, zEnd: zIn, mod, nm });
   }
-  joinEdges(ctx, { x0, W, T, c, Hc, z0, zEnd, backFront, top, topPart, rails, sideL, sideR, bottom, partitions });
+  // the confirmats of the fixed shelves of free carcass columns, clear of every hole the panels have by now
+  for (const col of out.columns) if (col.cells) joinCellShelves(ctx, { col, backFront, zEnd, z0, T });
+  joinEdges(ctx, { x0, W, T, c, Hc, z0, zEnd, zIn, backFront, top, topPart, rails, sideL, sideR, bottom, partitions });
   return out;
 }
 
@@ -162,10 +169,12 @@ export function buildCarcass(ctx, o) {
 // partitions), made last: each one moves off the slide, hinge plate and system holes already there, so the bore
 // running 50 mm into the panel keeps MIN_WEB to them. Rails take one confirmat in their middle, which has nowhere to go.
 function joinEdges(ctx, a) {
-  const { x0, W, T, c, Hc, z0, zEnd, backFront, top, topPart, rails, sideL, sideR, bottom, partitions } = a;
+  const { x0, W, T, c, Hc, z0, zEnd, zIn, backFront, top, topPart, rails, sideL, sideR, bottom, partitions } = a;
   const yTop = c + Hc - T;
+  // a partition ends at the front of the interior (zIn, behind sliding doors), a side at the front edge
   const joint = (face, end, dir, x, y, zStart) => {
-    const zs = confirmatZs(zStart, zEnd - 50, (z) => boreClear(end, dir, [x, y, z]));
+    const zFront = end.role === 'partition' ? zIn : zEnd;
+    const zs = confirmatZs(zStart, zFront - 50, (z) => boreClear(end, dir, [x, y, z]));
     confirmat(ctx, face, end, dir, zs.map((z) => [x, y, z]));
   };
   if (top === 'over') {
@@ -179,31 +188,6 @@ function joinEdges(ctx, a) {
     joint(bottom, p, '-y', pc, c + T, zStart);
     if (topPart) joint(topPart, p, '+y', pc, yTop, zStart);
     else for (const r of rails) confirmat(ctx, r, p, '+y', [[pc, yTop, (r.box.min[2] + r.box.max[2]) / 2]]);
-  }
-}
-
-function placeShelves(ctx, a) {
-  const { col, i, n, shelves, holeYs, rows, zoneBottom, zoneTop, T, backFront, zEnd, bc, carc, key, nm } = a;
-  // pins only go into plain system holes (a hole taken by a hinge plate screw, from either face, is not usable)
-  const usable = holeYs.filter((y) => rows.every((z) => hasHole(col.left, [col.xa, y, z], SYSTEM.d, 'system') && hasHole(col.right, [col.xb, y, z], SYSTEM.d, 'system')));
-  const used = [];
-  for (let k = 1; k <= shelves; k++) {
-    const target = zoneBottom + ((zoneTop - zoneBottom) * k) / (shelves + 1) - T / 2;
-    let best = null;
-    for (const y of usable) {
-      if (y + PIN_RISE + T > zoneTop - 40 || y < zoneBottom + 40) continue;
-      if (used.some((u) => Math.abs(u - y) < T + 60)) continue;
-      if (col.hingeYs.some((hy) => Math.abs(y + PIN_RISE + T / 2 - hy) < HINGE_CLEAR)) continue;
-      if (best === null || Math.abs(y + PIN_RISE - target) < Math.abs(best + PIN_RISE - target)) best = y;
-    }
-    if (best === null) {
-      ctx.warn('warn', `${nm(`Колона ${i + 1}`)}: няма място за рафт ${k}.`);
-      continue;
-    }
-    used.push(best);
-    const y = best + PIN_RISE;
-    panel(ctx, { ...carc, key: key(`c${i + 1}shelf${k}`), name: nm(n > 1 ? `Рафт ${i + 1}.${k}` : `Рафт ${k}`), role: 'shelf', box: { min: [col.xa + 1, y, backFront + 1], max: [col.xb - 1, y + T, zEnd - 20] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, 0, 0.9], pinY: best });
-    ctx.hw('pins', { name: 'Рафтоносач Ø5', qty: 4, unit: 'бр.', group: 'Обков' });
   }
 }
 
@@ -224,10 +208,10 @@ function buildBacks(ctx, a) {
     const left = i === 0 ? x0 + T - into : partitions[i - 1].box.min[0] + T / 2 + 1;
     const right = i === n - 1 ? x0 + W - T + into : partitions[i].box.min[0] + T / 2 - 1;
     const zb = [z0 + GROOVE.inset, z0 + GROOVE.inset + HDF_T];
-    panel(ctx, { stock: 'hdf3', decor: 'demo:white', grain: false, module: mod, key: key(`back${i + 1}`), name: nm(n > 1 ? `Гръб HDF ${i + 1}` : 'Гръб HDF'), role: 'back', box: { min: [left, yb0, zb[0]], max: [right, yb1, zb[1]] }, n: '+z', L: 'y', explode: [0, 0, -1.2] });
+    panel(ctx, { stock: 'hdf3', decor: 'demo:white', grain: false, module: mod, key: key(`back${i + 1}`), name: nm(n > 1 ? ctx.t('part.backN', { n: i + 1 }) : ctx.t('part.back')), role: 'back', box: { min: [left, yb0, zb[0]], max: [right, yb1, zb[1]] }, n: '+z', L: 'y', explode: [0, 0, -1.2] });
     // backs of several columns meet behind a partition and are nailed to it every 150 mm; other edges sit in grooves
     const partitionEdges = (i > 0 ? 1 : 0) + (i < n - 1 ? 1 : 0);
-    if (partitionEdges) ctx.hw('nails', { name: 'Скоби/пирони за гръб HDF', qty: Math.ceil((partitionEdges * (yb1 - yb0)) / 150), unit: 'бр.', group: 'Крепежи' });
+    if (partitionEdges) ctx.hw('nails', { name: ctx.t('hw.nails'), qty: Math.ceil((partitionEdges * (yb1 - yb0)) / 150), unit: ctx.t('u.pcs'), group: ctx.t('g.fasteners') });
   }
 }
 
@@ -235,12 +219,12 @@ function buildPlinth(ctx, o, a) {
   const { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm } = a;
   if (o.plinth?.type !== 'legs' && o.plinth?.type !== 'panel') return;
   const xs = W > 900 ? [x0 + 60, x0 + W / 2, x0 + W - 60] : [x0 + 60, x0 + W - 60];
-  ctx.hw(`legs${plinthH}`, { name: `Краче регулируемо ${plinthH} mm`, qty: xs.length * 2, unit: 'бр.', group: 'Обков' });
+  ctx.hw(`legs${plinthH}`, { name: ctx.t('hw.legs', { h: plinthH }), qty: xs.length * 2, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
   for (const lx of xs) for (const lz of [(o.z0 ?? 0) + 60, zEnd - (o.plinth.type === 'panel' ? 90 : 70)]) ctx.symbols.push({ type: 'leg', x: lx, z: lz, y0, h: plinthH, module: mod });
   if (o.plinth.type === 'panel') {
     const fs = frontStock(o);
     // banded at the ends and along the floor (moisture); the top edge is hidden under the carcass
-    panel(ctx, { stock: fs.stock, decor: fs.decor, grain: hasGrain(fs.decor), module: mod, key: key('plinth'), name: nm('Цокъл'), role: 'plinth', box: { min: [x0, y0, zEnd - 50 - T], max: [x0 + W, y0 + plinthH - 3, zEnd - 50] }, n: '-z', L: 'x', bands: fs.banded ? { '+x': bc, '-x': bc, '-y': bc } : {}, explode: [0, -1, 1] });
-    ctx.hw('plinthClips', { name: 'Клипс за цокъл', qty: 4, unit: 'бр.', group: 'Обков' });
+    panel(ctx, { stock: fs.stock, decor: fs.decor, grain: hasGrain(fs.decor), module: mod, key: key('plinth'), name: nm(ctx.t('part.plinth')), role: 'plinth', box: { min: [x0, y0, zEnd - 50 - T], max: [x0 + W, y0 + plinthH - 3, zEnd - 50] }, n: '-z', L: 'x', bands: fs.banded ? { '+x': bc, '-x': bc, '-y': bc } : {}, explode: [0, -1, 1] });
+    ctx.hw('plinthClips', { name: ctx.t('hw.plinthClips'), qty: 4, unit: ctx.t('u.pcs'), group: ctx.t('g.hardware') });
   }
 }
