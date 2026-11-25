@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 738
+        "lessons": 739
       },
       "evolution": [
         {
@@ -2134,9 +2134,20 @@
           "date": "2026-11-24",
           "event": "v69.0 — учене",
           "detail": "Научи: В live-run ревюто guard-self спира node -e с import на .claude/hooks/*.mjs, а node --te…"
+        },
+        {
+          "version": "69.1.0",
+          "date": "2026-11-25",
+          "event": "v69.1 — учене",
+          "detail": "Научи: В този worktree сложна bash команда с node tools/agents/rubric.mjs (много операции) иск…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „В този worktree сложна bash команда с node tools/agents/rubric.mjs (много операции) иск…\""
+        },
         {
           "date": "2026-11-24",
           "type": "learning",
