@@ -73,6 +73,11 @@ AmbientCapabilities=CAP_SETUID CAP_SETGID
 # tmpfs и връщаме точно /root чрез BindPaths.
 ProtectHome=tmpfs
 BindPaths=/root
+# /home се връща САМО за четене: отпечатъкът на posture.js следи /home/*/.ssh/authorized_keys
+# (нов ключ на deploy = постоянен вход като ключ на root). Под голия tmpfs пазачът би бил сляп
+# и тих. Същият механизъм като BindPaths=/root (bind побеждава tmpfs за същия път); „-" —
+# машина без /home не проваля старта.
+BindReadOnlyPaths=-/home
 # Префиксът „-" значи „пропусни, ако я няма". Без него липсваща папка проваля
 # СТАРТА с 226/NAMESPACE (namespace.c:1543) — а /opt/few-few още не съществува
 # на девствен сървър, тоест услугата не тръгва и install.sh казва само

@@ -5,8 +5,8 @@ export const LANGS = ['it', 'en', 'bg'];
 const T = {
   it: {
     title: 'Staffe Panev in 3D',
-    description: 'Le staffe brevettate Panev Ascensori in 3D: modelli in lamiera zincata generati dal catalogo 2026, da ruotare, montare e fotografare.',
-    catalog: 'Catalogo 2026',
+    description: 'Le staffe brevettate Panev Ascensori in 3D: modelli in lamiera zincata generati dal catalogo 2027, da ruotare, montare e fotografare.',
+    catalog: 'Catalogo 2027',
     families: {
       door: 'Staffe di fissaggio porta di piano',
       SU: 'Supporto universale SU',
@@ -36,7 +36,7 @@ const T = {
     developing: 'Sviluppo della foto…',
     loading: 'Caricamento del modello 3D…',
     hint: 'Trascina per ruotare · rotellina o pizzico per lo zoom · tasto destro o due dita per spostare',
-    note: 'Modelli 3D generati dalle quote del catalogo 2026: in caso di differenze fanno fede catalogo e disegni esecutivi.',
+    note: 'Modelli 3D generati dalle quote del catalogo 2027: in caso di differenze fanno fede catalogo e disegni esecutivi.',
     language: 'Lingua',
     controls: 'Controlli',
     canvas: (name) => `Modello 3D: ${name}`,
@@ -45,8 +45,8 @@ const T = {
   },
   en: {
     title: 'Panev brackets in 3D',
-    description: 'Panev Ascensori patented brackets in 3D: galvanised sheet-metal models generated from the 2026 catalogue, to turn, assemble and photograph.',
-    catalog: '2026 catalogue',
+    description: 'Panev Ascensori patented brackets in 3D: galvanised sheet-metal models generated from the 2027 catalogue, to turn, assemble and photograph.',
+    catalog: '2027 catalogue',
     families: {
       door: 'Landing door fixing brackets',
       SU: 'SU universal support',
@@ -76,7 +76,7 @@ const T = {
     developing: 'Developing the photo…',
     loading: 'Loading the 3D model…',
     hint: 'Drag to rotate · scroll or pinch to zoom · right-drag or two fingers to pan',
-    note: '3D models generated from the dimensions in the 2026 catalogue: where they differ, the catalogue and shop drawings prevail.',
+    note: '3D models generated from the dimensions in the 2027 catalogue: where they differ, the catalogue and shop drawings prevail.',
     language: 'Language',
     controls: 'Controls',
     canvas: (name) => `3D model: ${name}`,
@@ -85,8 +85,8 @@ const T = {
   },
   bg: {
     title: 'Планките Panev в 3D',
-    description: 'Патентованите планки на Panev Ascensori в 3D: модели от поцинкована ламарина, генерирани от каталога 2026 — за въртене, монтаж и снимки.',
-    catalog: 'Каталог 2026',
+    description: 'Патентованите планки на Panev Ascensori в 3D: модели от поцинкована ламарина, генерирани от каталога 2027 — за въртене, монтаж и снимки.',
+    catalog: 'Каталог 2027',
     families: {
       door: 'Планки за закрепване на етажни врати',
       SU: 'Универсална опора SU',
@@ -116,7 +116,7 @@ const T = {
     developing: 'Проявяване на снимката…',
     loading: 'Зареждане на 3D модела…',
     hint: 'Плъзни за въртене · колелце или щипка за мащаб · десен бутон или два пръста за преместване',
-    note: '3D моделите са генерирани по размерите от каталога 2026; при разлика меродавни са каталогът и работните чертежи.',
+    note: '3D моделите са генерирани по размерите от каталога 2027; при разлика меродавни са каталогът и работните чертежи.',
     language: 'Език',
     controls: 'Управление',
     canvas: (name) => `3D модел: ${name}`,

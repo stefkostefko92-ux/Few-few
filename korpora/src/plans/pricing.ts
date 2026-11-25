@@ -15,7 +15,12 @@ export const LIFETIME_MULTIPLE = LIFETIME_PERCENT_OF_YEAR / 100;
 /** Месеците на годината, от която се смята Lifetime. */
 export const YEAR_MONTHS = 12;
 
-/** ДДС в България — само за показ на крайната цена за потребители в България. */
+/**
+ * ДДС 20 % — българската ставка за всички потребители, от всяка държава в ЕС: фирмата е под прага от
+ * 10 000 € за трансгранични продажби на потребители и не е в OSS, затова мястото на доставката е България
+ * (чл. 59в от Директива 2006/112/ЕО). При минат праг или влизане в OSS ставката става по държавата на
+ * потребителя — тогава това число и текстовете с него не важат.
+ */
 export const VAT_BG_PERCENT = 20;
 
 export interface TermOption {
@@ -50,6 +55,24 @@ export function termPriceCents(option: TermOption): number {
 
 export function lifetimePriceCents(): number {
   return divideRoundHalfUp(MONTHLY_CENTS * YEAR_MONTHS * LIFETIME_PERCENT_OF_YEAR, 100);
+}
+
+/**
+ * На колко месеца се разпределя цената на Lifetime, когато трябва да се смята част от нея: при отказ с
+ * ранно начало, при спиране на Korpora и при промяна на условията във вреда на клиента (общите условия).
+ * Толкова месеца Premium без отстъпка струва Lifetime: 2,5 × 12 = 30 (750 € = 30 × 25 €).
+ */
+export const LIFETIME_BASIS_MONTHS = (YEAR_MONTHS * LIFETIME_PERCENT_OF_YEAR) / 100;
+
+/** Предизвестието по имейл, преди Korpora да спре да се предлага (общите условия, „Ако Korpora спре“). */
+export const LIFETIME_NOTICE_MONTHS = 6;
+
+/** Месечната част от Lifetime по `LIFETIME_BASIS_MONTHS` — без ДДС и с ДДС, в цели центове. */
+export function lifetimeMonthShareCents(): { net: number; gross: number } {
+  return {
+    net: divideRoundHalfUp(lifetimePriceCents(), LIFETIME_BASIS_MONTHS),
+    gross: divideRoundHalfUp(withVatCents(lifetimePriceCents()), LIFETIME_BASIS_MONTHS),
+  };
 }
 
 /**

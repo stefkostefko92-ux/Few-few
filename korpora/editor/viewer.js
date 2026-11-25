@@ -4,13 +4,15 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MaterialCache } from './viewer-materials.js';
 import { S } from './viewer-hw.js';
-import { extents, addSymbols } from './viewer-scene.js';
+import { extents, addSymbols, runGroups } from './viewer-scene.js';
 import { Stage, TONE_MAPPING, studioEnvironment } from './viewer-studio.js';
 import { Pipeline } from './viewer-render.js';
 import { PhotoMode } from './viewer-photo-mode.js';
 import { addSlides } from './viewer-slides.js';
+import { frameCamera, explodeCamera, bindCameraKeys } from './viewer-camera.js';
 import { pixelRatio } from './viewer-device.js';
 import { reduceMotion } from './dom.js';
+import { tx } from './text.js';
 import {
   addHinges,
   addHingeArms,
@@ -19,9 +21,6 @@ import {
   boardMeshes,
   faceMaterials,
 } from './viewer-parts.js';
-
-// How much farther the camera stands for an exploded assembly (e: 0 assembled … 1 fully exploded).
-const explodeZoom = (e) => 1 + 0.55 * e;
 
 export class Viewer {
   constructor(host) {
@@ -36,10 +35,7 @@ export class Viewer {
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.setAttribute('role', 'img');
-    this.renderer.domElement.setAttribute(
-      'aria-label',
-      '3D изглед на мебелта: влачи за въртене, колелце за мащаб',
-    );
+    this.renderer.domElement.setAttribute('aria-label', tx('viewer.label'));
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(32, 1, 0.01, 60);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -49,6 +45,10 @@ export class Viewer {
     this.controls.addEventListener('change', () => this.invalidate());
     this.controls.addEventListener('start', () => {
       this.userMoved = true;
+    });
+    bindCameraKeys(this.renderer.domElement, this.camera, this.controls, {
+      reframe: () => this.frame(),
+      moved: () => (this.userMoved = true),
     });
     this.mats = new MaterialCache(this.renderer);
     this.stage = new Stage(this);
@@ -60,6 +60,7 @@ export class Viewer {
     this.explode = 0;
     this.showOps = true;
     this.dirty = true;
+    this.inSight = true; // false while the page has the view scrolled out of sight (the editor watches it)
     // a lost and restored WebGL context loses all that was drawn on the GPU: the studio environment, the baked
     // decors, the path tracer's buffers. Rebuild them with the model on screen.
     this.renderer.domElement.addEventListener('webglcontextrestored', () => {
@@ -77,8 +78,9 @@ export class Viewer {
     this.light = (k) => this.stage.jitter(k);
     const loop = () => {
       this.raf = requestAnimationFrame(loop);
-      // a hidden panel (another tab of the editor) draws nothing; it goes on where it stopped when shown again
-      if (!this.visible) return;
+      // a hidden panel (another tab of the editor) or a view scrolled out of sight draws nothing; it goes on where it
+      // stopped when shown again
+      if (!this.visible || !this.inSight) return;
       const moved = this.controls.update();
       if (this.dirty || moved) {
         this.pipeline.reset();
@@ -136,6 +138,11 @@ export class Viewer {
     return new THREE.Vector3((x + this.off[0]) * S, y * S, (z + this.off[2]) * S);
   }
 
+  // What a part or symbol of the run `run` hangs in: the group of its wall (a Г or П kitchen), or the scene's root.
+  parentOf(run) {
+    return this.runs?.get(run) ?? this.root;
+  }
+
   setModel(model) {
     this.model = model;
     for (const child of [...this.root.children]) {
@@ -146,9 +153,14 @@ export class Viewer {
     const ext = extents(model);
     this.ext = ext;
     this.off = [-(ext.x0 + ext.x1) / 2, 0, -(ext.z0 + ext.z1) / 2];
+    this.runs = runGroups(this, model);
     this.items = [];
     const meshOf = new Map();
     const doors = new Map(model.groups.filter((g) => g.type === 'door').map((g) => [g.id, g]));
+    // a sliding door opens along its track (sliding.js: the rear one runs behind the front one)
+    const sliding = new Map(
+      model.groups.filter((g) => g.type === 'sliding-door').map((g) => [g.id, g]),
+    );
     const drawerOf = new Map();
     for (const g of model.groups.filter((x) => x.type === 'drawer'))
       for (const id of g.partIds) drawerOf.set(id, g);
@@ -170,7 +182,7 @@ export class Viewer {
         holder.position.copy(pivot);
         mesh.position.copy(centre).sub(pivot);
         holder.add(mesh);
-        this.root.add(holder);
+        this.parentOf(part.run).add(holder);
         this.items.push({ kind: 'door', part, holder, base: pivot.clone(), explode: part.explode });
         addHinges(this, mesh, part, centre);
       } else if (drawer) {
@@ -178,7 +190,7 @@ export class Viewer {
         if (!holder) {
           holder = new THREE.Group();
           drawerHolders.set(drawer.id, holder);
-          this.root.add(holder);
+          this.parentOf(part.run).add(holder);
           const front = model.parts.find((p) => p.id === drawer.id);
           this.items.push({
             kind: 'drawer',
@@ -195,13 +207,14 @@ export class Viewer {
         const holder = new THREE.Group();
         mesh.position.copy(centre);
         holder.add(mesh);
-        this.root.add(holder);
+        this.parentOf(part.run).add(holder);
         this.items.push({
-          kind: 'part',
+          kind: sliding.has(part.id) ? 'sliding' : 'part',
           part,
           holder,
           base: new THREE.Vector3(),
           explode: part.explode,
+          travel: sliding.get(part.id)?.travel ?? 0,
         });
       }
       addHoles(this, mesh, part, centre, holeGeo);
@@ -212,7 +225,9 @@ export class Viewer {
     holeGeo.dispose(); // only its merged copies are on screen
     addSymbols(this, model, meshOf);
     this.applyPose();
-    this.stage.fit(ext, this.off);
+    // a Г or П kitchen stands against the side walls of the room too
+    const walls = new Set((model.runs ?? []).map((r) => r.id));
+    this.stage.fit(ext, this.off, { left: walls.has('B'), right: walls.has('C') });
     this.mats.trim();
     if (!this.framed || this.lastType !== model.spec.type) {
       this.userMoved = false;
@@ -224,23 +239,7 @@ export class Viewer {
   }
 
   frame() {
-    const e = this.ext;
-    const W = (e.x1 - e.x0) * S;
-    const D = (e.z1 - e.z0) * S;
-    const H = e.y1 * S;
-    const radius = Math.hypot(W, H, D) * 0.5;
-    const vHalf = THREE.MathUtils.degToRad(this.camera.fov / 2);
-    const hHalf = Math.atan(Math.tan(vHalf) * Math.max(this.camera.aspect, 0.2));
-    const dist = (radius / Math.sin(Math.min(vHalf, hHalf))) * 1.06 * explodeZoom(this.explode);
-    const dir = new THREE.Vector3(0.62, 0.42, 1).normalize();
-    this.controls.target.set(0, H / 2, 0);
-    this.camera.position.copy(this.controls.target).addScaledVector(dir, dist);
-    this.camera.near = dist / 60;
-    this.camera.far = dist * 20;
-    this.camera.updateProjectionMatrix();
-    this.controls.minDistance = radius * 0.5;
-    this.controls.maxDistance = dist * 3;
-    this.controls.update();
+    frameCamera(this.camera, this.controls, this.ext, this.explode);
   }
 
   setOpen(f) {
@@ -249,15 +248,8 @@ export class Viewer {
   }
 
   setExplode(e) {
-    const prev = explodeZoom(this.explode);
+    explodeCamera(this.camera, this.controls, this.explode, e);
     this.explode = e;
-    const next = explodeZoom(e);
-    const offset = this.camera.position.clone().sub(this.controls.target);
-    this.camera.position.copy(this.controls.target).addScaledVector(offset, next / prev);
-    this.controls.maxDistance = Math.max(
-      this.controls.maxDistance,
-      offset.length() * (next / prev) * 1.2,
-    );
     this.applyPose();
   }
 
@@ -295,6 +287,7 @@ export class Viewer {
         it.holder.rotation.y =
           (it.part.hingeSide === 'left' ? -1 : 1) * THREE.MathUtils.degToRad(105 * this.open);
       if (it.kind === 'drawer') it.holder.position.z += it.travel * S * this.open;
+      if (it.kind === 'sliding') it.holder.position.x += it.travel * S * this.open;
       if (it.kind === 'slide') it.holder.position.z += it.travel * S * this.open * 0.5;
     }
     this.changed();

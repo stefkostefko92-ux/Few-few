@@ -2,6 +2,9 @@
 // scene shows at each moment, and the pose math that lays every part face A up on its sheet without mirroring it.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { ROOT } from '../src/paths.js';
 import { browserModule } from './editor-modules.js';
 
 type Vec = [number, number, number];
@@ -299,4 +302,17 @@ test('the first moving frame (shaders, first shadows) and a hidden page do not c
   watch.pause();
   assert.equal(watch.frame((now += 60000), true), false);
   for (let k = 0; k < 100; k++) assert.equal(watch.frame((now += 16.7), true), false);
+});
+
+test('a released scene lets go of its controls while the canvas is still in the page', () => {
+  // OrbitControls hangs a keydown listener on the canvas's root node and takes it off the same root: after remove()
+  // that root is the canvas, the document keeps the listener and through it the whole scene (landing/story.js)
+  const story = readFileSync(join(ROOT, 'landing', 'story.js'), 'utf8');
+  const release = /function release\(viewer\) \{([\s\S]*?)\n\}/.exec(story)?.[1] ?? '';
+  const dispose = release.indexOf('viewer.controls.dispose()');
+  assert.ok(dispose >= 0, 'release() disposes of the controls');
+  assert.ok(
+    dispose < release.indexOf('viewer.renderer.domElement.remove()'),
+    'before the canvas leaves the page',
+  );
 });

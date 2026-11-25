@@ -1,0 +1,53 @@
+/* Приемането на условията (views/legale/): блоковете с отметки, клаузите с пълния текст, полето за кода. */
+.legale__blocco {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.legale__blocco > legend {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.legale__attesa p + p {
+  margin-top: 8px;
+}
+
+.legale__spunta {
+  align-items: flex-start;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  line-height: 1.45;
+}
+
+.legale__clausole {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.legale__clausole li {
+  border-bottom: 1px solid var(--line);
+}
+
+.legale__clausole summary {
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.legale__clausole details p {
+  margin: 0 0 10px;
+}
+
+.legale__codice {
+  max-width: 12ch;
+  font-size: 1.25rem;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+}

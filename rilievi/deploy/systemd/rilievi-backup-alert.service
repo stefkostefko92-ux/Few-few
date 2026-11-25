@@ -1,0 +1,40 @@
+# Дневният бекъп на Rilievi Impianti се провали (OnFailure на rilievi-backup.service): журнал, файл
+# ULTIMO_ERRORE и — ако е зададен — RILIEVI_ALERT_URL (deploy/backup-alert.sh, DEPLOY.md, т. 6).
+[Unit]
+Description=Rilievi Impianti — daily backup failed
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'exec /usr/bin/env bash "$(head -n 1 /opt/few-few/shared/rilievi/last-good)/deploy/backup-alert.sh"'
+UMask=0077
+
+# --- Пясъчник ---
+# Скриптът само пише два малки файла в shared/rilievi/backups (ULTIMO_ERRORE, маркерът), праща ред в
+# журнала (logger → /dev/log) и по избор аларма по HTTPS (curl). Docker не му трябва, нито capability:
+# като root е собственик на папката с бекъпите. Записваема е цялата shared/rilievi, не само backups/ —
+# ако backups/ липсва, `install -d` я създава, а без запис в родителя алармата би паднала преди curl.
+ProtectSystem=strict
+ReadWritePaths=/opt/few-few/shared/rilievi
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+NoNewPrivileges=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources @mount
+SystemCallErrorNumber=EPERM
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6

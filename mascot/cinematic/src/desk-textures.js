@@ -113,8 +113,11 @@ export function windowSkyTexture(size = 192) {
       const i = y * size + x;
       const u = x / size;
       const v = y / size;
-      const top = [0x09, 0x10, 0x1c];
-      const bot = [0x18, 0x22, 0x30];
+      // Синият час, а не черна нощ: светъл хоризонт отдолу. Този плосък екран е контражурът на
+      // прозрачното тяло — през желето се вижда само ако е достатъчно светъл, а тъмните летви на
+      // рамката върху него са именно това, което показва пречупването (огъват се в торса).
+      const top = [0x10, 0x1a, 0x30];
+      const bot = [0x52, 0x66, 0x88];
       const sky = smooth(0, 1, v);
       let r = top[0] + (bot[0] - top[0]) * sky;
       let g = top[1] + (bot[1] - top[1]) * sky;

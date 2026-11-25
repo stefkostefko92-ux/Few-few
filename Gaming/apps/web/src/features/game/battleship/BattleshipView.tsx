@@ -9,6 +9,7 @@ import { useGameEvents } from "../useGameEvents";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import { FeltTable } from "../table/FeltTable";
+import { BattleshipPlacement } from "./Placement";
 import "./battleship.css";
 
 interface BattleshipState {
@@ -18,8 +19,14 @@ interface BattleshipState {
   shots: number[][];
   hits: number[][];
   turn: number;
+  /** „PLACE“ — всеки подрежда флота си; „FIRE“ — стрелба. */
+  phase?: "PLACE" | "FIRE";
+  ready?: boolean[];
 }
-type BattleshipAction = { type: "FIRE"; cell: number };
+type BattleshipAction =
+  | { type: "FIRE"; cell: number }
+  | { type: "PLACE"; seat: number; ships: number[][] }
+  | { type: "PLACE_RANDOM"; seat: number };
 
 const SIZE = 10;
 // БГ convention: columns А–К (Й is skipped), rows 1–10.
@@ -41,6 +48,7 @@ export function BattleshipView({ title }: { title: string }) {
           ? { text: t("fx.sunk"), tone: "win" }
           : { text: t("fx.sunkYou"), tone: "loss" };
       }
+      if (ev.type === "START") return { text: t("battleship.start"), tone: "brass" };
       if (ev.type === "FIRE" && ev.hit) {
         return ev.seat === seat ? { text: t("fx.fireHit"), tone: "win" } : { text: t("fx.fireHitYou"), tone: "loss" };
       }
@@ -67,8 +75,12 @@ export function BattleshipView({ title }: { title: string }) {
     setPending(false);
   }, [state]);
 
-  const myTurn = !!state && state.turn === seat && legal.length > 0;
-  const fireable = useMemo(() => new Set(legal.map((a) => a.cell)), [legal]);
+  const placing = state?.phase === "PLACE";
+  const myTurn = !!state && !placing && state.turn === seat && legal.length > 0;
+  const fireable = useMemo(
+    () => new Set(legal.flatMap((a) => (a.type === "FIRE" ? [a.cell] : []))),
+    [legal],
+  );
 
   const myShots = state?.shots[seat] ?? [];
   const myHits = new Set(state?.hits[seat] ?? []);
@@ -111,27 +123,45 @@ export function BattleshipView({ title }: { title: string }) {
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       <Announcements banners={banners} fixed />
-      {state ? (
+      {state && placing ? (
         <FeltTable crest="⚓" feltColor="#1c4a6e" feltDark="#0a2238">
-        <div className="flex h-full flex-col items-center justify-center gap-5 p-6 lg:flex-row lg:justify-center">
+          <div className="flex h-full flex-col items-center justify-center gap-3 p-6">
+            <ScorePill label={t("battleship.placeTitle")} value="" highlight={!state.ready?.[seat]} />
+            <BattleshipPlacement
+              key={m.matchId}
+              ready={state.ready?.[seat] === true}
+              oppReady={state.ready?.[opp] === true}
+              fleet={state.ships?.[seat]}
+              onReady={(ships) => m.send({ type: "PLACE", seat, ships })}
+            />
+          </div>
+        </FeltTable>
+      ) : state ? (
+        <FeltTable crest="⚓" feltColor="#1c4a6e" feltDark="#0a2238">
+        <div className="flex h-full flex-col items-center justify-center gap-5 p-3 sm:p-6 lg:flex-row lg:justify-center">
           {/* Firing grid (opponent waters). */}
           <div className="flex flex-col items-center gap-2">
             <ScorePill label={t("battleship.enemy", { name: oppName })} value="" highlight={myTurn} />
-            <BoardFrame>
+            <BoardFrame className="bs-frame">
               {coords(
                 <div className="bs-grid">
                   {Array.from({ length: SIZE * SIZE }).map((_, cell) => {
                     const shot = myShots.includes(cell);
                     const hit = myHits.has(cell);
                     const sunk = oppSunk.has(cell);
+                    const canFire = !shot && !pending && myTurn && fireable.has(cell);
                     return (
                       <button
                         key={cell}
                         type="button"
+                        data-fire={cell}
+                        data-shot={shot ? (hit ? "hit" : "miss") : undefined}
+                        data-sunk={sunk ? "true" : undefined}
+                        data-fireable={canFire ? "true" : undefined}
                         onClick={() => fire(cell)}
                         className={cn(
                           "bs-cell",
-                          !shot && !pending && myTurn && fireable.has(cell) && "bs-cell--fireable",
+                          canFire && "bs-cell--fireable",
                           shot && (hit ? "bs-cell--hit" : "bs-cell--miss"),
                           sunk && "bs-cell--sunk",
                           fresh?.mine === true && cell === fresh.cell && "bs-cell--fresh",
@@ -149,7 +179,7 @@ export function BattleshipView({ title }: { title: string }) {
           {/* My fleet. */}
           <div className="flex flex-col items-center gap-2">
             <ScorePill label={user?.displayName ?? t("game.you")} value={t("battleship.yourFleet")} />
-            <BoardFrame>
+            <BoardFrame className="bs-frame">
               {coords(
                 <div className="bs-grid bs-grid--mine">
                   {Array.from({ length: SIZE * SIZE }).map((_, cell) => {
@@ -160,6 +190,9 @@ export function BattleshipView({ title }: { title: string }) {
                     return (
                       <span
                         key={cell}
+                        data-own={cell}
+                        data-ship={ship ? "true" : undefined}
+                        data-shot={shot ? (hit ? "hit" : "miss") : undefined}
                         className={cn(
                           "bs-cell",
                           ship && "bs-cell--ship",

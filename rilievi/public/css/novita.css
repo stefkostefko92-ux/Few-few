@@ -1,0 +1,100 @@
+/* Прозорецът с новините след обновяване (views/partials/novita.ejs). Без JavaScript е отворен на страницата
+   (над менюто); с него — модален, с тъмен фон. */
+.novita {
+  width: min(38rem, calc(100vw - 2 * var(--gutter)));
+  max-width: calc(100% - 2 * var(--gutter));
+  max-height: min(86vh, 52rem);
+  max-height: min(86dvh, 52rem);
+  overflow: hidden;
+  padding: 24px clamp(18px, 4vw, 32px) 20px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius-plate);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.novita[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.novita[open]:not(:modal) {
+  position: fixed;
+  inset: 16px 0 auto;
+  z-index: 50;
+  margin: 0 auto;
+}
+
+.novita::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+.novita__titolo {
+  margin: 0;
+  font-family: var(--font-cond);
+  font-size: 1.625rem;
+  line-height: 1.2;
+}
+
+.novita__lead {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.novita__corpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-top: 1.5px solid var(--line-strong);
+}
+
+.novita__voci {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.novita__voce {
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.novita__voce:first-child {
+  border-top: 0;
+}
+
+.novita__nome {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.35;
+}
+
+.novita__area {
+  margin: 2px 0 6px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.novita__voce p:last-child {
+  margin: 0;
+}
+
+.novita__altre {
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.novita__azioni {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1.5px solid var(--line-strong);
+}
+
+.novita__azioni form {
+  margin: 0;
+}

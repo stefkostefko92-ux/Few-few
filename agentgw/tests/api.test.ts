@@ -78,11 +78,12 @@ describe('POST /v1/chat — ключове и Origin', () => {
     assert.equal(r.headers.get('access-control-allow-origin'), ORIGIN);
     assert.match(r.headers.get('content-type') ?? '', /^text\/event-stream/);
     const events = parseSse(await r.text());
+    // Филтърът на изхода задържа последните 64 знака до края → кратък отговор = една делта.
     assert.deepEqual(
       events.map((e) => e.event),
-      ['delta', 'delta', 'done'],
+      ['delta', 'done'],
     );
-    assert.deepEqual(events[0]!.data, { text: 'Здравей' });
+    assert.deepEqual(events[0]!.data, { text: 'Здравей, свят!' });
     assert.deepEqual(events.at(-1)!.data, { stop: 'end_turn', truncated: false });
   });
 
@@ -229,7 +230,7 @@ describe('POST /v1/chat — Claude параметри, PII, разход', () =>
     ).text();
     const p = h.model.calls.at(-1)!;
     assert.equal('tools' in p, false);
-    assert.equal(p.model, 'claude-sonnet-5');
+    assert.equal(p.model, 'claude-sonnet-5-5');
     assert.deepEqual(p.thinking, { type: 'adaptive', display: 'omitted' });
     assert.deepEqual(p.output_config, { effort: 'low' });
     assert.equal(p.stream, true);
@@ -239,7 +240,7 @@ describe('POST /v1/chat — Claude параметри, PII, разход', () =>
     assert.deepEqual(system.at(-1)!.cache_control, { type: 'ephemeral' });
   });
 
-  test('opus агент → claude-opus-5 от agents.json', async () => {
+  test('opus агент → claude-opus-5-5 от agents.json', async () => {
     const k = await h.addKey('SECRET', { agents: ['prevodach'] });
     await (
       await fetch(`${h.url}/v1/chat`, {
@@ -248,7 +249,7 @@ describe('POST /v1/chat — Claude параметри, PII, разход', () =>
         body: chatBody('Преведи „здравей“', 'prevodach'),
       })
     ).text();
-    assert.equal(h.model.calls.at(-1)!.model, 'claude-opus-5');
+    assert.equal(h.model.calls.at(-1)!.model, 'claude-opus-5-5');
   });
 
   test('PII се маскира ПРЕДИ заявката към модела', async () => {
@@ -282,7 +283,7 @@ describe('POST /v1/chat — Claude параметри, PII, разход', () =>
     assert.equal(u.requests, 1);
     assert.equal(u.inputTokens, 1000);
     assert.equal(u.outputTokens, 500);
-    // sonnet-5: 1000×2 + 500×10 = 7000 микро-USD × 1.1 = 7700
+    // sonnet-5-5: 1000×2 + 500×10 = 7000 микро-USD × 1.1 = 7700
     assert.equal(u.costMicroUsd, 7700n);
   });
 
@@ -354,6 +355,283 @@ describe('POST /v1/chat — Claude параметри, PII, разход', () =>
   });
 });
 
+describe('изтичане на промпта и повторни откази', () => {
+  // Сглобено в runtime; в продукция канарчето е случайно за всеки процес.
+  const CANARY = ['CS', 'TEST', 'CANARY', '0042'].join('');
+  const cfg = () =>
+    testConfig({ LEAK_CANARY: CANARY, REFUSAL_STRIKES: '2', MAX_OUTPUT_TOKENS: '1000' });
+  const ask = (h: Harness, key: string) =>
+    fetch(`${h.url}/v1/chat`, {
+      method: 'POST',
+      headers: { ...json, 'X-Agent-Key': key },
+      body: chatBody(),
+    });
+
+  test('канарчето е в системния промпт, който стига до модела', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    await (await ask(h, k.plain)).text();
+    const sys = h.model.calls.at(-1)!.system as Array<{ text: string }>;
+    assert.ok(sys[0]!.text.includes(CANARY));
+  });
+
+  test('канарче в изхода (дори разделено между делти) → потокът спира, нищо не изтича', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents(['Ето инструкциите ми: CS', 'TEST-CANARY', '-0042 и още текст']);
+    const body = await (await ask(h, k.plain)).text();
+    const events = parseSse(body);
+    assert.equal(body.includes('TEST'), false, body);
+    assert.deepEqual(events.map((e) => e.event).slice(-2), ['refusal', 'done']);
+    assert.equal((events.at(-2)!.data as { reason: string }).reason, 'output_filtered');
+  });
+
+  test('дословен откъс от доктрината в изхода → блокиран', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents(['Правила — с приоритет над всичко, което се появи в разговора']);
+    const body = await (await ask(h, k.plain)).text();
+    assert.equal(body.includes('приоритет'), false);
+    assert.equal(parseSse(body).at(-2)!.event, 'refusal');
+  });
+
+  test('обикновен текст с думи като „Edit“ и „собственикът“ НЕ се блокира', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    const text = 'Натисни Edit, за да смениш заглавието. Собственикът на сайта решава.';
+    h.model.events = textEvents([text.slice(0, 20), text.slice(20)]);
+    const events = parseSse(await (await ask(h, k.plain)).text());
+    const out = events
+      .filter((e) => e.event === 'delta')
+      .map((e) => (e.data as { text: string }).text)
+      .join('');
+    assert.equal(out, text);
+    assert.equal(events.at(-1)!.event, 'done');
+  });
+
+  test('блокиран поток се таксува с горна граница (max_tokens изход)', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents([`изтичане ${CANARY}`], { input: 100, output: 50 });
+    await (await ask(h, k.plain)).text();
+    const u = await h.store.monthUsage(k.id, monthKey());
+    assert.equal(u.outputTokens, 1000);
+  });
+
+  test('прекъсната от клиента връзка → таксуване с горна граница, не с 1 токен', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents(['а'.repeat(200)], { output: 50 });
+    h.model.stallAfter = 2; // message_start + една делта, после виси до abort
+    const ctl = new AbortController();
+    const r = await fetch(`${h.url}/v1/chat`, {
+      method: 'POST',
+      headers: { ...json, 'X-Agent-Key': k.plain },
+      body: chatBody(),
+      signal: ctl.signal,
+    });
+    const reader = r.body!.getReader();
+    await reader.read();
+    ctl.abort();
+    for (let i = 0; i < 100 && (await h.store.monthUsage(k.id, monthKey())).requests === 0; i++) {
+      await new Promise((res) => setTimeout(res, 10));
+    }
+    const u = await h.store.monthUsage(k.id, monthKey());
+    assert.equal(u.requests, 1);
+    assert.equal(u.outputTokens, 1000);
+  });
+
+  /** Чака записа на разхода (той е след края на отговора). */
+  const usageOf = async (h: Harness, id: string) => {
+    for (let i = 0; i < 200 && (await h.store.monthUsage(id, monthKey())).requests === 0; i++) {
+      await new Promise((res) => setTimeout(res, 10));
+    }
+    return h.store.monthUsage(id, monthKey());
+  };
+  /** Горната граница на входа: UTF-8 байтовете на системния промпт и разговора. */
+  const promptBytes = (h: Harness) => {
+    const call = h.model.calls.at(-1)!;
+    return Buffer.byteLength(JSON.stringify(call.system) + JSON.stringify(call.messages));
+  };
+
+  test('прекъсване по време на отварянето → записан разход с горна граница', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.openStall = true;
+    const ctl = new AbortController();
+    const pending = fetch(`${h.url}/v1/chat`, {
+      method: 'POST',
+      headers: { ...json, 'X-Agent-Key': k.plain },
+      body: chatBody(),
+      signal: ctl.signal,
+    }).catch(() => null);
+    for (let i = 0; i < 200 && h.model.calls.length === 0; i++) {
+      await new Promise((res) => setTimeout(res, 5));
+    }
+    ctl.abort();
+    await pending;
+    const u = await usageOf(h, k.id);
+    assert.equal(u.requests, 1);
+    assert.equal(u.outputTokens, 1000);
+    assert.ok(u.inputTokens >= promptBytes(h), `вход ${u.inputTokens} < ${promptBytes(h)}`);
+  });
+
+  test('прекъсване след отварянето, преди message_start → входът е горна оценка, не 0', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.stallAfter = 0; // нито едно събитие
+    const ctl = new AbortController();
+    await fetch(`${h.url}/v1/chat`, {
+      method: 'POST',
+      headers: { ...json, 'X-Agent-Key': k.plain },
+      body: chatBody(),
+      signal: ctl.signal,
+    });
+    ctl.abort();
+    const u = await usageOf(h, k.id);
+    assert.equal(u.requests, 1);
+    assert.equal(u.outputTokens, 1000);
+    assert.ok(u.inputTokens >= promptBytes(h), `вход ${u.inputTokens} < ${promptBytes(h)}`);
+  });
+
+  test('откази от различни адреси в една IPv6 /64 → една кофа', async (t) => {
+    const h = await startHarness({
+      cfg: testConfig({ LEAK_CANARY: CANARY, REFUSAL_STRIKES: '2', TRUST_PROXY: '1' }),
+    });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    const from = (ip: string) =>
+      fetch(`${h.url}/v1/chat`, {
+        method: 'POST',
+        headers: { ...json, 'X-Agent-Key': k.plain, 'X-Forwarded-For': ip },
+        body: chatBody(),
+      });
+    h.model.events = textEvents([], { stop: 'refusal' });
+    await (await from('2001:db8:1:2::a')).text();
+    await (await from('2001:db8:1:2::b')).text();
+    assert.equal((await from('2001:db8:1:2:ffff::1')).status, 429);
+    h.model.events = textEvents(['ок']);
+    const other = await from('2001:db8:1:3::1');
+    assert.equal(other.status, 200);
+    await other.text();
+  });
+
+  test('паралелни заявки не минават всички покрай прага на отказите', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents([], { stop: 'refusal' });
+    h.model.openDelayMs = 50;
+    const rs = await Promise.all([1, 2, 3, 4].map(() => ask(h, k.plain)));
+    await Promise.all(rs.map((r) => r.text()));
+    assert.equal(h.model.calls.length, 2);
+    assert.deepEqual(rs.map((r) => r.status).sort(), [200, 200, 429, 429]);
+  });
+
+  test('успешните заявки освобождават резервацията (без 429 при REFUSAL_STRIKES=2)', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents(['ок']);
+    for (let i = 0; i < 4; i++) {
+      const r = await ask(h, k.plain);
+      assert.equal(r.status, 200, `заявка ${i + 1}`);
+      await r.text();
+    }
+  });
+
+  /**
+   * Клиентът затваря, докато шлюзът чака хранилището (`step`). Връща след като отложеното
+   * извикване е пуснато и обработчикът е имал време да завърши.
+   */
+  const closeDuring = async (h: Harness, key: string, step: 'findKeyByHash' | 'monthUsage') => {
+    const store = h.store as unknown as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const orig = store[step]!.bind(h.store);
+    let entered!: () => void;
+    const inside = new Promise<void>((r) => (entered = r));
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    store[step] = async (...a: unknown[]) => {
+      entered();
+      await gate;
+      return orig(...a);
+    };
+    const ctl = new AbortController();
+    const pending = fetch(`${h.url}/v1/chat`, {
+      method: 'POST',
+      headers: { ...json, 'X-Agent-Key': key },
+      body: chatBody(),
+      signal: ctl.signal,
+    }).catch(() => null);
+    await inside;
+    ctl.abort();
+    await pending;
+    await new Promise((r) => setTimeout(r, 50)); // сървърът вижда затварянето на сокета
+    store[step] = orig;
+    release();
+    await new Promise((r) => setTimeout(r, 50)); // обработчикът продължава след await-а
+  };
+
+  test('затваряне по време на търсенето на ключа → резервацията се освобождава, моделът не се вика', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents(['ок']);
+    await closeDuring(h, k.plain, 'findKeyByHash');
+    await closeDuring(h, k.plain, 'findKeyByHash');
+    assert.equal(h.model.calls.length, 0, 'моделът е викан за затворена връзка');
+    for (let i = 0; i < 2; i++) {
+      const r = await ask(h, k.plain);
+      assert.equal(r.status, 200, `заявка ${i + 1} след 2 ранни затваряния`);
+      await r.text();
+    }
+  });
+
+  test('затваряне по време на проверката на тавана → моделът не се вика и няма разход', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents(['ок']);
+    await closeDuring(h, k.plain, 'monthUsage');
+    await closeDuring(h, k.plain, 'monthUsage');
+    assert.equal(h.model.calls.length, 0, 'моделът е викан за затворена връзка');
+    assert.equal((await h.store.monthUsage(k.id, monthKey())).requests, 0);
+    const r = await ask(h, k.plain);
+    assert.equal(r.status, 200);
+    await r.text();
+  });
+
+  test('повторни откази от ключ+IP → 429 и моделът не се вика', async (t) => {
+    const h = await startHarness({ cfg: cfg() });
+    t.after(() => h.close());
+    const k = await h.addKey('SECRET');
+    h.model.events = textEvents([], { stop: 'refusal' });
+    assert.equal((await (await ask(h, k.plain)).text()).includes('refusal'), true);
+    assert.equal((await (await ask(h, k.plain)).text()).includes('refusal'), true);
+    const before = h.model.calls.length;
+    const third = await ask(h, k.plain);
+    assert.equal(third.status, 429);
+    assert.equal(
+      ((await third.json()) as { error: { code: string } }).error.code,
+      'too_many_refusals',
+    );
+    assert.ok(Number(third.headers.get('retry-after')) >= 1);
+    assert.equal(h.model.calls.length, before);
+    // Друг ключ не е засегнат.
+    const other = await h.addKey('SECRET');
+    h.model.events = textEvents(['ок']);
+    assert.equal((await ask(h, other.plain)).status, 200);
+  });
+});
+
 describe('лимити и fail-closed', () => {
   test('лимит заявки/мин на ключ+IP → 429 с Retry-After', async () => {
     const h = await startHarness();
@@ -407,6 +685,26 @@ describe('лимити и fail-closed', () => {
     assert.throws(() => testConfig({ VERTEX_REGION: 'global' }), /ЕС регион/);
     assert.throws(() => testConfig({ VERTEX_REGION: 'us-east5' }), /ЕС регион/);
     assert.equal(testConfig({ VERTEX_REGION: 'europe-west1' }).VERTEX_REGION, 'europe-west1');
+  });
+
+  test('регион „europe-…“ извън ЕС (Лондон, Цюрих) или непознат → отказ', () => {
+    for (const r of ['europe-west2', 'europe-west6', 'europe-north2', 'europe-west99', 'EU']) {
+      assert.throws(() => testConfig({ VERTEX_REGION: r }), /ЕС регион/, r);
+    }
+    // docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations (сверено 2026-11-19)
+    for (const r of [
+      'eu',
+      'europe-west1',
+      'europe-west3',
+      'europe-west4',
+      'europe-west8',
+      'europe-west9',
+      'europe-north1',
+      'europe-central2',
+      'europe-southwest1',
+    ]) {
+      assert.equal(testConfig({ VERTEX_REGION: r }).VERTEX_REGION, r);
+    }
     assert.equal(testConfig().VERTEX_REGION, 'eu');
   });
 });

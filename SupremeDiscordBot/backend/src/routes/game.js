@@ -4,7 +4,7 @@
 // lib/premium.js (shopItems 5/50, levelRoles 5/100) и се налагат при ЗАПИС —
 // при сваляне на tier заварените редове остават, но нови не влизат.
 import { Router } from "express";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { getServerTier } from "../lib/premium.js";
@@ -42,6 +42,7 @@ const settingsSchema = z.object({
   triviaSchedule: z.enum(["daily", "weekly"]).nullable().optional(),
   questChannelId: snowflakeOrNull,
   questEnabled: z.boolean().optional(),
+  battlesEnabled: z.boolean().optional(),
 });
 
 // ─── GET /api/game/:serverId — настройки + лимити + обзор ────────────────────

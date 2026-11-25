@@ -39,16 +39,28 @@ try {
   const site = await ctx.newPage(); await site.goto(`http://127.0.0.1:${srv.address().port}/news`);
   // popup+review: the review card is up (≥ 7 days, ≥ 1000 blocked) — the bottom sheet and what it makes inert
   const due = () => sw.evaluate(() => chrome.storage.local.set({ installedAt: Date.now() - 8 * 86400000, blockedTotal: 54321, review: {}, reviewAsk: true }));
-  const pages = [["popup", "popup/popup.html", 320, 600], ["popup+review", "popup/popup.html", 320, 600, due], ["settings", "options/options.html", 1280, 900], ["welcome", "welcome/welcome.html", 1280, 900], ["report", "report/report.html", 900, 900]];
+  // popup+undo: the picker hid something on this site — ↶ N next to the picker (5.5.0)
+  const undo = () => sw.evaluate(() => chrome.storage.local.set({ customHidden: { "127.0.0.1": [".x", ".y"] } }));
+  // 5.6: the help card (3 pauses this week) and the monthly receipt (20 days of totals)
+  const help = () => sw.evaluate(() => chrome.storage.local.set({ helpCard: {}, pauseLog: [Date.now() - 1e7, Date.now() - 2e7, Date.now() - 3e7] }));
+  const receipt = () => sw.evaluate(() => {
+    const daily = {}; const k = (t) => { const d = new Date(t); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+    for (let i = 0; i < 20; i++) daily[k(Date.now() - i * 86400000)] = { b: 1000, c: 3 };
+    return chrome.storage.local.set({ receipt: {}, daily, installedAt: Date.now() - 40 * 86400000, blockedTotal: 54321, savedBytes: 9e8 });
+  });
+  const pages = [["popup", "popup/popup.html", 320, 600], ["popup+review", "popup/popup.html", 320, 600, due, "review"],
+    ["popup+help", "popup/popup.html", 320, 600, help, "help"], ["popup+receipt", "popup/popup.html", 320, 600, receipt, "receipt"],
+    ["report+did-it-fix", "report/report.html", 900, 900, null, null, async (p) => { await p.evaluate(() => { document.getElementById("fixedAsk").hidden = false; document.getElementById("fixedHint").textContent = "Try the next one: Allow ads here for 1 hour"; }); }], ["popup+undo", "popup/popup.html", 320, 600, undo, "undoBtn"], ["popup+connections", "popup/popup.html", 320, 600, null, null, async (p) => { await p.click("#logBox summary"); await p.waitForTimeout(700); }], ["settings", "options/options.html", 1280, 900], ["welcome", "welcome/welcome.html", 1280, 900], ["report", "report/report.html", 900, 900], ["blocked", "blocked/blocked.html#http://www.198-macros.com/page", 900, 900]];
   for (const theme of ["carbon", "light"]) {
-    await sw.evaluate((t) => chrome.storage.local.set({ theme: t, review: { never: true } }), theme);
-    for (const [name, path, w, h, seed] of pages) {
+    await sw.evaluate((t) => chrome.storage.local.set({ theme: t, review: { never: true }, helpCard: { never: true }, receipt: { never: true } }), theme);
+    for (const [name, path, w, h, seed, mustShow, after] of pages) {
       if (seed) await seed();
       const p = await ctx.newPage(); await p.setViewportSize({ width: w, height: h });
       await p.goto(`chrome-extension://${id}/${path}`); await p.waitForTimeout(800);
-      if (path.startsWith("popup/")) { await site.bringToFront(); await p.reload(); await p.waitForTimeout(800); }
-      if (seed && await p.evaluate(() => document.getElementById("review").hidden)) { ok(`${name} [${theme}]: the card is shown`, false); await p.close(); continue; }
-      if (seed) await sw.evaluate(() => chrome.storage.local.set({ review: { never: true } }));
+      if (path.startsWith("popup/")) { await site.bringToFront(); if (seed) await seed(); await p.reload(); await p.waitForTimeout(800); }
+      if (seed && await p.evaluate((i) => document.getElementById(i).hidden, mustShow)) { ok(`${name} [${theme}]: #${mustShow} is shown`, false); await p.close(); continue; }
+      if (seed) await sw.evaluate(() => chrome.storage.local.set({ review: { never: true }, customHidden: {}, helpCard: { never: true }, receipt: { never: true }, pauseLog: [] }));
+      if (after) await after(p);
       await p.evaluate(AXE); // evaluate is not subject to the page's CSP (script-src 'self')
       const v = await p.evaluate(async () => (await axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"] } }))
         .violations.map((x) => `${x.id} ×${x.nodes.length} (${x.nodes[0].target.join(" ")})`));

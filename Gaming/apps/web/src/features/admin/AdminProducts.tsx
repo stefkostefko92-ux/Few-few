@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PRODUCT_KINDS, formatDualPrice } from "@aso/shared";
 import { Badge, Button, Panel, cn } from "../../ui";
+import { useAuthStore } from "../../lib/store";
+import { isAdmin } from "../../app/RequireRole";
 import { adminApi, type AdminProduct, type ProductCreate } from "./adminApi";
+import { ConfirmButton } from "./ConfirmButton";
 import { ErrorPanel, errorMessage, useLoad } from "./load";
 
 const field =
@@ -22,9 +25,10 @@ const emptyDraft: Draft = { sku: "", kind: "GEMS", priceCents: "", gems: "", chi
 const numOrNull = (s: string): number | null => (s.trim() === "" ? null : Number(s));
 
 /** Store editor (§14, ADMIN/OWNER). Create products, edit price/grant, retire via
- *  active=false (no hard delete — Purchase history keeps its FK). */
+ *  active=false. Твърдо изтриване — само за продукт без покупки (иначе 409). */
 export function AdminProducts() {
   const { t } = useTranslation();
+  const canWrite = isAdmin(useAuthStore((s) => s.user?.role));
   const { data, error, loading, reload } = useLoad(() => adminApi.products(), []);
   const [rows, setRows] = useState<AdminProduct[]>([]);
   const [editId, setEditId] = useState<string | null>(null);
@@ -110,13 +114,28 @@ export function AdminProducts() {
     }
   }
 
+  /** Твърдо изтриване — сървърът отказва (409) за продукт с покупки; показваме подсказката му. */
+  async function remove(p: AdminProduct) {
+    setBusy(true);
+    setNotice(null);
+    try {
+      await adminApi.deleteProduct(p.id);
+      setRows((prev) => prev.filter((x) => x.id !== p.id));
+      if (editId === p.id) cancel();
+    } catch (e) {
+      setNotice(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const editing = creating || editId !== null;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg text-ink-100">{t("admin.productsTitle", "Продукти")}</h3>
-        {!editing ? <Button onClick={startCreate}>{t("admin.productAdd", "Нов продукт")}</Button> : null}
+        {!editing && canWrite ? <Button onClick={startCreate}>{t("admin.productAdd", "Нов продукт")}</Button> : null}
       </div>
 
       {editing ? (
@@ -230,12 +249,25 @@ export function AdminProducts() {
                 </td>
                 <td className="px-4 py-2">
                   <div className="flex justify-end gap-2">
-                    <Button variant="ghost" onClick={() => startEdit(p)}>
-                      {t("admin.edit", "Редактирай")}
-                    </Button>
-                    <Button variant="ghost" loading={busy} onClick={() => toggleActive(p)}>
-                      {p.active ? t("admin.productDeactivate", "Спри") : t("admin.productActivate", "Пусни")}
-                    </Button>
+                    {/* Създаване/редакция/спиране са само за ADMIN+ — API-то отказва на останалите. */}
+                    {canWrite ? (
+                      <>
+                        <Button variant="ghost" onClick={() => startEdit(p)}>
+                          {t("admin.edit", "Редактирай")}
+                        </Button>
+                        <Button variant="ghost" loading={busy} onClick={() => toggleActive(p)}>
+                          {p.active ? t("admin.productDeactivate", "Спри") : t("admin.productActivate", "Пусни")}
+                        </Button>
+                      </>
+                    ) : null}
+                    {canWrite ? (
+                      <ConfirmButton
+                        label={t("admin.delete", "Изтрий")}
+                        question={t("admin.productDeleteQ", "Изтрий продукта завинаги?")}
+                        busy={busy}
+                        onConfirm={() => void remove(p)}
+                      />
+                    ) : null}
                   </div>
                 </td>
               </tr>

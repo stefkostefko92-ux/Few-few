@@ -5,14 +5,16 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=www-data
-Group=www-data
+# Собствен системен потребител (създава го deploy_ospedali), НЕ www-data: пробив в nginx
+# не дава четене на тайните и състоянието на сервиза, и обратно.
+User=ospedali
+Group=ospedali
 WorkingDirectory=/opt/ospedali
 ExecStart=/usr/bin/node server/server.js
 Restart=on-failure
 RestartSec=3
 
-# Тайни + по избор порт/host (mode 600, собственост www-data). Префиксът „-" прави
+# Тайни + по избор порт/host (root:ospedali, mode 640 — deploy_ospedali). Префиксът „-" прави
 # файла по избор — сервизът генерира случайна админ парола, ако липсва (виж лога).
 EnvironmentFile=-/opt/ospedali/server/.env
 

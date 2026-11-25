@@ -1,0 +1,92 @@
+// Semki Bot — партиди семки, правила за известия и настройки на дашборда.
+// Процентите са DOUBLE PRECISION: това е игрова трайност, не пари.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AlertKind {
+  PERCENT // пинг, щом партидата падне до threshold %
+  HOURS_LEFT // пинг, щом до 0% останат threshold часа
+}
+
+// Петте вида (сийднати в миграцията). Скоростта на спада е обща за вида: decayPercent % на decayMinutes минути.
+model SeedType {
+  key          String      @id
+  label        String
+  decayPercent Float       @default(0.6)
+  decayMinutes Int         @default(60)
+  sortOrder    Int         @default(0)
+  updatedAt    DateTime    @updatedAt
+  batches      Batch[]
+  rules        AlertRule[]
+}
+
+// Една въведена партида: `percent` е трайността в момента `anchoredAt`; оттам тече спадът на вида.
+model Batch {
+  id            Int            @id @default(autoincrement())
+  seedTypeKey   String
+  seedType      SeedType       @relation(fields: [seedTypeKey], references: [key], onDelete: Restrict)
+  count         Int
+  percent       Float
+  anchoredAt    DateTime
+  createdAt     DateTime       @default(now())
+  createdById   String
+  createdByName String
+  source        String // "command" | "dashboard"
+  notifications Notification[]
+
+  @@index([seedTypeKey])
+}
+
+model AlertRule {
+  id            Int            @id @default(autoincrement())
+  kind          AlertKind
+  threshold     Float
+  // null — правилото важи за всички видове.
+  seedTypeKey   String?
+  seedType      SeedType?      @relation(fields: [seedTypeKey], references: [key], onDelete: Cascade)
+  channelId     String
+  roleId        String
+  enabled       Boolean        @default(true)
+  // null — тагва веднъж; иначе пак на всеки толкова минути, докато партидата е под прага.
+  repeatMinutes Int?
+  // Текстът след тага вместо „Семките изтичат“; null — подразбиращият се.
+  message       String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  notifications Notification[]
+
+  @@index([seedTypeKey])
+}
+
+// Двойка (партида, правило), за която вече е пингнато (или е тихо отбелязана, защото прагът е бил минат
+// още при въвеждането). Всяко правило пингва най-много веднъж за партида.
+model Notification {
+  batchId Int
+  ruleId  Int
+  batch   Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  rule    AlertRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  silent  Boolean   @default(false)
+  sentAt  DateTime  @default(now())
+
+  @@id([batchId, ruleId])
+  @@index([ruleId])
+}
+
+// Един ред (id = 1): ролите за достъп и прозорецът, в който се пингва.
+model Settings {
+  id              Int      @id @default(1)
+  dashboardRoleId String?
+  commandRoleId   String?
+  quietEnabled    Boolean  @default(false)
+  windowStart     String   @default("10:00")
+  windowEnd       String   @default("23:00")
+  timezone        String   @default("Europe/Sofia")
+  updatedAt       DateTime @updatedAt
+}

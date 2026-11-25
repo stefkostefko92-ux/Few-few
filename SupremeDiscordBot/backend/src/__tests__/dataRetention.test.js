@@ -50,6 +50,14 @@ vi.mock("../lib/prisma.js", () => ({
     memberCompanion: del("memberCompanion"),
     companionSpawn: del("companionSpawn"),
     companionTrade: del("companionTrade"),
+    // v53 — битките: по сървър при изчистване (3б) и по възраст (0б, 30 дни).
+    companionBattle: {
+      deleteMany: vi.fn(({ where }) => {
+        if (where?.serverId) { db.deleted.push({ table: "companionBattle", serverId: where.serverId }); return { count: 1 }; }
+        db.battleCutoff = where?.createdAt?.lt;
+        return { count: 4 };
+      }),
+    },
     serverQuest: del("serverQuest"),
     triviaRound: del("triviaRound"),
     gameSettings: del("gameSettings"),
@@ -248,6 +256,25 @@ describe("retention 2б — снимки на роли", () => {
 
     const snapshotFailures = err.mock.calls.filter((c) => String(c[0]).includes("Role snapshot"));
     expect(snapshotFailures, "стъпка 2б пак пада тихо").toEqual([]);
+  });
+});
+
+// ─── v53 — битките на спътниците: 30 дни, и изчезват с изоставения сървър ────
+describe("companionBattle ретенция", () => {
+  it("трие битките, по-стари от точно 30 дни, и брои резултата", async () => {
+    const before = Date.now();
+    const r = await runRetentionJob();
+    const after = Date.now();
+    expect(db.battleCutoff).toBeInstanceOf(Date);
+    expect((before - db.battleCutoff.getTime()) / 86_400_000).toBeGreaterThanOrEqual(29.99);
+    expect((after - db.battleCutoff.getTime()) / 86_400_000).toBeLessThan(30.01);
+    expect(r.companionBattlesDeleted).toBe(4);
+  });
+
+  it("изчистването на сървър без бот взима и битките му", async () => {
+    db.servers.push({ id: "s1", botRemovedAt: old, stripeStatus: null });
+    await runRetentionJob();
+    expect(db.deleted).toContainEqual({ table: "companionBattle", serverId: "s1" });
   });
 });
 

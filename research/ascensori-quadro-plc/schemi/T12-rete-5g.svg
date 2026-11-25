@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1587 1122" width="1587" height="1122" role="img" aria-label="Rete, modem 5G e accesso dallo smartphone">
+<title>T12 — Rete, modem 5G e accesso dallo smartphone</title>
+<defs><marker id="ah-7e22ce" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7e22ce"/></marker><marker id="ah-be185d" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#be185d"/></marker></defs>
+<rect width="1587" height="1122" fill="#ffffff"/>
+
+<rect x="8" y="8" width="1571" height="1106" fill="none" stroke="#111827" stroke-width="2"/>
+<rect x="14" y="14" width="1559" height="1094" fill="none" stroke="#111827" stroke-width="0.8"/>
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="30" y="50" width="330" height="560" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="40" y="66" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="40" dy="0">INTERNET E UTENTI</tspan></text>
+<rect x="50" y="84" width="290" height="80" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="195" y="113.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="195" dy="0">Smartphone utente (browser)</tspan></text>
+<text x="195" y="130.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="195" dy="0">HTTPS · login + PIN/2FA</tspan><tspan x="195" dy="13.75">solo pagine «Utente»</tspan></text>
+<rect x="50" y="204" width="290" height="80" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="195" y="233.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="195" dy="0">Manutentore (PC / telefono)</tspan></text>
+<text x="195" y="250.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="195" dy="0">HTTPS · login + 2FA obbligatorio</tspan><tspan x="195" dy="13.75">pagine «Servizio»</tspan></text>
+<rect x="50" y="324" width="290" height="70" rx="6" fill="#fef2f2" stroke="#111827" stroke-width="1.6"/>
+<text x="195" y="348.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="195" dy="0">Firewall + WAF sul VPS</tspan></text>
+<text x="195" y="365.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="195" dy="0">rate limit · fail2ban</tspan><tspan x="195" dy="13.75">CORS in lista bianca</tspan></text>
+<polyline points="195,164 195,204" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="195,164 195,204" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="195,284 195,324" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<rect x="50" y="440" width="290" height="80" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="195" y="469.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="195" dy="0">Telefono in loco</tspan></text>
+<text x="195" y="486.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="195" dy="0">Wi-Fi del quadro (WPA3)</tspan><tspan x="195" dy="13.75">acceso con chiave in quadro + PIN a tempo</tspan></text>
+<text x="52" y="560" font-size="10.5" text-anchor="start" font-weight="400" fill="#b45309"><tspan x="52" dy="0">Nota: l'allarme EN 81-28 usa un proprio</tspan><tspan x="52" dy="13.125">comunicatore con SIM dedicata, separato.</tspan></text>
+<rect x="400" y="50" width="330" height="560" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="410" y="66" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="410" dy="0">SERVER PORTALE (VPS in UE)</tspan></text>
+<rect x="420" y="84" width="290" height="70" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="565" y="116.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="565" dy="0">Nginx + TLS (Let's Encrypt)</tspan></text>
+<text x="565" y="132.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="565" dy="0">HSTS · CSP · reverse proxy</tspan></text>
+<rect x="420" y="184" width="290" height="100" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="565" y="216.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="565" dy="0">App portale (Node 22 + TS)</tspan></text>
+<text x="565" y="232.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="565" dy="0">JWT httpOnly · Argon2id</tspan><tspan x="565" dy="13.75">RBAC a 4 ruoli · audit-log</tspan><tspan x="565" dy="13.75">PostgreSQL (utenti, log)</tspan></text>
+<rect x="420" y="314" width="290" height="70" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="565" y="346.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="565" dy="0">Endpoint WireGuard</tspan></text>
+<text x="565" y="362.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="565" dy="0">un peer per quadro · chiavi per impianto</tspan></text>
+<polyline points="565,154 565,184" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<polyline points="565,284 565,314" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<polyline points="340,359 400,359" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<text x="420" y="410" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="420" dy="0">Tutti i dati restano nell'UE (ospitamento EU).</tspan></text>
+<text x="420" y="428" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="420" dy="0">Nessun dato personale dell'utente finale oltre</tspan><tspan x="420" dy="13.75">l'account (nome, e-mail, ruolo). Log senza PII.</tspan></text>
+<rect x="770" y="50" width="180" height="560" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="780" y="66" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="780" dy="0">RETE MOBILE</tspan></text>
+<rect x="786" y="190" width="148" height="110" rx="6" fill="#f1f5f9" stroke="#111827" stroke-width="1.6"/>
+<text x="860" y="227.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="860" dy="0">Rete 5G</tspan></text>
+<text x="860" y="243.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="860" dy="0">SIM dati (APN privato</tspan><tspan x="860" dy="13.75">se disponibile)</tspan><tspan x="860" dy="13.75">IP non raggiungibile</tspan></text>
+<polyline points="730,349 770,349" fill="none" stroke="#be185d" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-be185d)"/>
+<polyline points="950,349 990,349" fill="none" stroke="#be185d" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-be185d)"/>
+<text x="860" y="345" font-size="10" text-anchor="middle" font-weight="400" fill="#be185d"><tspan x="860" dy="0">tunnel</tspan></text>
+<text x="860" y="360" font-size="10" text-anchor="middle" font-weight="400" fill="#be185d"><tspan x="860" dy="0">in uscita</tspan></text>
+<rect x="990" y="50" width="570" height="560" rx="8" fill="none" stroke="#111827" stroke-width="1.2"/>
+<text x="1000" y="66" font-size="12" text-anchor="start" font-weight="700" fill="#111827"><tspan x="1000" dy="0">QUADRO DI MANOVRA</tspan></text>
+<rect x="1010" y="84" width="250" height="130" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="1135" y="123.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1135" dy="0">Router 5G industriale</tspan></text>
+<text x="1135" y="140.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1135" dy="0">firewall: tutto bloccato in ingresso</tspan><tspan x="1135" dy="13.75">WireGuard client · NTP · log</tspan><tspan x="1135" dy="13.75">aggiornamento firmware firmato</tspan><tspan x="1135" dy="13.75">SIM-PIN · accesso admin solo VPN</tspan></text>
+<rect x="1290" y="84" width="250" height="130" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="1415" y="123.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1415" dy="0">Access point Wi-Fi locale</tspan></text>
+<text x="1415" y="140.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1415" dy="0">spento di default · si accende</tspan><tspan x="1415" dy="13.75">con chiave + pulsante (10 min)</tspan><tspan x="1415" dy="13.75">SSID nascosto · isolamento client</tspan><tspan x="1415" dy="13.75">vede solo il gateway :443</tspan></text>
+<rect x="1010" y="260" width="250" height="110" rx="6" fill="#faf5ff" stroke="#111827" stroke-width="1.6"/>
+<text x="1135" y="297.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1135" dy="0">Gateway web (Linux)</tspan></text>
+<text x="1135" y="313.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1135" dy="0">serve le pagine HTTPS</tspan><tspan x="1135" dy="13.75">valida e limita ogni scrittura</tspan><tspan x="1135" dy="13.75">diario locale delle modifiche</tspan></text>
+<rect x="1010" y="420" width="250" height="100" rx="6" fill="#eff6ff" stroke="#111827" stroke-width="1.6"/>
+<text x="1135" y="459.875" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1135" dy="0">PLC standard</tspan></text>
+<text x="1135" y="476.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1135" dy="0">Modbus TCP: solo registri</tspan><tspan x="1135" dy="13.75">in lista bianca (T14)</tspan></text>
+<polyline points="1135,214 1135,260" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<polyline points="1135,260 1135,214" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<text x="1171" y="237" font-size="11" text-anchor="middle" font-weight="600" fill="#7e22ce"><tspan x="1171" dy="0">VLAN 10</tspan></text>
+<polyline points="1135,370 1135,420" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<polyline points="1135,420 1135,370" fill="none" stroke="#7e22ce" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-7e22ce)"/>
+<text x="1185" y="395" font-size="11" text-anchor="middle" font-weight="600" fill="#7e22ce"><tspan x="1185" dy="0">rete OT isolata</tspan></text>
+<polyline points="1290,149 1275,149 1275,300 1260,315" fill="none" stroke="#be185d" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#ah-be185d)"/>
+<polyline points="1275,300 1260,315" fill="none" stroke="#be185d" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="1290" y="260" width="250" height="110" rx="6" fill="#fff7ed" stroke="#111827" stroke-width="1.6"/>
+<text x="1415" y="297.375" font-size="13" text-anchor="middle" font-weight="700" fill="#111827"><tspan x="1415" dy="0">Alimentazione e UPS</tspan></text>
+<text x="1415" y="313.625" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1415" dy="0">router + gateway su batteria:</tspan><tspan x="1415" dy="13.75">resta raggiungibile con rete</tspan><tspan x="1415" dy="13.75">elettrica assente (≥ 4 h)</tspan></text>
+<rect x="1290" y="420" width="250" height="100" rx="6" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.6"/>
+<text x="1415" y="459.875" font-size="13" text-anchor="middle" font-weight="700" fill="#b91c1c"><tspan x="1415" dy="0">Catena di sicurezza</tspan></text>
+<text x="1415" y="476.125" font-size="11" text-anchor="middle" font-weight="400" fill="#6b7280"><tspan x="1415" dy="0">NESSUN collegamento con</tspan><tspan x="1415" dy="13.75">router, gateway o Wi-Fi</tspan></text>
+<line x1="1260" y1="470" x2="1290" y2="470" stroke="#b91c1c" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"/>
+<text x="1275" y="462" font-size="16" text-anchor="middle" font-weight="700" fill="#b91c1c"><tspan x="1275" dy="0">✕</tspan></text>
+<rect x="30" y="640" width="1000" height="360" rx="8" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="40" y="656" font-size="12" text-anchor="start" font-weight="700" fill="#6b7280"><tspan x="40" dy="0">Regole del firewall e dell'accesso (valori di progetto, da verificare con il responsabile della sicurezza)</tspan></text>
+<text x="46" y="680" font-size="11.5" text-anchor="start" font-weight="700" fill="#111827"><tspan x="46" dy="0">Sorgente → destinazione</tspan></text>
+<text x="296" y="680" font-size="11.5" text-anchor="start" font-weight="700" fill="#111827"><tspan x="296" dy="0">Porta</tspan></text>
+<text x="506" y="680" font-size="11.5" text-anchor="start" font-weight="700" fill="#111827"><tspan x="506" dy="0">Regola</tspan></text>
+<line x1="40" y1="690" x2="1020" y2="690" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="46" y="716" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">Internet → quadro</tspan></text>
+<text x="296" y="716" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="296" dy="0">qualsiasi</tspan></text>
+<text x="506" y="716" font-size="11" text-anchor="start" font-weight="400" fill="#b91c1c"><tspan x="506" dy="0">BLOCCA (nessuna porta in ingresso, nessun NAT, nessun IP pubblico)</tspan></text>
+<line x1="40" y1="726" x2="1020" y2="726" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="46" y="752" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">Quadro (router) → VPS</tspan></text>
+<text x="296" y="752" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="296" dy="0">UDP WireGuard</tspan></text>
+<text x="506" y="752" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="506" dy="0">CONSENTI, solo verso l'IP del VPS; riconnessione automatica</tspan></text>
+<line x1="40" y1="762" x2="1020" y2="762" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="46" y="788" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">VPS → gateway</tspan></text>
+<text x="296" y="788" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="296" dy="0">TCP 443 (HTTPS interno)</tspan></text>
+<text x="506" y="788" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="506" dy="0">CONSENTI, solo dal peer WireGuard del VPS</tspan></text>
+<line x1="40" y1="798" x2="1020" y2="798" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="46" y="824" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">Gateway → PLC</tspan></text>
+<text x="296" y="824" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="296" dy="0">TCP 502 (Modbus)</tspan></text>
+<text x="506" y="824" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="506" dy="0">CONSENTI, indirizzi in lista bianca; scrittura solo su registri «Utente» e «Servizio»</tspan></text>
+<line x1="40" y1="834" x2="1020" y2="834" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="46" y="860" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">Wi-Fi locale → gateway</tspan></text>
+<text x="296" y="860" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="296" dy="0">TCP 443</tspan></text>
+<text x="506" y="860" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="506" dy="0">CONSENTI solo se il pulsante in quadro è stato premuto (timer 10 min)</tspan></text>
+<line x1="40" y1="870" x2="1020" y2="870" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="46" y="896" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">Wi-Fi locale → altro</tspan></text>
+<text x="296" y="896" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="296" dy="0">qualsiasi</tspan></text>
+<text x="506" y="896" font-size="11" text-anchor="start" font-weight="400" fill="#b91c1c"><tspan x="506" dy="0">BLOCCA (client isolati, niente accesso a PLC, router o Internet)</tspan></text>
+<line x1="40" y1="906" x2="1020" y2="906" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="46" y="932" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">PLC → qualsiasi</tspan></text>
+<text x="296" y="932" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="296" dy="0">qualsiasi</tspan></text>
+<text x="506" y="932" font-size="11" text-anchor="start" font-weight="400" fill="#b91c1c"><tspan x="506" dy="0">BLOCCA l'uscita; solo risposte Modbus</tspan></text>
+<line x1="40" y1="942" x2="1020" y2="942" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<text x="46" y="968" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="46" dy="0">Router → Internet (NTP, aggiornamenti)</tspan></text>
+<text x="296" y="968" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="296" dy="0">UDP 123 / HTTPS</tspan></text>
+<text x="506" y="968" font-size="11" text-anchor="start" font-weight="400" fill="#111827"><tspan x="506" dy="0">CONSENTI verso destinazioni fisse; aggiornamenti solo firmati</tspan></text>
+<line x1="40" y1="978" x2="1020" y2="978" stroke="#e5e7eb" stroke-width="1" stroke-linecap="round"/>
+<rect x="1330" y="780" width="230" height="76" rx="4" fill="#fff" stroke="#6b7280" stroke-width="1"/>
+<text x="1338" y="795" font-size="11" text-anchor="start" font-weight="700" fill="#111827"><tspan x="1338" dy="0">Legenda</tspan></text>
+<line x1="1340" y1="812" x2="1376" y2="812" stroke="#7e22ce" stroke-width="3" stroke-linecap="round"/>
+<text x="1384" y="816" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1384" dy="0">Ethernet / VPN</tspan></text>
+<line x1="1340" y1="830" x2="1376" y2="830" stroke="#be185d" stroke-width="3" stroke-dasharray="6 4" stroke-linecap="round"/>
+<text x="1384" y="834" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1384" dy="0">Radio (5G, Wi-Fi)</tspan></text>
+<line x1="1340" y1="848" x2="1376" y2="848" stroke="#b91c1c" stroke-width="3" stroke-dasharray="4 4" stroke-linecap="round"/>
+<text x="1384" y="852" font-size="10.5" text-anchor="start" font-weight="400" fill="#111827"><tspan x="1384" dy="0">Collegamento vietato</tspan></text>
+</g>
+
+<g font-family="DejaVu Sans, Arial, sans-serif">
+<rect x="827" y="1010" width="746" height="98" fill="#fff" stroke="#111827" stroke-width="1.2"/>
+<line x1="827" y1="1042" x2="1573" y2="1042" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1010" x2="1437" y2="1108" stroke="#111827" stroke-width="0.8"/>
+<line x1="1437" y1="1075" x2="1573" y2="1075" stroke="#111827" stroke-width="0.8"/>
+<text x="837" y="1028" font-size="10" fill="#6b7280">QUADRO DI MANOVRA A PLC — PROGETTO DI FATTIBILITÀ · Carbon Stealth VCC</text>
+<text x="837" y="1062" font-size="17" font-weight="700" fill="#111827">Rete, modem 5G e accesso dallo smartphone</text>
+<text x="837" y="1084" font-size="11" fill="#374151">Connessione in uscita (VPN) · zone separate · ruoli · nessuna porta aperta da Internet</text>
+<text x="837" y="1100" font-size="10" fill="#b45309">Schema di principio: non è un esecutivo. Lo firma un progettista abilitato.</text>
+<text x="1445" y="1026" font-size="10" fill="#6b7280">Tavola</text>
+<text x="1445" y="1056" font-size="26" font-weight="700">T12</text>
+<text x="1445" y="1090" font-size="10" fill="#6b7280">Rev. A · 2026-10-07</text>
+<text x="1445" y="1103" font-size="10" fill="#6b7280">A3 · senza scala</text>
+</g>
+</svg>

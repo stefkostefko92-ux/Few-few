@@ -51,6 +51,7 @@ const page = readFileSync(join(ROOT, "server", "index.html"), "utf8");
 let storm = page.slice(page.indexOf("  function glStorm(grid) {"), page.indexOf("  // 3b) Fallback"));
 const patch = (a, b) => { if (!storm.includes(a)) throw new Error("storm patch failed: " + a); storm = storm.replace(a, b); };
 patch("preserveDrawingBuffer: false", "preserveDrawingBuffer: true");
+patch("var soft = /swiftshader", "var soft = false && /swiftshader"); // офлайн рендер: SwiftShader е нарочно, кадрите не бързат
 patch("var dt = Math.min(0.05, now - (frame.p || now));", "F = Math.max(F, window.__amb || 0);\n      var dt = Math.min(0.05, now - (frame.p || now));");
 patch("if (!strikes.length && !sparks.length) {", "if (!strikes.length && !sparks.length && !(window.__amb > 0)) {");
 patch("      el: cv,\n", "      el: cv,\n      kick: function () { if (!running) { running = true; requestAnimationFrame(frame); } },\n");

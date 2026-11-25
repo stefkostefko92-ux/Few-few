@@ -22,6 +22,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sectionBullets } from "./oversee-lib.mjs";
 import { emitJsonNow } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -83,7 +84,18 @@ function memoryDrift() {
 // --- ТВЪРДА: consistency на бройката/ростера (бройка-дрейфът е доказан рецидивен клас грешки) ---
 // Каноничният брой = agents.json. Проверяваме, че settings matcher-ите и човеко-четимите бройки
 // в CLAUDE.md/README.md/_orchestration.md съвпадат — иначе документите лъжат за размера на екипа.
-const EN = { "twenty-one": 21, "twenty-two": 22, "twenty-three": 23, "twenty-four": 24, "twenty-five": 25, "twenty-six": 26, "twenty-seven": 27, "twenty-eight": 28, "twenty-nine": 29, thirty: 30, "thirty-one": 31, "thirty-two": 32 };
+// Числата с думи (23.11.2026, Качествения): ръчната таблица стигаше до „thirty-two“, а флотът е 35 —
+// „thirty-four agents“ в README тихо излизаше null и проверката мълчеше. Смята се, не се изброява.
+const EN_TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50 };
+const EN_ONES = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9 };
+export function enNumber(word) {
+  const m = String(word || "").toLowerCase().match(/^(twenty|thirty|forty|fifty)(?:-(one|two|three|four|five|six|seven|eight|nine))?$/);
+  return m ? EN_TENS[m[1]] + (m[2] ? EN_ONES[m[2]] : 0) : null;
+}
+// Броят на екипите в прозата („**10 екипа**“, „от 10 екипа“, „10 lean teams“) — сверява се с _teams.json.
+export function teamCountClaims(text) {
+  return [...String(text || "").matchAll(/(?:^|[^\d])(\d{1,2})\**\s+(?:екипа|(?:lean\s+)?teams)(?![\p{L}\p{N}])/gu)].map((m) => +m[1]);
+}
 const BG_ONES = { еднате: 1, еднат: 1, двете: 2, трите: 3, четирите: 4, петте: 5, шестте: 6, седемте: 7, осемте: 8, деветте: 9 };
 function countConsistency() {
   const aj = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
@@ -111,13 +123,19 @@ function countConsistency() {
   for (const m of claude.matchAll(/(\d+)\s+(?:agents|subagents)\b/g)) { const n = +m[1]; if (n >= 18 && n <= 40) checkNum("CLAUDE.md", `„${m[0]}“`, n); }
 
   const readme = read(".claude/agents/README.md");
-  const enM = readme.match(/(twenty-\w+|thirty(?:-\w+)?)\s+agents/i);
-  if (enM) checkNum(".claude/agents/README.md", `„${enM[0]}"`, EN[enM[1].toLowerCase()] ?? null);
+  for (const m of readme.matchAll(/\b((?:twenty|thirty|forty|fifty)(?:-\w+)?)\s+(?:of\s+the\s+)?agents\b/gi)) checkNum(".claude/agents/README.md", `„${m[0]}"`, enNumber(m[1]));
   for (const m of readme.matchAll(/(\d+)\s+agents\b/g)) { const n = +m[1]; if (n >= 18 && n <= 40) checkNum(".claude/agents/README.md", `„${m[0]}"`, n); }
 
   const orch = read(".claude/agents/_orchestration.md");
   const bgM = orch.match(/(Двадесет|Тридесет)\s+и\s+(\S+?те)\s+агента/);
   if (bgM) { const base = bgM[1].toLowerCase() === "тридесет" ? 30 : 20; const ones = BG_ONES[bgM[2].toLowerCase()]; if (ones != null) checkNum(".claude/agents/_orchestration.md", `„${bgM[0]}“`, base + ones); }
+
+  // 2б) Броят на екипите (23.11.2026): _orchestration.md казваше „9 екипа“ при 10 в _teams.json.
+  try {
+    const TN = JSON.parse(read(".claude/agents/_teams.json")).teams.length;
+    for (const f of ["CLAUDE.md", "tools/agents/CLAUDE.md", ".claude/agents/_orchestration.md", ".claude/agents/README.md"])
+      for (const n of teamCountClaims(read(f))) if (n !== TN) hits.push({ file: f, what: `${n} екипа`, detail: `казва ${n}, а екипите в _teams.json са ${TN}` });
+  } catch { /* */ }
 
   // 3) РОСТЕРНИ ТВЪРДЕНИЯ с определителен член, из ЦЕЛИЯ агентски слой (Кръг 12, 2026-08-04).
   //
@@ -160,7 +178,10 @@ export function skillRosterHits(text, skillIds, file = "CLAUDE.md") {
   if (!m) return [];
   const out = [];
   if (+m[1] !== skillIds.length) out.push({ file, what: "брой умения", detail: `казва ${m[1]}, а са ${skillIds.length}` });
-  const list = String(text).slice(m.index, m.index + 1200);
+  // Изброяването свършва при „Gate:“ (така е и в двата CLAUDE.md). Фиксираният прозорец от 1200 знака
+  // отрязваше края, щом ростерът порасна (14.11.2026: правните умения изглеждаха „неизброени“).
+  const gate = String(text).indexOf("Gate:", m.index);
+  const list = String(text).slice(m.index, gate > m.index ? gate : m.index + 1200);
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const missing = skillIds.filter((s) => !new RegExp(`(^|[^a-z0-9-])${esc(s)}(?![a-z0-9-])`).test(list));
   if (missing.length) out.push({ file, what: "ростер на уменията", detail: `не са изброени: ${missing.join(", ")}` });
@@ -208,4 +229,4 @@ async function main() {
   process.exit(hard || (STRICT && soft) ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+if (isMain(import.meta.url)) await main();

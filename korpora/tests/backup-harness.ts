@@ -14,9 +14,11 @@ import { ROOT } from '../src/paths.js';
 
 /**
  * deploy/backup.sh and deploy/backup-restore.sh run for real (bash, real age) on a temporary folder.
- * Only `id` and `docker` are stubbed; `docker exec -i <id> pg_dump|pg_restore|psql …` runs what
+ * Only `id` and `docker` are stubbed; `docker exec [-i] <id> pg_dump|pg_restore|psql …` runs what
  * DOCKER_EXEC says: `fake` (no database: PGDMP and DUMP_BYTES of filler) or `local` (the PostgreSQL tools
- * against PG* from the environment — the integration test's real restore).
+ * against PG* from the environment — the integration test's real restore). Like the real docker, `exec -i`
+ * copies the script's stdin into the container whether the command reads it or not: what the command
+ * leaves unread is lost (measured: hundreds of KiB), here the first 4096 bytes.
  */
 export const HAS_AGE = spawnSync('age', ['--version']).status === 0;
 
@@ -24,6 +26,7 @@ const STUBS = `
 id() { echo 0; }
 docker() {
   echo "docker $*" >> "$LOG"
+  local eat=0 rc=0
   case "$1" in
     ps)
       case "$*" in
@@ -32,9 +35,17 @@ docker() {
       esac
       return 0 ;;
     stop|start) return 0 ;;
-    exec) shift 3 ;;
+    exec)
+      shift
+      if [ "$1" = -i ]; then eat=1 && shift; fi
+      shift ;;
     *) return 0 ;;
   esac
+  docker_run "$@" || rc=$?
+  if [ "$eat" = 1 ]; then head -c 4096 >/dev/null; fi
+  return "$rc"
+}
+docker_run() {
   if [ "$DOCKER_EXEC" = local ]; then "$@"; return; fi
   case "$1" in
     pg_dump)
@@ -44,8 +55,15 @@ docker() {
     pg_restore)
       # VERIFY_RC: refuses at once (not an archive); TRUNCATED_RC: reads it all, then fails (cut-off end)
       [ "$VERIFY_RC" = 0 ] || return "$VERIFY_RC"
+      [ "$(head -c 5)" = PGDMP ] || return 1
       cat >/dev/null
       return "$TRUNCATED_RC" ;;
+    psql)
+      # '-f -' reads the SQL to the end; '-c' answers every count (and the last migration) with FAKE_COUNT
+      case "$*" in
+        *' -f -'*) cat >/dev/null ;;
+        *) echo "$FAKE_COUNT" ;;
+      esac ;;
   esac
 }
 `;
@@ -130,6 +148,7 @@ function bash(
         DUMP_RC: '0',
         VERIFY_RC: '0',
         TRUNCATED_RC: '0',
+        FAKE_COUNT: '12',
         ...env,
       },
     },

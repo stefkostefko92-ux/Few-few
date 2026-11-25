@@ -43,6 +43,18 @@
     radial-gradient(120% 120% at 50% 0%, rgba(120, 180, 210, 0.12), transparent 60%),
     linear-gradient(180deg, #0e3247, #07202e);
 }
+/* Телефон: мрежите са една под друга, така че всяка взема цялата ширина на
+   сукното (без релсата с цифрите и отстъпите) — при 44vw клетките бяха 17px и
+   влаченето/стрелбата с пръст беше лотария. */
+@media (max-width: 639px) {
+  .bs-grid {
+    width: min(calc(100vw - 140px), 46vh, 420px);
+  }
+  /* По-тясна дървена рамка около двете мрежи при стрелбата — иначе не се събират. */
+  .bs-frame.aso-board {
+    padding: 8px;
+  }
+}
 .bs-cell {
   aspect-ratio: 1;
   border: 0.5px solid rgba(180, 210, 230, 0.18);
@@ -99,4 +111,23 @@
     opacity: 0;
     transform: scale(0.5);
   }
+}
+
+/* Фаза на подреждане: влачене/клик, избран кораб, конфликт (застъпване/допиране). */
+.bs-grid--place .bs-cell--placeable {
+  cursor: pointer;
+}
+.bs-grid--place .bs-cell--ship.bs-cell--placeable {
+  cursor: grab;
+}
+.bs-cell--selected {
+  box-shadow: inset 0 0 0 2px var(--brass-300);
+}
+.bs-cell--bad,
+.bs-cell--ship.bs-cell--bad {
+  background: linear-gradient(180deg, #7a2420, #4a1210);
+  box-shadow: inset 0 0 0 1px var(--loss);
+}
+.bs-grid--locked {
+  opacity: 0.75;
 }

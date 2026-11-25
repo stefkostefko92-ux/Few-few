@@ -104,6 +104,48 @@ describe("мултинаемността се държи на реални за�
   });
 });
 
+// А1 — втората врата (Летописецът, 13.11.2026): метлата на архивите в scheduler.js вече
+// зачиташе 30-дневния прозорец за експорт, но ДНЕВНАТА чистка (jobs/dataRetention.js)
+// анонимизираше тикетите на „ефективно безплатен“ сървър без да го пита. Клиент, чийто
+// план е свършил вчера, губеше всичко по-старо от 30 дни още същата нощ — точно данните,
+// които Условията му обещават да си изтегли. Доказва се тук, срещу истинска база.
+describe("дневната чистка зачита 30-дневния прозорец за експорт", () => {
+  const DAY = 86400_000;
+  async function serverWithOldTicket(id, over = {}) {
+    await makeServer({ id, ...over });
+    const t = await prisma.ticket.create({
+      data: { serverId: id, creatorId: "u_ret", channelId: `ch_${id}`, status: "CLOSED", closedAt: new Date(Date.now() - 60 * DAY), archiveHtml: "<p>транскрипт</p>" },
+    });
+    await prisma.ticketMessage.create({ data: { ticketId: t.id, authorId: "u_ret", authorTag: "u", content: "текст" } });
+    return t.id;
+  }
+
+  it("планът е свършил преди 5 дни → тикетите остават; преди 40 дни → анонимизират се; чисто безплатен → анонимизират се", async () => {
+    const { makeUser } = await import("./db.js");
+    await makeUser("u_ret");
+    const inWindow = await serverWithOldTicket("току_що_отписан", { paidAccessEndedAt: new Date(Date.now() - 5 * DAY) });
+    const graceEnded = await serverWithOldTicket("гратис_свършил_вчера", { accessUntil: new Date(Date.now() - 1 * DAY) });
+    const longGone = await serverWithOldTicket("отписан_отдавна", { paidAccessEndedAt: new Date(Date.now() - 40 * DAY) });
+    const alwaysFree = await serverWithOldTicket("винаги_безплатен");
+
+    const { runRetentionJob } = await import("../../jobs/dataRetention.js");
+    await runRetentionJob();
+
+    const html = async (id) => (await prisma.ticket.findUnique({ where: { id } })).archiveHtml;
+    const messages = (id) => prisma.ticketMessage.count({ where: { ticketId: id } });
+
+    expect(await html(inWindow), "в прозореца за експорт транскриптът трябва да оцелее").toBe("<p>транскрипт</p>");
+    expect(await messages(inWindow)).toBe(1);
+    expect(await html(graceEnded), "краят на гратиса също отваря 30 дни").toBe("<p>транскрипт</p>");
+    expect(await messages(graceEnded)).toBe(1);
+
+    expect(await html(longGone)).toMatch(/^<!-- anonymized/);
+    expect(await messages(longGone)).toBe(0);
+    expect(await html(alwaysFree)).toMatch(/^<!-- anonymized/);
+    expect(await messages(alwaysFree)).toBe(0);
+  });
+});
+
 describe("фрагментите „ефективно платен“ работят срещу истински SQL", () => {
   it("гратисният период се хваща от заявката, не само от кода", async () => {
     const { effectivePremiumWhere, effectiveFreeWhere } = await import("../../lib/premium.js");

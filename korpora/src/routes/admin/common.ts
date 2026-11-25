@@ -21,7 +21,7 @@ export function staffActor(req: Request): StaffActor {
 
 /** След действие: съобщение и обратно на страницата на акаунта (или подадения път). */
 export function finish(res: Response, result: ActionResult, okKey: string, path: string): void {
-  if (result.ok) setFlash(res, 'ok', okKey);
+  if (result.ok) setFlash(res, 'ok', result.flash ?? okKey);
   else setFlash(res, 'error', result.key, result.params);
   res.redirect(path);
 }
