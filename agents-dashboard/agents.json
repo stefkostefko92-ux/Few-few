@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 762
+        "lessons": 764
       },
       "evolution": [
         {
@@ -2169,9 +2169,20 @@
           "date": "2026-11-25",
           "event": "v71.4 — учене",
           "detail": "Научи: nodemailer 10.x изисква node >=20.0.0 (в 9.x беше >=6.0.0) — при ъпгрейд сверявай engin…"
+        },
+        {
+          "version": "71.6.0",
+          "date": "2026-11-25",
+          "event": "v71.6 — учене",
+          "detail": "Научи: .pr-review/333.diff (eternaltouch deps) съдържа само package.json (646 байта); lock фай… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/333.diff (eternaltouch deps) съдържа само package.json (646 байта); lock фай…\" (+1 още)"
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
