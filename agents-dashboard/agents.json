@@ -7151,7 +7151,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 309
+        "lessons": 311
       },
       "evolution": [
         {
@@ -7597,9 +7597,20 @@
           "date": "2026-11-25",
           "event": "v28.3 — учене",
           "detail": "Научи: Compose пише етикета com.docker.compose.project.working_dir на всеки контейнер, включит…"
+        },
+        {
+          "version": "28.5.0",
+          "date": "2026-11-25",
+          "event": "v28.5 — учене",
+          "detail": "Научи: deploy_fivem пише FiveM/.env само ако файлът липсва (пръв деплой), затова преименуван к… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „deploy_fivem пише FiveM/.env само ако файлът липсва (пръв деплой), затова преименуван к…\" (+1 още)"
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
