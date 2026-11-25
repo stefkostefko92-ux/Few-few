@@ -28,7 +28,7 @@ SHOTS = {  # eye, target, lens
     "rail": ((0.75, -1.2, 0.45), (-0.15, 0.0, 0.05), 28),
     "graffe": ((-0.22, -0.29, 0.2), (-0.345, -0.1625, 0.09), 55),
     "graffe2": ((-0.75, -0.32, 0.2), (-0.38, -0.09, 0.09), 40),
-    "piombo": ((-0.15, -0.45, 0.22), (-0.37, -0.12, 0.08), 40),
+    "piombo": ((-0.42, -0.29, 0.44), (-0.37, -0.12, 0.085), 40),  # from above: the SG slides to the rail's foot
     "gap": ((-0.12, -0.14, 0.15), (-0.3225, -0.135, 0.1), 100),  # along the wall: the blade's front and the line 5 mm off
     "livella": ((-0.1, -0.5, 0.3), (-0.29, -0.13, 0.25), 45),
     "piombow": ((0.0, -1.6, 0.42), (0.0, 0.0, 0.05), 30),
@@ -40,7 +40,7 @@ FOCUS = {
     "tracw": ((0.46, -0.02, 0.03), 5.6), "fora": ((-0.5, 0.0, 0.03), 2.8), "fiss": ((-0.46, -0.01, 0.03), 4.5),
     "fissw": ((0.0, -0.05, 0.03), 8.0), "sg": ((-0.39, -0.06, 0.07), 5.6), "sg2": ((-0.38, -0.06, 0.05), 6.3), "sgw": ((0.42, -0.1, 0.06), 6.3),
     "rail": ((0.0, -0.1, 0.1), 8.0), "graffe": ((-0.345, -0.1625, 0.09), 7.1), "graffe2": ((-0.37, -0.09, 0.09), 5.6),
-    "piombo": ((-0.36, -0.12, 0.08), 6.3), "gap": ((-0.3225, -0.137, 0.1), 16.0),
+    "piombo": ((-0.36, -0.1, 0.08), 7.1), "gap": ((-0.3225, -0.137, 0.1), 16.0),
     "livella": ((-0.29, -0.13, 0.25), 6.3), "piombow": ((0.0, -0.1, 0.05), 8.0), "serr": ((-0.4, -0.09, 0.06), 4.0),
     "hero": ((-0.38, -0.1, 0.05), 8.0),
 }
@@ -82,7 +82,7 @@ def level_at(S, t, sx):
         a, b = (13.4, 15.4) if t < 20 else (37.2, 39.6)
         k = seg(t, a, a + 0.5) - seg(t, b - 0.5, b)
         show(lv, True)
-        lv.matrix_world = rig @ Matrix.Translation((0.11, -0.016 - 0.2 * (1 - k), 0.065 + 0.12 * (1 - k)))
+        lv.matrix_world = rig @ Matrix.Translation((0.1, -0.021 - 0.2 * (1 - k), 0.065 + 0.12 * (1 - k)))  # clear of the wall
         S["bub1"].location.x, S["bub2"].location.z = 0.0, 0.026
         return lv.matrix_world @ Vector((0, -0.013, 0.05))
     if 83.2 <= t < 85.8:
@@ -114,7 +114,7 @@ def ratchet_at(S, t, sx):
         for j, (a, b) in enumerate(table["sx"]):
             if a - 0.4 <= t < b + 0.5:
                 bolt = sx["bolts"][j]
-                ax = (sx["sg"].matrix_world.to_3x3() @ bolt["down"]).normalized()
+                ax = (sx["rig"].matrix_world.to_3x3() @ bolt["down"]).normalized()
                 return on_nut(bolt["nut"], ax, a, b, total, (-0.6, -0.8, 0), n)  # handle away from the rail, sweeps aside
     for j, (a, b) in enumerate(st.CTIGHT["sx"]):
         if a - 0.4 <= t < b + 0.5:
@@ -229,7 +229,7 @@ def points(S, sx, dx, lv):
     pts["cwasher_sx"] = c["washer"].matrix_world @ Vector((0, -0.008, 0.001))
     pts["cgrower_sx"] = c["grower"].matrix_world @ Vector((0, -0.007, 0.001))
     pts["cnut_sx"] = c["nut"].matrix_world @ Vector((0, -0.006, 0.004))
-    pts["slide_sx"] = sx["SG"].matrix_world @ Vector((0.0, -0.04, 0.0))
+    pts["slide_sx"] = sx["SG"].matrix_world @ Vector((0.0, 0.02, 0.02))
     pv = S["wires"]["sx"][0].location
     pts["wtip_sx"] = Vector((pv.x, pv.y + 0.00075, pts["tip_sx"].z))  # the line's near side, level with it
     if lv is not None:

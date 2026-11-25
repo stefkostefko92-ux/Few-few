@@ -15,7 +15,7 @@ TIMELINE = [("intro", 0.0, 4.0), ("fili", 4.0, 12.0), ("trac", 12.0, 19.5), ("tr
             ("piombo", 69.0, 74.0), ("graffe", 74.0, 78.2), ("graffe2", 78.2, 83.0), ("livella", 83.0, 85.5),
             ("piombow", 85.5, 88.0), ("serr", 88.0, 98.0),
             ("hero", 98.0, 105.0)]
-# 6 the rail hung on its plumb line, 7 the SG pushed forward under it, 8 the clips, 9 level and tighten (owner's order:
-# rail, clips, plumb; the push comes before the clips because the flange's slots reach the front clip only then)
+# 6 the rail hung on its plumb line, 7 the SG slid 20 mm along the SU to the rail's foot, 8 the clips (they need the
+# flange behind the foot), 9 level and tighten
 STEPS = [(4.0, 12.0), (12.0, 23.0), (23.0, 30.0), (30.0, 44.0), (44.0, 59.0), (59.0, 69.0), (69.0, 74.0),
          (74.0, 83.0), (83.0, 98.0)]

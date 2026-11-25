@@ -1,7 +1,8 @@
 """The Italian copy of the counterweight-guide film: the nine step cards (title, line), the part callouts and the cards
 that differ from the landing-door film (header, intro, closing). Owner's procedure and values (25.11.2026): plumb line
 5 mm in front of the rail's blade, two M10 anchors per SU, a large washer on every fastener and a grower under every
-nut of the SG and of the N1 clips, the SG pushed forward under the rail on camera, everything tightened at the end.
+nut of the SG and of the N1 clips, the SU 20 mm back and the SG slid 20 mm along it to the rail on camera,
+everything tightened at the end.
 U+00A0 keeps "SU 220 160", "5 mm", "N1" on one line (overlay.wrap splits on plain spaces only)."""
 NB = "\u00a0"
 
@@ -13,7 +14,7 @@ STEP_TEXT = [
     ("Staffa SG sul supporto", "Bullone M10 con rondella maggiorata sopra; sotto rondella maggiorata, rondella elastica "
                                "spezzata (grower) e dado. Serraggio leggero: la SG deve ancora scorrere."),
     ("Guida a piombo", f"Cala la guida contro la flangia della SG e mettila a piombo: 5{NB}mm tra la lama e il filo."),
-    ("SG in avanti", "Fai scorrere la SG in avanti sul braccio, sotto la guida."),
+    ("SG in avanti", f"Fai scorrere la SG di 20{NB}mm sul supporto, fino al piede della guida."),
     (f"Graffe{NB}N1", f"Blocca la guida con due graffe{NB}N1: dietro la flangia rondella maggiorata, grower e dado, senza serrare."),
     ("Verifica e serraggio", "Controlla la verticalità con la livella, poi serra tutto: i bulloni della SG e i dadi delle "
                              "graffe."),
@@ -34,7 +35,7 @@ CALLOUTS = [
     ("grower_sx", "", "Grower spezzata", 51.0, 54.0, -200, 90),
     ("nut_sx", "", "Serraggio leggero", 52.6, 56.0, 190, -110),
     ("rail_sx", "", "Guida SX", 62.0, 66.0, -150, -100), ("rail_dx", "", "Guida DX", 62.3, 66.0, 150, -100),
-    ("slide_sx", "", "La SG scorre sul braccio", 69.6, 74.0, -170, 90),
+    ("slide_sx", "", f"La SG scorre di 20{NB}mm verso la guida", 69.8, 74.0, 170, -150),
     ("clip_sx", "", f"Graffa{NB}N1", 75.4, 78.2, 150, -90),
     ("cwasher_sx", "", "Rondella maggiorata", 79.0, 81.6, -170, -90), ("cgrower_sx", "", "Grower spezzata", 79.6, 83.0, -170, 60),
     ("level", "", "In bolla", 84.0, 85.5, 150, -90),

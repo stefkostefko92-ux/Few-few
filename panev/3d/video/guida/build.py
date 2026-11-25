@@ -1,8 +1,9 @@
 """Builds the counterweight-guide scene: the concrete wall of the shaft, two plumb lines, and on three levels the SU 220 160
 + SG 80 150 brackets with their T rails from the site's 3-D engine (guida/export_mesh.mjs): SX on the left, DX on the
-right, the rail heads 600 mm apart and facing each other, the rail's foot 105 mm off the wall once set, each plumb line
-5 mm in front of its rail's blade, the SG slid 25 mm forward to it on camera (owner, 25.11.2026). The film mounts
-level 0; the others are on the wall too.
+right, the rail heads 600 mm apart and facing each other, the rail's foot 105 mm off the wall, each plumb line 5 mm in
+front of its rail's blade; the SU 20 mm further from its rail than the catalogue pairing, and the SG slid 20 mm along it
+towards the rail on camera, so it stands 20 mm proud of the arm (owner, 25.11.2026). The film mounts level 0; the
+others are on the wall too.
 Hardware per the owner: two M10 wedge anchors per SU, M10 x 30 bolts above and below the SG, the forged N1 clips; a
 large washer on every one, a grower under every nut of the SG and of the clips. Returns handles for pose.py."""
 import math
@@ -22,14 +23,16 @@ HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
 GAP = 0.600               # m between the rail heads (owner)
 WIRE = 0.005              # m from the blade's front face to its plumb line, in front of the blade's middle (owner)
 LINE_R = 0.00075          # m: the plumb line's radius
-BOLT_AT = (35.0, 115.0)   # mm along the SG from its wall end: 80 mm apart (the large washers clear), one in each arm
-#                           slot all along the 25 mm slide (catalogue stations of SG 80 150, pp. 57-59)
+BOLT_AT = (15.0, 95.0)    # mm along the SG from its wall end: 80 mm apart (the large washers clear), one in each arm
+#                           slot (catalogue stations of SG 80 150, pp. 57-59; the engine's own pick at this reach)
+SU_BACK = 20.0            # mm: the SU set this much further from its rail; the SG slides as much towards it in its
+#                           cross slots (20-70 mm from the flange: the bolt goes from 30 to 50)
 TIP = 270.0               # mm: three.js x of the SX rail head (SG flange face 220 + T50 rail 50)
 SIDE_X = {"sx": -(GAP / 2 + TIP * MM), "dx": GAP / 2 + TIP * MM}
 SIGN = {"sx": 1.0, "dx": -1.0}  # the DX meshes are mirrored about their x = 0
 LEVELS = (0.0, 1.5, -1.5)       # Blender z of each bracket level; the film mounts 0
 ANCHOR_X = (47.0, 144.0)        # mm along the SU flange: the middle of its two slots, 32.5 up
-SLIDE0 = Vector((0.0, 0.025, 0.0))  # m: the SG (and the rail on it) 25 mm nearer the wall until pushed to its line
+SLIDE0 = Vector((-SU_BACK * MM, 0.0, 0.0))  # m: the SG flush with the arm (SX: away from the rail) until slid to it
 RAIL_Y0 = -2300.0               # mm: the rail's foot under its level
 RAIL_STRETCH = 1.4              # the 5 m rail drawn 7 m long: its top stays out of the upward shots
 R3 = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]], dtype=np.float64)  # three.js direction -> Blender
@@ -92,7 +95,8 @@ def build_side(side, lv, z, M, recs, meta, spare):
     s = SIGN[side]
     rig = empty(f"rig-{side}{lv}", None, (SIDE_X[side], 0, z))
     h = {"rig": rig, "side": side, "home": rig.location.copy()}
-    h["SU"] = part(f"SU-{side}{lv}", recs[f"SU-{side}"], M, (0, 0, 0), rig, (0, 0, 0))
+    back = -s * SU_BACK  # three.js x of everything on the SU: its mesh, its anchors, the SG bolts in its arm slots
+    h["SU"] = part(f"SU-{side}{lv}", recs[f"SU-{side}"], M, (0, 0, 0), rig, (back, 0, 0))
     sgrec = recs[f"SG-{side}"]
     sgref = (sgrec["p"].min(0) + sgrec["p"].max(0)) / 2
     h["sg"] = sg = empty(f"sg-{side}{lv}", rig, tuple(bl(sgref)))
@@ -114,13 +118,14 @@ def build_side(side, lv, z, M, recs, meta, spare):
     h["bolts"], h["cstack"] = [], []
     sg0 = sgrec["p"][:, 2].min()  # the SG's wall end (three.js z)
     verticals = [n for n in fr["bolts"] if abs(n["y"][1]) > 0.9]
-    for i, (n, at) in enumerate(zip(verticals, BOLT_AT)):
-        h["bolts"].append(bolt_stack(f"{side}{lv}-{i}", sg, spare, M, [n["p"][0], n["p"][1], sg0 + at], n["y"], sgref))
+    for i, (n, at) in enumerate(zip(verticals, BOLT_AT)):  # in the SU's arm slots: they stay while the SG slides
+        h["bolts"].append(bolt_stack(f"{side}{lv}-{i}", rig, spare, M, [n["p"][0] + back, n["p"][1], sg0 + at], n["y"],
+                                     np.zeros(3)))
     for i, n in enumerate(n for n in fr["bolts"] if abs(n["y"][1]) <= 0.9):
         h["cstack"].append(clip_stack(f"{side}{lv}-{i}", sg, spare, M, n["p"], n["y"], sgref))
     h["anchors"] = []
     for j, ax in enumerate(ANCHOR_X):
-        grp = empty(f"anchor-{side}{lv}{j}", rig, tuple(bl((s * ax, 32.5, 0.0))))
+        grp = empty(f"anchor-{side}{lv}{j}", rig, tuple(bl((s * ax + back, 32.5, 0.0))))
         rot = Matrix.Rotation(math.radians(90), 4, "X")  # the stud's +Z -> out of the wall (-Y)
         parts = []
         for kind, off in (("stud", -75.0), ("washer", 5.0), ("nut", 5.0 + BIG[2])):
@@ -130,7 +135,7 @@ def build_side(side, lv, z, M, recs, meta, spare):
             ob.matrix_basis = Matrix.Translation((0, -off * MM, 0)) @ rot
             parts.append((kind, ob, ob.matrix_basis.copy()))
         h["anchors"].append({"grp": grp, "parts": parts, "home": grp.location.copy(),
-                             "wall": Vector((SIDE_X[side] + s * ax * MM, 0, z + 32.5 * MM))})
+                             "wall": Vector((SIDE_X[side] + (s * ax + back) * MM, 0, z + 32.5 * MM))})
     return h
 
 
@@ -171,7 +176,7 @@ def build(scene):
     sides = {(side, lv): build_side(side, lv, z, M, recs, meta, spare) for lv, z in enumerate(LEVELS) for side in ("sx", "dx")}
     windows = []
     for (side, lv), h in sides.items():
-        xa, xb = sorted((SIDE_X[side], SIDE_X[side] + SIGN[side] * 0.22))
+        xa, xb = sorted((SIDE_X[side] - SIGN[side] * SU_BACK * MM, SIDE_X[side] + SIGN[side] * 0.24))
         windows.append((xa, xb, LEVELS[lv], LEVELS[lv] + 0.13))  # behind the SU and the SG's flange
     face = build_wall(M, windows)
     holes, marks = [], []

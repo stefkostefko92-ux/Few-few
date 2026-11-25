@@ -1,8 +1,8 @@
 """The mounted level of the counterweight-guide film as a function of second t, per side (SX left, DX right; the DX
 side does each step off camera, a beat after the SX one we watch). Owner's order (25.11.2026): SU marked, drilled and
-anchored; SG on its arm, snug, 25 mm back; the rail lowered onto its plumb line (5 mm); the SG pushed forward under
-it; the N1 clips with large washer, grower and nut; level, then everything tight. The ratchet and the level are placed
-in pose.py from the times here."""
+anchored, 20 mm further from its rail; SG on its arm, flush with it, snug; the rail lowered onto its plumb line (5 mm);
+the SG slid 20 mm along the SU to the rail's foot; the N1 clips with large washer, grower and nut; level, then
+everything tight. The ratchet and the level are placed in pose.py from the times here."""
 import math
 from mathutils import Matrix, Vector
 from lib import MM, seg
@@ -28,7 +28,7 @@ RAIL_IN = {"sx": (59.6, 63.4), "dx": (59.9, 63.7)}  # lowered from above to its 
 CLIP_IN = {"sx": ((74.4, 75.3), (75.0, 75.9)), "dx": (82.0, 82.01)}
 CSTACK_IN = {"sx": ((78.6, 79.4), (79.0, 79.8)), "dx": (82.5, 82.51)}
 CSPIN = {"sx": ((79.6, 80.8), (80.0, 81.2)), "dx": (82.6, 82.61)}
-ALIGN = {"sx": ((69.6, 72.8), (72.8, 72.81)), "dx": ((73.0, 73.6), (73.6, 73.61))}     # pushed 25 mm forward
+ALIGN = {"sx": (69.8, 72.8), "dx": (73.0, 73.6)}  # the SG slid 20 mm along the SU to the rail's foot
 TIGHT = {"sx": ((88.6, 90.4), (90.8, 92.6)), "dx": ((97.0, 97.1), (97.0, 97.1))}       # SG nuts, from below
 CTIGHT = {"sx": ((93.2, 94.8), (95.2, 96.8)), "dx": ((97.0, 97.1), (97.0, 97.1))}      # clip nuts, from behind
 
@@ -71,12 +71,12 @@ def anchors(h, t, hero):
 
 
 def slide(side, t, hero):
-    """The SG's offset from its aligned place: SLIDE0 (mirrored on DX) until it is set to the line."""
+    """The SG's offset from its place on the rail: flush with the arm (SLIDE0, mirrored on DX) until it is slid along
+    its cross slots to the rail's foot (step 7)."""
     if hero:
         return Vector()
-    (a, b), (c, d) = ALIGN[side]
-    s0 = Vector((SLIDE0.x * SIGN[side], SLIDE0.y, 0))
-    return Vector((s0.x * (1 - seg(t, c, d)), s0.y * (1 - seg(t, a, b)), 0))
+    a, b = ALIGN[side]
+    return Vector((SLIDE0.x * SIGN[side] * (1 - seg(t, a, b)), 0, 0))
 
 
 def squeeze(stack, kind, nut, c, spin):
@@ -93,7 +93,10 @@ def sg(h, t, hero):
     a, b = SG_IN[side]
     on = hero or t >= a
     show(h["sg"], on)
-    if not on:
+    if not on:  # the bolts hang on the rig (they stay in the SU's slots while the SG slides): hide them too
+        for st in h["bolts"]:
+            for k in ("bigtop", "bolt", "bigbot", "grower", "nut"):
+                show(st[k], False)
         return
     lift = Vector((0, -0.02, 0.12)) * (1 - (1.0 if hero else seg(t, a, b)))
     h["sg"].location = h["sg_home"] + slide(side, t, hero) + lift
