@@ -39,11 +39,14 @@ app.set('views', join(__dirname, 'views'));
 app.set('trust proxy', 1); // зад reverse proxy (Hetzner) за коректен protocol/IP
 app.disable('x-powered-by');
 
-// Данни на доставчика (импресум). ЕИК/адрес са от публичния импресум на фирмата;
-// точната правна форма (ДПК/ЕДПК) и ДДС статус се потвърждават в ТР по ЕИК.
+// Данни на доставчика (импресум). Фирмата е вписана в Търговския регистър и на кирилица, и на
+// латиница: „Карбон Стелт ЕДПК“ / „Carbon Stealth VCC“ — еднолично дружество с променлив капитал
+// (чл. 260а и сл. ТЗ). На английски отделна форма за едноличното няма, затова там е VCC.
 const COMPANY = {
   name: 'Carbon Stealth VCC',
-  legalForm: 'дружество с променлив капитал (VCC)',
+  nameBg: 'Карбон Стелт ЕДПК',
+  legalForm: 'еднолично дружество с променлив капитал',
+  legalFormEn: 'variable capital company (VCC) under Bulgarian law',
   url: 'https://carbonstealth.eu',
   uic: '208725180', // ЕИК
   vat: 'BG208725180', // ДДС №

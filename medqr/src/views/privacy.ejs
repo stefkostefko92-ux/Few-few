@@ -10,7 +10,9 @@
     Protection Act and the Electronic Communications Act.</p>
 
   <h2>1. Data controller</h2>
-  <p>The controller is <strong><%= company.name %></strong>
+  <p>The controller is <strong><%= company.name %></strong> (Bulgarian name:
+    <span lang="bg"><%= company.nameBg %></span>), a <%= company.legalFormEn %>, UIC <%= company.uic %>,
+    registered office <%= company.addressEn %>
     (<a href="<%= company.url %>" target="_blank" rel="noopener noreferrer"><%= company.url %></a>).
     Data-protection questions and exercising your rights:
     <a href="mailto:privacy@carbonstealth.eu">privacy@carbonstealth.eu</a>.</p>
@@ -115,12 +117,13 @@
   <h1>Политика за поверителност</h1>
   <p class="muted">Версия <%= legal.version %> · в сила от <%= legal.effective %></p>
 
-  <p>Тази политика обяснява как <strong><%= company.name %></strong> обработва личните данни на
+  <p>Тази политика обяснява как <strong><%= company.nameBg %> (<%= company.name %>)</strong> обработва личните данни на
     потребителите на услугата MedQR в съответствие с Регламент (ЕС) 2016/679 (GDPR), Закона за
     защита на личните данни (ЗЗЛД) и Закона за електронните съобщения (ЗЕС).</p>
 
   <h2>1. Администратор на личните данни</h2>
-  <p>Администратор е <strong><%= company.name %></strong>
+  <p>Администратор е <strong><%= company.nameBg %> (<%= company.name %>)</strong>, <%= company.legalForm %>,
+    ЕИК <%= company.uic %>, със седалище и адрес на управление <%= company.address %>
     (<a href="<%= company.url %>" target="_blank" rel="noopener noreferrer"><%= company.url %></a>).
     Въпроси по защитата на данните и упражняване на права:
     <a href="mailto:privacy@carbonstealth.eu">privacy@carbonstealth.eu</a>.</p>
