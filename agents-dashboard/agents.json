@@ -12658,7 +12658,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 229
+        "lessons": 230
       },
       "evolution": [
         {
@@ -13044,9 +13044,20 @@
           "date": "2026-11-23",
           "event": "v21.4 — учене",
           "detail": "Научи: За регистрация с `matches:<all_urls>` и `excludeMatches`, шаблонът `*://*.a.com/*` изкл…"
+        },
+        {
+          "version": "21.5.0",
+          "date": "2026-11-25",
+          "event": "v21.5 — учене",
+          "detail": "Научи: PR #461 (adblock 6.1.1) не променя права/CSP/host_permissions (само версията в manifest…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „PR #461 (adblock 6.1.1) не променя права/CSP/host_permissions (само версията в manifest…\""
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
