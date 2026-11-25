@@ -1,6 +1,25 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
+import { LegalDoc } from '@/components/LegalDoc';
 import type { Locale } from '@/i18n/locales';
+import { pageMetadata } from '@/lib/seo';
+import { REFERRAL_MIN_PAYOUT_CENTS, REFERRAL_PERCENT } from '@/lib/referral';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'legal' });
+  const tSeo = await getTranslations({ locale, namespace: 'seo' });
+  return pageMetadata(locale as Locale, '/terms', {
+    title: t('termsTitle'),
+    description: tSeo('termsDescription'),
+    keywords: tSeo('keywords').split(', '),
+  });
+}
 
 export default async function TermsPage({
   params,
@@ -11,14 +30,16 @@ export default async function TermsPage({
   const t = await getTranslations('legal');
   return (
     <>
-      <SiteHeader locale={locale as Locale} />
-      <main className="mx-auto max-w-2xl px-6 py-16">
-        <h1 className="text-2xl font-bold">{t('termsTitle')}</h1>
-        <p className="mt-6 whitespace-pre-line leading-relaxed text-slate-700">
-          {t('termsBody')}
-        </p>
-      </main>
-      <SiteFooter locale={locale as Locale} currentPath="/terms" />
+      <LxPage locale={locale as Locale} currentPath="/terms">
+      {/* Програмата за покани (Т2) чете процента и прага от кода — текстът не може да се размине с него. */}
+      <LegalDoc
+        title={t('termsTitle')}
+        body={t('termsBody', {
+          percent: REFERRAL_PERCENT,
+          minPayout: REFERRAL_MIN_PAYOUT_CENTS / 100,
+        })}
+      />
+      </LxPage>
     </>
   );
 }

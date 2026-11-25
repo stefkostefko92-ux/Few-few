@@ -3,6 +3,7 @@ import { search, recordMiss } from "@/lib/search";
 import { plainText } from "@/lib/markdown";
 import { SITE } from "@/lib/site";
 import { getAiConfig, type AiConfig } from "@/lib/ai-config";
+import { formatDateTime } from "@/lib/format-date";
 
 export type ChatSource = { title: string; url: string };
 export type ChatTurn = { role: "user" | "bot"; text: string };
@@ -118,9 +119,8 @@ async function hydrate(hits: Hit[], n = 6): Promise<Ctx[]> {
         select: { title: true, description: true, location: true, startAt: true },
       });
       if (e) {
-        const when = new Intl.DateTimeFormat("bg-BG", {
-          dateStyle: "long", timeStyle: "short",
-        }).format(e.startAt);
+        // Стенно софийско време от админ полето (виж lib/format-date.ts).
+        const when = formatDateTime(e.startAt, { wall: true });
         out.push({
           title: e.title,
           url: h.url,
@@ -373,6 +373,22 @@ export function toApiMessages(history: ChatTurn[], q: string) {
   return msgs;
 }
 
+/** Няма страници за контекст → отговаря правилото (без модел). Общо за Claude и Gemini (21.11.2026). */
+async function* rulesFallback(q: string, hits: Hit[]): AsyncGenerator<ChatChunk> {
+  const rules = await answerWithRules(q, hits);
+  yield { type: "delta", text: rules.answer };
+  if (rules.sources.length) yield { type: "sources", sources: rules.sources };
+  yield { type: "done", provider: "rules" };
+}
+
+/** Контекстът за модела (номерирани откъси с източник) и до 4 източника за показване — общо за двата доставчика. */
+export function modelContext(ctx: Pick<Ctx, "title" | "body" | "url">[]) {
+  return {
+    context: ctx.map((c, i) => `[${i + 1}] ${c.title}\n${c.body}\nИзточник: ${SITE.url}${c.url}`).join("\n\n"),
+    sources: ctx.slice(0, 4).map((c) => ({ title: c.title, url: c.url })),
+  };
+}
+
 async function* streamWithClaude(
   q: string,
   history: ChatTurn[],
@@ -381,17 +397,10 @@ async function* streamWithClaude(
 ): AsyncGenerator<ChatChunk> {
   const ctx = await hydrate(hits, 6);
   if (ctx.length === 0) {
-    const rules = await answerWithRules(q, hits);
-    yield { type: "delta", text: rules.answer };
-    if (rules.sources.length) yield { type: "sources", sources: rules.sources };
-    yield { type: "done", provider: "rules" };
+    yield* rulesFallback(q, hits);
     return;
   }
-
-  const context = ctx
-    .map((c, i) => `[${i + 1}] ${c.title}\n${c.body}\nИзточник: ${SITE.url}${c.url}`)
-    .join("\n\n");
-  const sources = ctx.slice(0, 4).map((c) => ({ title: c.title, url: c.url }));
+  const { context, sources } = modelContext(ctx);
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -445,17 +454,10 @@ async function* streamWithGemini(
 ): AsyncGenerator<ChatChunk> {
   const ctx = await hydrate(hits, 6);
   if (ctx.length === 0) {
-    const rules = await answerWithRules(q, hits);
-    yield { type: "delta", text: rules.answer };
-    if (rules.sources.length) yield { type: "sources", sources: rules.sources };
-    yield { type: "done", provider: "rules" };
+    yield* rulesFallback(q, hits);
     return;
   }
-
-  const context = ctx
-    .map((c, i) => `[${i + 1}] ${c.title}\n${c.body}\nИзточник: ${SITE.url}${c.url}`)
-    .join("\n\n");
-  const sources = ctx.slice(0, 4).map((c) => ({ title: c.title, url: c.url }));
+  const { context, sources } = modelContext(ctx);
 
   const url =
     `https://generativelanguage.googleapis.com/v1beta/models/${ai.geminiModel}` +

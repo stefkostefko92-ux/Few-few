@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { battleshipFleetError, placeFleet } from "@aso/game-core";
 import { Button, cn } from "../../../ui";
 import { playCue } from "../../../lib/sound";
+import { isRotateKey } from "./keys";
+import { useRevealOnTurn } from "../useRevealOnTurn";
 
 const SIZE = 10;
 // БГ convention: columns А–К (Й is skipped), rows 1–10.
@@ -83,10 +85,14 @@ function conflicts(layout: ShipLayout[]): Set<number> {
 export function BattleshipPlacement({
   ready,
   oppReady,
+  fleet,
   onReady,
 }: {
   ready: boolean;
   oppReady: boolean;
+  /** The fleet the server holds for me (once I'm ready). After a timeout the
+   *  bot placed it at random — the locked board must show THAT, not my draft. */
+  fleet?: number[][];
   onReady: (ships: number[][]) => void;
 }) {
   const { t } = useTranslation();
@@ -95,11 +101,13 @@ export function BattleshipPlacement({
   const [sent, setSent] = useState(false);
   const drag = useRef<{ ship: number; offset: number; moved: boolean } | null>(null);
 
+  const serverFleet = ready && fleet && fleet.length > 0 ? fleet : null;
   const owner = useMemo(() => {
     const map = new Map<number, number>();
-    layout.forEach((s, k) => cellsOf(s).forEach((cell) => map.set(cell, k)));
+    if (serverFleet) serverFleet.forEach((ship, k) => ship.forEach((cell) => map.set(cell, k)));
+    else layout.forEach((s, k) => cellsOf(s).forEach((cell) => map.set(cell, k)));
     return map;
-  }, [layout]);
+  }, [layout, serverFleet]);
   const bad = useMemo(() => conflicts(layout), [layout]);
   const ships = useMemo(() => layout.map(cellsOf), [layout]);
   const valid = battleshipFleetError(ships) === null;
@@ -114,7 +122,8 @@ export function BattleshipPlacement({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "r" || e.key === "R" || e.key === "р" || e.key === "Р") rotate();
+      // „R“ докато пишеш в чата (или Ctrl+R за презареждане) не върти кораба.
+      if (isRotateKey(e)) rotate();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -170,6 +179,9 @@ export function BattleshipPlacement({
   }
 
   const locked = ready || sent;
+  // „Готов“ е под мрежата — на телефон под ръба на екрана; вкарай го в кадър.
+  const actionsRef = useRef<HTMLDivElement>(null);
+  useRevealOnTurn(actionsRef, !locked);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -193,6 +205,7 @@ export function BattleshipPlacement({
         </div>
         <div
           className={cn("bs-grid bs-grid--place", locked && "bs-grid--locked")}
+          data-placement={locked ? "locked" : "open"}
           onPointerDown={onDown}
           onPointerMove={onMove}
           onPointerUp={onUp}
@@ -205,6 +218,9 @@ export function BattleshipPlacement({
               <span
                 key={cell}
                 data-cell={cell}
+                data-ship={k}
+                data-selected={k !== undefined && k === selected ? "true" : undefined}
+                data-bad={k !== undefined && bad.has(k) ? "true" : undefined}
                 className={cn(
                   "bs-cell",
                   k !== undefined && "bs-cell--ship",
@@ -218,12 +234,13 @@ export function BattleshipPlacement({
         </div>
       </div>
       {!locked ? (
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button variant="felt" onClick={rotate} disabled={selected === null}>
+        <div ref={actionsRef} className="flex flex-wrap items-center justify-center gap-2">
+          <Button variant="felt" data-action="rotate" onClick={rotate} disabled={selected === null}>
             {t("battleship.rotate")}
           </Button>
           <Button
             variant="felt"
+            data-action="random"
             onClick={() => {
               setLayout(randomLayout());
               setSelected(null);
@@ -231,7 +248,7 @@ export function BattleshipPlacement({
           >
             {t("battleship.random")}
           </Button>
-          <Button onClick={submit} disabled={!valid}>
+          <Button data-action="ready" onClick={submit} disabled={!valid}>
             {t("battleship.ready")}
           </Button>
         </div>

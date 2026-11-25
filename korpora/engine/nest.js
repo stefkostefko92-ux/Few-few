@@ -3,6 +3,7 @@
 import { cutSize } from './panel.js';
 import { STOCK } from './materials.js';
 import { SHEET_TRIM } from './model.js';
+import { translator } from './i18n.js';
 
 const intersects = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 const contains = (a, b) => b.x >= a.x && b.y >= a.y && b.x + b.w <= a.x + a.w && b.y + b.h <= a.y + a.h;
@@ -32,7 +33,7 @@ export function nest(model) {
       if (!sh) {
         sh = { stock: stockId, decor, w: SW, h: SH, free: [{ x: 0, y: 0, w: binW, h: binH }], placements: [] };
         if (!findPosition(sh.free, w, h, it.canRotate)) {
-          errors.push(`${it.part.name} (${it.w} × ${it.h}) не се побира в лист ${SW} × ${SH}.`);
+          errors.push(translator(model.lang)('w.nestNoFit', { part: it.part.name, w: it.w, h: it.h, SW, SH }));
           continue;
         }
         local.push(sh);
@@ -42,8 +43,7 @@ export function nest(model) {
     for (const sh of local) {
       const used = sh.placements.reduce((a, pl) => a + pl.w * pl.h, 0);
       sh.yield = used / (SW * SH);
-      const big = sh.free.reduce((a, f) => (!a || f.w * f.h > a.w * a.h ? f : a), null);
-      sh.remnant = big && big.w - spacing >= 300 && big.h - spacing >= 200 ? { x: SHEET_TRIM + big.x, y: SHEET_TRIM + big.y, w: Math.round(big.w - spacing), h: Math.round(big.h - spacing) } : null;
+      sh.remnant = remnantOf(sh.free, spacing);
       delete sh.free;
       sheets.push(sh);
     }
@@ -52,6 +52,15 @@ export function nest(model) {
     sh.index = i + 1;
   });
   return { sheets, errors, spacing };
+}
+
+// The largest free rectangle of a sheet, kept as a remnant when it is at least REMNANT mm — either way round.
+const REMNANT = [300, 200];
+export function remnantOf(free, spacing, trim = SHEET_TRIM) {
+  const big = free.reduce((a, f) => (!a || f.w * f.h > a.w * a.h ? f : a), null);
+  if (!big) return null;
+  const [w, h] = [big.w - spacing, big.h - spacing];
+  return Math.max(w, h) >= REMNANT[0] && Math.min(w, h) >= REMNANT[1] ? { x: trim + big.x, y: trim + big.y, w: Math.round(w), h: Math.round(h) } : null;
 }
 
 function findPosition(free, w, h, canRotate) {

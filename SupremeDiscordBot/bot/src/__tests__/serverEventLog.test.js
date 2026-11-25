@@ -95,16 +95,23 @@ describe("fetchVoiceMoveActor — MemberMove няма user target", () => {
 });
 
 describe("fetchVoiceDisconnectActor", () => {
-  it("намира изритващия от гласовия канал", async () => {
-    const guild = fakeGuild([{ createdTimestamp: Date.now(), executor }]);
-    await expect(fetchVoiceDisconnectActor(guild)).resolves.toEqual({
+  it("намира изритващия, когато целта на записа съвпада (З7)", async () => {
+    const guild = fakeGuild([{ createdTimestamp: Date.now(), target: { id: "u1" }, executor }]);
+    await expect(fetchVoiceDisconnectActor(guild, "u1")).resolves.toEqual({
       executorId: "mod1",
       executorTag: "mod",
     });
   });
 
+  it("запис за друг човек или без цел не се приписва (З7)", async () => {
+    const other = fakeGuild([{ createdTimestamp: Date.now(), target: { id: "u2" }, executor }]);
+    const noTarget = fakeGuild([{ createdTimestamp: Date.now(), executor }]);
+    await expect(fetchVoiceDisconnectActor(other, "u1")).resolves.toBeNull();
+    await expect(fetchVoiceDisconnectActor(noTarget, "u1")).resolves.toBeNull();
+  });
+
   it("сам е излязъл (няма запис) → null", async () => {
-    await expect(fetchVoiceDisconnectActor(fakeGuild([]))).resolves.toBeNull();
+    await expect(fetchVoiceDisconnectActor(fakeGuild([]), "u1")).resolves.toBeNull();
   });
 });
 
@@ -260,9 +267,9 @@ describe("права за поканата — одитният дневник",
     expect(BigInt(INVITE_PERMISSIONS_INT) & admin).toBe(0n);
   });
 
-  it("целият списък REQUIRED_PERMISSIONS се сумира точно до INVITE_PERMISSIONS_INT", async () => {
-    const { INVITE_PERMISSIONS_INT, REQUIRED_PERMISSIONS } = await import("../utils/permissionCheck.js");
-    const sum = REQUIRED_PERMISSIONS.reduce((a, r) => a | BigInt(r.flag), 0n);
+  it("REQUIRED_PERMISSIONS + RECOMMENDED_PERMISSIONS се сумират точно до INVITE_PERMISSIONS_INT", async () => {
+    const { INVITE_PERMISSIONS_INT, REQUIRED_PERMISSIONS, RECOMMENDED_PERMISSIONS } = await import("../utils/permissionCheck.js");
+    const sum = [...REQUIRED_PERMISSIONS, ...RECOMMENDED_PERMISSIONS].reduce((a, r) => a | BigInt(r.flag), 0n);
     expect(sum).toBe(BigInt(INVITE_PERMISSIONS_INT));
   });
 });

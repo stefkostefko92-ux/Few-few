@@ -27,7 +27,7 @@ await new Promise((r) => srv.listen(0, "127.0.0.1", r));
 const profile = mkdtempSync(join(tmpdir(), "sa-cards-"));
 const ctx = await chromium.launchPersistentContext(profile, {
   channel: "chromium", headless: true,
-  args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, "--host-resolver-rules=MAP chromewebstore.google.com ~NOTFOUND"],
+  args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`, "--host-resolver-rules=MAP chromewebstore.google.com ~NOTFOUND", "--no-proxy-server"],
 });
 try {
   const sw = ctx.serviceWorkers()[0] || await ctx.waitForEvent("serviceworker", { timeout: 20000 });
@@ -113,7 +113,9 @@ try {
   await r.goto(`chrome-extension://${id}/report/report.html?tab=${tabId}`); await r.waitForTimeout(800);
   ok("the email address is visible for webmail users", /info@carbonstealth\.eu/.test(await r.textContent("#webmail")));
   ok("no question before a fix", await r.isHidden("#fixedAsk"));
-  await r.click("#fixCosm"); await r.waitForTimeout(700);
+  await r.click("#fixCosm");
+  // 6.0: the fix is the site's Basic mode — the answer comes once Chrome has re-registered the scripts
+  await r.waitForSelector("#fixedAsk", { state: "visible", timeout: 6000 }).catch(() => {});
   ok("after a fix: „Did it fix the site?“", await r.isVisible("#fixedAsk"));
   await r.click("#fixedNo"); await r.waitForTimeout(300);
   const hint = await r.textContent("#fixedHint");
@@ -126,7 +128,7 @@ try {
     /element hiding off here → still broken; allowed here for 1 hour → worked/.test(await r.textContent("#preview")));
   ok("…focus moves on to the report after „Yes“", (await r.evaluate(() => document.activeElement.id)) === "what");
   await r.close();
-  await sw.evaluate(() => chrome.storage.local.set({ allowlist: [], allowUntil: {}, noCosmetics: [] }));
+  await sw.evaluate(async () => { await chrome.storage.local.set({ allowlist: [], allowUntil: {}, noCosmetics: [], siteModes: {} }); await syncPageScripts(); await syncScriptlets(); });
   // „No“ after „for 1 hour“: allowing for good is the same rule without the end — the pause comes next
   const r2 = await ctx.newPage();
   await r2.goto(`chrome-extension://${id}/report/report.html?tab=${tabId}`); await r2.waitForTimeout(800);
@@ -135,7 +137,7 @@ try {
   ok(`after „for 1 hour“ did not help: the pause is suggested, not „allow for good“ (${await r2.evaluate(() => document.activeElement.id)})`,
     (await r2.evaluate(() => document.activeElement.id)) === "fixPause" && /Pause everywhere/.test(await r2.textContent("#fixedHint")));
   await r2.close();
-  await sw.evaluate(() => chrome.storage.local.set({ allowlist: [], allowUntil: {}, noCosmetics: [] }));
+  await sw.evaluate(async () => { await chrome.storage.local.set({ allowlist: [], allowUntil: {}, noCosmetics: [], siteModes: {} }); await syncPageScripts(); await syncScriptlets(); });
 
   // welcome: the test-page link only for a Chrome Web Store (here: unpacked) install
   const w = await ctx.newPage();

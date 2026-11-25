@@ -4,10 +4,11 @@ import { isBlacklistActive } from "../lib/blacklist.js";
 import { randomBytes } from "crypto";
 import { encrypt } from "../lib/crypto.js";
 import axios from "axios";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser } from "../middleware/auth.js";
 import { SUPPORTED_LANGUAGES, isSupportedLanguage } from "../lib/languages.js";
+import { sessionCookieName, sessionCookieOptions } from "../lib/sessionCookie.js";
 
 const router = Router();
 
@@ -258,7 +259,7 @@ router.patch("/me", requireAuth, loadUser, async (req, res, next) => {
 router.post("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ error: "Failed to destroy session" });
-    res.clearCookie("sid", { path: "/", httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
+    res.clearCookie(sessionCookieName(), sessionCookieOptions());
     res.json({ ok: true });
   });
 });

@@ -118,3 +118,24 @@ describe("Lobby — handoff to a match", () => {
     expect(seats.map((s) => s.seat)).toEqual([0, 1]);
   });
 });
+
+describe("ботовете са номерирани по реда на местата", () => {
+  it("„Бот 1“, „Бот 2“, „Бот 3“ — в стаята и на масата", () => {
+    const l = make("BELOTE");
+    l.addBot();
+    l.addBot();
+    l.addBot();
+    expect(l.toSeats().map((s) => s.displayName)).toEqual(["Хост", "Бот 1", "Бот 2", "Бот 3"]);
+    expect(l.toRoomSeats("seed").map((s) => s.displayName)).toEqual(["Хост", "Бот 1", "Бот 2", "Бот 3"]);
+  });
+
+  it("махнат бот: номерата се подреждат наново, без дупки", () => {
+    const l = make("BELOTE");
+    l.addBot();
+    l.addBot();
+    l.addBot();
+    const seats = l.toSeats();
+    l.clearSlot(seats[2]!.seat);
+    expect(l.toSeats().filter((s) => s.isBot).map((s) => s.displayName)).toEqual(["Бот 1", "Бот 2"]);
+  });
+});
