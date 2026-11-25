@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import nodemailer from "nodemailer";
+// nodemailer 10 носи собствени типове: Transporter е именуван тип, не namespace.
+import nodemailer, { type Transporter } from "nodemailer";
 import { getMailConfig } from "@/lib/mail-config";
 import type { SmtpParams } from "@/lib/mail-config-core";
 
@@ -10,7 +11,7 @@ export const MUNICIPALITY_EMAIL =
 
 // Транспортът се прави наново, щом се сменят параметрите (запис в /admin/poshta
 // или смяна между панела и .env) — сравнява се отпечатък (SHA-256) на параметрите.
-let transporter: { fp: string; t: nodemailer.Transporter } | null = null;
+let transporter: { fp: string; t: Transporter } | null = null;
 
 function fingerprint(p: SmtpParams): string {
   return createHash("sha256")
@@ -19,7 +20,7 @@ function fingerprint(p: SmtpParams): string {
 }
 
 /** Нов транспорт по параметрите (и за пробното писмо от панела). */
-export function createSmtpTransport(p: SmtpParams): nodemailer.Transporter {
+export function createSmtpTransport(p: SmtpParams): Transporter {
   return nodemailer.createTransport({
     host: p.host,
     port: p.port,
@@ -32,7 +33,7 @@ export function createSmtpTransport(p: SmtpParams): nodemailer.Transporter {
   });
 }
 
-async function getTransporter(): Promise<{ t: nodemailer.Transporter; p: SmtpParams } | null> {
+async function getTransporter(): Promise<{ t: Transporter; p: SmtpParams } | null> {
   const { params } = await getMailConfig();
   if (!params) return null;
   const fp = fingerprint(params);
