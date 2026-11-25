@@ -112,7 +112,7 @@ cd /root && unzip -o Few-few.zip >/dev/null
 sudo PROJECTS="fivem" bash /root/few-few-*/deploy/autodeploy.sh
 ```
 
-Веднага след това **попълни `RESEND_API_KEY`** и пусни пак — без него
+Веднага след това **попълни `BREVO_API_KEY`** (Brevo → SMTP & API → API keys) и пусни пак — без него
 уведомленията по чл. 16 и чл. 17 DSA не тръгват.
 
 **Панелът НЕ пуска вход, докато TLS не е издаден — и това не е дефект.**
@@ -140,7 +140,7 @@ bash scripts/deploy.sh
 | `POSTGRES_PASSWORD`, `DATABASE_URL` | да | базата. В Compose хостът е **`db`**, не `localhost`: `postgresql://fivem:<POSTGRES_PASSWORD>@db:5432/fivem`. Стойностите се пишат **без кавички** |
 | `PUBLIC_BASE_URL` | да | canonical, hreflang, OG. **Трябва да е `https://…`** — иначе сесийната бисквитка на панела пада до слабата форма |
 | `ADMIN_PASSWORD_HASH` | да | панелът. `npm run admin:hash -- "дълга парола"`; паролата не се пази никъде |
-| `RESEND_API_KEY` | **да, на живо** | без него уведомленията по чл. 16 и чл. 17 DSA не тръгват. Липсата се логва, но обещанието остава неизпълнено |
+| `BREVO_API_KEY` | **да, на живо** | без него уведомленията по чл. 16 и чл. 17 DSA не тръгват. Липсата се логва, но обещанието остава неизпълнено |
 | `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` | по избор | откриване на стриймъри (dev.twitch.tv, безплатно) |
 | `KICK_CLIENT_ID`, `KICK_CLIENT_SECRET` | по избор | същото. Публичният списък на Kick е зад Cloudflare (403) — ключ няма как да се избегне |
 | `KICK_LANGUAGE`, `KICK_CATEGORY_ID` | по избор | заковават недокументирани стойности. Не намира ли Kick никого: `docker compose exec -T cron npx tsx scripts/kick-doctor.ts` |
@@ -275,7 +275,7 @@ docker compose exec -T cron npx tsx scripts/dedupe-servers.ts --apply    # бе�
    показваното име в `EMAIL_FROM`, пресъздава `web` и `cron`, и чак тогава прави стария
    адрес пренасочване. Спре ли по пътя, старият адрес работи както досега. Може да се
    пусне отново.
-4. **Подателят на имейлите.** Потвърди `thraex.carbonstealth.eu` в Resend (DKIM и SPF записи), после:
+4. **Подателят на имейлите.** Потвърди `thraex.carbonstealth.eu` в Brevo (Senders, Domains & Dedicated IPs → Domains: DKIM, DMARC и Brevo code записите), после:
    ```bash
    sudo bash /opt/few-few/current/FiveM/deploy/move-domain.sh --mail
    ```

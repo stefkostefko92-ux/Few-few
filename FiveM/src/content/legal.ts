@@ -36,7 +36,7 @@ export type LegalSet = { privacy: LegalDoc; terms: LegalDoc; impresumLabels: Rec
 const bg: LegalSet = {
   privacy: {
     title: 'Политика за поверителност',
-    effective: '2026-08-02',
+    effective: '2026-11-25',
     description:
       'Какви данни обработва този сайт, на какво основание, за колко време и кой още ги вижда. Без бисквитки за проследяване.',
     blocks: [
@@ -55,7 +55,7 @@ const bg: LegalSet = {
       },
       { h: 'Кой още вижда данните' },
       {
-        p: 'Доставчикът на сървърна инфраструктура е в ЕС. Изходящата поща минава през Resend (Resend, Inc., САЩ) — тоест ИМА пренос към трета държава, не хипотетично „ако“. Двамата действат като обработващи по чл. 28 ОРЗД. Преносът към САЩ се извършва въз основа на решението за адекватност по Рамката ЕС–САЩ за защита на данните или, ако доставчикът не е сертифициран по нея, на стандартни договорни клаузи по чл. 46 ОРЗД; копие се предоставя при поискване. Не продаваме и не предоставяме данни за реклама.',
+        p: 'Доставчикът на сървърна инфраструктура е в ЕС. Изходящата поща минава през Brevo (Sendinblue SAS, Франция — ЕС). Двамата действат като обработващи по чл. 28 ОРЗД и обработват данните в ЕС. Не продаваме и не предоставяме данни за реклама.',
       },
       { h: 'Какво НЕ събираме' },
       {
@@ -208,7 +208,7 @@ const bg: LegalSet = {
 const en: LegalSet = {
   privacy: {
     title: 'Privacy policy',
-    effective: '2026-08-02',
+    effective: '2026-11-25',
     description:
       'What data this website processes, on what legal basis, for how long, and who else sees it. No tracking cookies.',
     blocks: [
@@ -227,7 +227,7 @@ const en: LegalSet = {
       },
       { h: 'Who else sees the data' },
       {
-        p: 'The server infrastructure provider is in the EU. Outgoing email goes through Resend (Resend, Inc., USA) — so there IS a transfer to a third country, not a hypothetical “if”. Both act as processors under Art. 28 GDPR. The transfer to the USA is based on the adequacy decision under the EU–US Data Privacy Framework or, if the provider is not certified under it, on standard contractual clauses under Art. 46 GDPR; a copy is available on request. We do not sell or share data for advertising.',
+        p: 'The server infrastructure provider is in the EU. Outgoing email goes through Brevo (Sendinblue SAS, France — EU). Both act as processors under Art. 28 GDPR and process the data in the EU. We do not sell or share data for advertising.',
       },
       { h: 'What we do NOT collect' },
       {
