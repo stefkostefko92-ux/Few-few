@@ -5,7 +5,7 @@ import type {
   RawMessageStreamEvent,
 } from '@anthropic-ai/sdk/resources/messages/messages';
 import type { Config } from './config.js';
-import { PUBLIC_DOCTRINE, type AgentProfile } from './profiles.js';
+import { publicDoctrine, type AgentProfile } from './profiles.js';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -32,12 +32,15 @@ export function modelFor(profile: AgentProfile, cfg: Pick<Config, 'MODEL_OPUS' |
  * Стабилното ОТПРЕД (доктрина + профил, с cache_control), променливото ОТЗАД (разговорът).
  * Втори breakpoint на последното съобщение — следващият ход на същия разговор чете
  * предишния префикс от кеша. effort е постоянен (от конфигурация) — смяната му инвалидира кеша.
- * Нула инструменти: `tools` не се подава изобщо.
+ * Нула инструменти: `tools` не се подава изобщо. Канарчето е постоянно за процеса (кешът важи).
  */
 export function buildParams(
   profile: AgentProfile,
   messages: ChatMessage[],
-  cfg: Pick<Config, 'MODEL_OPUS' | 'MODEL_SONNET' | 'CHAT_EFFORT' | 'MAX_OUTPUT_TOKENS'>,
+  cfg: Pick<
+    Config,
+    'MODEL_OPUS' | 'MODEL_SONNET' | 'CHAT_EFFORT' | 'MAX_OUTPUT_TOKENS' | 'LEAK_CANARY'
+  >,
 ): MessageCreateParamsStreaming {
   const last = messages.length - 1;
   const convo: MessageParam[] = messages.map((m, i) => ({
@@ -53,7 +56,7 @@ export function buildParams(
     max_tokens: cfg.MAX_OUTPUT_TOKENS,
     stream: true,
     system: [
-      { type: 'text', text: PUBLIC_DOCTRINE },
+      { type: 'text', text: publicDoctrine(cfg.LEAK_CANARY) },
       {
         type: 'text',
         text: `# ${profile.name} — ${profile.title}\n\n${profile.text}`,
