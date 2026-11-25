@@ -1170,7 +1170,12 @@ test/                    unit · level1 · level2 · ansi · hardening · sessio
 - **Уеб конфигът се валидира преди reload** и се връща при провал — същият патърн
   като `autodeploy.sh`. Никога не презареждай без `nginx -t` / `caddy validate`.
 - **Rollback** ползва `RELEASE_DIR` в `deploy/autodeploy.sh` (разгръща съществуващ
-  release без разопаковане). Чистенето на стари releases пази текущия.
+  release без разопаковане). Чистенето на стари releases пази последните 5 (`KEEP_RELEASES`,
+  колкото autodeploy.sh), release-а на `current`, целта на отката на всеки продукт
+  (`shared/*/last-good`), release с единственото копие на `.env` и ВСЕКИ, от който контейнер
+  монтира файлове (инцидент 11.10.2026: изтрит release под жив zabobovdol стек → nginx/backup
+  не тръгнаха след рестарт → 502). Пътищата се сравняват след realpath. Docker не отговаря →
+  категорията не се предлага (fail closed). Същото пази `prune_releases` в deploy/autodeploy.sh.
 
 ## Файловете, чистенето и машината (v1.17)
 - **Телефонът пише ПЪРВАТА буква главна — и това беше спряло ВСИЧКО необратимо.**
