@@ -103,7 +103,7 @@
     "toHome": "Home page",
     "toProjects": "Projects",
     "cncBlockedTitle": "The CNC files are withheld",
-    "cncBlockedText": "The construction checks found errors, and G-code and DXF must never be wrong. Fix them in the editor — the download unlocks as soon as the errors are gone. The editor and the error list are in Bulgarian.",
+    "cncBlockedText": "The construction checks found errors, and G-code and DXF must never be wrong. Fix them in the editor — the download unlocks as soon as the errors are gone.",
     "toProject": "Back to the project",
     "tooLarge": "What was sent is too large.",
     "tooManyIn": "Too many requests came from this network. Try again in {minutes}."
@@ -150,7 +150,7 @@
     "base": "Base cabinet",
     "wall": "Wall cabinet",
     "tall": "Tall cabinet",
-    "kitchen": "Kitchen run",
+    "kitchen": "Kitchen",
     "wardrobe": "Wardrobe",
     "chest": "Chest of drawers",
     "nightstand": "Bedside table",
@@ -159,10 +159,16 @@
     "tv": "TV unit",
     "desk": "Desk",
     "wallunit": "Living-room wall unit",
+    "vanity": "Vanity unit",
+    "mirror": "Mirror cabinet",
+    "room": "Room",
+    "custom": "Free-form cabinet",
     "group": {
       "kitchen": "Kitchen and cabinets",
       "bedroom": "Bedroom",
       "living": "Living room and study",
+      "bathroom": "Bathroom",
+      "custom": "Builder",
       "other": "Other"
     }
   }

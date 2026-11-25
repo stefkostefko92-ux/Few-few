@@ -1,5 +1,6 @@
 import { DEFAULT_LOCALE, LOCALE_TAG, translate } from '../i18n.js';
-import { inizioGiorno, ULTIMO_AGGIORNAMENTO, VOCI } from '../novita/voci.js';
+import { vociAttive } from '../novita/attive.js';
+import { inizioGiorno, ULTIMO_AGGIORNAMENTO } from '../novita/voci.js';
 import { FEED_NOVITA_PATH, NOVITA_PATH } from './paths.js';
 
 /** Текст в XML: петте знака, които XML пази за себе си. */
@@ -19,7 +20,7 @@ function xml(text: string): string {
 export function novitaRss(base: string): string {
   const it = (key: string) => translate(DEFAULT_LOCALE, key);
   const pagina = `${base}${NOVITA_PATH}`;
-  const items = VOCI.map((voce) =>
+  const items = vociAttive().map((voce) =>
     [
       '    <item>',
       `      <title>${xml(`${it(`novita.voci.${voce.id}.area`)}: ${it(`novita.voci.${voce.id}.titolo`)}`)}</title>`,

@@ -9,6 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, it } from 'node:test';
+import { VERSIONE_SOFTWARE } from '../src/versione.js';
 import { PDFDocument } from 'pdf-lib';
 import { calcolaArgano } from '../src/argano/calcolo.js';
 import { buildCorrente, improntaCalcolo } from '../src/build.js';
@@ -134,7 +135,9 @@ describe(
       testi.forEach((testo, i) => {
         assert.match(
           testo,
-          /Generato con Rilievi Impianti \(Carbon Stealth VCC\), build 0a1b2c3d4e, da Marco Neri il 10\/11\/2026, 11:30 · Rif\. AB12-CD34-EF56/,
+          new RegExp(
+            `Generato con Rilievi Impianti ${VERSIONE_SOFTWARE.replace('.', '\\.')} \\(Carbon Stealth VCC\\), build 0a1b2c3d4e, da Marco Neri il 10/11/2026, 11:30 · Rif\\. AB12-CD34-EF56`,
+          ),
           `${nome} p. ${i + 1}`,
         );
         assert.match(

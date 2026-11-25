@@ -6,6 +6,7 @@ import { startMaintenance } from './maintenance.js';
 import { assertModelliCartello } from './cartelli/modelli.js';
 import { assertModuli } from './ordini/moduli.js';
 import { assertPdfFonts } from './schede/pdf.js';
+import { caricaAnnunci } from './legale/annunci.js';
 import { createServer } from './server.js';
 
 async function main(): Promise<void> {
@@ -18,6 +19,8 @@ async function main(): Promise<void> {
   // Снимките и клиповете: папките на тома и правото на запис (иначе процесът не тръгва).
   await preparaArchivio();
   await prisma.$connect();
+  // Обявите на новите версии на условията — без тях нова версия не влиза (legale/versioni.ts).
+  await caricaAnnunci();
   const server = createServer().listen(cfg.PORT, cfg.HOST, () => {
     logger.info({ port: cfg.PORT, host: cfg.HOST }, 'Rilievi слуша');
   });

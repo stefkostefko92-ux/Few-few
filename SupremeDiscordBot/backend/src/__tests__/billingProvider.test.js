@@ -198,6 +198,28 @@ describe("GET /api/billing/:serverId — един източник на прав
     expect(res.body.agencyOwnedByMe).toBe(true);
   });
 
+  // А1 (docs/LAUNCH_READINESS_SPEC.md): таблото показва експорта, докато трае
+  // 30-дневният прозорец след края на абонамент през Discord.
+  it("А1: приключил абонамент през Discord → exportUntil е 30 дни след края, планът е free", async () => {
+    const ended = new Date(Date.now() - 5 * 86400000);
+    prismaMock.server.findUnique.mockResolvedValue({ ...base, paidAccessEndedAt: ended, trialEndsAt: null });
+    const res = await request(app).get("/api/billing/s1");
+    expect(res.body.isPremium).toBe(false);
+    expect(res.body.plan).toBe("free");
+    expect(res.body.exportUntil).toBe(new Date(ended.getTime() + 30 * 86400000).toISOString());
+    // Заявката наистина иска полето от базата — иначе в продукция щеше да е undefined.
+    expect(prismaMock.server.findUnique.mock.calls.some(([q]) => q?.select?.paidAccessEndedAt === true)).toBe(true);
+  });
+
+  it("А1: след 30-те дни и за сървър без платен период → exportUntil е null", async () => {
+    prismaMock.server.findUnique.mockResolvedValue({ ...base, paidAccessEndedAt: new Date(Date.now() - 31 * 86400000), trialEndsAt: null });
+    let res = await request(app).get("/api/billing/s1");
+    expect(res.body.exportUntil).toBeNull();
+    prismaMock.server.findUnique.mockResolvedValue({ ...base });
+    res = await request(app).get("/api/billing/s1");
+    expect(res.body.exportUntil).toBeNull();
+  });
+
   it("непознат сървър → 404", async () => {
     prismaMock.server.findUnique.mockResolvedValue(null);
     const res = await request(app).get("/api/billing/nope");

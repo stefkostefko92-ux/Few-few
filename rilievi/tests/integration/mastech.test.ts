@@ -188,7 +188,7 @@ describe('the sections of the print', () => {
     const keep = ['ubicazione', 'tipologia', 'quadro', 'allarme'];
     const id = await create(browser, {
       ...SURVEY,
-      noteImpianto: 'Nota da non stampare',
+      noteQuadretto: 'Nota da non stampare',
       allarmePortineria: 'si',
       'stampa-_': '1',
       stampa: keep,

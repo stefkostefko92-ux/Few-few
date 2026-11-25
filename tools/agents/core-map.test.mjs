@@ -1,7 +1,7 @@
 // core-map.test.mjs — ядро: пари, фискал, вход, медицински данни, схема; листа: изгледи, стилове, тестове.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isCore, coreReport } from "./core-map.mjs";
+import { isCore, coreReport, planReviewHint, ultrareviewHint } from "./core-map.mjs";
 
 test("ядро в реалните продукти", () => {
   for (const f of ["CSPos/src/lib/fiscal/erpnet.ts", "CSPos/src/app/api/sales/[id]/storno/route.ts", "linketto/src/app/api/stripe/webhook/route.ts",
@@ -20,4 +20,27 @@ test("ядро без тест в същия продукт се вижда; т�
   assert.deepEqual(b.coreWithoutTest, []);
   const c = coreReport(["CSPos/src/lib/fiscal/erpnet.ts", "medqr/src/routes/emergency.test.js"]);
   assert.equal(c.coreWithoutTest.length, 1, "тест в друг продукт не покрива");
+});
+
+test("ядро → подсказка за втори преглед на плана преди кода; листо → нищо", () => {
+  const hint = planReviewHint(coreReport(["CSPos/src/lib/fiscal/erpnet.ts"]));
+  assert.match(hint, /втори наш агент преди кода/);
+  for (const w of ["Разбивача", "Качествения", "razpit", "тест първо"]) assert.ok(hint.includes(w), w);
+  assert.equal(planReviewHint(coreReport(["CSPos/src/app/(app)/page.tsx", "zabobovdol/README.md"])), "");
+  assert.equal(planReviewHint(null), "");
+});
+
+test("ядро → Ultrareview по избор: PR режим, само с „да“ на собственика, цената, без публикуване по подразбиране (24.11.2026)", () => {
+  const h = ultrareviewHint(coreReport(["CSPos/src/lib/money.ts"]), 481);
+  assert.match(h, /\/code-review ultra 481/, "PR режим с номера");
+  assert.match(h, /„да“ на собственика/);
+  assert.match(h, /usage credits/);
+  assert.match(h, /клонира PR-а от GitHub/, "не качва работното дърво");
+  assert.match(h, /без --post/);
+  assert.ok(!/\$\s?\d/.test(h), "сумите живеят само в claims.json ultrareview-pricing (преглед на PR #482)");
+  assert.match(h, /claims\.json ultrareview-pricing/);
+  assert.match(h, /пазачът го спира/, "от Bash — никога");
+  assert.match(ultrareviewHint(coreReport(["CSPos/src/lib/money.ts"])), /\/code-review ultra <номер на PR>/, "без номер — шаблон");
+  assert.equal(ultrareviewHint(coreReport(["CSPos/src/app/login/page.tsx"])), "", "листа — нищо");
+  assert.equal(ultrareviewHint(null), "");
 });

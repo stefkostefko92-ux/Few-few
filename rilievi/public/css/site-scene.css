@@ -44,6 +44,8 @@
 
 .feature {
   display: grid;
+  /* В ред с по-висока съседка заглавието и текстът остават горе, не се разтягат. */
+  align-content: start;
   gap: 8px;
   padding: 22px 0 24px;
 }

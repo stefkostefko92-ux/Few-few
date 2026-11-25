@@ -55,7 +55,7 @@ describe('the governor calculation of a scheda', () => {
     const form = (await browser.get(pagina(scheda.id))).body
       .replace(/\u2060/g, '')
       .replace(/\u00a0/g, ' ');
-    assert.match(form, /Velocità presa dal modulo rilievi dati argani/);
+    assert.match(form, /Velocità presa dal modulo «Dati argano»/);
     assert.match(form, /id="f-vn"[^>]*value="1"/);
     assert.match(
       form,
@@ -180,7 +180,10 @@ describe('the governor calculation of a scheda', () => {
       page2,
       /data-esito="motivo">La UNI EN 81-20:2020 non prevede il paracadute istantaneo con effetto ammortizzato/,
     );
-    assert.match(page2, /data-esito="applicata">UNI EN 81-20:2020 — UNI 10411-1:2024, punto 6\.7</);
+    assert.match(
+      page2,
+      /data-esito="applicata">UNI EN 81-20:2020 — UNI 10411-1:2024, punto 6\.7 \(sezione 6\), per analogia: da valutare dal tecnico</,
+    );
     // D.P.R. 1497/1963, art. 32.2 (the owner's case, 9 November 2026): 0,82 m/s, rollers, only the
     // governor — up to 140 % of the operating speed, no lower limit; the contact of a new governor; the
     // warning for a category A bed lift (art. 32.3).
@@ -197,7 +200,7 @@ describe('the governor calculation of a scheda', () => {
     assert.match(page3, /data-esito="v1">fino a 1,14 m\/s</);
     assert.match(
       page3,
-      /data-esito="limite">fino a 1,148 m\/s \(140 % della velocità di esercizio, incluso\)</,
+      /data-esito="limite">fino a 1,148 m\/s \(140% della velocità di esercizio, incluso\)</,
     );
     assert.match(page3, /data-esito="contatto">Al più tardi a V1</);
     assert.match(page3, /data-esito="avviso">Se è un montalettighe di categoria A/);

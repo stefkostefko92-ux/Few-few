@@ -1,0 +1,22 @@
+<%
+  // Условията за услугата на фирмата (src/legale/): коя версия е в сила, кой и кога ги е подписал с код
+  // (или че фирмата е отпреди тях), колко от хората ѝ са приели правилата, текстът и копието.
+  const c = condizioni;
+  const giorno = (v) => fmt.day(new Date(v + 'T00:00:00Z'));
+%><section aria-labelledby="h-condizioni">
+  <h2 class="section__title" id="h-condizioni"><%= t('impostazioni.pagine.condizioni.titolo') %></h2>
+  <dl class="kv">
+    <div class="kv__item"><dt><%= t('impostazioni.condizioni.vigente') %></dt><dd><%= t('legale.versione', { versione: giorno(c.versione) }) %></dd></div>
+    <div class="kv__item"><dt><%= t('impostazioni.condizioni.stato') %></dt><dd>
+      <% if (c.stato === 'firmate' && c.accettazione) { %><span class="badge"><%= t('impostazioni.condizioni.firmate') %></span> <%= t('impostazioni.condizioni.daChi', { nome: c.accettazione.nome, quando: fmt.dateTime(c.accettazione.at) }) %>
+      <% } else if (c.stato === 'esistente') { %><span class="badge"><%= t('impostazioni.condizioni.accettate') %></span> <%= t('impostazioni.condizioni.esistente') %>
+      <% } else { %><span class="badge badge--off"><%= t('impostazioni.condizioni.attesa') %></span> <%= t('impostazioni.condizioni.attesaTesto') %><% } %>
+    </dd></div>
+    <% if (c.prossima) { %><div class="kv__item"><dt><%= t('legale.prossima.title') %></dt><dd><%= t('legale.prossima.lead', { data: fmt.dayRoma(c.prossima.dal) }) %> <a href="/condizioni/prossima"><%= t('legale.prossima.cambia') %></a></dd></div><% } %>
+    <div class="kv__item"><dt><%= t('impostazioni.condizioni.regole') %></dt><dd><%= t('impostazioni.condizioni.regoleN', { n: c.regole.accettate, totale: c.regole.totale }) %></dd></div>
+  </dl>
+  <div class="toolbar">
+    <a class="btn" href="/condizioni"><%- include('../partials/icon', { name: 'seal' }) %><%= t('legale.account.pagina') %></a>
+    <% if (c.stato === 'firmate') { %><a class="btn" data-pdf href="/condizioni/copia?azienda=<%= encodeURIComponent(azienda.id) %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('legale.copia.scarica') %></a><% } %>
+  </div>
+</section>

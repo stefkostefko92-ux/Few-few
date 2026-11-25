@@ -22,7 +22,7 @@ export interface SintesiLimitatore {
   norma: string;
   /** Какво се сменя заедно с ограничителя. */
   intervento: string;
-  /** „UNI EN 81-20:2020 — UNI 10411-1:2024, punto 6.7“ — по коя норма и точка са границите. */
+  /** „UNI EN 81-20:2020 — UNI 10411-1:2024, punto 18“ — по коя норма и точка са границите. */
   applicata: string;
   /** „da 1,84 a 2,15 m/s“ — null, когато няма допустим праг. */
   v1: string | null;

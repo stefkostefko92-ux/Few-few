@@ -60,13 +60,18 @@ test("детекторът за закован exit хваща формата, �
   // gate-fallibility гледа само process.exit; този клас минаваше през emitJsonNow(value, 0).
   // Тук проверяваме, че НИКОЙ --check-способен инструмент не подава литерална 0 на emitJsonNow.
   
-  const walk = (d) => readdirSync(d).flatMap((f) => {
-    const p = join(d, f);
-    return statSync(p).isDirectory() ? walk(p) : p.endsWith(".mjs") && !p.includes(".test.") ? [p] : [];
+  // Паралелните тестове създават и трият временни файлове под tools/ — изчезналият по пътя файл се прескача
+  // (иначе ENOENT прави теста флаки при пълния пакет; 24.11.2026).
+  const gone = (fn) => { try { return fn(); } catch (e) { if (e.code === "ENOENT") return null; throw e; } };
+  const walk = (d) => (gone(() => readdirSync(d)) || []).flatMap((f) => {
+    const p = join(d, f), st = gone(() => statSync(p));
+    if (!st) return [];
+    return st.isDirectory() ? walk(p) : p.endsWith(".mjs") && !p.includes(".test.") ? [p] : [];
   });
   const offenders = [];
   for (const f of walk(join(ROOT, "tools"))) {
-    const src = readFileSync(f, "utf8");
+    const src = gone(() => readFileSync(f, "utf8"));
+    if (src === null) continue;
     if (!src.includes('"--check"')) continue;                 // само --check-способни
     // emitJsonNow(..., 0) със закована нула — многоредов, затова flat-ваме
     const flat = src.replace(/\s+/g, " ");

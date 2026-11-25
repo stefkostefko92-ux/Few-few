@@ -52,6 +52,8 @@ beforeEach(() => {
 for (const sub of ["end", "reroll"]) {
   describe(`POST /giveaway/:id/${sub}`, () => {
     const url = `/api/bot/giveaway/${GID}/${sub}`;
+    // А3: reroll е само след края на томболата.
+    beforeEach(() => { row.endedAt = sub === "reroll" ? new Date() : null; });
 
     it("липсващ serverId -> 400, нищо не се тегли", async () => {
       const res = await request(app()).post(url).send({ actorId: "x" });
@@ -90,6 +92,7 @@ for (const sub of ["end", "reroll"]) {
 
 describe("двоен край (race): условен запис", () => {
   const url = `/api/bot/giveaway/${GID}/end`;
+  beforeEach(() => { row.endedAt = null; });
 
   it("end: записът е условен по {id, serverId, endedAt: null}", async () => {
     await request(app()).post(url).send({ serverId: SERVER_A });
@@ -97,17 +100,19 @@ describe("двоен край (race): условен запис", () => {
       .toEqual({ id: GID, serverId: SERVER_A, endedAt: null });
   });
 
-  it("reroll: НЕ изисква endedAt: null", async () => {
+  it("reroll: изисква ПРИКЛЮЧЕНА томбола (endedAt != null, А3)", async () => {
+    row.endedAt = new Date();
     await request(app()).post(`/api/bot/giveaway/${GID}/reroll`).send({ serverId: SERVER_A });
     expect(prismaMock.giveaway.updateMany.mock.calls[0][0].where)
-      .toEqual({ id: GID, serverId: SERVER_A });
+      .toEqual({ id: GID, serverId: SERVER_A, endedAt: { not: null } });
   });
 
   it("друг вече е приключил между четенето и записа (count 0) -> 409, без notify/webhook", async () => {
     prismaMock.giveaway.updateMany.mockResolvedValue({ count: 0 });
     const res = await request(app()).post(url).send({ serverId: SERVER_A });
     expect(res.status).toBe(409);
-    expect(notifyBot).not.toHaveBeenCalled();
+    // (проверката за присъствие GIVEAWAY_MEMBERS_CHECK е друго събитие — А4)
+    expect(notifyBot).not.toHaveBeenCalledWith("GIVEAWAY_ENDED", expect.anything());
   });
 
   it("вече приключил при четене -> 409 (не 500), без notify", async () => {

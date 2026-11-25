@@ -142,22 +142,23 @@ async function main() {
   const href = (cod) => `struttura/${cod}-${slugByCod.get(cod)}.html`;
 
   // ---- Национални агрегати за последната година ----
+  // САМО структурите с пълен CE (produzione + costi + risultato) за ultimoAnnoCe.
+  // Преди се сумираше последната година на ВСЯКА структура (вкл. закритите през
+  // 2015–2016) под етикет „2024“ → смесени години и раздут total. Сега множеството
+  // е едно и също за трите реда → produzione − costi + altre = risultato се събира.
   let totRicavi = 0;
   let totCosti = 0;
   let totRisultato = 0;
   let inPerdita = 0;
   let conDati = 0;
   for (const ente of enti) {
-    const { y } = ultimoCe(ente);
-    if (y.valoreProduzione != null) {
-      conDati++;
-      totRicavi += y.valoreProduzione;
-      totCosti += y.costiProduzione || 0;
-      if (y.risultatoEsercizio != null) {
-        totRisultato += y.risultatoEsercizio;
-        if (y.risultatoEsercizio < 0) inPerdita++;
-      }
-    }
+    const y = ente.serie.get(ultimoAnnoCe);
+    if (!y || y.valoreProduzione == null || y.costiProduzione == null || y.risultatoEsercizio == null) continue;
+    conDati++;
+    totRicavi += y.valoreProduzione;
+    totCosti += y.costiProduzione;
+    totRisultato += y.risultatoEsercizio;
+    if (y.risultatoEsercizio < 0) inPerdita++;
   }
 
   // Датата на снапшота трябва да е зададена ПРЕДИ първия рендер, който вика articleLd()
@@ -174,8 +175,8 @@ async function main() {
   await writeFile(join(SITE_DIR, 'strutture.html'), renderStrutture({ enti, ultimoAnnoCe, href, segnByCod, ultimoCe }));
   await writeFile(join(SITE_DIR, 'segnalazioni.html'), renderSegnalazioni({ segn, href }));
   await writeFile(join(SITE_DIR, 'metodologia.html'), renderMetodologia({ segn, forense, appalti, appMatch, ultimoAnnoCe }));
-  await writeFile(join(SITE_DIR, 'note-legali.html'), renderNoteLegali({ titolare: config.titolare || {} }));
-  await writeFile(join(SITE_DIR, 'privacy.html'), renderPrivacy({ titolare: config.titolare || {}, hosting: config.hosting || {} }));
+  await writeFile(join(SITE_DIR, 'note-legali.html'), renderNoteLegali());
+  await writeFile(join(SITE_DIR, 'privacy.html'), renderPrivacy({ hosting: config.hosting || {} }));
   if (validaz) await writeFile(join(SITE_DIR, 'verifiche.html'), renderVerifiche({ validaz, appMatch }));
 
   let conContratti = 0;

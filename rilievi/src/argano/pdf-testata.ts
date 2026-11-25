@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import type { AziendaCartello } from '../cartelli/pdf.js';
 import type { Translator } from '../i18n.js';
 import { pdfFontPaths } from '../schede/pdf.js';
+import { VERSIONE_SOFTWARE } from '../versione.js';
 
 /**
  * Общото на PDF-ите на изчисленията (аргано, ограничител и всяко следващо): A4 с поле 40 pt, DejaVu Sans
@@ -93,6 +94,7 @@ function rigaPiede(doc: PDFKit.PDFDocument, testo: string, x: number, y: number,
 export function disegnaPiede(doc: PDFKit.PDFDocument, t: Translator, p: Paternita): void {
   const pagine = doc.bufferedPageRange();
   const generato = t('calcoli.piede.generato', {
+    versione: VERSIONE_SOFTWARE,
     nome: p.generato.autore || '—',
     quando: p.generato.quando,
     build: p.generato.build,

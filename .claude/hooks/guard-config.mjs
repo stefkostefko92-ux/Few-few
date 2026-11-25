@@ -12,8 +12,11 @@
 //   project_settings → сравнение с комитнатата версия (git HEAD): липсващо deny правило, липсваща
 //                      кука, свален `onFailure: "block"`, изключена ограда за запис или
 //                      `disableAllHooks` → блок. Неразбираем JSON → блок (старите настройки остават).
-//   local_settings / user_settings → блок само при `disableAllHooks: true` (deny и куките се сливат
-//                      от всички източници, затова друго отслабване оттам не е възможно).
+//                      От 19.11.2026 и: върната автоматична памет (`autoMemoryEnabled`), махнат
+//                      `disableBypassPermissionsMode`, махнат/Haiku `ANTHROPIC_DEFAULT_HAIKU_MODEL`.
+//   local_settings / user_settings → блок при `disableAllHooks: true` (deny и куките се сливат от всички
+//                      източници); локалните (с предимство пред проектните) — и при `autoMemoryEnabled: true`
+//                      или Haiku в `ANTHROPIC_DEFAULT_HAIKU_MODEL`.
 //   skills           → блок винаги: умение, записано по време на сесия, влиза от следващата.
 //   policy_settings  → харнесът не позволява блок; само запис.
 //
@@ -51,12 +54,37 @@ function covers(cur, old) {
   return true;
 }
 
+// 19.11.2026 (ръководствата на Anthropic): ключовете, които затварят канали, се пазят като deny правилата.
+// Променливите в env, без които правило на собственика спира да е механизъм (никога Haiku във фоновите задачи).
+export const SECURITY_ENV = ["ANTHROPIC_DEFAULT_HAIKU_MODEL"];
+const haikuish = (v) => /haiku/i.test(String(v ?? ""));
+
+/** Отслабване на ключовете от 19.11.2026: автоматична памет, bypass, моделът на фоновите задачи. */
+function weakenedKeys(source, next, base) {
+  // Локалните настройки са с предимство пред проектните — оттам не се връща автоматичната памет и Haiku.
+  if (source === "local_settings") {
+    if (next?.autoMemoryEnabled === true) return "autoMemoryEnabled: true в локалните настройки (каналът за трайна памет без проверка)";
+    for (const k of SECURITY_ENV) if (haikuish(next?.env?.[k])) return `${k} към Haiku в локалните настройки`;
+    return null;
+  }
+  if (source !== "project_settings" || !base) return null;
+  if (base.autoMemoryEnabled === false && next?.autoMemoryEnabled !== false) return "върната автоматична памет (autoMemoryEnabled)";
+  if (base.permissions?.disableBypassPermissionsMode === "disable" && next?.permissions?.disableBypassPermissionsMode !== "disable")
+    return "махнат disableBypassPermissionsMode";
+  for (const k of SECURITY_ENV) {
+    if (base.env?.[k] && (!next?.env?.[k] || haikuish(next.env[k]))) return `махнат или върнат към Haiku env ${k}`;
+  }
+  return null;
+}
+
 /** Причина за блок или null. `next`/`base` са разбрани обекти (base може да липсва). */
 export function weakening(source, next, base) {
   if (next?.disableAllHooks === true) return "disableAllHooks: true изключва всички пазачи";
   // Червен екип 31.10.2026: от user settings `bypassPermissions` важи и маха deny правилата от сила;
   // `auto` прехвърля решенията на класификатор. Задава се на старта на сесия, не по средата ѝ.
   if (/^(bypassPermissions|auto)$/.test(String(next?.permissions?.defaultMode || ""))) return `defaultMode: ${next.permissions.defaultMode} по средата на сесия`;
+  const keys = weakenedKeys(source, next, base);
+  if (keys) return keys;
   if (source !== "project_settings" || !base) return null;
   const deny = new Set(next?.permissions?.deny || []);
   const lost = (base.permissions?.deny || []).filter((r) => !deny.has(r));

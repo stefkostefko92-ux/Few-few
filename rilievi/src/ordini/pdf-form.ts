@@ -2,17 +2,13 @@ import {
   decodePDFRawStream,
   PDFArray,
   PDFDict,
-  PDFHexString,
   PDFName,
   PDFRadioGroup,
   PDFRawStream,
   PDFRef,
-  PDFString,
   type PDFDocument,
-  type PDFField,
   type PDFFont,
   type PDFForm,
-  type PDFTextField,
   type PDFWidgetAnnotation,
 } from 'pdf-lib';
 import { fieldsOf, type AcroField, type ModuloAcro } from './moduli.js';
@@ -22,7 +18,9 @@ import {
   togliOrfani,
   togliSenzaAspetto,
 } from './pdf-form-pulizia.js';
-import { apriModulo, fitBlock, fitLine, SEGNO } from './pdf-testo.js';
+import { decodificaDa, fillText } from './pdf-form-testo.js';
+import { togliLivelliSpenti } from './pdf-livelli.js';
+import { apriModulo, SEGNO } from './pdf-testo.js';
 import type { Valori } from './valori.js';
 
 /**
@@ -96,80 +94,6 @@ function selectRadio(form: PDFForm, field: Extract<AcroField, { kind: 'radio' }>
     widget.setAppearanceState(selected ? own : PDFName.of('Off'));
     if (selected) segnoMarcato(form, widget, forma);
   });
-}
-
-/**
- * DA (шрифт, размер и цвят на полето) с „/“, записано като „\057“ — така го пише pypdf (MoviLift без
- * шифъра). pdf-lib търси шрифта по буквално „/“, затова низът се записва декодиран: в полето и в
- * бутоните му. Само низ без скоби и „\“ — неговият буквален запис е самият той.
- */
-function decodificaDa(field: PDFField): void {
-  for (const dict of [field.acroField.dict, ...field.acroField.getWidgets().map((w) => w.dict)]) {
-    const da = dict.lookup(PDFName.of('DA'));
-    if (!(da instanceof PDFString) && !(da instanceof PDFHexString)) continue;
-    const text = da.decodeText();
-    if (text !== da.asString() && !/[()\\]/.test(text)) {
-      dict.set(PDFName.of('DA'), PDFString.of(text));
-    }
-  }
-}
-
-/**
- * Само собственият бутон на полето (`widget` в картата): бутонът му на чуждо място („Fossa“ на MoviLift
- * е и в кутийка на „Piano Corto“) се маха от листа — иначе стойността излиза и там.
- */
-function soloProprioWidget(form: PDFForm, textField: PDFTextField, keep: number): void {
-  const widgets = textField.acroField.getWidgets();
-  for (let i = widgets.length - 1; i >= 0; i -= 1) {
-    if (i === keep) continue;
-    const ref = form.doc.context.getObjectRef(widgets[i]!.dict);
-    textField.acroField.removeWidget(i);
-    if (!ref) continue;
-    for (const page of form.doc.getPages()) page.node.removeAnnot(ref);
-    form.doc.context.delete(ref);
-  }
-}
-
-function fillText(
-  form: PDFForm,
-  field: Extract<AcroField, { kind: 'text' | 'textarea' }>,
-  value: unknown,
-  font: PDFFont,
-): void {
-  const textField = form.getTextField(field.acro);
-  if ('widget' in field && field.widget !== undefined) {
-    soloProprioWidget(form, textField, field.widget);
-  }
-  decodificaDa(textField);
-  if (typeof value !== 'string' || !value) {
-    // Празното си остава празно; ред с текст от празния модул („-“), махнат от човека, се изчиства.
-    if (textField.getText()) {
-      textField.setText('');
-      textField.updateAppearances(font);
-    }
-    return;
-  }
-  const widgets = textField.acroField.getWidgets();
-  for (const widget of widgets) {
-    // Модулът е без рамка (/BC празно); pdf-lib би очертал полето в черно — дебелината става 0.
-    if (!widget.getAppearanceCharacteristics()?.getBorderColor()?.length) {
-      widget.getBorderStyle()?.setWidth(0);
-    }
-  }
-  const rect = widgets[0]?.getRectangle();
-  const width = (rect?.width ?? 100) - 4;
-  // Шрифтът — до 10 pt и до ¾ от височината на реда (квадратчетата на MoviLift са високи 11 pt).
-  const max = Math.min(10, Math.max(6, (rect?.height ?? 14) * 0.75));
-  if (field.kind === 'textarea') {
-    const block = fitBlock(font, value, width - 4, (rect?.height ?? 40) - 4, max);
-    textField.setFontSize(block.size);
-    textField.setText(block.lines.join('\n'));
-  } else {
-    const fit = fitLine(font, value, width, max);
-    textField.setFontSize(fit.size);
-    textField.setText(fit.text);
-  }
-  textField.updateAppearances(font);
 }
 
 /**
@@ -266,6 +190,8 @@ export async function renderAcroform(
   fontDir: string,
 ): Promise<Uint8Array> {
   const { doc, font } = await apriModulo(modulo, fontDir);
+  // Един език на листа за всеки четец и принтер: изключените слоеве (DMG) излизат от страниците.
+  const livelli = togliLivelliSpenti(doc);
   const form = doc.getForm();
   compilaAcroform(form, modulo, valori, font);
   if (modulo.pulizia) pulisciFormulario(form, modulo, campiVisibili(modulo, valori));
@@ -273,6 +199,6 @@ export async function renderAcroform(
   // Пипнатите полета са с нов облик; останалото (празните полета, бутонът) остава оригинално.
   form.flatten({ updateFieldAppearances: false });
   pulisciAnnots(doc);
-  if (modulo.pulizia) togliOrfani(doc);
+  if (modulo.pulizia || livelli) togliOrfani(doc);
   return doc.save();
 }

@@ -31,15 +31,15 @@ export async function checkCartelli(page, { base, shots, scheme, aziendaPath, sh
     ['/richieste', 'nav-master'],
     ['/utenti', 'nav-amministrazione'],
     ['/impostazioni', 'nav-amministrazione'],
-    ['/cartelli', 'nav-assistenza'],
+    ['/cartelli', 'nav-documenti'],
+    ['/master', 'nav-master'],
   ]) {
     const found = await groupOf(href);
     if (found !== group) fail(`${name}: ${href} is in "${found}", not "${group}"`);
   }
 
   // The company data: a wrong email is refused and what was typed comes back.
-  const settings = `${base}/impostazioni?azienda=${aziendaId}`;
-  await page.goto(settings);
+  await page.goto(`${base}/impostazioni/azienda?azienda=${aziendaId}`);
   await page.fill('#d-ragioneSociale', 'Ascensori E2E S.r.l.');
   await page.fill('#d-email', 'non-una-email');
   await page.click('form[action="/impostazioni/dati"] button[type=submit]');
@@ -59,16 +59,17 @@ export async function checkCartelli(page, { base, shots, scheme, aziendaPath, sh
   ])
     await page.fill(`#d-${key}`, value);
   await page.click('form[action="/impostazioni/dati"] button[type=submit]');
-  await page.waitForURL(/\/impostazioni\?azienda=/);
+  await page.waitForURL(/\/impostazioni\/azienda\?azienda=/);
   if (!(await page.locator('.flash').count()))
     fail(`${name}: no confirmation for the company data`);
   if ((await page.inputValue('#d-citta')) !== 'Milano') fail(`${name}: the company data not saved`);
 
   // The template: the yellow-and-black one, with every thumbnail loaded.
+  await page.goto(`${base}/impostazioni/cartelli?azienda=${aziendaId}`);
   await imagesLoaded(page, '.modelli__img', name);
   await page.locator('input[name=modello][value=giallo-nero]').evaluate((input) => input.click());
   await page.click('form[action="/impostazioni/cartello"] button[type=submit]');
-  await page.waitForURL(/\/impostazioni\?azienda=/);
+  await page.waitForURL(/\/impostazioni\/cartelli\?azienda=/);
   const inUso = await page
     .locator('.modelli__item', { has: page.locator('.stato') })
     .locator('input')

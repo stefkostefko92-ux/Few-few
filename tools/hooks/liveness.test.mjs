@@ -77,6 +77,7 @@ const PAYLOADS = {
   "route-hint.mjs": { prompt: "прегледай PR-а за сигурност на medqr" },
   "guard-dangerous.mjs": { tool_name: "Bash", tool_input: { command: "ls -la" } },
   "guard-readonly.mjs": { tool_name: "Bash", agent_type: "kodadjiyata", tool_input: { command: "git diff HEAD~1" } },
+  "guard-allowlist.mjs": { tool_name: "Bash", agent_type: "prevodach", tool_input: { command: "node tools/i18n/check-parity.mjs a.json b.json" } },
   "guard-exfil.mjs": { tool_name: "Bash", tool_input: { command: "git status --short" } },
   "guard-secrets.mjs": { tool_name: "Write", tool_input: { file_path: "src/app.ts", content: "export const x = 1;" } },
   "precompact-save.mjs": { transcript_path: "", trigger: "auto" },
@@ -87,6 +88,15 @@ const PAYLOADS = {
   // 31.10.2026: ConfigChange (локални настройки без отслабване → 0) и таванът на общите агенти (наш → 0).
   "guard-config.mjs": { hook_event_name: "ConfigChange", source: "local_settings", file_path: "/nonexistent/settings.local.json" },
   "agent-cap.mjs": { session_id: "liveness", tool_name: "Agent", tool_input: { subagent_type: "kodadjiyata" } },
+  // 11.11.2026: файл без продукт с prettier → куката мълчи с 0 (удобство, не защита).
+  "format-on-edit.mjs": { hook_event_name: "PostToolUse", tool_name: "Edit", tool_input: { file_path: "src/app.ts" } },
+  // 15.11.2026: оградата на пентеста — безопасна локална команда без мрежова цел → 0 (не блок).
+  "guard-engagement.mjs": { tool_name: "Bash", tool_input: { command: "git status --short" } },
+  // 19.11.2026 (ръководствата на Anthropic): самозащитата, моделът, снимката след уплътняване, API провалите.
+  "guard-self.mjs": { tool_name: "Bash", tool_input: { command: "git status --short" } },
+  "guard-model.mjs": { hook_event_name: "PreModelSwitch", to_model: "claude-opus-5-5", requested_model: "opus" },
+  "session-restore.mjs": { hook_event_name: "SessionStart", source: "compact" },
+  "stop-failure.mjs": { hook_event_name: "StopFailure", error: "unknown" },
 };
 
 const hooks = registeredHooks();
@@ -112,14 +122,24 @@ const REGISTRATION = {
   "guard-dangerous.mjs": { event: "PreToolUse", matcher: /Bash/ },
   // Ревюър без Write/Edit не пише през Bash — ПРЕДИ командата, иначе файлът вече е променен.
   "guard-readonly.mjs": { event: "PreToolUse", matcher: /Bash/ },
+  "guard-allowlist.mjs": { event: "PreToolUse", matcher: /Bash/ },
   // 2026-09-21: MCP инструментите (mcp__github__*, mcp__Gmail__* …) са СЪЩО изходен канал — без
   // `mcp__.*` в matcher-а тайна в тяло на коментар/чернова на имейл напускаше без пазач (3/3 на живо).
   "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/Monitor/, /WebFetch/, /WebSearch/, /mcp__/] },
-  "guard-secrets.mjs": { event: "PostToolUse", matcher: /Write/, alsoMatcher: [/Edit/] },
+  // 19.11.2026: ПРЕДИ записа (тайната не стига до диска); PostToolUse остава втори слой.
+  "guard-secrets.mjs": { event: "PreToolUse", matcher: /Write/, alsoMatcher: [/Edit/, /MultiEdit/, /NotebookEdit/] },
+  // Агент не пише в пазачите — и през Bash, и през инструментите за запис.
+  "guard-self.mjs": { event: "PreToolUse", matcher: /Write/, alsoMatcher: [/Edit/, /MultiEdit/, /NotebookEdit/, /Bash/, /Monitor/] },
+  "guard-model.mjs": { event: "PreModelSwitch" },
+  // Снимката се връща в контекста само след уплътняване.
+  "session-restore.mjs": { event: "SessionStart", matcher: /compact/ },
+  "stop-failure.mjs": { event: "StopFailure" },
   // Настройка, сменена по средата на сесия, не отслабва пазачите на същата сесия.
   "guard-config.mjs": { event: "ConfigChange" },
   // ПРЕДИ пускането на агент — иначе 11-ият общ агент вече е тръгнал.
   "agent-cap.mjs": { event: "PreToolUse", matcher: /Agent/ },
+  // СЛЕД записа — форматира вече записания файл; на PreToolUse няма какво да форматира.
+  "format-on-edit.mjs": { event: "PostToolUse", matcher: /Write/, alsoMatcher: [/Edit/] },
 };
 
 /** Кое събитие и с какъв matcher е регистриран даден хук (истината е settings.json). */

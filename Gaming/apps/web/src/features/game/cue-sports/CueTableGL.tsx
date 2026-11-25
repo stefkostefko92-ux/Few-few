@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import type { CueScene, GLTable } from "./glTable";
+import { cueE2E } from "./e2eHook";
 
 export interface CueTableHandle {
   /** Play the pocket-drop animation for a potted ball at world (x, y). */
@@ -19,19 +20,22 @@ export function webglSupported(): boolean {
 type WorldPoint = { x: number; y: number };
 
 /**
- * The GPU half of the hybrid cue scene: a PixiJS canvas that renders the table
- * and balls. Interaction is handed back to the parent as world-space points so
- * the existing aim/placement logic and DOM controls stay untouched.
+ * The GPU half of the hybrid cue scene: a three.js canvas that renders the
+ * table and balls. Interaction is handed back to the parent as world-space
+ * points (press / drag / release, the pointer captured for the drag) so the
+ * aim/placement logic and DOM controls are shared with the SVG table.
  */
 export const CueTableGL = forwardRef<
   CueTableHandle,
   {
     scene: CueScene | null;
     locked: boolean;
+    onDownWorld?: (p: WorldPoint) => void;
     onMoveWorld?: (p: WorldPoint) => void;
     onUpWorld?: (p: WorldPoint) => void;
+    onCancel?: () => void;
   }
->(function CueTableGL({ scene, locked, onMoveWorld, onUpWorld }, ref) {
+>(function CueTableGL({ scene, locked, onDownWorld, onMoveWorld, onUpWorld, onCancel }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<GLTable | null>(null);
@@ -47,8 +51,9 @@ export const CueTableGL = forwardRef<
     if (!canvas || !wrap) return;
 
     const width = () => Math.max(160, wrap.clientWidth);
-    // Lazily pull in the PixiJS renderer (and Pixi itself) only when a cue
-    // table actually mounts — keeps it out of the main bundle for card games.
+    const e2e = cueE2E();
+    // Lazily pull in the three.js renderer only when a cue table actually
+    // mounts — keeps it out of the main bundle for card games.
     void import("./glTable").then(({ GLTable }) => GLTable.create(canvas, width())).then((t) => {
       if (cancelled) {
         t.destroy();
@@ -62,6 +67,11 @@ export const CueTableGL = forwardRef<
         if (sceneRef.current) t.render(sceneRef.current);
       });
       ro.observe(wrap);
+      // Automation only (see e2eHook): the felt ↔ screen projection for picking.
+      if (e2e) {
+        e2e.toClient = (x, y) => t.toClient(x, y, canvas.getBoundingClientRect());
+        e2e.toWorld = (cx, cy) => t.toWorld(cx, cy, canvas.getBoundingClientRect());
+      }
     });
 
     return () => {
@@ -69,6 +79,10 @@ export const CueTableGL = forwardRef<
       ro?.disconnect();
       table?.destroy();
       tableRef.current = null;
+      if (e2e) {
+        delete e2e.toClient;
+        delete e2e.toWorld;
+      }
     };
   }, []);
 
@@ -96,7 +110,15 @@ export const CueTableGL = forwardRef<
     <div ref={wrapRef} className="aso-cue__gl" style={{ cursor: locked ? "default" : "crosshair" }}>
       <canvas
         ref={canvasRef}
+        data-table="gl"
         style={{ width: "100%", height: "auto", display: "block" }}
+        onPointerDown={(e) => {
+          const p = toWorld(e);
+          if (!p) return;
+          // Keep the drag (aiming) ours even when it leaves the canvas.
+          e.currentTarget.setPointerCapture?.(e.pointerId);
+          onDownWorld?.(p);
+        }}
         onPointerMove={(e) => {
           const p = toWorld(e);
           if (p) onMoveWorld?.(p);
@@ -104,7 +126,9 @@ export const CueTableGL = forwardRef<
         onPointerUp={(e) => {
           const p = toWorld(e);
           if (p) onUpWorld?.(p);
+          else onCancel?.();
         }}
+        onPointerCancel={() => onCancel?.()}
       />
     </div>
   );

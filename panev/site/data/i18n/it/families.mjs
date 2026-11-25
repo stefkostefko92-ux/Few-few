@@ -35,7 +35,6 @@ export default {
       more: 'Pagina dedicata',
       familiesLabel: 'Famiglie di staffe',
       crumbsLabel: 'Percorso',
-      faqKicker: 'Domande frequenti',
       otherTitle: 'Altre famiglie di staffe',
       fullList: 'Listino completo con tutti i codici',
       see3d: 'Vedi in 3D',
@@ -71,6 +70,7 @@ export default {
       crumb: 'Staffe guida SG',
       kicker: 'Staffe guide standard · versione fissa',
       h1: 'Staffe guida SG fisse per ascensori',
+      visualAlt: 'Staffa guida SG 80 190 in versione fissa, render 3D',
       lead: 'Staffe guida ad L in versione fissa, in lamiera da 4 mm: tre larghezze (50, 60 e 80 mm) e cinque lunghezze (da 130 a 220 mm), 15 codici a listino, pronti per l’abbinamento con i supporti SU, SD, SC o con il fissaggio a braccio rigido.',
       faqTitle: 'Staffe guida SG: domande frequenti',
       faq: [
@@ -83,6 +83,7 @@ export default {
       crumb: 'Staffe su misura',
       kicker: 'Soluzioni speciali e su misura',
       h1: 'Staffe su misura e fissaggio a parete con braccio rigido',
+      visualAlt: 'Braccio rigido regolabile BRACCIO 160 190 per il fissaggio a parete, render 3D',
       lead: 'Per le installazioni non standard: il supporto SC 50 170, con misura di sporgenza “A” definita sul disegno esecutivo del cantiere, la guida componibile SG 225 50 e il fissaggio a parete con staffa d’angolo SN 60 65, staffa a squadra SN 65 200 e braccio rigido regolabile BRACCIO 160 190. Prezzi a preventivo.',
       faqTitle: 'Staffe su misura: domande frequenti',
       faq: [

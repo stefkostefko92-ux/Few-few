@@ -11,13 +11,21 @@ import { SECTIONS } from '../schede/fields.js';
 
 /** Въпросите в „Domande frequenti“ — страницата и FAQPage в JSON-LD ги вземат оттук. */
 export const FAQ_IDS = [
+  'cosa',
   'selfSignup',
+  'costo',
+  'scadenza',
   'visibility',
   'app',
+  'offline',
   'print',
   'firma',
   'cartelli',
+  'calcolo',
+  'esporta',
   'data',
+  'marche',
+  'lingua',
 ] as const;
 
 /** Стъпките на „Come si ottiene l'accesso“ (`site.steps.s1…s4`) — за страницата и за HowTo. */
@@ -37,10 +45,21 @@ export const FEATURES = SCENE.flatMap((scena) => scena.features);
 
 /**
  * „Dopo il rilievo: assistenza e cantiere“ (`site.servizi.<id>`, собственикът, 30 октомври 2026 — „modifica
- * la landing aggiungendo le nuove funzioni“): листът за интервенция, табелите, снимките и скиците, ролите и
- * цветовете. Редът тук е редът на страницата и на `featureList` в JSON-LD.
+ * la landing aggiungendo le nuove funzioni“; 12 ноември 2026 — текстовете наново, „на разбираем професионален
+ * италиански“): листът за интервенция, бонът и протоколът, табелите, изчисленията, снимките и скиците, ролите,
+ * данните (износ, вход с Microsoft/Google, CSV, API), цветовете. Редът тук е редът на страницата и на
+ * `featureList` в JSON-LD. Чифт брой — две колони.
  */
-export const SERVIZI = ['intervento', 'cartelli', 'allegati', 'permessi', 'colori'] as const;
+export const SERVIZI = [
+  'intervento',
+  'documenti',
+  'cartelli',
+  'calcoli',
+  'allegati',
+  'permessi',
+  'dati',
+  'colori',
+] as const;
 
 export interface LegendSection {
   /** Поредният номер на раздела — същият е и маркерът на чертежа. */

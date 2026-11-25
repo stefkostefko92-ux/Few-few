@@ -12,3 +12,4 @@ Supreme AdBlock blochează reclamele peste tot — reclame video pe YouTube, ban
 • Site-ul nu funcționează? Un clic îl repară sau spuneți-ne — nu se trimite nimic fără să vedeți mai întâi.
 • Treceți de la uBlock Origin, AdGuard sau Adblock Plus? Aduceți site-urile permise și filtrele cu un singur fișier.
 • Vedeți la ce alte site-uri se conectează o pagină și blocați oricare dintre ele doar acolo, cu un clic.
+• Nivel de protecție: De bază · Standard · Strictă

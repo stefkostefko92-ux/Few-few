@@ -1,0 +1,2577 @@
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import HeroSignature from "./HeroSignature.jsx";
+import ReverseLabShowcase from "./ReverseLabShowcase.jsx";
+import MonumentGalaxy from "./MonumentGalaxy.jsx";
+import CoverageMap from "./CoverageMap.jsx";
+import ScrollInstrument from "./ScrollInstrument.jsx";
+import { CaliperCursor, useChromeLight, useActiveSection, NavSlider, DrumNumber, useTilt, Magnetic, ProbeCloud, INSTRUMENT_CSS, finePointer, reducedMotion } from "./Instruments.jsx";
+// Ценоразписът: генерира се от scripts/generate-pricing.py заедно със
+// страниците /prezzi/, /en/pricing/, /bg/ceni/ — една таблица, две места.
+import PRICING from "./pricing.json";
+import { C, CR, BASE, S1, S2, INK, INK2, WARN, LINE, EASE, DISP, MONO } from "./tokens.js";
+// The admin panel lives on its own page, /admin/ (admin/index.html → src/admin-main.jsx): its own
+// small bundle, never part of the public site. Ctrl+Shift+A (and the "cs-admin-toggle" event) go there.
+// THREE.js is lazy loaded inside Scene3D via dynamic import()
+// This removes 465KB from the initial bundle and improves LCP/FCP significantly
+
+// ═══════════════════════════════════════════════════════════════
+// MULTILINGUAL SYSTEM — IT / EN / BG with auto-detection
+// ═══════════════════════════════════════════════════════════════
+var LANGS = {
+  // ── NAV ──
+  nav_manifesto: { it: "CHI SIAMO", en: "ABOUT", bg: "\u0417\u0410 \u041D\u0410\u0421" },
+  nav_services: { it: "SERVIZI", en: "SERVICES", bg: "\u0423\u0421\u041B\u0423\u0413\u0418" },
+  nav_work: { it: "PORTFOLIO", en: "WORK", bg: "\u041F\u041E\u0420\u0422\u0424\u041E\u041B\u0418\u041E" },
+  nav_pricing: { it: "PREZZI", en: "PRICING", bg: "\u0426\u0415\u041D\u0418" },
+  pricing_all: { it: "LISTINO COMPLETO, IVA E CONDIZIONI", en: "FULL PRICE LIST, VAT AND TERMS", bg: "\u041F\u042A\u041B\u0415\u041D \u0426\u0415\u041D\u041E\u0420\u0410\u0417\u041F\u0418\u0421, \u0414\u0414\u0421 \u0418 \u0423\u0421\u041B\u041E\u0412\u0418\u042F" },
+  pricing_note: { it: "Prezzi in euro, IVA esclusa: l'IVA non si paga solo ed esclusivamente se sei un'azienda con partita IVA valida — i privati pagano sempre l'IVA (20%). ERP, software su misura e app mobile: preventivo fisso dopo l'analisi.", en: "Prices in euro, excluding VAT: VAT is waived only and exclusively for companies with a valid VAT number — private individuals always pay VAT (20%). ERP, custom software and mobile apps: fixed quote after analysis.", bg: "\u0412\u0441\u0438\u0447\u043A\u0438 \u0446\u0435\u043D\u0438 \u0441\u0430 \u0432 \u0435\u0432\u0440\u043E, \u0441 \u0432\u043A\u043B\u044E\u0447\u0435\u043D 20% \u0414\u0414\u0421. ERP, \u0441\u043E\u0444\u0442\u0443\u0435\u0440 \u043F\u043E \u043F\u043E\u0440\u044A\u0447\u043A\u0430 \u0438 \u043C\u043E\u0431\u0438\u043B\u043D\u0438 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F: \u0444\u0438\u043A\u0441\u0438\u0440\u0430\u043D\u0430 \u043E\u0444\u0435\u0440\u0442\u0430 \u0441\u043B\u0435\u0434 \u0430\u043D\u0430\u043B\u0438\u0437." },
+  nav_lab: { it: "REVERSE LAB", en: "REVERSE LAB", bg: "REVERSE LAB" },
+  nav_test: { it: "ANALISI SITO", en: "SITE ANALYSIS", bg: "\u0410\u041D\u0410\u041B\u0418\u0417 \u041D\u0410 \u0421\u0410\u0419\u0422" },
+  nav_contact: { it: "CONTATTI", en: "CONTACT", bg: "\u041A\u041E\u041D\u0422\u0410\u041A\u0422\u0418" },
+  // ── новата структура (доклад SEO/GEO/AEO, 22.11.2026, §3): четирите направления ──
+  nav_solutions: { it: "SOLUZIONI", en: "SOLUTIONS", bg: "РЕШЕНИЯ" },
+  nav_sectors: { it: "SETTORI", en: "INDUSTRIES", bg: "БРАНШОВЕ" },
+  nav_cases: { it: "CASE STUDY", en: "CASE STUDIES", bg: "КЕЙС СТЪДИТА" },
+  sol_tag: { it: "// SOLUZIONI", en: "// SOLUTIONS", bg: "// РЕШЕНИЯ" },
+  sol_title: { it: "COSA COSTRUIAMO", en: "WHAT WE BUILD", bg: "КАКВО ПРАВИМ" },
+  sol_lead: { it: "AREA PRINCIPALE", en: "MAIN AREA", bg: "ВОДЕЩО" },
+  sol_wide: { it: "ESIGENZE PIÙ COMUNI", en: "COMMON NEEDS", bg: "НАЙ-ЧЕСТИТЕ НУЖДИ" },
+  sol_svc: { it: "SERVIZI", en: "SERVICES", bg: "УСЛУГИ" },
+  sol_proj: { it: "PROGETTI", en: "PROJECTS", bg: "ПРОЕКТИ" },
+  sol_more: { it: "SCOPRI", en: "EXPLORE", bg: "ВИЖ ПОВЕЧЕ" },
+  sol_all: { it: "TUTTE LE SOLUZIONI", en: "ALL SOLUTIONS", bg: "ВСИЧКИ РЕШЕНИЯ" },
+  proof_tag: { it: "// PROGETTI IN USO", en: "// PROJECTS IN USE", bg: "// ПРОЕКТИ В УПОТРЕБА" },
+  sect_tag: { it: "// SETTORI", en: "// INDUSTRIES", bg: "// БРАНШОВЕ" },
+  sect_title: { it: "PER SETTORE", en: "BY INDUSTRY", bg: "ПО БРАНШ" },
+  sect_first: { it: "IN EVIDENZA", en: "FEATURED", bg: "НА ФОКУС" },
+  sect_all: { it: "Tutti i settori", en: "All industries", bg: "Всички браншове" },
+  games_tag: { it: "// GAME E INTERATTIVO", en: "// GAMES AND INTERACTIVE", bg: "// ИГРИ И ИНТЕРАКТИВ" },
+  games_txt: { it: "Giochi browser multiplayer in tempo reale con le regole sul server — Nexus Dominion, FiveM Bulgaria.", en: "Real-time multiplayer browser games with the rules on the server — Nexus Dominion, FiveM Bulgaria.", bg: "Мултиплейър браузър игри в реално време с правилата на сървъра — Nexus Dominion, FiveM Bulgaria." },
+  games_link: { it: "SCOPRI", en: "EXPLORE", bg: "ВИЖ ПОВЕЧЕ" },
+  // ── HERO ──
+  hero_eyebrow: {
+    it: "AGENZIA WEB & SOFTWARE — ITALIA · BULGARIA",
+    en: "WEB & SOFTWARE AGENCY — ITALY · BULGARIA",
+    bg: "УЕБ & СОФТУЕР АГЕНЦИЯ — БЪЛГАРИЯ · ИТАЛИЯ"
+  },
+  hero_title: {
+    it: "Software su misura per aziende e industria",
+    en: "Custom software for business and industry",
+    bg: "Софтуер по поръчка за фирми и индустрия"
+  },
+  hero_sub: {
+    it: "ERP E GESTIONALI · TECNOLOGIA INDUSTRIALE · SITI WEB ED E-COMMERCE",
+    en: "ERP & BUSINESS SOFTWARE · INDUSTRIAL TECHNOLOGY · WEBSITES & E-COMMERCE",
+    bg: "ERP И БИЗНЕС СОФТУЕР · ИНДУСТРИАЛНИ ТЕХНОЛОГИИ · САЙТОВЕ И МАГАЗИНИ"
+  },
+  hero_desc: {
+    it: "Progettiamo e sviluppiamo ERP e software gestionale su misura, software per la produzione, siti web ed e-commerce — con la precisione di un'officina di ingegneria. Dalla Bulgaria a Milano. Preventivo gratuito entro 24 ore.",
+    en: "We design and build custom ERP and business software, production software, websites and e-commerce — with the precision of an engineering shop. From Bulgaria to Milan. Free quote within 24 hours.",
+    bg: "Проектираме и разработваме ERP и бизнес софтуер по поръчка, софтуер за производството, сайтове и онлайн магазини — с прецизността на инженерен цех. От България до Милано. Безплатна оферта до 24 часа."
+  },
+  // ── ABOUT ──
+  about_tag: { it: "// CHI SIAMO", en: "// ABOUT US", bg: "// \u0417\u0410 \u041D\u0410\u0421" },
+  about_scroll: {
+    it: "CREIAMO SOLUZIONI DIGITALI CHE FUNZIONANO. DAI GIOCHI BROWSER AI SISTEMI PER ASCENSORI. DALL'E-COMMERCE IN FIBRA DI CARBONIO ALLA SICUREZZA FIVEM. SENZA LIMITI.",
+    en: "WE BUILD DIGITAL SOLUTIONS THAT WORK. FROM BROWSER GAMES TO ELEVATOR SYSTEMS. FROM CARBON FIBER E-COMMERCE TO FIVEM SECURITY. NO LIMITS.",
+    bg: "\u0421\u042A\u0417\u0414\u0410\u0412\u0410\u041C\u0415 \u0414\u0418\u0413\u0418\u0422\u0410\u041B\u041D\u0418 \u0420\u0415\u0428\u0415\u041D\u0418\u042F \u041A\u041E\u0418\u0422\u041E \u0420\u0410\u0411\u041E\u0422\u042F\u0422. \u041E\u0422 \u0411\u0420\u0410\u0423\u0417\u042A\u0420 \u0418\u0413\u0420\u0418 \u0414\u041E \u0421\u0418\u0421\u0422\u0415\u041C\u0418 \u0417\u0410 \u0410\u0421\u0410\u041D\u0421\u042C\u041E\u0420\u0418. \u041E\u0422 E-COMMERCE \u0417\u0410 \u041A\u0410\u0420\u0411\u041E\u041D \u0414\u041E FIVEM \u0417\u0410\u0429\u0418\u0422\u0410. \u0411\u0415\u0417 \u041B\u0418\u041C\u0418\u0422\u0418."
+  },
+  about_body: {
+    it: "Carbon Stealth \u00e8 un'agenzia digitale a 360 gradi. Web app, giochi multiplayer, dashboard IoT, programmazione PLC \u2014 da Bobov Dol per il mondo intero.",
+    en: "Carbon Stealth is a full-spectrum digital agency. Web apps, multiplayer games, IoT dashboards, PLC programming \u2014 from Bobov Dol to the entire world.",
+    bg: "Carbon Stealth \u0435 \u0434\u0438\u0433\u0438\u0442\u0430\u043B\u043D\u0430 \u0430\u0433\u0435\u043D\u0446\u0438\u044F \u0441 \u043F\u044A\u043B\u0435\u043D \u0441\u043F\u0435\u043A\u0442\u044A\u0440 \u043E\u0442 \u0443\u0441\u043B\u0443\u0433\u0438. \u0423\u0435\u0431 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F, \u043C\u0443\u043B\u0442\u0438\u043F\u043B\u0435\u0439\u044A\u0440 \u0438\u0433\u0440\u0438, IoT, PLC \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u0438\u0440\u0430\u043D\u0435 \u2014 \u043E\u0442 \u0411\u043E\u0431\u043E\u0432 \u0434\u043E\u043B \u0437\u0430 \u0446\u0435\u043B\u0438\u044F \u0441\u0432\u044F\u0442."
+  },
+  stat_1: { it: "PROGETTI COMPLETATI", en: "PROJECTS COMPLETED", bg: "\u0417\u0410\u0412\u042A\u0420\u0428\u0415\u041D\u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418" },
+  stat_2: { it: "PROGETTI ONLINE NEL PORTFOLIO", en: "LIVE PROJECTS IN THE PORTFOLIO", bg: "\u041F\u0420\u041E\u0415\u041A\u0422\u0418 \u041D\u0410 \u0416\u0418\u0412\u041E \u0412 \u041F\u041E\u0420\u0422\u0424\u041E\u041B\u0418\u041E\u0422\u041E" },
+  stat_3: { it: "LINGUE", en: "LANGUAGES", bg: "\u0415\u0417\u0418\u041A\u0410" },
+  stat_4: { it: "TEMPLATES USATI", en: "TEMPLATES USED", bg: "\u0428\u0410\u0411\u041B\u041E\u041D\u0418" },
+  // ── SERVICES ──
+  srv_tag: { it: "// SERVIZI", en: "// SERVICES", bg: "// \u0423\u0421\u041B\u0423\u0413\u0418" },
+  srv_title: { it: "COSA FACCIAMO", en: "WHAT WE DO", bg: "\u041A\u0410\u041A\u0412\u041E \u041F\u0420\u0410\u0412\u0418\u041C" },
+  // ── WORK ──
+  work_tag: { it: "// PORTFOLIO", en: "// PORTFOLIO", bg: "// \u041F\u041E\u0420\u0422\u0424\u041E\u041B\u0418\u041E" },
+  work_title: { it: "LAVORI RECENTI", en: "RECENT WORK", bg: "\u041F\u041E\u0421\u041B\u0415\u0414\u041D\u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418" },
+  work_all_sub: { it: "Tutti i nostri progetti sono raccolti su portfolio.carbonstealth.eu: guarda cosa abbiamo realizzato e cosa possiamo fare per te.", en: "All our projects are collected at portfolio.carbonstealth.eu: see what we have built and what we can do for you.", bg: "\u0412\u0441\u0438\u0447\u043A\u0438 \u043D\u0430\u0448\u0438 \u043F\u0440\u043E\u0435\u043A\u0442\u0438 \u0441\u0430 \u0441\u044A\u0431\u0440\u0430\u043D\u0438 \u043D\u0430 portfolio.carbonstealth.eu: \u0432\u0438\u0436\u0442\u0435 \u043A\u0430\u043A\u0432\u043E \u0441\u043C\u0435 \u043D\u0430\u043F\u0440\u0430\u0432\u0438\u043B\u0438 \u0438 \u043A\u0430\u043A\u0432\u043E \u043C\u043E\u0436\u0435\u043C \u0434\u0430 \u043D\u0430\u043F\u0440\u0430\u0432\u0438\u043C \u0437\u0430 \u0432\u0430\u0441." },
+  work_all: { it: "VEDI IL PORTFOLIO COMPLETO", en: "SEE THE FULL PORTFOLIO", bg: "\u0412\u0418\u0416 \u0426\u042F\u041B\u041E\u0422\u041E \u041F\u041E\u0420\u0422\u0424\u041E\u041B\u0418\u041E" },
+  // ── PRODUCTS ──
+  prod_tag: { it: "// PRODOTTI LIVE", en: "// LIVE PRODUCTS", bg: "// \u041D\u0410\u0428\u0418 \u041F\u0420\u041E\u0414\u0423\u041A\u0422\u0418" },
+  prod_title: { it: "LE NOSTRE PIATTAFORME", en: "OUR PLATFORMS", bg: "\u041D\u0410\u0428\u0418\u0422\u0415 \u041F\u041B\u0410\u0422\u0424\u041E\u0420\u041C\u0418" },
+  // ── REVERSE LAB ──
+  lab_tag: { it: "// REVERSE LAB", en: "// REVERSE LAB", bg: "// REVERSE LAB" },
+  lab_title: { it: "DAL FISICO AL DIGITALE E RITORNO", en: "FROM PHYSICAL TO DIGITAL AND BACK", bg: "\u041e\u0422 \u0424\u0418\u0417\u0418\u0427\u041d\u041e\u0422\u041e \u041a\u042a\u041c \u0414\u0418\u0413\u0418\u0422\u0410\u041b\u041d\u041e\u0422\u041e \u0418 \u041e\u0411\u0420\u0410\u0422\u041d\u041e" },
+  lab_desc: {
+    it: "Reverse engineering di componenti e dispositivi: scansione, ricostruzione CAD, analisi di protocolli e firmware. Poi stampiamo in 3D prototipi, ricambi introvabili e piccole serie \u2014 dal pezzo rotto al file STL al pezzo nuovo.",
+    en: "Reverse engineering of parts and devices: scanning, CAD reconstruction, protocol and firmware analysis. Then we 3D print prototypes, unobtainable spare parts and small batches \u2014 from broken part to STL file to new part.",
+    bg: "Reverse engineering \u043d\u0430 \u0447\u0430\u0441\u0442\u0438 \u0438 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430: \u0441\u043a\u0430\u043d\u0438\u0440\u0430\u043d\u0435, CAD \u0440\u0435\u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u044f, \u0430\u043d\u0430\u043b\u0438\u0437 \u043d\u0430 \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b\u0438 \u0438 \u0444\u044a\u0440\u043c\u0443\u0435\u0440. \u0421\u043b\u0435\u0434 \u0442\u043e\u0432\u0430 \u043f\u0440\u0438\u043d\u0442\u0438\u0440\u0430\u043c\u0435 \u043d\u0430 3D \u043f\u0440\u0438\u043d\u0442\u0435\u0440 \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0438, \u043d\u0435\u043d\u0430\u043c\u0438\u0440\u0430\u0435\u043c\u0438 \u0440\u0435\u0437\u0435\u0440\u0432\u043d\u0438 \u0447\u0430\u0441\u0442\u0438 \u0438 \u043c\u0430\u043b\u043a\u0438 \u0441\u0435\u0440\u0438\u0438 \u2014 \u043e\u0442 \u0441\u0447\u0443\u043f\u0435\u043d\u0430\u0442\u0430 \u0447\u0430\u0441\u0442 \u043f\u0440\u0435\u0437 STL \u0444\u0430\u0439\u043b\u0430 \u0434\u043e \u043d\u043e\u0432\u0430\u0442\u0430."
+  },
+  lab_b1: { it: "Scansione e ricostruzione CAD di parti meccaniche", en: "Scanning and CAD reconstruction of mechanical parts", bg: "\u0421\u043a\u0430\u043d\u0438\u0440\u0430\u043d\u0435 \u0438 CAD \u0440\u0435\u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u044f \u043d\u0430 \u043c\u0435\u0445\u0430\u043d\u0438\u0447\u043d\u0438 \u0447\u0430\u0441\u0442\u0438" },
+  lab_b2: { it: "Stampa 3D: prototipi, ricambi, piccole serie (FDM)", en: "3D printing: prototypes, spare parts, small batches (FDM)", bg: "3D \u043f\u0435\u0447\u0430\u0442: \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0438, \u0440\u0435\u0437\u0435\u0440\u0432\u043d\u0438 \u0447\u0430\u0441\u0442\u0438, \u043c\u0430\u043b\u043a\u0438 \u0441\u0435\u0440\u0438\u0438 (FDM)" },
+  lab_b3: { it: "Analisi di protocolli, firmware e dispositivi embedded", en: "Protocol, firmware and embedded device analysis", bg: "\u0410\u043d\u0430\u043b\u0438\u0437 \u043d\u0430 \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b\u0438, \u0444\u044a\u0440\u043c\u0443\u0435\u0440 \u0438 embedded \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430" },
+  // Carbon attribute strip (Reverse Lab) — icon labels
+  lab_at1: { it: "Fibra di carbonio", en: "Carbon fiber", bg: "\u0412\u044a\u0433\u043b\u0435\u0440\u043e\u0434\u043d\u0438 \u0432\u043b\u0430\u043a\u043d\u0430" },
+  lab_at2: { it: "Leggero", en: "Lightweight", bg: "\u041b\u0435\u043a\u043e" },
+  lab_at3: { it: "Resistenza", en: "Strength", bg: "\u0417\u0434\u0440\u0430\u0432\u0438\u043d\u0430" },
+  lab_at4: { it: "Protezione", en: "Protection", bg: "\u0417\u0430\u0449\u0438\u0442\u0430" },
+  lab_at5: { it: "Automotive", en: "Automotive", bg: "Automotive" },
+  lab_at6: { it: "Performance", en: "Performance", bg: "Performance" },
+  lab_at7: { it: "Installazione", en: "Installation", bg: "\u041c\u043e\u043d\u0442\u0430\u0436" },
+  lab_cta: { it: "PORTACI IL PEZZO \u2192", en: "BRING US THE PART \u2192", bg: "\u0414\u041e\u041d\u0415\u0421\u0418 \u041d\u0418 \u0427\u0410\u0421\u0422\u0422\u0410 \u2192" },
+  // ── COVERAGE ──
+  cov_tag: { it: "// COPERTURA", en: "// COVERAGE", bg: "// \u041f\u041e\u041a\u0420\u0418\u0422\u0418\u0415" },
+  cov_title: { it: "DALLA BULGARIA A MILANO", en: "FROM BULGARIA TO MILAN", bg: "ОТ БЪЛГАРИЯ ДО МИЛАНО" },
+  cov_desc: {
+    it: "Due hub reali, una sola tolleranza. Lavoriamo tra Bobov Dol e Milano \u2014 distanza misurata, non promesse di marketing.",
+    en: "Two real hubs, one tolerance. We work between Bobov Dol and Milan \u2014 measured distance, not a marketing promise.",
+    bg: "\u0414\u0432\u0430 \u0440\u0435\u0430\u043b\u043d\u0438 \u0445\u044a\u0431\u0430, \u0435\u0434\u0438\u043d \u0442\u043e\u043b\u0435\u0440\u0430\u043d\u0441. Работим между Бобов дол и Милано \u2014 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u043e \u0440\u0430\u0437\u0441\u0442\u043e\u044f\u043d\u0438\u0435, \u043d\u0435 \u043c\u0430\u0440\u043a\u0435\u0442\u0438\u043d\u0433\u043e\u0432\u0438 \u043e\u0431\u0435\u0449\u0430\u043d\u0438\u044f."
+  },
+  // \u2500\u2500 MONUMENT \u2500\u2500
+  mon_tag: { it: "// IL MONUMENTO", en: "// THE MONUMENT", bg: "// \u041c\u041e\u041d\u0423\u041c\u0415\u041d\u0422\u042a\u0422" },
+  mon_title: { it: "COSTRUITO DA OGNI VISITATORE", en: "BUILT BY EVERY VISITOR", bg: "\u0418\u0417\u0413\u0420\u0410\u0414\u0415\u041d \u041e\u0422 \u0412\u0421\u0415\u041a\u0418 \u041f\u041e\u0421\u0415\u0422\u0418\u0422\u0415\u041b" },
+  mon_desc: {
+    it: "Una galassia a spirale in cui ogni visita accende una nuova stella. Dal tuo comportamento \u2014 movimento del cursore, ritmo di scroll, tempo \u2014 nasce un'impronta anonima che sceglie il braccio, la posizione e la classe spettrale della tua stella, dal blu delle O al rosso delle M. Come le galassie vere cresce dall'interno: le prime stelle stanno vicino al nucleo, le nuove nascono sui bracci esterni. Nessun dato personale. La tua stella brilla in ciano: ora fai parte del monumento.",
+    en: "A spiral galaxy where every visit lights a new star. Your behaviour \u2014 cursor movement, scroll rhythm, time \u2014 forms an anonymous imprint that picks your star's arm, position and spectral class, from blue O to red M. Like real galaxies it grows from the inside out: the first stars sit near the core, new ones are born on the outer arms. No personal data. Your star glows cyan: you are now part of the monument.",
+    bg: "Спирална галактика, в която всяко посещение запалва нова звезда. Поведението ви \u2014 движение на курсора, ритъм на скрола, време \u2014 образува анонимен отпечатък, който избира ръкава, мястото и спектралния клас на вашата звезда, от сините O до червените M. Като истинските галактики расте отвътре навън: първите звезди са до ядрото, новите се раждат по външните ръкави. Без лични данни. Вашата звезда свети в циан: вече сте част от монумента."
+  },
+  // ── CTA ──
+  cta_title: { it: "HAI UN PROGETTO?", en: "GOT A PROJECT?", bg: "\u0418\u041C\u0410\u0428 \u041F\u0420\u041E\u0415\u041A\u0422?" },
+  cta_sub: {
+    it: "CARBONSTEALTH.EU \u2014 DAL PEZZO FISICO AL FILE, E RITORNO. A TOLLERANZA.",
+    en: "CARBONSTEALTH.EU \u2014 FROM PHYSICAL PART TO FILE, AND BACK. TO TOLERANCE.",
+    bg: "CARBONSTEALTH.EU \u2014 \u041E\u0422 \u0424\u0418\u0417\u0418\u0427\u0415\u0421\u041A\u0410\u0422\u0410 \u0427\u0410\u0421\u0422 \u0414\u041E \u0424\u0410\u0419\u041B\u0410 \u0418 \u041E\u0411\u0420\u0410\u0422\u041D\u041E. \u0414\u041E \u0414\u041E\u041F\u0423\u0421\u041A."
+  },
+  cta_btn: { it: "CONTATTACI", en: "CONTACT US", bg: "\u0421\u0412\u042A\u0420\u0416\u0418 \u0421\u0415 \u0421 \u041D\u0410\u0421" },
+  // ── FAQ ──
+  faq_tag: { it: "// FAQ", en: "// FAQ", bg: "// \u0427\u0415\u0421\u0422\u0418 \u0412\u042A\u041F\u0420\u041E\u0421\u0418" },
+  faq_title: { it: "DOMANDE FREQUENTI", en: "FAQ", bg: "\u0412\u042A\u041F\u0420\u041E\u0421\u0418 \u0418 \u041E\u0422\u0413\u041E\u0412\u041E\u0420\u0418" },
+  // ── TICKER ──
+  ticker: {
+    it: "CARBONSTEALTH.EU \u2014 ACCETTIAMO PROGETTI Q3 2026 \u2014 WEB \u00d7 GAMES \u00d7 IOT \u00d7 FIVEM \u00d7 DESIGN \u2014 BOBOV DOL / REMOTO / EUROPA \u2014",
+    en: "CARBONSTEALTH.EU \u2014 ACCEPTING PROJECTS Q3 2026 \u2014 WEB \u00d7 GAMES \u00d7 IOT \u00d7 FIVEM \u00d7 DESIGN \u2014 BOBOV DOL / REMOTE / EUROPE \u2014",
+    bg: "CARBONSTEALTH.EU \u2014 \u041F\u0420\u0418\u0415\u041C\u0410\u041C\u0415 \u041F\u0420\u041E\u0415\u041A\u0422\u0418 Q3 2026 \u2014 \u0423\u0415\u0411 \u00d7 \u0418\u0413\u0420\u0418 \u00d7 IOT \u00d7 FIVEM \u00d7 \u0414\u0418\u0417\u0410\u0419\u041D \u2014 \u0411\u041E\u0411\u041E\u0412 \u0414\u041E\u041B / \u0414\u0418\u0421\u0422\u0410\u041D\u0426\u0418\u041E\u041D\u041D\u041E / \u0415\u0412\u0420\u041E\u041F\u0410 \u2014"
+  },
+  // ── FOOTER ──
+  ft_servizi: { it: "SERVIZI", en: "SERVICES", bg: "\u0423\u0421\u041B\u0423\u0413\u0418" },
+  ft_azienda: { it: "AZIENDA", en: "COMPANY", bg: "\u041A\u041E\u041C\u041F\u0410\u041D\u0418\u042F" },
+  ft_legale: { it: "LEGALE", en: "LEGAL", bg: "\u041F\u0420\u0410\u0412\u041D\u0410 \u0418\u041D\u0424\u041E\u0420\u041C\u0410\u0426\u0418\u042F" },
+  ft_desc: {
+    it: "Sviluppo web, software ERP, app mobile e SEO/GEO/AEO per l'Europa. EIK 208725180. Soluzioni digitali di eccellenza per imprese ambiziose.",
+    en: "Web development, ERP software, mobile apps and SEO/GEO/AEO across Europe. EIK 208725180. Premium digital solutions for ambitious businesses.",
+    bg: "\u0423\u0435\u0431 \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430, ERP \u0441\u043E\u0444\u0442\u0443\u0435\u0440, \u043C\u043E\u0431\u0438\u043B\u043D\u0438 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0438 SEO/GEO/AEO \u0437\u0430 \u0415\u0432\u0440\u043E\u043F\u0430. \u0415\u0418\u041A 208725180. \u041F\u0440\u0435\u043C\u0438\u0443\u043C \u0434\u0438\u0433\u0438\u0442\u0430\u043B\u043D\u0438 \u0440\u0435\u0448\u0435\u043D\u0438\u044F \u0437\u0430 \u0430\u043C\u0431\u0438\u0446\u0438\u043E\u0437\u043D\u0438 \u0431\u0438\u0437\u043D\u0435\u0441\u0438."
+  },
+  // ── COOKIE BANNER ──
+  cookie_text: {
+    it: "Usiamo cookie tecnici propri. Il sito mostra annunci Google (AdSense), che usano cookie: con «Accetta» possono essere personalizzati; con «Rifiuta» sono non personalizzati, ma Google usa comunque cookie per limitarne la frequenza e contarli. Puoi cambiare scelta dalla Politica Cookie.",
+    en: "We use our own technical cookies. The site shows Google ads (AdSense), which use cookies: “Accept” allows personalised ads; with “Reject” ads are non-personalised, but Google still uses cookies to cap their frequency and count them. You can change your choice from the Cookie Policy.",
+    bg: "\u0418\u0437\u043F\u043E\u043B\u0437\u0432\u0430\u043C\u0435 \u0441\u043E\u0431\u0441\u0442\u0432\u0435\u043D\u0438 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438. \u0421\u0430\u0439\u0442\u044A\u0442 \u043F\u043E\u043A\u0430\u0437\u0432\u0430 \u0440\u0435\u043A\u043B\u0430\u043C\u0438 \u043D\u0430 Google (AdSense), \u043A\u043E\u0438\u0442\u043E \u043F\u043E\u043B\u0437\u0432\u0430\u0442 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438: \u0441 \u201E\u041F\u0440\u0438\u0435\u043C\u0438\u201C \u043C\u043E\u0436\u0435 \u0434\u0430 \u0441\u0430 \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438; \u0441 \u201E\u041E\u0442\u043A\u0430\u0436\u0438\u201C \u0441\u0430 \u043D\u0435\u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438, \u043D\u043E Google \u043F\u0430\u043A \u043F\u043E\u043B\u0437\u0432\u0430 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438, \u0437\u0430 \u0434\u0430 \u043E\u0433\u0440\u0430\u043D\u0438\u0447\u0430\u0432\u0430 \u0447\u0435\u0441\u0442\u043E\u0442\u0430\u0442\u0430 \u0438\u043C \u0438 \u0434\u0430 \u0433\u0438 \u043E\u0442\u0447\u0438\u0442\u0430. \u041C\u043E\u0436\u0435\u0442\u0435 \u0434\u0430 \u043F\u0440\u043E\u043C\u0435\u043D\u0438\u0442\u0435 \u0438\u0437\u0431\u043E\u0440\u0430 \u0441\u0438 \u043E\u0442 \u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430\u0442\u0430 \u0437\u0430 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438.",
+  },
+  cookie_accept: { it: "ACCETTA", en: "ACCEPT", bg: "\u041F\u0420\u0418\u0415\u041C\u0418" },
+  cookie_reject: { it: "RIFIUTA", en: "REJECT", bg: "\u041E\u0422\u041A\u0410\u0416\u0418" },
+  cookie_more: { it: "Politica Cookie", en: "Cookie Policy", bg: "\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438" },
+  // ── CONTACT FORM ──
+  form_name: { it: "Nome e Cognome", en: "Full Name", bg: "\u0418\u043C\u0435 \u0438 \u0424\u0430\u043C\u0438\u043B\u0438\u044F" },
+  form_email: { it: "Email", en: "Email", bg: "\u0418\u043C\u0435\u0439\u043B" },
+  form_company: { it: "Azienda (opzionale)", en: "Company (optional)", bg: "Фирма (по избор)" },
+  form_country: { it: "Paese (opzionale)", en: "Country (optional)", bg: "Държава (по избор)" },
+  form_solution: { it: "Di cosa hai bisogno? (opzionale)", en: "What do you need? (optional)", bg: "От какво имате нужда? (по избор)" },
+  form_budget: { it: "Budget indicativo (opzionale)", en: "Approximate budget (optional)", bg: "Приблизителен бюджет (по избор)" },
+  form_phone: { it: "Telefono (opzionale)", en: "Phone (optional)", bg: "\u0422\u0435\u043B\u0435\u0444\u043E\u043D (\u043D\u0435\u0437\u0430\u0434\u044A\u043B\u0436\u0438\u0442\u0435\u043B\u043D\u043E)" },
+  form_msg: { it: "Descrivi il tuo progetto...", en: "Describe your project...", bg: "\u041E\u043F\u0438\u0448\u0435\u0442\u0435 \u043F\u0440\u043E\u0435\u043A\u0442\u0430 \u0441\u0438..." },
+  form_send: { it: "INVIA RICHIESTA", en: "SEND REQUEST", bg: "\u0418\u0417\u041F\u0420\u0410\u0422\u0418" },
+  form_sent: { it: "Richiesta inviata! Ti risponderemo entro 24 ore.", en: "Request sent! We will reply within 24 hours.", bg: "\u0417\u0430\u044F\u0432\u043A\u0430\u0442\u0430 \u0435 \u0438\u0437\u043F\u0440\u0430\u0442\u0435\u043D\u0430! \u0429\u0435 \u043E\u0442\u0433\u043E\u0432\u043E\u0440\u0438\u043C \u0434\u043E 24 \u0447\u0430\u0441\u0430." },
+  form_gdpr: {
+    it: "Usiamo i tuoi dati solo per rispondere alla richiesta (art. 6.1.b GDPR), come spiegato nella nostra",
+    en: "We use your details only to answer your request (Art. 6(1)(b) GDPR), as explained in our",
+    bg: "\u0418\u0437\u043F\u043E\u043B\u0437\u0432\u0430\u043C\u0435 \u0434\u0430\u043D\u043D\u0438\u0442\u0435 \u0412\u0438 \u0441\u0430\u043C\u043E \u0437\u0430 \u0434\u0430 \u043E\u0442\u0433\u043E\u0432\u043E\u0440\u0438\u043C \u043D\u0430 \u0437\u0430\u043F\u0438\u0442\u0432\u0430\u043D\u0435\u0442\u043E (\u0447\u043B. 6, \u043F\u0430\u0440. 1, \u0431. \u201E\u0431\u201C GDPR), \u043A\u0430\u043A\u0442\u043E \u0435 \u043E\u043F\u0438\u0441\u0430\u043D\u043E \u0432 \u043D\u0430\u0448\u0430\u0442\u0430",
+  },
+  // ── ADMIN ──
+  admin_title: { it: "CS MONITOR \u2014 ADMIN", en: "CS MONITOR \u2014 ADMIN", bg: "CS \u041C\u041E\u041D\u0418\u0422\u041E\u0420 \u2014 \u0410\u0414\u041C\u0418\u041D" },
+};
+
+// Explicit language choice: ?lang= URL param or saved preference — overrides all detection
+function explicitLang() {
+  try {
+    var q = new URLSearchParams(window.location.search).get("lang");
+    if (q === "it" || q === "en" || q === "bg") { try{localStorage.setItem("cs_lang", q)}catch(e){} return q; }
+    var saved = localStorage.getItem("cs_lang");
+    if (saved === "it" || saved === "en" || saved === "bg") return saved;
+  } catch (e) {}
+  return null;
+}
+// Auto-detect language: explicit choice > IP geolocation > timezone fallback (instant)
+function detectLang() {
+  // ONLY timezone for instant detection — NOT browser language
+  // Browser language = user preference (bg speaker in Italy should see IT)
+  // Timezone = physical location (accurate)
+  var explicit = explicitLang();
+  if (explicit) return explicit;
+  try {
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    if (tz.indexOf("Rome") > -1) return "it";    // Italy timezone
+    if (tz.indexOf("Sofia") > -1) return "bg";   // Bulgaria timezone
+    // Everywhere else: Italian — "/" is the Italian URL (hreflang="it"), and
+    // crawlers render from the US; EN/BG stay one click away and on /en/, /bg/.
+    return "it";
+  } catch (e) { return "it"; }
+}
+// Smooth scroll to section
+function scrollToId(id){var el=document.getElementById(id);if(el){var y=el.getBoundingClientRect().top+window.scrollY-70;window.scrollTo({top:y,behavior:"smooth"})}}
+// Make an onClick <div>/<span> keyboard-operable (WCAG 2.1.1 / 4.1.2):
+// returns props that add button role, focusability and Enter/Space activation.
+function kb(fn,label){return {role:"button",tabIndex:0,"aria-label":label,onClick:fn,onKeyDown:function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();fn()}}}}
+// Load the 680KB Three.js WebGL bundle only where it pays off: skip it on small
+// screens, reduced-motion and data-saver, where it just hurts mobile LCP. The
+// site keeps its many 2D canvas effects in those cases.
+function should3D(){
+  try{
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;
+    if(window.innerWidth<768)return false;
+    var c=navigator.connection;if(c&&(c.saveData||/(^|-)2g$/.test(c.effectiveType||"")))return false;
+    return true;
+  }catch(e){return true;}
+}
+// IP-based country detection — DEFINITIVE, overrides timezone (HTTPS endpoint: ip-api.com free tier is HTTP-only and gets blocked as mixed content)
+
+// Service descriptions per language
+
+// ═══════════════════════════════════════════════════════════════
+// SEO / GEO / AEO — Nuclear-level optimization
+// Injects meta tags, JSON-LD, Open Graph, GeoMeta into document.head
+// ═══════════════════════════════════════════════════════════════
+function SEOInjector() {
+  // layout effect: the responsive CSS below must be in place BEFORE the first paint,
+  // otherwise the mobile hero reflows ~60px when it lands (CLS 0.27 on slow phones)
+  useLayoutEffect(function() {
+    // Title comes from the static index.html <head> (Italian, keyword-rich) —
+    // overriding it here with an English string would undo the SEO title.
+
+    // ── Meta tags ──
+    var metas = [
+      { name: "description", content: "Carbon Stealth VCC is a digital solutions agency based in Bobov Dol, Bulgaria. Web development, game development, FiveM scripting, embedded systems, IoT, PLC programming, and industrial automation. React, Node.js, Three.js, Docker, PostgreSQL." },
+      { name: "keywords", content: "digital agency, web development, Bulgaria, Bobov Dol, React, Node.js, FiveM, game development, embedded systems, PLC, Modbus, IoT, Three.js, WebGL, Docker, carbon fiber, e-commerce" },
+      { name: "author", content: "Carbon Stealth VCC" },
+      { name: "robots", content: "index, follow, max-snippet:-1, max-image-preview:large" },
+      { name: "googlebot", content: "index, follow" },
+      { name: "language", content: "en" },
+      { name: "revisit-after", content: "3 days" },
+      { name: "rating", content: "general" },
+      { name: "theme-color", content: "#00e5ff" },
+      // GEO Meta
+      { name: "geo.region", content: "BG-KY" },
+      { name: "geo.placename", content: "Bobov Dol" },
+      { name: "geo.position", content: "42.3482;23.0017" },
+      { name: "ICBM", content: "42.3482, 23.0017" },
+      // Open Graph
+      { property: "og:title", content: "Carbon Stealth VCC | Digital Solutions Agency" },
+      { property: "og:description", content: "We build what others won't touch. Web development, game dev, FiveM, IoT, embedded systems. Based in Bulgaria." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://carbonstealth.eu" },
+      { property: "og:site_name", content: "Carbon Stealth VCC" },
+      { property: "og:locale", content: "en_US" },
+      { property: "og:locale:alternate", content: "it_IT" },
+      { property: "og:locale:alternate", content: "bg_BG" },
+      { property: "og:image", content: "https://carbonstealth.eu/og-image.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Carbon Stealth VCC Logo" },
+      
+      // Twitter
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Carbon Stealth VCC | Digital Solutions Agency" },
+      { name: "twitter:description", content: "Web development, game dev, IoT, embedded systems. Based in Bulgaria." },
+      // Dublin Core
+      { name: "DC.title", content: "Carbon Stealth VCC — Digital Solutions Agency" },
+      { name: "DC.creator", content: "Carbon Stealth VCC" },
+      { name: "DC.subject", content: "web development, software, ERP, SEO, game development, IoT" },
+      { name: "DC.description", content: "Digital agency in Bobov Dol, Bulgaria. Web, software, ERP, games, IoT, SEO/GEO/AEO." },
+      { name: "DC.publisher", content: "Carbon Stealth VCC" },
+      { name: "DC.language", content: "it" },
+      { name: "DC.coverage", content: "Europe" },
+      { name: "DC.rights", content: "Copyright 2025-2026 Carbon Stealth VCC" },
+    ];
+
+    metas.forEach(function(m) {
+      // The static index.html head is the source of truth — only add tags it
+      // doesn't already have, so we never end up with two conflicting
+      // descriptions / og:image / robots values after hydration.
+      var sel = m.name ? 'meta[name="' + m.name + '"]' : 'meta[property="' + m.property + '"]';
+      if (document.head.querySelector(sel)) return;
+      var el = document.createElement("meta");
+      Object.keys(m).forEach(function(k) { el.setAttribute(k, m[k]); });
+      document.head.appendChild(el);
+    });
+
+
+    // ── Apple cursor ──
+    var cursorStyle = document.createElement("style");
+    cursorStyle.textContent = "*, *::before, *::after { cursor: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSI0IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMCwyMjksMjU1LDAuNykiIHN0cm9rZS13aWR0aD0iMS41Ii8+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMSIgZmlsbD0icmdiYSgwLDIyOSwyNTUsMC45KSIvPjwvc3ZnPg==) 10 10, auto !important; } a, button, [onclick], select, input, textarea { cursor: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI2IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMCwyMjksMjU1LDAuOCkiIHN0cm9rZS13aWR0aD0iMS41Ii8+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMiIgZmlsbD0icmdiYSgwLDIyOSwyNTUsMSkiLz48L3N2Zz4=) 12 12, pointer !important; }";
+    document.head.appendChild(cursorStyle);
+
+
+    // ── Responsive CSS ──
+    var respStyle = document.createElement("style");
+    respStyle.textContent = `
+      /* ═══ MOBILE FIRST RESPONSIVE ═══ */
+      
+      /* Hamburger button */
+      .cs-hamburger { display:none; width:32px; height:32px; flex-direction:column; justify-content:center; align-items:center; gap:5px; background:none; border:1px solid rgba(0,229,255,.2); padding:6px; }
+      .cs-hamburger span { display:block; width:16px; height:1.5px; background:#00e5ff; transition:all .3s; }
+      
+      /* Mobile menu overlay */
+      .cs-mobile-menu { display:none; position:fixed; top:0; left:0; width:100%; height:100vh; background:rgba(0,0,0,.97); z-index:99999; flex-direction:column; align-items:center; justify-content:center; gap:24px; }
+      .cs-mobile-menu.open { display:flex; }
+      .cs-mobile-menu-item { font-size:14px; letter-spacing:.3em; color:#ccc; padding:12px 24px; border:1px solid rgba(245,245,240,.06); min-width:200px; text-align:center; }
+      .cs-mobile-menu-close { position:absolute; top:16px; right:16px; width:40px; height:40px; border:1px solid rgba(0,229,255,.2); display:flex; align-items:center; justify-content:center; color:#00e5ff; font-size:18px; }
+      /* нисък екран (телефон на една страна, 844×390): менюто е по-високо от екрана — превърта се вместо да се
+         изрязва. Автоматичните полета центрират съдържанието, когато има място, и изчезват, когато няма;
+         бутонът за затваряне остава на мястото си, докато се превърта. */
+      .cs-mobile-menu { overflow-y:auto; overscroll-behavior:contain; justify-content:flex-start !important; padding:48px 0; box-sizing:border-box; }
+      .cs-mobile-menu > img { margin-top:auto; flex:none; }
+      .cs-mobile-menu > :last-child { margin-bottom:auto; }
+      .cs-mobile-menu > * { flex:none; }
+      .cs-mobile-menu-close { position:fixed !important; z-index:1; }
+      
+      /* PHONE: < 768px */
+      @media(max-width:767px) {
+        /* Navbar */
+        .cs-hamburger { display:flex !important; }
+        .cs-nav-links { display:none !important; }
+        .cs-nav-meta { display:none !important; }
+        .cs-nav-lang { margin-left:auto; }
+        
+        /* About: stack columns */
+        #about { grid-template-columns:1fr !important; gap:32px !important; padding:60px 16px !important; }
+        
+        /* Services: stack number + text */
+        #services { padding:60px 16px !important; }
+        #services > div > div[style*="grid"] { grid-template-columns:1fr !important; }
+        
+        /* Products: single column */
+        #products > div[style*="grid"] { grid-template-columns:1fr !important; }
+        #products { padding:40px 16px 60px !important; }
+        
+        /* Portfolio: simplify */
+        #portfolio { padding:40px 16px 60px !important; }
+        #portfolio a[style*="grid"] { grid-template-columns:40px 1fr !important; }
+        #portfolio a span:last-child { display:none; }
+        
+        /* Reverse Lab */
+        #lab { padding:40px 16px 60px !important; }
+        
+        /* Contact form: stack inputs */
+        #contact { padding:60px 16px !important; }
+        #contact div[style*="1fr 1fr"] { grid-template-columns:1fr !important; }
+        
+        /* FAQ */
+        #faq { padding:60px 16px !important; }
+        
+        /* Footer: single column */
+        footer > div[style*="grid"] { grid-template-columns:1fr !important; gap:24px !important; padding:40px 16px 24px !important; }
+        
+        /* Hero padding */
+        #hero { padding:12px !important; }
+        
+        /* Cookie banner stack */
+        .cs-cookie { flex-direction:column !important; text-align:center; }
+        
+        /* Hide decorative elements */
+        .cs-scroll-indicator { display:none !important; }
+        
+        /* Diagonal dividers smaller */
+        div[style*="linear-gradient(170deg"] { height:40px !important; }
+        div[style*="linear-gradient(10deg"] { height:40px !important; }
+      }
+      
+      /* НАВИГАЦИЯ: под 901 px шестте връзки + „Анализ на сайта“ + езиците не се побират на един ред
+         (измерено на трите езика: при 768–820 px се пренасяха и „CHI SIAMO“ застъпваше логото) → бутон с меню,
+         както на телефон. Същият праг е и в статичните страници (scripts/static-theme.py, NAV_MAX). Логото не се пипа. */
+      @media(max-width:900px) {
+        .cs-hamburger { display:flex !important; }
+        .cs-nav-links { display:none !important; }
+        .cs-nav-meta { display:none !important; }
+        .cs-nav-lang { margin-left:auto; }
+      }
+
+      /* TABLET: 768px - 1024px */
+      @media(min-width:768px) and (max-width:1024px) {
+        .cs-nav-links > div { gap:12px !important; }
+        
+        #about { gap:40px !important; padding:80px 20px !important; }
+        footer > div[style*="grid"] { grid-template-columns:1fr 1fr !important; gap:24px !important; }
+      }
+      
+      /* Touch-friendly targets */
+      @media(pointer:coarse) {
+        a, button, [onclick], div[style*="cursor"] { min-height:44px; min-width:44px; }
+        input, textarea, select { font-size:16px !important; } /* prevents iOS zoom */
+      }
+      
+      /* Safe area for notch phones */
+      @supports(padding: env(safe-area-inset-top)) {
+        nav { padding-top:max(12px, env(safe-area-inset-top)) !important; }
+        footer { padding-bottom:max(20px, env(safe-area-inset-bottom)) !important; }
+      }
+
+      /* ── Accessibility (WCAG 2.2 AA) ── */
+      /* Visible keyboard focus on every interactive element */
+      a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible,
+      select:focus-visible, [role="button"]:focus-visible, [tabindex]:focus-visible {
+        outline: 2px solid #00e5ff !important; outline-offset: 2px !important;
+        border-radius: 2px;
+      }
+      /* Skip-to-content link, visible only when focused */
+      .cs-skip { position:fixed; top:-60px; left:8px; z-index:100000; background:#00e5ff; color:#000;
+        padding:10px 18px; font-weight:700; letter-spacing:.1em; transition:top .15s; }
+      .cs-skip:focus { top:8px; }
+      /* Respect reduced-motion: stop the heavy animation for users who ask for it */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.001ms !important; animation-iteration-count: 1 !important;
+          transition-duration: 0.001ms !important; scroll-behavior: auto !important;
+        }
+      }
+    `;
+    document.head.appendChild(respStyle);
+
+    // Canonical, hreflang and the Organization/WebSite/FAQ schema live in the
+    // static index.html <head> — do NOT inject them again here: the runtime
+    // copies drifted out of sync (conflicting canonical, ratings, founder name)
+    // and duplicate/contradictory structured data hurts SEO.
+
+    // ═══ JSON-LD STRUCTURED DATA (page-level extras only) ═══
+    var jsonLd = [
+      // HowTo — Come lavoriamo (not present in the static head)
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "Come lavoriamo — Il processo Carbon Stealth",
+        "description": "Il nostro processo di sviluppo in 6 fasi per garantire risultati eccellenti.",
+        "totalTime": "P30D",
+        "estimatedCost": { "@type": "MonetaryAmount", "currency": "EUR", "value": "658" },
+        "step": [
+          { "@type": "HowToStep", "position": 1, "name": "Analisi e Brief", "text": "Studiamo il tuo progetto, gli obiettivi e il target. Definiamo scope, timeline e budget.", "url": "https://carbonstealth.eu/contatti/" },
+          { "@type": "HowToStep", "position": 2, "name": "Architettura e Design", "text": "Progettiamo la struttura, wireframe e design UI/UX. Prototipo interattivo per approvazione." },
+          { "@type": "HowToStep", "position": 3, "name": "Sviluppo", "text": "Costruiamo con React, Node.js, PostgreSQL. Code review e test su ogni feature." },
+          { "@type": "HowToStep", "position": 4, "name": "Test e QA", "text": "Test su dispositivi reali, performance audit, sicurezza. Lighthouse score 90+." },
+          { "@type": "HowToStep", "position": 5, "name": "Lancio", "text": "Deploy su VPS Hetzner, configurazione DNS, SSL, CDN. SEO on-page completo." },
+          { "@type": "HowToStep", "position": 6, "name": "Supporto", "text": "3 mesi di supporto gratuito. Bug fix entro 24 ore. Manutenzione e aggiornamenti." }
+        ]
+      }
+    ];
+
+    jsonLd.forEach(function(data) {
+      var script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.textContent = JSON.stringify(data);
+      document.head.appendChild(script);
+    });
+
+  }, []);
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTERACTIVE CONSTELLATION — Nodes that connect to cursor
+// ═══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+// csVisibleLoop — run a rAF loop ONLY while the element is on screen
+// and the tab is in the foreground, optionally capped to a frame rate.
+//
+// Several canvases on this page animate continuously from mount, so a
+// visitor sitting on the hero was paying for the constellation, the ASCII
+// sculpture and the monument at the same time — six rAF loops competing
+// every frame. Off-screen work is invisible by definition; this makes it
+// free. Returns a cleanup function.
+// ══════════════════════════════════════════════════════════════
+function csVisibleLoop(el, step, fps) {
+  var raf = null, visible = true, last = 0;
+  var interval = fps ? 1000 / fps : 0;
+  function frame(now) {
+    if (!visible || document.hidden) { raf = null; return; }
+    if (!interval || now - last >= interval) { last = now; step(now); }
+    raf = requestAnimationFrame(frame);
+  }
+  function start() { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame); }
+  function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+  var io = null;
+  if (el && "IntersectionObserver" in window) {
+    io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { visible = e.isIntersecting; visible ? start() : stop(); });
+    }, { rootMargin: "200px" });
+    io.observe(el);
+  } else { start(); }
+  function onVis() { document.hidden ? stop() : start(); }
+  document.addEventListener("visibilitychange", onVis);
+  start();
+  return function () { stop(); document.removeEventListener("visibilitychange", onVis); if (io) io.disconnect(); };
+}
+
+function Constellation() {
+  var ref = useRef(null);
+  useEffect(function() {
+    var c = ref.current; if (!c) return;
+    var ctx = c.getContext("2d");
+    var mouse = { x: -999, y: -999 };
+    var nodes = [];
+    var NODE_COUNT = 40;
+
+    function resize() {
+      c.width = c.parentElement.clientWidth;
+      c.height = c.parentElement.clientHeight;
+      nodes = [];
+      for (var i = 0; i < NODE_COUNT; i++) {
+        nodes.push({
+          x: Math.random() * c.width,
+          y: Math.random() * c.height,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          r: Math.random() * 2 + 1,
+        });
+      }
+    }
+    resize();
+    window.addEventListener("resize", resize);
+    c.parentElement.addEventListener("mousemove", function(e) {
+      var rect = c.parentElement.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    });
+    c.parentElement.addEventListener("mouseleave", function() { mouse.x = -999; mouse.y = -999; });
+
+    function draw() {
+      ctx.clearRect(0, 0, c.width, c.height);
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        n.x += n.vx; n.y += n.vy;
+        if (n.x < 0 || n.x > c.width) n.vx *= -1;
+        if (n.y < 0 || n.y > c.height) n.vy *= -1;
+
+        // Draw node
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(" + CR + ",0.4)";
+        ctx.fill();
+
+        // Connect to mouse
+        var dmx = n.x - mouse.x, dmy = n.y - mouse.y;
+        var distM = Math.sqrt(dmx * dmx + dmy * dmy);
+        if (distM < 180) {
+          ctx.beginPath();
+          ctx.moveTo(n.x, n.y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.strokeStyle = "rgba(" + CR + "," + ((1 - distM / 180) * 0.25) + ")";
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+
+        // Connect to nearby nodes
+        for (var j = i + 1; j < nodes.length; j++) {
+          var m = nodes[j];
+          var dx = n.x - m.x, dy = n.y - m.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(n.x, n.y);
+            ctx.lineTo(m.x, m.y);
+            ctx.strokeStyle = "rgba(" + CR + "," + ((1 - dist / 100) * 0.08) + ")";
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+    // was: an uncancelled requestAnimationFrame(draw) that ran forever, even
+    // off-screen and after unmount. Now paused off-screen and cleaned up.
+    var stopLoop = csVisibleLoop(ref.current, draw);
+    return function() { window.removeEventListener("resize", resize); stopLoop(); };
+  }, []);
+  return <canvas ref={ref} style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }} />;
+}
+
+// Brushed-chrome fill for display type — the "CARBON" of the logo. Spread it
+// into a heading's inline style (inline colour would otherwise beat a class).
+// The first layer is the lamp (Instruments.jsx useChromeLight): a narrow specular band with a
+// cyan fringe at --sx, strength --sa; with no lamp it sits off-text (-40%) and is invisible.
+const CHROME = {backgroundImage:"linear-gradient(100deg,transparent calc(var(--sx,-40%) - 9%),rgba(0,229,255,calc(var(--sa,0) * .28)) calc(var(--sx,-40%) - 5%),rgba(255,255,255,var(--sa,0)) calc(var(--sx,-40%) - 1.5%),rgba(255,255,255,var(--sa,0)) calc(var(--sx,-40%) + 1.5%),rgba(0,229,255,calc(var(--sa,0) * .28)) calc(var(--sx,-40%) + 5%),transparent calc(var(--sx,-40%) + 9%)),linear-gradient(180deg,#F4F7F8 0%,#D6DDE1 38%,#8E989F 50%,#E4E9EC 58%,#F4F7F8 100%)",backgroundSize:"100% 100%,100% 1lh",backgroundRepeat:"no-repeat,repeat-y",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent",WebkitTextFillColor:"transparent"};
+// Cyan halo behind a cyan-set line — the "STEALTH" of the logo.
+const CYAN_GLOW = {textShadow:"0 0 22px rgba(0,229,255,.38)"};
+// Primary action: the logo's ring glow, on a hairline button.
+const CTA_GLOW = {background:"rgba(0,229,255,.05)",boxShadow:"0 0 22px rgba(0,229,255,.22), inset 0 0 14px rgba(0,229,255,.06)"};
+// Фотореалистичните икони на услугите (Blender Cycles, marketing/blender/icons.py → public/brand/svc/) — в картите на направленията (SOL).
+// Размерите идват от marketing/blender/export.py (общ изрез за всички, за да са подравнени в списъка).
+var SRV_ICON_W = 192, SRV_ICON_H = 159;
+// ?v=<хеш> към адресите на иконите: имената им са постоянни, а сървърът ги кешира за година (vite.config.js).
+/* global __CS_LIVE_V__ */
+var LIVE_Q = "?v=" + __CS_LIVE_V__;
+// Euro amounts the way each language writes them: 1.890 € · 1,890 € · 1 890 €
+function fmtEur(n, l) {
+  var s = String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, l === "it" ? "." : l === "en" ? "," : " ");
+  return s + " €";
+}
+
+// ══════════ SYNTH ══════════
+// Audio removed
+
+// speak removed
+
+// ══════════ SCRAMBLE ══════════
+function useScramble(text,active){const[d,setD]=useState(text);useEffect(function(){if(!active){setD(text);return}let iter=0;const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&<>{}|";const iv=setInterval(function(){setD(text.split("").map(function(ch,i){return i<iter?text[i]:ch===" "?" ":chars[Math.floor(Math.random()*chars.length)]}).join(""));iter+=.7;if(iter>=text.length)clearInterval(iv)},22);return function(){clearInterval(iv)}},[active,text]);return d}
+function Scr(p){const[h,setH]=useState(false);const d=useScramble(p.text,h);return <span style={p.style} onMouseEnter={function(){setH(true)}} onMouseLeave={function(){setH(false)}}>{d}</span>}
+
+// ═══════════════════════════════════════════════════
+// 1. MAGNETIC TEXT REPULSION — Letters push AWAY from cursor
+// ═══════════════════════════════════════════════════
+function MagneticRepel(props) {
+  var ref = useRef(null);
+  var text = props.text || "";
+  var chars = text.split("");
+
+  useEffect(function() {
+    function handleMouse(e) {
+      if (!ref.current) return;
+      var spans = ref.current.querySelectorAll(".mag-char");
+      for (var i = 0; i < spans.length; i++) {
+        var rect = spans[i].getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        var dx = cx - e.clientX;
+        var dy = cy - e.clientY;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var maxDist = 150;
+        if (dist < maxDist) {
+          var force = (1 - dist / maxDist) * 25;
+          var angle = Math.atan2(dy, dx);
+          spans[i].style.transform = "translate(" + (Math.cos(angle) * force) + "px," + (Math.sin(angle) * force) + "px)";
+          spans[i].style.opacity = 0.4 + (dist / maxDist) * 0.6;
+        } else {
+          spans[i].style.transform = "translate(0,0)";
+          spans[i].style.opacity = 1;
+        }
+      }
+    }
+    window.addEventListener("mousemove", handleMouse);
+    return function() { window.removeEventListener("mousemove", handleMouse); };
+  }, [text]);
+
+  return (
+    <div ref={ref} style={props.style}>
+      {chars.map(function(ch, i) {
+        return <span key={i} className="mag-char" style={{
+          display: "inline-block",
+          color: "inherit",
+          transition: "transform 0.2s cubic-bezier(0.16,1,0.3,1), opacity 0.2s",
+          willChange: "transform",
+          textShadow: "0 1px 10px rgba(0,0,0,0.6)",
+        }}>{ch === " " ? "\u00a0" : ch}</span>;
+      })}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════
+// 2. GLITCH FLASH — Full-screen tear on every click
+// ═══════════════════════════════════════════════════
+function GlitchFlash() {
+  var [active, setActive] = useState(false);
+  var [glitchY, setGlitchY] = useState(50);
+
+  useEffect(function() {
+    function handleClick() {
+      setGlitchY(Math.random() * 80 + 10);
+      setActive(true);
+      setTimeout(function() { setActive(false); }, 150);
+    }
+    document.addEventListener("click", handleClick);
+    return function() { document.removeEventListener("click", handleClick); };
+  }, []);
+
+  if (!active) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 99997, pointerEvents: "none" }}>
+      {/* Horizontal tear */}
+      <div style={{ position: "absolute", top: glitchY + "%", left: 0, width: "100%", height: "3px", background: C, opacity: 0.6 }} />
+      {/* Shifted block */}
+      <div style={{ position: "absolute", top: glitchY + "%", left: 0, width: "100%", height: Math.random() * 30 + 10 + "px", background: "rgba(" + CR + ",0.03)", transform: "translateX(" + (Math.random() * 40 - 20) + "px)" }} />
+      {/* RGB split flash */}
+      <div style={{ position: "absolute", inset: 0, boxShadow: "inset 4px 0 0 rgba(" + CR + ",0.1), inset -4px 0 0 rgba(255,0,200,0.08)" }} />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════
+// 3. MOUSE VELOCITY METER — Shows cursor speed visually
+// ═══════════════════════════════════════════════════
+function VelocityMeter() {
+  var [vel, setVel] = useState(0);
+  var prev = useRef({ x: 0, y: 0, t: 0 });
+
+  useEffect(function() {
+    function handleMouse(e) {
+      var now = Date.now();
+      var dt = now - prev.current.t;
+      if (dt > 0) {
+        var dx = e.clientX - prev.current.x;
+        var dy = e.clientY - prev.current.y;
+        var speed = Math.sqrt(dx * dx + dy * dy) / dt * 16;
+        setVel(function(v) { return v + (Math.min(speed, 100) - v) * 0.15; });
+      }
+      prev.current = { x: e.clientX, y: e.clientY, t: now };
+    }
+    document.addEventListener("mousemove", handleMouse);
+    return function() { document.removeEventListener("mousemove", handleMouse); };
+  }, []);
+
+  var barWidth = Math.min(vel, 100);
+  return (
+    <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 10001, display: "flex", alignItems: "center", gap: 8 }}>
+      <span style={{ fontSize: 8, color: "#ddd", letterSpacing: ".2em" }}>VEL</span>
+      <div style={{ width: 60, height: 3, background: "#111" }}>
+        <div style={{ width: barWidth + "%", height: "100%", background: barWidth > 70 ? "#ff3366" : C, transition: "width 0.1s, background 0.3s" }} />
+      </div>
+      <span style={{ fontSize: 8, color: barWidth > 70 ? "#ff3366" : "#ddd", fontFamily: "inherit", width: 28, textAlign: "right" }}>{Math.round(vel)}</span>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════
+// 4. ASCII SCULPTURE — Generative ASCII art section
+// ═══════════════════════════════════════════════════
+function ASCIISculpture() {
+  var [art, setArt] = useState("");
+  var ref = useRef(null);
+
+  useEffect(function() {
+    var chars = " .:-=+*#%@";
+    var w = 70;
+    var h = 20;
+    var frame = 0;
+
+    function generate() {
+      var lines = [];
+      frame += 0.02;
+      for (var y = 0; y < h; y++) {
+        var line = "";
+        for (var x = 0; x < w; x++) {
+          var nx = (x / w - 0.5) * 4;
+          var ny = (y / h - 0.5) * 4;
+          var d = Math.sqrt(nx * nx + ny * ny);
+          var val = Math.sin(d * 3 - frame * 2) * Math.cos(nx * 2 + frame) * Math.sin(ny * 2 - frame * 0.7);
+          val = (val + 1) / 2;
+          var idx = Math.floor(val * (chars.length - 1));
+          line += chars[Math.max(0, Math.min(chars.length - 1, idx))];
+        }
+        lines.push(line);
+      }
+      setArt(lines.join("\n"));
+    }
+    // 12 fps is indistinguishable for ASCII art and costs 5x less: this used
+    // to run setArt() — a full React re-render — on every single frame.
+    var stopLoop = csVisibleLoop(ref.current, generate, 12);
+    return function(){ stopLoop(); };
+  }, []);
+
+  return (
+    <pre ref={ref} style={{
+      fontFamily: "'Space Mono', monospace", fontSize: "8px", lineHeight: "10px",
+      color: "rgba(" + CR + ",0.12)", textAlign: "center", overflow: "hidden",
+      userSelect: "none", letterSpacing: "2px",
+    }}>{art}</pre>
+  );
+}
+
+// ═══════════════════════════════════════════════════
+// 5. ECHO TEXT — Text that leaves ghost trails
+// ═══════════════════════════════════════════════════
+// Display heading. Was a 5-layer cyan "echo/glow" (gratuitous decoration).
+// Reduced to a single confident neo-grotesque heading — restraint as the flex.
+function isChrome(st){return !!(st&&st.WebkitBackgroundClip==="text")}
+function EchoText(props) {
+  return <div className={isChrome(props.style)?"cs-chrome":undefined} style={Object.assign({
+    position: "relative",
+    color: props.color || INK,
+    fontFamily: DISP,
+    fontWeight: props.fontWeight || 600,
+    fontSize: props.fontSize || "clamp(2rem,5vw,4rem)",
+    lineHeight: props.lineHeight || 0.95,
+    letterSpacing: props.letterSpacing || "-.035em",
+  }, props.style)}>{props.children}</div>;
+}
+
+// ═══════════════════════════════════════════════════
+// 6. SCROLL SPEED INDICATOR — Vertical bar showing scroll velocity
+// ═══════════════════════════════════════════════════
+function ScrollSpeed() {
+  var [speed, setSpeed] = useState(0);
+  var lastY = useRef(0);
+
+  useEffect(function() {
+    function handle() {
+      var delta = Math.abs(window.scrollY - lastY.current);
+      lastY.current = window.scrollY;
+      setSpeed(function(s) { return s + (Math.min(delta, 100) - s) * 0.2; });
+    }
+    window.addEventListener("scroll", handle, { passive: true });
+    var iv = setInterval(function() { setSpeed(function(s) { return s * 0.9; }); }, 100);
+    return function() { window.removeEventListener("scroll", handle); clearInterval(iv); };
+  }, []);
+
+  return (
+    <div style={{ position: "fixed", left: 8, top: "50%", transform: "translateY(-50%)", zIndex: 10001, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+      <span style={{ fontSize: 7, color: "#ccc", letterSpacing: ".15em", writingMode: "vertical-rl" }}>SCROLL</span>
+      <div style={{ width: 2, height: 60, background: "#111", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", bottom: 0, width: "100%", height: Math.min(speed, 100) + "%", background: speed > 60 ? "#ff3366" : C, transition: "height 0.15s" }} />
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════
+// 7. LIVE WAVEFORM — Audio-reactive visualization from mic
+// ═══════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════
+// SHOCKWAVE — Expanding rings on click anywhere on hero
+// Each click sends out a visible ripple that fades
+// ═══════════════════════════════════════════════════
+function Shockwave() {
+  var ref = useRef(null);
+  var waves = useRef([]);
+
+  useEffect(function() {
+    var c = ref.current; if (!c) return;
+    var ctx = c.getContext("2d");
+
+    function resize() { c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight; }
+    resize(); window.addEventListener("resize", resize);
+
+    c.parentElement.addEventListener("click", function(e) {
+      var rect = c.parentElement.getBoundingClientRect();
+      waves.current.push({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        radius: 0,
+        maxRadius: Math.max(c.width, c.height) * 0.8,
+        opacity: 0.6,
+        speed: 8 + Math.random() * 4,
+        width: 2 + Math.random() * 2,
+      });
+      // Also add secondary smaller wave
+      setTimeout(function() {
+        waves.current.push({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+          radius: 0,
+          maxRadius: Math.max(c.width, c.height) * 0.5,
+          opacity: 0.3,
+          speed: 5 + Math.random() * 3,
+          width: 1,
+        });
+      }, 100);
+    });
+
+    function draw() {
+      ctx.clearRect(0, 0, c.width, c.height);
+      for (var i = waves.current.length - 1; i >= 0; i--) {
+        var w = waves.current[i];
+        w.radius += w.speed;
+        w.opacity *= 0.985;
+
+        if (w.opacity < 0.01 || w.radius > w.maxRadius) {
+          waves.current.splice(i, 1);
+          continue;
+        }
+
+        // Main ring
+        ctx.beginPath();
+        ctx.arc(w.x, w.y, w.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(" + CR + "," + w.opacity + ")";
+        ctx.lineWidth = w.width;
+        ctx.stroke();
+
+        // Inner glow ring
+        ctx.beginPath();
+        ctx.arc(w.x, w.y, w.radius * 0.97, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(" + CR + "," + (w.opacity * 0.3) + ")";
+        ctx.lineWidth = w.width * 3;
+        ctx.stroke();
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+    return function() { window.removeEventListener("resize", resize); };
+  }, []);
+
+  return <canvas ref={ref} style={{ position: "absolute", inset: 0, zIndex: 8, pointerEvents: "none" }} />;
+}
+
+// ═══════════════════════════════════════════════════
+// CURSOR LIGHT TRAIL — Glowing orb that paints light
+// Leaves a fading phosphor trail like a CRT
+// ═══════════════════════════════════════════════════
+function CursorLight() {
+  var ref = useRef(null);
+  var mouse = useRef({ x: -100, y: -100 });
+  var trail = useRef([]);
+
+  useEffect(function() {
+    var c = ref.current; if (!c) return;
+    var ctx = c.getContext("2d");
+
+    function resize() { c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight; }
+    resize(); window.addEventListener("resize", resize);
+
+    c.parentElement.addEventListener("mousemove", function(e) {
+      var rect = c.parentElement.getBoundingClientRect();
+      mouse.current.x = e.clientX - rect.left;
+      mouse.current.y = e.clientY - rect.top;
+      trail.current.push({ x: mouse.current.x, y: mouse.current.y, life: 1 });
+      if (trail.current.length > 100) trail.current.shift();
+    });
+
+    function draw() {
+      // Fade previous frame instead of clearing — creates phosphor persistence
+      ctx.fillStyle = "rgba(0,0,0,0.04)";
+      ctx.fillRect(0, 0, c.width, c.height);
+
+      // Draw trail with glow
+      for (var i = 0; i < trail.current.length; i++) {
+        var p = trail.current[i];
+        p.life *= 0.97;
+        if (p.life < 0.01) continue;
+
+        var radius = 30 * p.life;
+        var gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius);
+        gradient.addColorStop(0, "rgba(" + CR + "," + (p.life * 0.15) + ")");
+        gradient.addColorStop(0.5, "rgba(" + CR + "," + (p.life * 0.05) + ")");
+        gradient.addColorStop(1, "rgba(" + CR + ",0)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(p.x - radius, p.y - radius, radius * 2, radius * 2);
+      }
+
+      // Main cursor orb — bright center
+      var mx = mouse.current.x, my = mouse.current.y;
+      if (mx > 0 && my > 0) {
+        var g = ctx.createRadialGradient(mx, my, 0, mx, my, 60);
+        g.addColorStop(0, "rgba(" + CR + ",0.12)");
+        g.addColorStop(0.3, "rgba(" + CR + ",0.04)");
+        g.addColorStop(1, "rgba(" + CR + ",0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(mx - 60, my - 60, 120, 120);
+      }
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+    return function() { window.removeEventListener("resize", resize); };
+  }, []);
+
+  return <canvas ref={ref} style={{ position: "absolute", inset: 0, zIndex: 7, pointerEvents: "none" }} />;
+}
+
+// ═══════════════════════════════════════════════════
+// SVG LIQUID FILTER — Applied to hero for glass distortion
+// Animated feTurbulence creates living liquid effect
+// ═══════════════════════════════════════════════════
+function LiquidFilter() {
+  var turbRef = useRef(null);
+
+  useEffect(function() {
+    var t = 0;
+    function animate() {
+      t += 0.003;
+      if (turbRef.current) {
+        turbRef.current.setAttribute("baseFrequency", (0.01 + Math.sin(t) * 0.005) + " " + (0.012 + Math.cos(t * 0.7) * 0.004));
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }, []);
+
+  return (
+    <svg style={{ position: "absolute", width: 0, height: 0 }}>
+      <defs>
+        <filter id="liquid-distort" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence ref={turbRef} type="fractalNoise" baseFrequency="0.01 0.012" numOctaves="3" seed="42" result="turb" />
+          <feDisplacementMap in="SourceGraphic" in2="turb" scale="2" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+
+// ═══════════════════════════════════════════════════
+// CODE RAIN — Matrix-style falling characters
+// ═══════════════════════════════════════════════════
+function CodeRain(){var ref=useRef(null);useEffect(function(){var c=ref.current;if(!c)return;var ctx=c.getContext("2d");var chars="01\u30A2\u30A4\u30A6{}[]<>CS|@#";var fs=10;var cols,drops;
+function resize(){c.width=innerWidth;c.height=innerHeight;cols=Math.floor(c.width/fs);drops=Array(cols).fill(1)}resize();window.addEventListener("resize",resize);
+function draw(){ctx.fillStyle="rgba(0,0,0,0.05)";ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle="rgba(0,229,255,0.07)";ctx.font=fs+"px monospace";
+for(var i=0;i<drops.length;i++){ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*fs,drops[i]*fs);if(drops[i]*fs>c.height&&Math.random()>.98)drops[i]=0;drops[i]++}requestAnimationFrame(draw)}draw();
+return function(){window.removeEventListener("resize",resize)};},[]);
+return <canvas ref={ref} style={{position:"fixed",inset:0,zIndex:0,pointerEvents:"none",opacity:.5}}/>;}
+
+// ═══════════════════════════════════════════════════
+// GENERATIVE CANVAS — Permanent mouse painting
+// Your cursor leaves permanent generative marks
+// ═══════════════════════════════════════════════════
+function GenerativeCanvas() {
+  const ref = useRef(null);
+  useEffect(function() {
+    const c = ref.current; if (!c) return;
+    const ctx = c.getContext("2d");
+    var prev = { x: 0, y: 0 };
+    function resize() { c.width = window.innerWidth; c.height = Math.max(document.body.scrollHeight, window.innerHeight * 5, 5000); }
+    resize();
+    // Don't clear - marks stay permanently
+    document.addEventListener("mousemove", function(e) {
+      var x = e.pageX; var y = e.pageY;
+      var dx = x - prev.x; var dy = y - prev.y;
+      var speed = Math.sqrt(dx * dx + dy * dy);
+      if (speed > 2) {
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(" + CR + "," + Math.min(speed * 0.003, 0.08) + ")";
+        ctx.lineWidth = Math.min(speed * 0.15, 4);
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        // Emit particles at high speed
+        if (speed > 30) {
+          for (var i = 0; i < 3; i++) {
+            ctx.fillStyle = "rgba(" + CR + "," + (Math.random() * 0.12) + ")";
+            ctx.fillRect(x + (Math.random() - 0.5) * speed, y + (Math.random() - 0.5) * speed, Math.random() * 3 + 1, Math.random() * 3 + 1);
+          }
+        }
+      }
+      prev = { x: x, y: y };
+    });
+    window.addEventListener("resize", function() { /* preserve content on resize */ });
+  }, []);
+  return <canvas ref={ref} style={{ position: "absolute", top: 0, left: 0, width: "100%", pointerEvents: "none", zIndex: 2 }} />;
+}
+
+// ═══════════════════════════════════════════════════
+// VARIABLE WEIGHT TEXT — Font weight changes by mouse proximity
+// ═══════════════════════════════════════════════════
+// Section heading. Was a per-mouse-move variable-weight reflow storm (6
+// instances each running querySelectorAll + getBoundingClientRect + setState on
+// every pointer move). Now a static, confident neo-grotesque heading — type as
+// the main character, no decorative motion.
+function ProximityText(props) {
+  return (
+    <div className={isChrome(props.style)?"cs-chrome":undefined} style={Object.assign({color:INK},props.style,{fontFamily:DISP})}>{props.text||""}</div>
+  );
+}
+
+// ═══════════════════════════════════════════════════
+// SCROLL DECODE TEXT — Characters resolve as you scroll
+// ═══════════════════════════════════════════════════
+// Static statement heading. Was a scroll-driven character scramble (matrix
+// cosplay) — demoted: the scan-reveal on its section already performs the one
+// "resolves into spec" motion, so the text itself stays legible.
+function ScrollDecode(props) {
+  return <div className={isChrome(props.style)?"cs-chrome":undefined} style={Object.assign({color:INK},props.style,{fontFamily:DISP})}>{props.text||""}</div>;
+}
+
+// ═══════════════════════════════════════════════════
+// THREE.JS MEGA SCENE — 8000 particles forming "CARBON STEALTH"
+// that scatter from mouse + nebula + wireframes + beams
+// ═══════════════════════════════════════════════════
+function Scene3D(){
+  var ref=useRef(null);var mouse=useRef({x:0,y:0,px:0,py:0});
+  useEffect(function(){
+    if(!ref.current)return;
+    if(!should3D())return;   // skip WebGL on mobile / reduced-motion / data-saver
+    var cleanup=null;
+    var mounted=true;
+    // Lazy load Three.js only when Scene3D mounts — saves 465KB from initial bundle
+    import("three").then(function(mod){
+      if(!mounted||!ref.current)return;
+      var THREE=mod;
+      var el=ref.current;
+      var scene=new THREE.Scene();
+      var cam=new THREE.PerspectiveCamera(50,el.clientWidth/el.clientHeight,.1,100);
+      cam.position.z=6;
+      var renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});
+      renderer.setSize(el.clientWidth,el.clientHeight);
+      renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+      renderer.setClearColor(0,0);
+      el.appendChild(renderer.domElement);
+
+    // ── STEP 1: Sample "CARBON STEALTH" text from a canvas to get particle positions ──
+    var textCanvas=document.createElement("canvas");
+    textCanvas.width=400;textCanvas.height=120;
+    var tCtx=textCanvas.getContext("2d");
+    tCtx.fillStyle="#fff";
+    tCtx.font="bold 100px 'Inter Tight', 'Arial Black', sans-serif";
+    tCtx.textAlign="center";
+    tCtx.textBaseline="middle";
+    tCtx.fillText("CS",200,60);
+    var imgData=tCtx.getImageData(0,0,400,120).data;
+
+    // Extract positions where text pixels exist
+    var textPositions=[];
+    for(var y=0;y<120;y+=2){
+      for(var x=0;x<400;x+=2){
+        var idx=(y*400+x)*4;
+        if(imgData[idx]>128){
+          textPositions.push({
+            x:(x-200)/40,
+            y:(60-y)/40,
+            z:0
+          });
+        }
+      }
+    }
+
+    // ── STEP 2: Create 8000 particles ──
+    var PCOUNT=Math.min(textPositions.length,8000);
+    var pGeo=new THREE.BufferGeometry();
+    var positions=new Float32Array(PCOUNT*3);
+    var targets=new Float32Array(PCOUNT*3);
+    var randoms=new Float32Array(PCOUNT*3); // scattered positions
+    var sizes=new Float32Array(PCOUNT);
+    var colors=new Float32Array(PCOUNT*3);
+
+    for(var i=0;i<PCOUNT;i++){
+      var tp=textPositions[i%textPositions.length];
+      // Target = text shape
+      targets[i*3]=tp.x;
+      targets[i*3+1]=tp.y;
+      targets[i*3+2]=tp.z+(Math.random()-.5)*.3;
+      // Start scattered
+      var theta=Math.random()*Math.PI*2;
+      var phi=Math.acos(2*Math.random()-1);
+      var rad=3+Math.random()*5;
+      randoms[i*3]=rad*Math.sin(phi)*Math.cos(theta);
+      randoms[i*3+1]=rad*Math.sin(phi)*Math.sin(theta);
+      randoms[i*3+2]=rad*Math.cos(phi);
+      // Current = scattered
+      positions[i*3]=randoms[i*3];
+      positions[i*3+1]=randoms[i*3+1];
+      positions[i*3+2]=randoms[i*3+2];
+      // Size
+      sizes[i]=Math.random()*2+.5;
+      // Color — cyan with variation
+      colors[i*3]=0+Math.random()*.1;
+      colors[i*3+1]=0.8+Math.random()*.2;
+      colors[i*3+2]=0.9+Math.random()*.1;
+    }
+    pGeo.setAttribute("position",new THREE.BufferAttribute(positions,3));
+    pGeo.setAttribute("size",new THREE.BufferAttribute(sizes,1));
+    pGeo.setAttribute("color",new THREE.BufferAttribute(colors,3));
+
+    // Custom shader material for particles
+    var pMat=new THREE.ShaderMaterial({
+      transparent:true,
+      depthWrite:false,
+      blending:THREE.AdditiveBlending,
+      vertexShader:[
+        "attribute float size;",
+        "attribute vec3 color;",
+        "varying vec3 vColor;",
+        "varying float vDist;",
+        "void main(){",
+        "  vColor=color;",
+        "  vec4 mv=modelViewMatrix*vec4(position,1.0);",
+        "  vDist=-mv.z;",
+        "  gl_PointSize=size*(200.0/-mv.z);",
+        "  gl_Position=projectionMatrix*mv;",
+        "}"
+      ].join("\n"),
+      fragmentShader:[
+        "varying vec3 vColor;",
+        "varying float vDist;",
+        "void main(){",
+        "  float d=length(gl_PointCoord-vec2(0.5));",
+        "  if(d>0.5)discard;",
+        "  float alpha=1.0-d*2.0;",
+        "  alpha*=alpha;",
+        "  alpha*=clamp(1.0-vDist*0.08,0.1,1.0);",
+        "  gl_FragColor=vec4(vColor,alpha*0.8);",
+        "}"
+      ].join("\n")
+    });
+    var particles=new THREE.Points(pGeo,pMat);
+    scene.add(particles);
+
+    // ── STEP 3: Wireframe geometries ──
+    var wMat=new THREE.MeshBasicMaterial({color:0x00e5ff,wireframe:true,transparent:true,opacity:.06});
+    var wMat2=new THREE.MeshBasicMaterial({color:0xf5f5f0,wireframe:true,transparent:true,opacity:.025});
+    var ico=new THREE.Mesh(new THREE.IcosahedronGeometry(3.5,1),wMat);
+    var torus1=new THREE.Mesh(new THREE.TorusGeometry(4,.01,4,120),wMat2);
+    var torus2=new THREE.Mesh(new THREE.TorusGeometry(4.5,.008,4,150),wMat2);
+    torus1.rotation.x=Math.PI/3;torus2.rotation.x=-Math.PI/4;torus2.rotation.z=Math.PI/5;
+    scene.add(ico,torus1,torus2);
+
+    // ── STEP 4: Energy beam lines ──
+    var beamCount=12;
+    for(var b=0;b<beamCount;b++){
+      var bGeo=new THREE.BufferGeometry();
+      var bPoints=[];
+      var angle=(b/beamCount)*Math.PI*2;
+      bPoints.push(new THREE.Vector3(0,0,0));
+      bPoints.push(new THREE.Vector3(Math.cos(angle)*8,Math.sin(angle)*8,(Math.random()-.5)*4));
+      bGeo.setFromPoints(bPoints);
+      var beam=new THREE.Line(bGeo,new THREE.LineBasicMaterial({color:0x00e5ff,transparent:true,opacity:.03}));
+      scene.add(beam);
+    }
+
+    // ── STEP 5: Background star field ──
+    var starGeo=new THREE.BufferGeometry();
+    var starPos=new Float32Array(2000*3);
+    for(var i=0;i<2000*3;i++)starPos[i]=(Math.random()-.5)*40;
+    starGeo.setAttribute("position",new THREE.BufferAttribute(starPos,3));
+    scene.add(new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xffffff,size:.02,transparent:true,opacity:.15})));
+
+    // ── Mouse tracking ──
+    el.addEventListener("mousemove",function(e){
+      var b=el.getBoundingClientRect();
+      mouse.current.x=((e.clientX-b.left)/b.width)*2-1;
+      mouse.current.y=-((e.clientY-b.top)/b.height)*2+1;
+    });
+
+    // ── Animation state ──
+    var formProgress=0; // 0=scattered, 1=formed
+    var t=0;
+
+    var rafId;
+    function loop(){
+      if(!mounted)return;            // stop after unmount — don't render a disposed context
+      if(document.hidden){rafId=requestAnimationFrame(loop);return;} // pause work in background tabs
+      t+=.005;
+
+      // Gradually form text (over 3 seconds after load)
+      formProgress=Math.min(1,formProgress+.008);
+      var ease=formProgress*formProgress*(3-2*formProgress); // smoothstep
+
+      // Mouse world position
+      var mx=mouse.current.x*5;
+      var my=mouse.current.y*3;
+
+      // Update particles
+      var pos=pGeo.attributes.position.array;
+      for(var i=0;i<PCOUNT;i++){
+        var tx=targets[i*3];
+        var ty=targets[i*3+1];
+        var tz=targets[i*3+2];
+        var rx=randoms[i*3];
+        var ry=randoms[i*3+1];
+        var rz=randoms[i*3+2];
+
+        // Lerp between scattered and formed
+        var goalX=rx+(tx-rx)*ease;
+        var goalY=ry+(ty-ry)*ease;
+        var goalZ=rz+(tz-rz)*ease;
+
+        // Mouse repulsion
+        var dx=goalX-mx;
+        var dy=goalY-my;
+        var dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<2){
+          var force=(1-dist/2)*1.5;
+          var angle=Math.atan2(dy,dx);
+          goalX+=Math.cos(angle)*force;
+          goalY+=Math.sin(angle)*force;
+          goalZ+=(Math.random()-.5)*force*.5;
+        }
+
+        // Add subtle floating noise
+        goalX+=Math.sin(t*2+i*.01)*.02;
+        goalY+=Math.cos(t*1.5+i*.013)*.02;
+        goalZ+=Math.sin(t*1.8+i*.017)*.02;
+
+        // Smooth follow
+        pos[i*3]+=(goalX-pos[i*3])*.08;
+        pos[i*3+1]+=(goalY-pos[i*3+1])*.08;
+        pos[i*3+2]+=(goalZ-pos[i*3+2])*.08;
+      }
+      pGeo.attributes.position.needsUpdate=true;
+
+      // Rotate wireframes slowly
+      ico.rotation.y=t*.15;ico.rotation.x=t*.1;
+      torus1.rotation.z=t*.08;torus2.rotation.y=t*.06;
+
+      // Camera subtle sway
+      cam.position.x=Math.sin(t*.3)*.15;
+      cam.position.y=Math.cos(t*.25)*.1;
+      cam.lookAt(0,0,0);
+
+      renderer.render(scene,cam);
+      rafId=requestAnimationFrame(loop);
+    }
+    loop();
+
+    function onR(){cam.aspect=el.clientWidth/el.clientHeight;cam.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight)}
+    window.addEventListener("resize",onR);
+    cleanup=function(){cancelAnimationFrame(rafId);window.removeEventListener("resize",onR);if(el.contains(renderer.domElement))el.removeChild(renderer.domElement);renderer.dispose()};
+    });
+    return function(){mounted=false;if(cleanup)cleanup()};
+  },[]);
+  return <div ref={ref} style={{position:"absolute",inset:0,zIndex:1}}/>;
+}
+
+// ═══════════════════════════════════════════════════
+// CIRCUIT SWEEP — post-boot reveal: PCB traces grow out from the
+// center of the screen, then fade. One-shot overlay.
+// ═══════════════════════════════════════════════════
+function CircuitSweep(){
+  var ref=useRef(null);
+  useEffect(function(){
+    var c=ref.current;if(!c)return;
+    var ctx=c.getContext("2d");
+    var W=c.width=window.innerWidth,H=c.height=window.innerHeight;
+    var traces=[];
+    for(var i=0;i<28;i++){
+      var a=Math.floor(Math.random()*4)*(Math.PI/2);
+      traces.push({x:W/2,y:H/2,dir:a,len:0,max:160+Math.random()*Math.max(W,H)*.45,seg:[],turns:0});
+    }
+    var t0=performance.now(),raf;
+    function step(now){
+      var el=now-t0;
+      ctx.clearRect(0,0,W,H);
+      ctx.globalAlpha=el>1600?Math.max(0,1-(el-1600)/600):1;
+      traces.forEach(function(tr){
+        if(tr.len<tr.max){
+          tr.seg.push({x:tr.x,y:tr.y});
+          tr.x+=Math.cos(tr.dir)*14;tr.y+=Math.sin(tr.dir)*14;tr.len+=14;
+          if(Math.random()<.12&&tr.turns<5){tr.dir+=(Math.random()<.5?1:-1)*Math.PI/2;tr.turns++}
+        }
+        if(!tr.seg.length)return;
+        ctx.beginPath();ctx.moveTo(tr.seg[0].x,tr.seg[0].y);
+        tr.seg.forEach(function(p){ctx.lineTo(p.x,p.y)});
+        ctx.lineTo(tr.x,tr.y);
+        ctx.strokeStyle="rgba(0,229,255,.45)";ctx.lineWidth=1;ctx.stroke();
+        ctx.fillStyle="rgba(0,229,255,.95)";ctx.fillRect(tr.x-1.5,tr.y-1.5,3,3);
+      });
+      ctx.globalAlpha=1;
+      if(el<2200)raf=requestAnimationFrame(step);
+      else{ctx.clearRect(0,0,W,H);c.style.display="none"}
+    }
+    raf=requestAnimationFrame(step);
+    return function(){cancelAnimationFrame(raf)};
+  },[]);
+  return <canvas ref={ref} style={{position:"fixed",inset:0,zIndex:9999,pointerEvents:"none"}}/>;
+}
+
+// ═══════════════════════════════════════════════════
+// PRINT FORGE — Reverse Engineering / 3D printing visual.
+// A part materializes layer by layer under a moving print head,
+// then a scan beam sweeps it back to a wireframe (reverse
+// engineering) and the cycle restarts.
+// ═══════════════════════════════════════════════════
+function PrintForge(){
+  var ref=useRef(null);
+  useEffect(function(){
+    var c=ref.current;if(!c)return;
+    var ctx=c.getContext("2d");
+    var W,H;function fit(){W=c.width=c.offsetWidth;H=c.height=c.offsetHeight}
+    fit();window.addEventListener("resize",fit);
+    // Part silhouette: half-widths per layer, bottom -> top (a turbine-hub-like profile)
+    var prof=[];
+    var NL=34;
+    for(var i=0;i<NL;i++){
+      var t=i/(NL-1);
+      var w=.42-.16*Math.sin(t*Math.PI)-(t>.75?(t-.75)*.7:0)+(i%6===0?.05:0);
+      prof.push(Math.max(.08,w));
+    }
+    var layer=0,sub=0,phase=0,scanY=0; // phase 0=print 1=hold 2=scan(wireframe) 3=reset-fade
+    var raf;
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      var cx=W/2,baseY=H*.88,lh=(H*.72)/NL;
+      // build plate
+      ctx.strokeStyle="rgba(245,245,240,.15)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(W*.08,baseY+6);ctx.lineTo(W*.92,baseY+6);ctx.stroke();
+      for(var g=0;g<12;g++){ctx.beginPath();ctx.moveTo(W*.08+g*(W*.84/11),baseY+6);ctx.lineTo(W*.08+g*(W*.84/11)+8,baseY+12);ctx.strokeStyle="rgba(245,245,240,.06)";ctx.stroke()}
+      var visible=phase===0?layer:NL;
+      for(var i=0;i<visible;i++){
+        var hw=prof[i]*W*.5,y=baseY-i*lh;
+        var wire=phase===2&&y>scanY||phase===3;
+        if(wire){
+          ctx.strokeStyle="rgba(0,229,255,.55)";ctx.lineWidth=1;
+          ctx.strokeRect(cx-hw,y-lh+1,hw*2,lh-2);
+        }else{
+          ctx.fillStyle="rgba(0,229,255,"+(0.10+0.10*(i/NL))+")";
+          ctx.fillRect(cx-hw,y-lh+1,hw*2,lh-2);
+          ctx.strokeStyle="rgba(0,229,255,.35)";ctx.lineWidth=.5;
+          ctx.strokeRect(cx-hw,y-lh+1,hw*2,lh-2);
+        }
+      }
+      if(phase===0&&layer<NL){
+        // print head sweeping the current layer
+        var hw2=prof[layer]*W*.5,y2=baseY-layer*lh;
+        var hx=cx-hw2+(sub%1)*(hw2*2);
+        ctx.strokeStyle="rgba(245,245,240,.25)";ctx.beginPath();ctx.moveTo(W*.05,y2-lh);ctx.lineTo(W*.95,y2-lh);ctx.stroke();
+        ctx.fillStyle="#C9D1D6";ctx.beginPath();ctx.moveTo(hx,y2-lh+2);ctx.lineTo(hx-5,y2-lh-8);ctx.lineTo(hx+5,y2-lh-8);ctx.closePath();ctx.fill();
+        ctx.fillStyle="rgba(0,229,255,.9)";ctx.fillRect(hx-1,y2-lh+2,2,4);
+        sub+=.06;if(sub>=1){sub=0;layer++}
+        if(layer>=NL){phase=1;setTimeout(function(){phase=2;scanY=baseY-NL*lh},900)}
+      }else if(phase===2){
+        // reverse-engineering scan beam
+        ctx.fillStyle="rgba(0,229,255,.10)";ctx.fillRect(W*.06,scanY-2,W*.88,4);
+        ctx.fillStyle="rgba(0,229,255,.9)";ctx.fillRect(W*.06,scanY,W*.88,1);
+        scanY+=2.4;
+        if(scanY>baseY){phase=3;setTimeout(function(){layer=0;sub=0;phase=0},1200)}
+      }
+      // HUD labels
+      ctx.font="9px Space Mono,monospace";ctx.fillStyle="rgba(0,229,255,.7)";
+      ctx.fillText(phase===2?"> SCANNING GEOMETRY...":phase===3?"> MESH RECONSTRUCTED":"LAYER "+Math.min(layer+1,NL)+"/"+NL+"  0.20 MM",12,18);
+      ctx.fillStyle="rgba(245,245,240,.35)";
+      ctx.fillText(phase>=2?"REVERSE ENGINEERING MODE":"ADDITIVE BUILD MODE",12,32);
+      raf=requestAnimationFrame(draw);
+    }
+    raf=requestAnimationFrame(draw);
+    return function(){cancelAnimationFrame(raf);window.removeEventListener("resize",fit)};
+  },[]);
+  return <canvas ref={ref} style={{width:"100%",height:"100%",display:"block"}}/>;
+}
+
+// THE MONUMENT now lives in src/MonumentGalaxy.jsx (a spiral galaxy, one star per visit).
+
+// ═══════════════════════════════════════════════════
+// TOLERANCE SIGNATURE — the measured carbon surface
+// A precision-measured mesh: opens as a sparse scan-point cloud (digital),
+// resolves in ≤900ms into the woven carbon weave (physical). One idea,
+// executed deeply. Replaces the particle-text hero.
+// ═══════════════════════════════════════════════════
+function MeasuredSurface(){
+  var host=useRef(null);
+  useEffect(function(){
+    var el=host.current; if(!el) return;
+    if(!should3D()){
+      // Mobile / reduced-motion: static blueprint canvas instead of the 680KB WebGL
+      var c=document.createElement("canvas");c.style.width="100%";c.style.height="100%";c.style.display="block";
+      var ctx=c.getContext("2d");var dpr=Math.min(window.devicePixelRatio||1,2);
+      function paint(){var w=el.clientWidth,h=el.clientHeight;c.width=w*dpr;c.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+        var cols=26,rows=16,gx=w/cols,gy=h/rows;ctx.strokeStyle="rgba(201,209,214,.06)";ctx.lineWidth=1;
+        for(var x=0;x<=cols;x++){ctx.beginPath();ctx.moveTo(x*gx,0);ctx.lineTo(x*gx,h);ctx.stroke();}
+        for(var y=0;y<=rows;y++){ctx.beginPath();ctx.moveTo(0,y*gy);ctx.lineTo(w,y*gy);ctx.stroke();}
+        ctx.fillStyle="rgba(0,229,255,.55)";for(var i=0;i<70;i++){var px=(i*137.5)%w,py=(i*89.3)%h;ctx.fillRect(px,py,2,2);} }
+      el.appendChild(c);paint();window.addEventListener("resize",paint);
+      return function(){window.removeEventListener("resize",paint);if(el.contains(c))el.removeChild(c);};
+    }
+    var mounted=true,cleanup=null;
+    import("three").then(function(THREE){
+      if(!mounted||!el) return;
+      var scene=new THREE.Scene();
+      var cam=new THREE.PerspectiveCamera(42,el.clientWidth/el.clientHeight,0.1,100);
+      cam.position.set(0,0,6);
+      var renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});
+      renderer.setSize(el.clientWidth,el.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+      renderer.setClearColor(0x000000,0);
+      el.appendChild(renderer.domElement);
+
+      // A measured plane — woven carbon, gently curved
+      var SEGX=48,SEGY=30;
+      var geo=new THREE.PlaneGeometry(9,5.4,SEGX,SEGY);
+      var base=geo.attributes.position.array.slice();
+      for(var i=0;i<base.length;i+=3){ // anisotropic weave displacement baked once
+        var x=base[i],y=base[i+1];
+        base[i+2]=Math.sin(x*2.2)*0.08+Math.cos(y*2.6)*0.06;
+      }
+      // Woven wireframe (the resolved physical part)
+      var weave=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0x1c2024,wireframe:true,transparent:true,opacity:0}));
+      // Measurement points (the digital scan)
+      var pGeo=new THREE.BufferGeometry();
+      pGeo.setAttribute("position",new THREE.BufferAttribute(geo.attributes.position.array.slice(),3));
+      var pts=new THREE.Points(pGeo,new THREE.PointsMaterial({color:0x00e5ff,size:0.045,transparent:true,opacity:0.9}));
+      var grp=new THREE.Group();grp.rotation.x=-0.55;grp.rotation.z=0.04;
+      grp.add(weave);grp.add(pts);scene.add(grp);
+
+      var t0=performance.now(),raf,mx=0,my=0,tmx=0,tmy=0;
+      function onMove(e){tmx=(e.clientX/window.innerWidth-0.5);tmy=(e.clientY/window.innerHeight-0.5);}
+      window.addEventListener("pointermove",onMove,{passive:true});
+      var pos=geo.attributes.position.array,ppos=pGeo.attributes.position.array,scan=geo.attributes.position.array.slice();
+
+      function loop(now){
+        if(!mounted) return;
+        var t=(now-t0)/1000;
+        var resolve=Math.min(t/0.9,1);            // 0→1 in 900ms: scan resolves to weave
+        var e=1-Math.pow(1-resolve,3);            // ease-out cubic
+        // points fall from a scattered scan cloud onto the measured surface
+        for(var i=0;i<pos.length;i+=3){
+          var tx=base[i],ty=base[i+1],tz=base[i+2];
+          var sx=tx*1.18,sy=ty*1.18,sz=tz+ (((i*0.013)%1)-0.5)*3.2;
+          ppos[i]=sx+(tx-sx)*e; ppos[i+1]=sy+(ty-sy)*e; ppos[i+2]=sz+(tz-sz)*e;
+          pos[i]=tx;pos[i+1]=ty;pos[i+2]=tz+Math.sin(tx*2.2+t*0.6)*0.02;
+        }
+        pGeo.attributes.position.needsUpdate=true; geo.attributes.position.needsUpdate=true;
+        pts.material.opacity=0.9*(1-e)+0.18;
+        weave.material.opacity=0.5*e;
+        mx+=(tmx-mx)*0.04; my+=(tmy-my)*0.04;
+        grp.rotation.y=mx*0.4; grp.rotation.x=-0.55+my*0.18;
+        renderer.render(scene,cam); raf=requestAnimationFrame(loop);
+      }
+      raf=requestAnimationFrame(loop);
+      function onResize(){if(!el)return;cam.aspect=el.clientWidth/el.clientHeight;cam.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight);}
+      window.addEventListener("resize",onResize);
+      cleanup=function(){cancelAnimationFrame(raf);window.removeEventListener("resize",onResize);window.removeEventListener("pointermove",onMove);if(el&&el.contains(renderer.domElement))el.removeChild(renderer.domElement);geo.dispose();pGeo.dispose();renderer.dispose();};
+    });
+    return function(){mounted=false;if(cleanup)cleanup();};
+  },[]);
+  return <div ref={host} aria-hidden="true" style={{position:"absolute",inset:0,zIndex:1,pointerEvents:"none"}}/>;
+}
+
+// Scroll-scan reveal: a thin cyan measurement line sweeps the section once on
+// entry; content resolves from blueprint (wireframe) to finished. One motif,
+// repeated with discipline. Honors prefers-reduced-motion.
+function ScanReveal(props){
+  var ref=useRef(null);
+  var [seen,setSeen]=useState(false);
+  useEffect(function(){
+    var el=ref.current; if(!el) return;
+    try{ if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){setSeen(true);return;} }catch(e){}
+    if(!("IntersectionObserver" in window)){setSeen(true);return;}
+    var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){setSeen(true);io.disconnect();}});},{threshold:0.18});
+    io.observe(el);
+    return function(){io.disconnect();};
+  },[]);
+  return <div ref={ref} className={"cs-scan"+(seen?" in":"")} style={props.style}>
+    <span className="cs-scan-line" aria-hidden="true"/>
+    {props.children}
+  </div>;
+}
+
+// Blueprint furniture — dimension line with a tolerance callout. Real layout
+// furniture that carries the engineering-drawing metaphor, not decoration.
+function Dim(props){
+  return <div aria-hidden="true" style={Object.assign({display:"flex",alignItems:"center",gap:8,fontFamily:MONO,fontSize:9,letterSpacing:".18em",color:INK2},props.style)}>
+    <span style={{width:6,height:6,borderLeft:"1px solid "+INK2,borderBottom:"1px solid "+INK2}}/>
+    <span style={{flex:props.flex?"1":"none",height:1,minWidth:24,background:"repeating-linear-gradient(90deg,"+INK2+" 0 4px,transparent 4px 8px)",opacity:.5}}/>
+    <span>{props.label}</span>
+  </div>;
+}
+
+// CaliperCursor now lives in Instruments.jsx: it measures the element you point at.
+
+// ═══════════════════════════════════════════════════
+// MAIN APP
+// ═══════════════════════════════════════════════════
+// Формата за контакт — B2B полета (стойностите съвпадат със списъците в api/_contact.php)
+const B2B_COUNTRY=[["IT",{it:"Italia",en:"Italy",bg:"Италия"}],["BG",{it:"Bulgaria",en:"Bulgaria",bg:"България"}],["EU",{it:"Altro paese UE",en:"Other EU country",bg:"Друга държава от ЕС"}],["WORLD",{it:"Fuori dall'UE",en:"Outside the EU",bg:"Извън ЕС"}]];
+const B2B_SOLUTION=[["web",{it:"Sito web",en:"Website",bg:"Уебсайт"}],["ecommerce",{it:"E-commerce",en:"E-commerce",bg:"Онлайн магазин"}],["erp",{it:"ERP / gestionale",en:"ERP / management software",bg:"ERP / управленска система"}],["software",{it:"Software su misura",en:"Custom software",bg:"Софтуер по поръчка"}],["app",{it:"App mobile",en:"Mobile app",bg:"Мобилно приложение"}],["seo",{it:"SEO / GEO / AEO",en:"SEO / GEO / AEO",bg:"SEO / GEO / AEO"}],["other",{it:"Altro",en:"Other",bg:"Друго"}]];
+const B2B_BUDGET=[["lt5k",{it:"Fino a €5.000",en:"Under €5,000",bg:"До €5000"}],["5-15k",{it:"€5.000–15.000",en:"€5,000–15,000",bg:"€5000–15 000"}],["15-50k",{it:"€15.000–50.000",en:"€15,000–50,000",bg:"€15 000–50 000"}],["gt50k",{it:"Oltre €50.000",en:"Over €50,000",bg:"Над €50 000"}],["tbd",{it:"Da definire",en:"To be defined",bg:"Предстои да уточним"}]];
+
+// Четирите направления (доклад SEO/GEO/AEO, 22.11.2026, §3). Страниците им са статични —
+// scripts/generate-solutions.py; имената, адресите и обещанията тук трябва да съвпадат с тях.
+const SOL_HUB={it:"/soluzioni/",en:"/en/solutions/",bg:"/bg/resheniya/"};
+const SOL=[
+  {key:"business",icons:["erp","software","api"],url:{it:"/soluzioni/software-aziendale/",en:"/en/solutions/business-software/",bg:"/bg/resheniya/biznes-softuer/"},
+   name:{it:"Software aziendale",en:"Business software",bg:"Бизнес софтуер"},
+   promise:{it:"Software sui processi della vostra azienda: commessa, produzione, magazzino, fattura.",en:"Software built on your company's processes: order, production, stock, invoice.",bg:"Софтуер по процесите на фирмата: поръчка, производство, склад, фактура."},
+   svc:{it:"ERP su misura · software e gestionali · integrazioni API",en:"Custom ERP · custom software · API integrations",bg:"ERP по поръчка · софтуер по поръчка · API интеграции"},
+   proj:{it:"ERP Ascensori · Rilievi Impianti · Fakturist",en:"ERP Ascensori · Rilievi Impianti · Fakturist",bg:"ERP Ascensori · Rilievi Impianti · Фактурист"}},
+  {key:"industrial",icons:["reverse","software"],url:{it:"/soluzioni/tecnologia-industriale/",en:"/en/solutions/industrial-technology/",bg:"/bg/resheniya/industrialni-tehnologii/"},
+   name:{it:"Tecnologia industriale",en:"Industrial technology",bg:"Индустриални технологии"},
+   promise:{it:"Dal pezzo fisico al software: modelli, file per le macchine, cataloghi 3D.",en:"From the physical part to software: models, machine files, 3D catalogues.",bg:"От физическия детайл до софтуера: модели, файлове за машините, 3D каталози."},
+   svc:{it:"Reverse engineering e stampa 3D · software per la produzione · DXF e G-code",en:"Reverse engineering and 3D printing · production software · DXF and G-code",bg:"Реверсивен инженеринг и 3D печат · софтуер за производството · DXF и G-code"},
+   proj:{it:"Korpora · Panev Ascensori",en:"Korpora · Panev Ascensori",bg:"Korpora · Panev Ascensori"}},
+  {key:"web",icons:["web","ecommerce","seo"],url:{it:"/soluzioni/siti-ecommerce/",en:"/en/solutions/websites-ecommerce/",bg:"/bg/resheniya/saytove-i-magazini/"},
+   name:{it:"Siti ed e-commerce",en:"Websites and e-commerce",bg:"Сайтове и магазини"},
+   promise:{it:"Siti e negozi che si fanno trovare e vendono.",en:"Sites and stores that get found and sell.",bg:"Сайтове и магазини, които се намират и продават."},
+   svc:{it:"Siti · e-commerce · app · SEO, GEO e AEO",en:"Websites · e-commerce · apps · SEO, GEO and AEO",bg:"Сайтове · онлайн магазини · приложения · SEO, GEO и AEO"},
+   proj:{it:"Za Bobov Dol · Treti Mart · Eternal Touch e altri 5",en:"Za Bobov Dol · Treti Mart · Eternal Touch and 5 more",bg:"За Бобов дол · Treti Mart · Eternal Touch и още 5"}},
+  {key:"games",icons:["gamedev"],url:{it:"/soluzioni/game-interattivo/",en:"/en/solutions/games-interactive/",bg:"/bg/resheniya/igri-i-interaktiv/"},
+   name:{it:"Game e interattivo",en:"Games and interactive",bg:"Игри и интерактив"}},
+];
+// Лентата с доказателства: проектите в употреба (факти от кейс стъдито и браншовата страница)
+const PROOF=[
+  {shot:"erp-ascensori",name:"ERP Ascensori",url:{it:"/case-study/erp-ascensori/",en:"/en/case-studies/erp-ascensori/",bg:"/bg/keys-studii/erp-ascensori/"},
+   txt:{it:"ERP per un produttore di ascensori: produzione, magazzino, fatture, 7 livelli di accesso.",en:"ERP for an elevator manufacturer: production, warehouse, invoices, 7 access levels.",bg:"ERP за производител на асансьори: производство, склад, фактури, 7 нива на достъп."}},
+  {shot:"rilievi",name:"Rilievi Impianti",url:{it:"/settori/ascensori/",en:"/en/industries/ascensori/",bg:"/bg/branshove/ascensori/"},
+   txt:{it:"Schede di rilievo dal telefono che preparano gli ordini ai costruttori.",en:"Survey sheets filled in on a phone that prepare the manufacturers' orders.",bg:"Схеми за оглед от телефона, които подготвят поръчките към производителите."}},
+  {shot:"panev-ascensori",name:"Panev Ascensori",url:{it:"/settori/ascensori/",en:"/en/industries/ascensori/",bg:"/bg/branshove/ascensori/"},
+   txt:{it:"Listino di 48 articoli con vista 3D fotorealistica, in tre lingue.",en:"A 48-item price list with a photorealistic 3D view, in three languages.",bg:"Ценоразпис от 48 артикула с фотореалистичен 3D изглед, на три езика."}},
+];
+// Браншовете: асансьорният първи (scripts/generate-industries.py — същите адреси и имена)
+const SECT_BASE={it:"/settori/",en:"/en/industries/",bg:"/bg/branshove/"};
+const SECT_FIRST={slug:"ascensori",name:{it:"Aziende ascensoristiche",en:"Elevator companies",bg:"Асансьорни фирми"},
+  tag:{it:"ERP di produzione, rilievi impianti e cataloghi B2B: tre sistemi reali per il settore.",en:"Production ERP, installation surveys and B2B catalogs: three real systems for the sector.",bg:"Производствен ERP, огледи на уредби и B2B каталози: три реални системи за бранша."}};
+const SECT=[
+  ["produzione-industria",{it:"Produzione e industria",en:"Manufacturing & industry",bg:"Производство и индустрия"}],
+  ["artigiani-officine",{it:"Artigiani e officine",en:"Artisans & workshops",bg:"Занаятчии и сервизи"}],
+  ["servizi-professionali",{it:"Servizi professionali",en:"Professional services",bg:"Професионални услуги"}],
+  ["scuole-formazione",{it:"Scuole e formazione",en:"Schools & training",bg:"Училища и обучение"}],
+  ["ecommerce-alimentari",{it:"E-commerce alimentari",en:"Food e-commerce",bg:"Хранителни онлайн магазини"}],
+  ["studi-medici",{it:"Studi medici",en:"Medical practices",bg:"Медицински кабинети"}],
+];
+const CASES_URL={it:"/case-study/",en:"/en/case-studies/",bg:"/bg/keys-studii/"};
+
+export default function App(){
+  const[loaded,setLoaded]=useState(true);const[pct,setPct]=useState(100);
+  const[scrollPx,setScrollPx]=useState(0);
+  const[lang,setLang]=useState(function(){return detectLang()});
+  // IP geolocation overrides timezone detection (IT/BG/other→EN) — but never an explicit user choice
+  // <html lang> follows the visible language (screen readers pronounce the page in the right language)
+  useEffect(function(){try{document.documentElement.lang=lang}catch(e){}},[lang]);
+  // (the ipapi.co IP lookup was removed: it sent every visitor's IP to a US company on load;
+  //  detectLang() already picks the language from the browser and the time zone)
+  const[mobileMenu,setMobileMenu]=useState(false);
+  const[cookieOk,setCookieOk]=useState(function(){try{return localStorage.getItem("cs_cookie")!==null}catch(e){return false}});
+  useChromeLight(lang);
+  // every section is watched, so the carriage leaves the nav when you read a section it has no link for
+  var activeSec=useActiveSection(["hero","solutions","proof","sectors","portfolio","pricing","products","lab","monument","coverage","about","games","contact","faq"],lang);
+  var workRef=useRef(null);useTilt(workRef,".cs-work-card",5);
+  var heroArtRef=useRef(null);
+  // the hero mark tilts toward the pointer (desktop only; CSS applies the vars)
+  useEffect(function(){var el=heroArtRef.current;if(!el||!finePointer()||reducedMotion())return;var raf=0,ex=0,ey=0;function ap(){raf=0;el.style.setProperty("--hry",((ex/innerWidth-.5)*14).toFixed(2)+"deg");el.style.setProperty("--hrx",((.5-ey/innerHeight)*10).toFixed(2)+"deg")}function mv(e){if(scrollY>innerHeight)return;ex=e.clientX;ey=e.clientY;if(!raf)raf=requestAnimationFrame(ap)}window.addEventListener("pointermove",mv,{passive:true});return function(){window.removeEventListener("pointermove",mv);if(raf)cancelAnimationFrame(raf)}},[]);
+  // услугите „светват“ веднъж, когато редът влезе в екрана: светлината на иконата и едно отражение през нея
+  // (крайно, под 2 s — не е постоянно движение; при reduced-motion не се случва)
+  const[formName,setFormName]=useState("");const[formEmail,setFormEmail]=useState("");const[formPhone,setFormPhone]=useState("");const[formMsg,setFormMsg]=useState("");const[formCompany,setFormCompany]=useState("");const[formCountry,setFormCountry]=useState("");const[formSolution,setFormSolution]=useState("");const[formBudget,setFormBudget]=useState("");const[formSent,setFormSent]=useState(false);const formStarted=useRef(false);
+
+  // Translation helper
+  function t(key){var entry=LANGS[key];if(!entry)return key;return entry[lang]||entry.en||key}
+
+  function handleFormSubmit(){if(!formName.trim()||!formEmail.trim()||!formMsg.trim())return;setFormSent("sending");fetch("/api/contact.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:formName,email:formEmail,phone:formPhone,message:formMsg,company:formCompany,country:formCountry,solution:formSolution,budget:formBudget,lang:lang,_gotcha:""})}).then(function(r){return r.json()}).then(function(d){if(d.ok){setFormSent("ok");if(window.csTrack)window.csTrack("generate_lead",{form:"contact",solution:formSolution||"none",budget:formBudget||"none",country:formCountry||"none"});setTimeout(function(){setFormSent(false);setFormName("");setFormEmail("");setFormPhone("");setFormMsg("");setFormCompany("");setFormCountry("");setFormSolution("");setFormBudget("")},5000)}else{setFormSent("error")}}).catch(function(){setFormSent("error");setTimeout(function(){setFormSent(false)},4000)})}
+  useEffect(function(){if(!mobileMenu)return;function k(e){if(e.key==="Escape")setMobileMenu(false)}document.addEventListener("keydown",k);return function(){document.removeEventListener("keydown",k)}},[mobileMenu]);
+  function acceptCookies(){setCookieOk(true);try{localStorage.setItem("cs_cookie","accepted")}catch(e){}}
+  function rejectCookies(){setCookieOk(true);try{localStorage.setItem("cs_cookie","rejected")}catch(e){}}
+
+  // Admin panel: Ctrl+Shift+A or type "admin" in terminal
+  useEffect(function(){function go(){window.location.assign("/admin/")}function h(e){if(e.ctrlKey&&e.shiftKey&&(e.key==="A"||e.key==="a")){e.preventDefault();go();}}window.addEventListener("keydown",h);window.addEventListener("cs-admin-toggle",go);return function(){window.removeEventListener("keydown",h);window.removeEventListener("cs-admin-toggle",go)}},[]);
+  useEffect(function(){function h(){setScrollPx(window.scrollY)}window.addEventListener("scroll",h,{passive:true});return function(){window.removeEventListener("scroll",h)}},[]);
+
+  // Scroll re-measures: a cyan line sweeps each section once on entry and its
+  // content resolves from blueprint to finished. The single signature motif,
+  // applied site-wide via one observer (no per-section markup).
+  useEffect(function(){
+    if(!loaded) return;
+    try{ if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches) return; }catch(e){}
+    if(!("IntersectionObserver" in window)) return;
+    // Skip the hero: it is above the fold and holds the LCP element (H1) —
+    // hiding it until the observer fires would delay LCP. It paints instantly.
+    var secs=[].slice.call(document.querySelectorAll("#main section")).filter(function(s){return s.id!=="hero";});
+    secs.forEach(function(s){s.classList.add("cs-prep");});
+    var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("cs-seen");io.unobserve(en.target);}});},{threshold:0.12,rootMargin:"0px 0px -8% 0px"});
+    secs.forEach(function(s){io.observe(s);});
+    return function(){io.disconnect();};
+  },[loaded,lang]);
+
+  // ── Collect REAL system info for boot sequence ──
+  var [sysInfo, setSysInfo] = useState({});
+  useEffect(function() {
+    var info = {};
+    info.cores = navigator.hardwareConcurrency || "?";
+    info.mem = navigator.deviceMemory ? navigator.deviceMemory + "GB" : "CLASSIFIED";
+    info.platform = navigator.platform || "UNKNOWN";
+    info.lang = (navigator.language || "en").toUpperCase();
+    info.online = navigator.onLine ? "CONNECTED" : "OFFLINE";
+    info.screen = window.screen.width + "x" + window.screen.height;
+    info.depth = window.screen.colorDepth + "BIT";
+    info.dpr = window.devicePixelRatio ? window.devicePixelRatio.toFixed(1) + "x" : "1x";
+    info.touch = navigator.maxTouchPoints > 0 ? "YES (" + navigator.maxTouchPoints + " POINTS)" : "NO";
+    info.ua = (function() {
+      var u = navigator.userAgent;
+      if (u.indexOf("CriOS") > -1) return "CHROME iOS";
+      if (u.indexOf("FxiOS") > -1) return "FIREFOX iOS";
+      if (u.indexOf("Edg") > -1) return "EDGE / CHROMIUM";
+      if (u.indexOf("Chrome") > -1 && u.indexOf("Safari") > -1) return "CHROMIUM";
+      if (u.indexOf("Firefox") > -1) return "GECKO / FIREFOX";
+      if (u.indexOf("Safari") > -1) return "WEBKIT / SAFARI";
+      return "UNKNOWN ENGINE";
+    })();
+    info.cookies = navigator.cookieEnabled ? "ENABLED" : "DISABLED";
+    info.webgl = (function() { try { var c = document.createElement("canvas"); var g = c.getContext("webgl2") || c.getContext("webgl"); if (g) { var d = g.getExtension("WEBGL_debug_renderer_info"); return d ? g.getParameter(d.UNMASKED_RENDERER_WEBGL) : "WEBGL SUPPORTED"; } return "NONE"; } catch(e) { return "NONE"; } })();
+    info.time = new Date().toISOString();
+    // Battery (async) — not supported on iOS
+    if (navigator.getBattery) {
+      try {
+        navigator.getBattery().then(function(b) { info.battery = Math.round(b.level * 100) + "%" + (b.charging ? " CHARGING" : " DISCHARGING"); setSysInfo(Object.assign({}, info)); }).catch(function() { info.battery = "API RESTRICTED"; setSysInfo(Object.assign({}, info)); });
+      } catch(e) { info.battery = "NOT AVAILABLE"; }
+    } else {
+      info.battery = "API NOT SUPPORTED (iOS)";
+    }
+    // Network
+    var conn = navigator.connection || navigator.mozConnection;
+    if (conn) { info.net = (conn.effectiveType || "?").toUpperCase() + " / " + (conn.downlink || "?") + " MBPS"; }
+    setSysInfo(info);
+  }, []);
+
+  // ── Boot log lines (appear one by one) ──
+  var [bootLines, setBootLines] = useState([]);
+  var [bootPhase, setBootPhase] = useState(0); // 0=booting, 1=complete, 2=shatter
+  var bootCanvasRef = useRef(null);
+
+  useEffect(function() {
+    if (loaded) return;
+    var lines = [
+      { delay: 100, text: "CARBON STEALTH BIOS v5.0.2026", color: C },
+      { delay: 300, text: "EIK: 208725180 — UL. SAMUIL 3, BOBOV DOL 2670, BULGARIA", color: "#ccc" },
+      { delay: 500, text: "\u2500".repeat(52), color: "#ccc" },
+      { delay: 700, text: "SCANNING HARDWARE...", color: "#C9D1D6" },
+      { delay: 900, text: "  CPU THREADS:    " + (sysInfo.cores || "?") + " CORES DETECTED", color: C },
+      { delay: 1100, text: "  MEMORY:         " + (sysInfo.mem || "SCANNING..."), color: C },
+      { delay: 1250, text: "  GPU:            " + (sysInfo.webgl || "DETECTING...").substring(0, 40), color: C },
+      { delay: 1400, text: "  DISPLAY:        " + (sysInfo.screen || "?") + " @ " + (sysInfo.dpr || "1x") + " DPR / " + (sysInfo.depth || "?"), color: C },
+      { delay: 1550, text: "  TOUCH INPUT:    " + (sysInfo.touch || "SCANNING..."), color: C },
+      { delay: 1700, text: "  NETWORK:        " + (sysInfo.net || sysInfo.online || "PROBING..."), color: C },
+      { delay: 1850, text: "  BATTERY:        " + (sysInfo.battery || "N/A"), color: C },
+      { delay: 2000, text: "  ENGINE:         " + (sysInfo.ua || "?"), color: C },
+      { delay: 2200, text: "\u2500".repeat(52), color: "#ccc" },
+      { delay: 2400, text: "INITIALIZING SUBSYSTEMS...", color: "#C9D1D6" },
+      { delay: 2600, text: "  [OK] THREE.JS 3D ENGINE", color: "#00ff88" },
+      { delay: 2750, text: "  [OK] WEBGL RENDER PIPELINE", color: "#00ff88" },
+      { delay: 2900, text: "  [OK] CANVAS COMPOSITOR", color: "#00ff88" },
+      { delay: 3050, text: "  [OK] REVERSE LAB / 3D PRINT PIPELINE", color: "#00ff88" },
+      { delay: 3200, text: "  [OK] CANVAS PARTICLE ENGINE", color: "#00ff88" },
+      { delay: 3350, text: "  [OK] GENERATIVE ART MODULE", color: "#00ff88" },
+      { delay: 3500, text: "  [OK] VARIABLE TYPOGRAPHY ENGINE", color: "#00ff88" },
+      { delay: 3650, text: "  [OK] MAGNETIC REPULSION PHYSICS", color: "#00ff88" },
+      { delay: 3800, text: "\u2500".repeat(52), color: "#ccc" },
+      { delay: 4000, text: "ALL SYSTEMS NOMINAL. LAUNCHING CS...", color: C },
+    ];
+
+    var timers = [];
+    lines.forEach(function(line, i) {
+      var t = setTimeout(function() {
+        setBootLines(function(prev) { return prev.concat([line]); });
+        // Update percentage
+        setPct(Math.floor((i + 1) / lines.length * 100));
+      }, line.delay);
+      timers.push(t);
+    });
+
+    // After all lines, trigger shatter
+    var finalTimer = setTimeout(function() {
+      setBootPhase(1);
+      // Epic boot chord
+      setTimeout(function() { setBootPhase(2); }, 600);
+      setTimeout(function() {
+        window.scrollTo(0, 0);
+        setLoaded(true);
+        }, 1400);
+    }, 4600);
+
+    return function() { timers.forEach(clearTimeout); clearTimeout(finalTimer); };
+  }, [sysInfo]);
+
+  // ── Boot 3D scene — morphing wireframe that explodes on completion ──
+  var bootSceneRef = useRef(null);
+  useEffect(function() {
+    if (loaded || !bootSceneRef.current) return;
+    if (!should3D()) return;   // boot keeps its 2D particle canvas on mobile; skip the 680KB WebGL on the critical path
+    var el = bootSceneRef.current;
+    var bootCleanup = null;
+    var bootMounted = true;
+    import("three").then(function(THREE) {
+      if (!bootMounted || !el) return;
+    var scene = new THREE.Scene();
+    var cam = new THREE.PerspectiveCamera(60, el.clientWidth / el.clientHeight, 0.1, 1000);
+    cam.position.z = 4;
+    var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(el.clientWidth, el.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+    el.appendChild(renderer.domElement);
+
+    // Main morphing icosahedron
+    var icoGeo = new THREE.IcosahedronGeometry(1.8, 3);
+    var icoMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.15 });
+    var ico = new THREE.Mesh(icoGeo, icoMat);
+    scene.add(ico);
+    var origIco = icoGeo.attributes.position.array.slice();
+
+    // Inner ico
+    var ico2Geo = new THREE.IcosahedronGeometry(1.2, 2);
+    var ico2Mat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.06 });
+    var ico2 = new THREE.Mesh(ico2Geo, ico2Mat);
+    scene.add(ico2);
+
+    // Orbiting rings
+    var ring1 = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.008, 4, 100), new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.06 }));
+    var ring2 = new THREE.Mesh(new THREE.TorusGeometry(2.8, 0.006, 4, 120), new THREE.MeshBasicMaterial({ color: 0xf5f5f0, wireframe: true, transparent: true, opacity: 0.03 }));
+    ring1.rotation.x = Math.PI / 3; ring2.rotation.x = -Math.PI / 4; ring2.rotation.z = Math.PI / 5;
+    scene.add(ring1, ring2);
+
+    // Particle field — 500 particles
+    var pGeo = new THREE.BufferGeometry();
+    var pN = 500;
+    var pPositions = new Float32Array(pN * 3);
+    var pVelocities = [];
+    for (var i = 0; i < pN; i++) {
+      // Distribute on sphere surface
+      var theta = Math.random() * Math.PI * 2;
+      var phi = Math.acos(2 * Math.random() - 1);
+      var r = 1.8 + Math.random() * 0.3;
+      pPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      pPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      pPositions[i * 3 + 2] = r * Math.cos(phi);
+      pVelocities.push({ x: 0, y: 0, z: 0 });
+    }
+    pGeo.setAttribute("position", new THREE.BufferAttribute(pPositions, 3));
+    var pts = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x00e5ff, size: 0.02, transparent: true, opacity: 0.5 }));
+    scene.add(pts);
+    var origParticles = pPositions.slice();
+
+    var t = 0;
+    var exploded = false;
+    var explodeTime = 0;
+
+    var bootRaf;
+    function loop() {
+      if (!bootMounted) return;     // boot screen unmounted — stop rendering the disposed scene
+      t += 0.008;
+
+      // Rotation
+      ico.rotation.y = t * 0.3;
+      ico.rotation.x = t * 0.2;
+      ico2.rotation.y = -t * 0.4;
+      ico2.rotation.z = t * 0.15;
+      ring1.rotation.z = t * 0.1;
+      ring2.rotation.y = t * 0.08;
+
+      // Vertex displacement — breathing effect
+      var positions = icoGeo.attributes.position.array;
+      for (var i = 0; i < positions.length; i += 3) {
+        var ox = origIco[i], oy = origIco[i + 1], oz = origIco[i + 2];
+        var noise = Math.sin(ox * 4 + t * 3) * Math.cos(oy * 4 + t * 2) * Math.sin(oz * 3 + t * 2.5);
+        var breathe = 1 + Math.sin(t * 1.5) * 0.08;
+        var disp = exploded ? (1 + (t - explodeTime) * 3) : breathe;
+        positions[i] = ox * disp + ox * noise * 0.1;
+        positions[i + 1] = oy * disp + oy * noise * 0.1;
+        positions[i + 2] = oz * disp + oz * noise * 0.1;
+      }
+      icoGeo.attributes.position.needsUpdate = true;
+
+      // Particles — orbit or explode
+      var pPos = pGeo.attributes.position.array;
+      for (var i = 0; i < pN; i++) {
+        if (exploded) {
+          // Explode outward
+          pVelocities[i].x += (pPos[i * 3]) * 0.008;
+          pVelocities[i].y += (pPos[i * 3 + 1]) * 0.008;
+          pVelocities[i].z += (pPos[i * 3 + 2]) * 0.008;
+          pPos[i * 3] += pVelocities[i].x;
+          pPos[i * 3 + 1] += pVelocities[i].y;
+          pPos[i * 3 + 2] += pVelocities[i].z;
+        } else {
+          // Gentle orbit
+          var ox = origParticles[i * 3], oy = origParticles[i * 3 + 1], oz = origParticles[i * 3 + 2];
+          var angle = t * 0.3 + i * 0.01;
+          pPos[i * 3] = ox * Math.cos(angle) - oz * Math.sin(angle);
+          pPos[i * 3 + 1] = oy + Math.sin(t + i) * 0.1;
+          pPos[i * 3 + 2] = ox * Math.sin(angle) + oz * Math.cos(angle);
+        }
+      }
+      pGeo.attributes.position.needsUpdate = true;
+
+      // Intensity based on boot progress
+      icoMat.opacity = 0.1 + (pct / 100) * 0.2;
+      pts.material.opacity = 0.3 + (pct / 100) * 0.4;
+
+      renderer.render(scene, cam);
+      bootRaf = requestAnimationFrame(loop);
+    }
+    loop();
+
+    // Listen for boot phase changes to trigger explosion
+    var observer = setInterval(function() {
+      if (bootPhase >= 1 && !exploded) {
+        exploded = true;
+        explodeTime = t;
+        icoMat.opacity = 0.5;
+        icoMat.color.set(0xffffff);
+        pts.material.size = 0.04;
+      }
+    }, 100);
+
+    function onResize() { cam.aspect = el.clientWidth / el.clientHeight; cam.updateProjectionMatrix(); renderer.setSize(el.clientWidth, el.clientHeight); }
+    window.addEventListener("resize", onResize);
+    bootCleanup = function() { cancelAnimationFrame(bootRaf); window.removeEventListener("resize", onResize); clearInterval(observer); if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement); renderer.dispose(); };
+    });
+    return function() { bootMounted = false; if (bootCleanup) bootCleanup(); };
+  }, [loaded]);
+
+  // ── Boot screen particle canvas ──
+  useEffect(function() {
+    if (loaded || !bootCanvasRef.current) return;
+    var c = bootCanvasRef.current;
+    var ctx = c.getContext("2d");
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+    var particles = [];
+    for (var i = 0; i < 80; i++) {
+      particles.push({
+        x: Math.random() * c.width,
+        y: Math.random() * c.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 2 + 0.5,
+        opacity: Math.random() * 0.3 + 0.05,
+      });
+    }
+    var raf;
+    function draw() {
+      ctx.clearRect(0, 0, c.width, c.height);
+      // Draw connections
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > c.width) p.vx *= -1;
+        if (p.y < 0 || p.y > c.height) p.vy *= -1;
+        ctx.fillStyle = "rgba(" + CR + "," + p.opacity + ")";
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        // Connect nearby particles
+        for (var j = i + 1; j < particles.length; j++) {
+          var q = particles[j];
+          var dx = p.x - q.x, dy = p.y - q.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(" + CR + "," + ((1 - dist / 120) * 0.08) + ")";
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(q.x, q.y);
+            ctx.stroke();
+          }
+        }
+      }
+      raf = requestAnimationFrame(draw);
+    }
+    draw();
+    return function() { cancelAnimationFrame(raf); };
+  }, [loaded]);
+
+  var HEAD=DISP;
+
+  // Lock scroll during boot, force top when loaded
+  useEffect(function() {
+    if (!loaded) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      window.scrollTo(0, 0);
+    } else {
+      // Triple-force scroll to top with delays to beat any browser auto-scroll
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      requestAnimationFrame(function() {
+        window.scrollTo(0, 0);
+        setTimeout(function() {
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+          document.body.style.overflow = "";
+          document.documentElement.style.overflow = "";
+        }, 50);
+      });
+    }
+  }, [loaded]);
+
+  var parallaxFast = -scrollPx * 0.15;
+  var parallaxSlow = -scrollPx * 0.05;
+
+  return(
+    <div className="cs-root" style={{background:BASE,color:INK,fontFamily:MONO,fontSize:12,letterSpacing:".02em",position:"relative",overflowX:"hidden"}}>
+      <a href="#main" className="cs-skip">{lang==="it"?"Salta al contenuto":lang==="bg"?"Към съдържанието":"Skip to content"}</a>
+      <SEOInjector />
+      <CaliperCursor />
+      <div className="cs-scroll-instr"><ScrollInstrument /></div>
+      <style>{"::selection{background:"+C+";color:"+BASE+"}*{margin:0;padding:0;box-sizing:border-box}html{cursor:none}body{background:"+BASE+";overflow-x:hidden;cursor:none}a,button,[role='button'],input,textarea,select{cursor:none}@media(hover:none),(pointer:coarse){html,body,a,button,[role='button']{cursor:auto}.cs-caliper{display:none}}@keyframes blink{50%{opacity:.3}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}input::placeholder{color:"+INK2+"}input:disabled{cursor:wait}.cs-scan{position:relative}.cs-scan-line{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}.cs-scan>*:not(.cs-scan-line){opacity:0;transform:translateY(14px);filter:blur(2px)}.cs-scan.in>*:not(.cs-scan-line){opacity:1;transform:none;filter:none;transition:opacity .6s "+EASE+",transform .6s "+EASE+",filter .6s "+EASE+"}.cs-scan.in .cs-scan-line{animation:csSweep .7s "+EASE+" forwards}@keyframes csSweep{0%{opacity:0;top:0}10%{opacity:1}100%{opacity:0;top:100%}}@media(prefers-reduced-motion:reduce){.cs-scan>*{opacity:1!important;transform:none!important;filter:none!important}.cs-scan-line{display:none}}#main section.cs-prep{opacity:0;transform:translateY(18px)}#main section.cs-prep::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,"+C+",transparent) 0 0/100% 1px no-repeat,linear-gradient(90deg,transparent,rgba("+CR+",.10),transparent) 0 0/100% 12px no-repeat;opacity:0;z-index:6;pointer-events:none}#main section.cs-seen{opacity:1;transform:none;transition:opacity .55s "+EASE+",transform .55s "+EASE+"}#main section.cs-seen::after{animation:csSweepBg .7s "+EASE+" forwards}@keyframes csSweepBg{0%{opacity:0;background-position:0 0,0 0}10%{opacity:1}100%{opacity:0;background-position:0 100%,0 100%}}@media(prefers-reduced-motion:reduce){#main section.cs-prep{opacity:1;transform:none}#main section::after{display:none}}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}.cs-brand-img{mix-blend-mode:screen}.cs-hero-art{position:absolute;right:clamp(16px,4vw,60px);top:clamp(72px,9vh,96px);width:min(28vw,380px);height:auto;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.95;filter:saturate(1.05);-webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%);mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%)}@media(min-width:861px){.cs-hero-h1{max-width:min(16ch,calc(100vw - min(28vw,380px) - 2*clamp(20px,5vw,64px) - max(0px,(100vw - 2*clamp(20px,5vw,64px) - 1180px)/2) - 40px))!important}}@media(max-width:860px){.cs-hero-art{right:auto;left:50%;transform:translateX(-50%);top:64px;width:min(74vw,340px);opacity:.85}.cs-hero-coords{display:none}}.cs-glowline{height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.7),transparent);box-shadow:0 0 12px rgba(0,229,255,.35)}.cs-cta{transition:box-shadow .35s "+EASE+",background .35s "+EASE+"}.cs-cta:hover{background:rgba(0,229,255,.1)!important;box-shadow:0 0 34px rgba(0,229,255,.42), inset 0 0 18px rgba(0,229,255,.1)!important}#footer a{min-height:24px;align-items:center}.cs-work-card{transition:border-color .25s}.cs-work-card:hover,.cs-work-card:focus-visible{border-color:rgba(0,229,255,.55)!important}.cs-srv-row:hover .cs-srv-t,.cs-srv-row:focus-visible .cs-srv-t{color:"+C+"}.cs-srv-ico{position:relative;width:var(--srv-col,150px);aspect-ratio:"+SRV_ICON_W+"/"+SRV_ICON_H+"}.cs-srv-ico .cs-srv-n{position:absolute;left:0;top:-6px;z-index:0}.cs-srv-ico img{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;transition:transform .5s cubic-bezier(.22,1,.36,1),filter .5s}.cs-srv-row:hover .cs-srv-ico img,.cs-srv-row:focus-visible .cs-srv-ico img{transform:translateY(-4px) scale(1.03);filter:drop-shadow(0 12px 20px rgba(0,229,255,.16))}.cs-srv-ico .gl,.cs-srv-ico .gt{z-index:2;pointer-events:none;filter:none!important}.cs-srv-ico .gl{opacity:0;transition:opacity .5s,transform .5s cubic-bezier(.22,1,.36,1)}.cs-srv-row:hover .gl,.cs-srv-row:focus-visible .gl{opacity:1}.cs-srv-ico .gt{-webkit-mask:linear-gradient(105deg,transparent 36%,#000 50%,transparent 64%) 150% 0/320% 100% no-repeat;mask:linear-gradient(105deg,transparent 36%,#000 50%,transparent 64%) 150% 0/320% 100% no-repeat;transition:-webkit-mask-position 1s cubic-bezier(.22,1,.36,1),mask-position 1s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1)}.cs-srv-row:hover .gt,.cs-srv-row:focus-visible .gt{-webkit-mask-position:-50% 0;mask-position:-50% 0}.cs-srv-row.on .gl{animation:csGl 1.6s ease-out .15s 1 backwards}.cs-srv-row.on .gt{animation:csGt 1.5s cubic-bezier(.22,1,.36,1) .15s 1 backwards}@keyframes csGl{0%{opacity:0}30%{opacity:1}100%{opacity:0}}@keyframes csGt{from{-webkit-mask-position:150% 0;mask-position:150% 0}to{-webkit-mask-position:-50% 0;mask-position:-50% 0}}@media(prefers-reduced-motion:reduce){.cs-srv-ico .gl,.cs-srv-ico .gt{animation:none!important;transition:none!important}.cs-srv-ico .gt{display:none}}@media(max-width:640px){.cs-srv-row{--srv-col:104px;gap:14px!important}.cs-srv-ico .cs-srv-n{font-size:1.5rem!important}}@media(prefers-reduced-motion:reduce){.cs-srv-ico img{transition:none}.cs-srv-row:hover .cs-srv-ico img{transform:none}}@media(max-width:768px){.cs-scroll-instr{display:none}.cs-contactbar{flex-direction:column;gap:10px!important}}@media(max-width:1100px){.cs-price-grid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:600px){.cs-price-grid{grid-template-columns:1fr!important}}.cs-nav-dd{position:relative}.cs-nav-dd-m{position:absolute;left:-18px;top:100%;padding-top:14px;display:none;z-index:10001}.cs-nav-dd-m>span{display:flex;flex-direction:column;min-width:250px;padding:8px 0;background:rgba(10,12,14,.98);border:1px solid rgba(0,229,255,.25);box-shadow:0 14px 32px rgba(0,0,0,.55)}.cs-nav-dd:hover .cs-nav-dd-m,.cs-nav-dd:focus-within .cs-nav-dd-m{display:block}.cs-nav-dd-m a{font-family:"+MONO+";font-size:11px;letter-spacing:.08em;color:#C9D1D6;text-decoration:none;padding:10px 18px;white-space:nowrap}.cs-nav-dd-m a:hover,.cs-nav-dd-m a:focus-visible{background:rgba(0,229,255,.08);color:"+C+"}@media(max-width:900px){.cs-sol-grid,.cs-proof-grid,.cs-sect-grid{grid-template-columns:1fr!important}}@media(max-width:767px){#solutions,#proof,#sectors,#games{padding-left:16px!important;padding-right:16px!important}#solutions,#sectors{padding-top:60px!important}}"}</style>
+
+      <style>{INSTRUMENT_CSS}</style>
+
+      {/* Engineering-drawing grid over a faint carbon weave — the logo's
+          twill texture as the page ground, kept far below legibility noise */}
+      <div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:0,pointerEvents:"none",backgroundImage:"linear-gradient("+LINE+" 1px,transparent 1px),linear-gradient(90deg,"+LINE+" 1px,transparent 1px),repeating-linear-gradient(45deg,rgba(255,255,255,.016) 0 3px,transparent 3px 8px),repeating-linear-gradient(-45deg,rgba(255,255,255,.016) 0 3px,transparent 3px 8px)",backgroundSize:"96px 96px,96px 96px,16px 16px,16px 16px",maskImage:"radial-gradient(circle at 50% 30%,#000,transparent 80%)",WebkitMaskImage:"radial-gradient(circle at 50% 30%,#000,transparent 80%)"}}/>
+
+      {/* NAV */}
+      <nav style={{position:"fixed",top:0,left:0,width:"100%",zIndex:10000,padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid rgba("+CR+",.16)",boxShadow:"0 1px 18px rgba("+CR+",.10)",background:"rgba(0,0,0,.92)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}><div key={activeSec||"top"} className="cs-led" aria-hidden="true" style={{width:8,height:8,background:C}}/><img src="/logo-nav.webp" alt="Carbon Stealth VCC" width={80} height={34} fetchPriority="high" decoding="async" style={{height:34,width:80,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
+        <div className="cs-nav-links" style={{display:"flex",gap:20,alignItems:"center"}}><div data-spy="solutions" className={"cs-nav-dd"+(activeSec==="solutions"?" on":"")}><div {...kb(function(){scrollToId("solutions")},t("nav_solutions"))} style={{cursor:"pointer"}}><span className="cs-navl">{t("nav_solutions")+" \u25BE"}</span></div><div className="cs-nav-dd-m"><span>{SOL.map(function(d){return <a key={d.key} href={d.url[lang]}>{d.name[lang]}</a>})}</span></div></div>{[{txt:t("nav_sectors"),id:"sectors"},{txt:t("nav_cases"),href:CASES_URL[lang]},{txt:t("nav_pricing"),id:"pricing"},{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_contact"),id:"contact"}].map(function(item){if(item.href)return <a key={item.href} href={item.href} data-spy="link" style={{textDecoration:"none",color:"inherit"}}><span className="cs-navl">{item.txt}</span></a>;return <div key={item.id} data-spy={item.id} className={activeSec===item.id?"on":undefined} {...kb(function(){scrollToId(item.id)},item.txt)} style={{cursor:"pointer"}}><span className="cs-navl">{item.txt}</span></div>})}<NavSlider active={activeSec} lang={lang}/><a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} style={{textDecoration:"none",fontSize:9,letterSpacing:".2em",color:C,border:"1px solid rgba("+CR+",.3)",padding:"5px 10px"}}>{t("nav_test")}</a></div>
+        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+          <div className="cs-nav-lang" style={{display:"flex",gap:2,marginLeft:8}}>
+            {["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:8,padding:"3px 6px",letterSpacing:".1em",cursor:"none",background:lang===l?"rgba("+CR+",.15)":"transparent",color:lang===l?C:"#ccc",border:"1px solid "+(lang===l?"rgba("+CR+",.3)":"rgba(245,245,240,.06)"),fontWeight:lang===l?700:400,textTransform:"uppercase"}}>{l}</span>})}
+          </div>
+          <div className="cs-hamburger" {...kb(function(){setMobileMenu(true)},lang==="bg"?"\u041E\u0442\u0432\u043E\u0440\u0438 \u043C\u0435\u043D\u044E\u0442\u043E":lang==="en"?"Open menu":"Apri il menu")} aria-expanded={mobileMenu?"true":"false"} aria-controls="cs-mobile-menu"><span/><span/><span/></div>
+        </div>
+      </nav>
+
+      {/* MOBILE MENU OVERLAY */}
+      <div id="cs-mobile-menu" className={"cs-mobile-menu"+(mobileMenu?" open":"")} style={{position:"fixed",top:0,left:0,width:"100%",height:"100vh",background:"rgba(0,0,0,.97)",zIndex:99999,display:mobileMenu?"flex":"none",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24}}>
+        <div className="cs-mobile-menu-close" {...kb(function(){setMobileMenu(false)},lang==="bg"?"\u0417\u0430\u0442\u0432\u043E\u0440\u0438 \u043C\u0435\u043D\u044E\u0442\u043E":lang==="en"?"Close menu":"Chiudi il menu")} style={{position:"absolute",top:16,right:16,width:40,height:40,border:"1px solid rgba("+CR+",.3)",display:"flex",alignItems:"center",justifyContent:"center",color:C,fontSize:18}}>{"\u2715"}</div>
+        <img src="/brand/cs-logo-480.webp" alt="Carbon Stealth VCC" width={140} height={140} decoding="async" style={{height:140,width:140,marginBottom:4}}/>
+        <div className="cs-mobile-menu-item" {...kb(function(){scrollToId("solutions");setMobileMenu(false)},t("nav_solutions"))} style={{fontSize:13,letterSpacing:".3em",color:"#ccc",padding:"14px 32px",border:"1px solid rgba(245,245,240,.06)",minWidth:220,textAlign:"center"}}>{t("nav_solutions")}</div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,marginTop:-14}}>{SOL.map(function(d){return <a key={d.key} href={d.url[lang]} className="cs-mobile-menu-item" style={{fontSize:11,letterSpacing:".12em",color:INK2,padding:"10px 12px",border:"1px solid rgba("+CR+",.16)",width:270,maxWidth:"80vw",boxSizing:"border-box",textAlign:"center",textDecoration:"none"}}>{d.name[lang]}</a>})}</div>
+        {[{txt:t("nav_sectors"),id:"sectors"},{txt:t("nav_cases"),href:CASES_URL[lang]},{txt:t("nav_pricing"),id:"pricing"},{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_contact"),id:"contact"}].map(function(item){var st={fontSize:13,letterSpacing:".3em",color:"#ccc",padding:"14px 32px",border:"1px solid rgba(245,245,240,.06)",minWidth:220,textAlign:"center",textDecoration:"none"};if(item.href)return <a key={item.txt} href={item.href} className="cs-mobile-menu-item" style={st}>{item.txt}</a>;return <div key={item.txt} className="cs-mobile-menu-item" {...kb(function(){scrollToId(item.id);setMobileMenu(false)},item.txt)} style={st}>{item.txt}</div>})}
+        <a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} className="cs-mobile-menu-item" style={{fontSize:13,letterSpacing:".3em",color:C,padding:"14px 32px",border:"1px solid rgba("+CR+",.3)",minWidth:220,textAlign:"center",textDecoration:"none"}}>{t("nav_test")}</a>
+        <div style={{display:"flex",gap:6,marginTop:12}}>{["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);setMobileMenu(false);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);setMobileMenu(false);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:10,padding:"6px 12px",border:"1px solid "+(lang===l?"rgba("+CR+",.4)":"rgba(245,245,240,.08)"),background:lang===l?"rgba("+CR+",.12)":"transparent",color:lang===l?C:"#ccc"}}>{l.toUpperCase()}</span>})}</div>
+      </div>
+
+      <main id="main">
+      {/* ═══════════════════════════════════════════
+          HERO — Viewport-spanning typography + 3D
+          ═══════════════════════════════════════════ */}
+      <section id="hero" aria-label={t("hero_eyebrow")} style={{position:"relative",minHeight:"100vh",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"0 clamp(20px,5vw,64px) clamp(40px,6vh,72px)"}}>
+        {/* Signature: live measured-carbon shader field — grid, fresnel edge, radar
+            sweep, caliper ring that tracks the pointer. Replaces the old
+            MeasuredSurface points/wireframe mount as the hero's single WebGL moment. */}
+        <HeroSignature />
+
+        {/* The mark itself, rendered in its own scene — sits over the shader
+            with screen blending so its black ground disappears and only the
+            carbon, chrome and cyan ring remain. Static image: zero runtime cost. */}
+        <img ref={heroArtRef} className="cs-hero-art" src="/brand/cs-scene-800.webp" srcSet="/brand/cs-scene-800.webp 800w, /brand/cs-scene.webp 1254w" sizes="(max-width:860px) 72vw, 34vw" alt="" aria-hidden="true" width={800} height={800} fetchPriority="high" decoding="async"/>
+
+        {/* Blueprint furniture - measured coordinates + tolerance callout */}
+        <div className="cs-hero-coords" aria-hidden="true" style={{position:"absolute",top:96,right:"clamp(20px,5vw,64px)",fontFamily:MONO,fontSize:9,letterSpacing:".22em",color:INK2,textAlign:"right",lineHeight:2.1,zIndex:5}}>
+          42.3482{"°"}N {"·"} 23.0017{"°"}E<br/>BOBOV DOL {"·"} ALT 550M<br/><span style={{color:C}}>{"±"}0.02 TOL</span> {"·"} <span style={{color:C}}><i className="cs-live"/>MEASURING</span>
+        </div>
+
+        <div style={{position:"relative",zIndex:10,maxWidth:1180,width:"100%",margin:"0 auto"}}>
+          <div style={{display:"flex",alignItems:"center",gap:14,fontSize:10,letterSpacing:".4em",color:INK2,marginBottom:"clamp(20px,4vh,40px)"}}>
+            <span style={{width:24,height:1,background:C}}/>{t("hero_eyebrow")}
+          </div>
+
+          {/* Type is the hero - the single H1, keyword-forward, few words */}
+          <h1 className="cs-hero-h1 cs-chrome" style={Object.assign({fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.4rem,6vw,5.4rem)",lineHeight:.98,letterSpacing:"-.03em",margin:0,maxWidth:"16ch"},CHROME)}>
+            {t("hero_title")}
+          </h1>
+
+          {/* Mono spec line - the instruments */}
+          <div style={{fontFamily:MONO,fontSize:11,letterSpacing:".2em",color:INK2,marginTop:24,textTransform:"uppercase"}}>{t("hero_sub")}</div>
+
+          <div style={{display:"flex",flexWrap:"wrap",justifyContent:"space-between",alignItems:"flex-end",gap:28,borderTop:"1px solid "+LINE,paddingTop:22,marginTop:"clamp(28px,5vh,44px)"}}>
+            <p style={{maxWidth:380,fontSize:12,lineHeight:1.95,color:INK2}}>{t("hero_desc")}</p>
+            <Magnetic><div className="cs-cta" onClick={function(){scrollToId("contact")}} {...kb(function(){scrollToId("contact")},t("cta_btn"))} style={Object.assign({display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase"},CTA_GLOW)}>{t("cta_btn")+"  →"}</div></Magnetic>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ BLUEPRINT DIVIDER — dimension line with tolerance callout ═══ */}
+      <div style={{position:"relative",zIndex:5,padding:"32px clamp(20px,5vw,64px)"}}>
+        <Dim flex label="SEC.01 / SOLUTIONS · ±0.02MM" style={{maxWidth:1180,margin:"0 auto"}}/>
+      </div>
+
+      {/* ═══════════════════════════════════════════
+          SOLUTIONS — трите водещи направления (доклад SEO/GEO/AEO, §3)
+          ═══════════════════════════════════════════ */}
+      <section id="solutions" style={{position:"relative",zIndex:5,padding:"80px 20px 56px"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("sol_tag")}</div>
+        <EchoText fontFamily={HEAD} fontSize="clamp(2rem,5vw,4rem)" letterSpacing="-.03em" style={CHROME}>{t("sol_title")}</EchoText>
+        <div style={{height:40}}/>
+        <div className="cs-sol-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:16}}>
+          {SOL.slice(0,3).map(function(d,i){
+            return <a key={d.key} href={d.url[lang]} className="cs-work-card" style={{display:"flex",flexDirection:"column",gap:12,padding:"24px 22px",border:"1px solid rgba("+CR+","+(i<2?".32":".16")+")",background:"rgba("+CR+","+(i<2?".03":".015")+")",textDecoration:"none",color:"inherit",cursor:"none",minWidth:0}}>
+              <span style={{fontFamily:MONO,fontSize:8,letterSpacing:".3em",color:C}}>{"0"+(i+1)+" · "+(i<2?t("sol_lead"):t("sol_wide"))}</span>
+              <span style={{display:"flex",gap:4}} aria-hidden="true">{d.icons.map(function(ic){return <img key={ic} src={"/brand/svc/"+ic+"-384.webp"+LIVE_Q} width={192} height={159} loading="lazy" decoding="async" alt="" style={{width:76,height:"auto"}}/>})}</span>
+              <span style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.35rem",letterSpacing:"-.02em",lineHeight:1.15,color:INK}}>{d.name[lang]}</span>
+              <span style={{fontSize:11,lineHeight:1.85,color:INK2}}>{d.promise[lang]}</span>
+              <span style={{fontSize:10,lineHeight:1.8,color:INK2}}><b style={{display:"block",color:C,fontWeight:400,letterSpacing:".25em",fontSize:8}}>{t("sol_svc")}</b>{d.svc[lang]}</span>
+              <span style={{fontSize:10,lineHeight:1.8,color:INK2}}><b style={{display:"block",color:C,fontWeight:400,letterSpacing:".25em",fontSize:8}}>{t("sol_proj")}</b>{d.proj[lang]}</span>
+              <span style={{marginTop:"auto",paddingTop:12,borderTop:"1px solid rgba("+CR+",.12)",fontFamily:MONO,fontSize:9,letterSpacing:".2em",color:C}}>{t("sol_more")+" \u2192"}</span>
+            </a>
+          })}
+        </div>
+        <a href={SOL_HUB[lang]} style={{display:"inline-block",marginTop:18,fontFamily:MONO,fontSize:9,letterSpacing:".2em",color:C,textDecoration:"none",cursor:"none"}}>{t("sol_all")+" \u2192"}</a>
+      </section>
+
+      {/* ═══ PROOF — проектите в употреба ═══ */}
+      <section id="proof" aria-label={t("proof_tag").replace("// ","")} style={{position:"relative",zIndex:5,padding:"0 20px 80px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+          <span style={{fontFamily:MONO,fontSize:9,letterSpacing:".3em",color:C}}>{t("proof_tag")}</span>
+          <span style={{flex:1,height:1,background:LINE}}/>
+        </div>
+        <div className="cs-proof-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:12}}>
+          {PROOF.map(function(p){
+            return <a key={p.shot} href={p.url[lang]} className="cs-work-card" style={{display:"grid",gridTemplateColumns:"112px minmax(0,1fr)",gap:14,alignItems:"center",padding:12,border:"1px solid rgba("+CR+",.14)",background:"rgba("+CR+",.015)",textDecoration:"none",color:"inherit",cursor:"none"}}>
+              <img src={"/work/"+p.shot+"-480.webp"+LIVE_Q} width={480} height={300} loading="lazy" decoding="async" alt="" style={{display:"block",width:"100%",height:"auto",aspectRatio:"16/10",objectFit:"cover",objectPosition:"top",border:"1px solid rgba("+CR+",.14)"}}/>
+              <span style={{minWidth:0}}><span style={{display:"block",fontFamily:HEAD,fontWeight:600,fontSize:"1rem",color:INK,marginBottom:4}}>{p.name}</span><span style={{display:"block",fontSize:10,lineHeight:1.7,color:INK2}}>{p.txt[lang]}</span></span>
+            </a>
+          })}
+        </div>
+      </section>
+
+      {/* ═══ SECTORS — по бранш, асансьорният първи ═══ */}
+      <section id="sectors" style={{position:"relative",zIndex:5,padding:"80px 20px 100px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("sect_tag")}</div>
+        <EchoText fontFamily={HEAD} fontSize="clamp(2rem,5vw,4rem)" letterSpacing="-.03em" style={CHROME}>{t("sect_title")}</EchoText>
+        <div style={{height:40}}/>
+        <div className="cs-sect-grid" style={{display:"grid",gridTemplateColumns:"minmax(0,1.2fr) minmax(0,1fr)",gap:16,alignItems:"stretch"}}>
+          <a href={SECT_BASE[lang]+SECT_FIRST.slug+"/"} className="cs-work-card" style={{display:"flex",flexDirection:"column",gap:12,padding:"26px 24px",border:"1px solid rgba("+CR+",.45)",background:"linear-gradient(160deg,rgba("+CR+",.09),rgba("+CR+",.015) 60%)",textDecoration:"none",color:"inherit",cursor:"none",minWidth:0}}>
+            <span style={{fontFamily:MONO,fontSize:8,letterSpacing:".3em",color:C}}>{t("sect_first")}</span>
+            <span style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.5rem",letterSpacing:"-.02em",lineHeight:1.15,color:INK}}>{SECT_FIRST.name[lang]}</span>
+            <span style={{fontSize:11,lineHeight:1.85,color:INK2}}>{SECT_FIRST.tag[lang]}</span>
+            <span style={{marginTop:"auto",fontFamily:MONO,fontSize:9,letterSpacing:".2em",color:C}}>{"ERP ASCENSORI · RILIEVI IMPIANTI · PANEV ASCENSORI \u2192"}</span>
+          </a>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8,alignContent:"flex-start"}}>
+            {SECT.map(function(s){return <a key={s[0]} href={SECT_BASE[lang]+s[0]+"/"} className="cs-work-card" style={{padding:"10px 14px",border:"1px solid rgba("+CR+",.18)",fontSize:11,letterSpacing:".04em",color:INK,textDecoration:"none",cursor:"none"}}>{s[1][lang]}</a>})}
+            <a href={SECT_BASE[lang]} style={{padding:"10px 14px",fontFamily:MONO,fontSize:9,letterSpacing:".2em",color:C,textDecoration:"none",cursor:"none",alignSelf:"center"}}>{t("sect_all")+" \u2192"}</a>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          WORK — Split layout with massive type
+          ═══════════════════════════════════════════ */}
+      <section id="portfolio" style={{position:"relative",zIndex:5,padding:"80px 20px 120px"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("work_tag")}</div>
+        <EchoText fontFamily={HEAD} fontSize="clamp(2rem,5vw,4rem)" letterSpacing="-.03em" style={CHROME}>{t("work_title")}</EchoText>
+        <div style={{height:48}}/>
+
+        {/* Real screenshots of each live project (public/work/, captured from the live sites) */}
+        <div ref={workRef} className="cs-work-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
+        {[["001","PANEV ASCENSORI","STAFFE BREVETTATE · IT","https://panevascensori.it","panev-ascensori"],["002","ZA BOBOV DOL","CIVIC PORTAL · BG","https://zabobovdol.carbonstealth.eu","zabobovdol"],["003","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu","nexus-dominion"],["004","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com","ou-vaptsarov"],["005","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu","erp-ascensori"],["006","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu","treti-mart"],["007","EVANITA SPORT","KANGOO JUMPS STUDIO","https://evanita-bg.com","evanita-sport"],["008","ETERNAL TOUCH","ATELIER · GESSO","https://eternaltouch.it","eternal-touch"],["009","OSPEDALI TRASPARENTI","CIVIC DATA · IT","https://ospedalitrasparenti.it","ospedali-trasparenti"],["010","VIZITKA","QR BUSINESS CARD","https://vizitka-bg.com","vizitka"],["011","MASTILKO","PRINT TOOLS","https://mastilko-bg.com","mastilko"],["012","KORPORA","FURNITURE DESIGN · CNC","https://korpora.carbonstealth.eu","korpora"],["013","RILIEVI IMPIANTI","LIFT SURVEYS · IT","https://rilievi.carbonstealth.eu","rilievi"],["014","FAKTURIST","E-INVOICING · BG","https://fakturist.carbonstealth.eu","fakturist"]].map(function(w){
+          return <a key={w[0]} href={w[3]} target="_blank" rel="noopener" className="cs-work-card" style={{display:"flex",flexDirection:"column",border:"1px solid rgba("+CR+",.14)",background:"rgba("+CR+",.015)",cursor:"none",textDecoration:"none",color:"inherit",overflow:"hidden"}}>
+            <img src={"/work/"+w[4]+"-480.webp"+LIVE_Q} srcSet={"/work/"+w[4]+"-480.webp"+LIVE_Q+" 480w, /work/"+w[4]+".webp"+LIVE_Q+" 960w"} sizes="(max-width:640px) 100vw, 33vw" width={480} height={300} loading="lazy" decoding="async" alt={w[1]+" \u2014 "+w[2]} style={{display:"block",width:"100%",height:"auto",aspectRatio:"16/10",objectFit:"cover",objectPosition:"top",borderBottom:"1px solid rgba("+CR+",.14)"}}/>
+            <div style={{display:"flex",flexDirection:"column",gap:6,padding:"14px 16px 16px"}}>
+              <span style={{fontFamily:MONO,fontSize:9,color:INK2,letterSpacing:".2em"}}>{w[0]} {"\u00b7"} {w[2]}</span>
+              <span style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.05rem",textTransform:"uppercase",letterSpacing:"-.01em",color:INK}}>{w[1]} <span aria-hidden="true" style={{color:C}}>{"\u2197"}</span></span>
+            </div></a>})}
+        </div>
+
+        {/* The full portfolio lives on its own subdomain — send people there */}
+        <div style={{display:"flex",flexWrap:"wrap",justifyContent:"space-between",alignItems:"flex-end",gap:24,marginTop:40}}>
+          <p style={{maxWidth:520,fontSize:12,lineHeight:1.95,color:INK2}}>{t("work_all_sub")}</p>
+          <a href="https://portfolio.carbonstealth.eu/" target="_blank" rel="noopener" className="cs-cta" style={Object.assign({display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase",textDecoration:"none",cursor:"none"},CTA_GLOW)}>{t("work_all")+"  →"}</a>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          PRICING — the portfolio price list, verbatim (src/pricing.json)
+          ═══════════════════════════════════════════ */}
+      <section id="pricing" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{PRICING.ui[lang].eyebrow}</div>
+        <ProximityText text={PRICING.ui[lang].h1} style={Object.assign({fontFamily:HEAD,fontSize:"clamp(1.6rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:16,fontWeight:700,maxWidth:900},CHROME)}/>
+        <p style={{fontSize:12,lineHeight:1.95,color:INK2,maxWidth:640,marginBottom:12}}>{PRICING.ui[lang].lede}</p>
+        <div style={{fontFamily:MONO,fontSize:10,letterSpacing:".15em",color:C,marginBottom:40}}>{PRICING.ui[lang].hud}</div>
+
+        <div className="cs-price-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16}}>
+          {PRICING.tiers.map(function(tier){
+            var ui=PRICING.ui[lang];
+            return <div key={tier.id} style={{position:"relative",display:"flex",flexDirection:"column",padding:"24px 22px",border:"1px solid rgba("+CR+(tier.popular?",.6)":",.18)"),background:"rgba("+CR+",.02)",boxShadow:tier.popular?"0 0 28px rgba("+CR+",.12)":"none"}}>
+              {tier.popular && <span style={{position:"absolute",top:-10,left:18,background:C,color:BASE,fontSize:9,letterSpacing:".2em",padding:"3px 10px",fontWeight:700}}>{ui.popular}</span>}
+              <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:6,textTransform:"uppercase",minHeight:"3.2em"}}>{tier.tag[lang]}</div>
+              <div style={{fontFamily:HEAD,fontWeight:800,fontSize:"1.5rem",letterSpacing:"-.02em",color:INK,marginBottom:8}}>{tier.name[lang]}</div>
+              <p style={{fontSize:11,lineHeight:1.7,color:INK2,minHeight:"6.8em"}}>{tier.desc[lang]}</p>
+              <div className="cs-chrome" style={Object.assign({fontFamily:HEAD,fontWeight:900,fontSize:"2.1rem",letterSpacing:"-.03em",lineHeight:1,margin:"14px 0 4px"},CHROME)}>{fmtEur(tier.price[lang],lang)}</div>
+              <div className="cs-gauge" aria-hidden="true" style={{"--w":(tier.price[lang]/tier.market[lang]*100).toFixed(1)+"%"}}><b/><i/></div>
+              <div style={{fontSize:10,color:INK2,lineHeight:1.6,marginBottom:14}}><s style={{color:"#8A949B"}}>{fmtEur(tier.market[lang],lang)}</s> {ui.market} {"·"} <b style={{color:C}}>{"−"}{tier.discount}% {ui.saving}</b></div>
+              <ul style={{listStyle:"none",padding:0,margin:"0 0 14px",flex:1}}>{tier.features[lang].map(function(f){return <li key={f} style={{fontSize:11,lineHeight:1.6,paddingLeft:16,position:"relative",marginBottom:6,color:"#ccc"}}><span aria-hidden="true" style={{position:"absolute",left:0,color:C}}>{"✓"}</span>{f}</li>})}</ul>
+              <div style={{fontSize:10,color:INK2,marginBottom:12}}>{ui.delivery}: {tier.days[0]}{"–"}{tier.days[1]} {ui.days}</div>
+              <div className="cs-cta" {...kb(function(){scrollToId("contact")},ui.choose)} style={Object.assign({textAlign:"center",fontFamily:MONO,fontSize:10,letterSpacing:".14em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"12px 12px",textTransform:"uppercase",cursor:"none"},CTA_GLOW)}>{ui.choose} {"→"}</div>
+            </div>})}
+        </div>
+
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,margin:"48px 0 16px"}}>{"// "+PRICING.ui[lang].addonsTitle.toUpperCase()}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:10}}>
+          {PRICING.addons.map(function(a){var ui=PRICING.ui[lang];return <div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,border:"1px solid rgba(245,245,240,.08)",padding:"12px 14px",fontSize:11,lineHeight:1.6,color:"#ccc"}}><span>{a.name[lang]}</span><span style={{whiteSpace:"nowrap",textAlign:"right"}}><b style={{color:INK,fontSize:13}}>{fmtEur(a.price[lang],lang)}</b><br/><span style={{fontSize:9,color:INK2}}>{a.kind==="monthly"?ui.monthly:ui.once} {"·"} <span style={{color:C}}>{"−"}{a.discount}%</span></span></span></div>})}
+        </div>
+
+        <div style={{display:"flex",flexWrap:"wrap",gap:20,alignItems:"center",marginTop:40}}>
+          <a href={PRICING.ui[lang].path} className="cs-cta" style={Object.assign({display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase",textDecoration:"none",cursor:"none"},CTA_GLOW)}>{t("pricing_all")+"  →"}</a>
+          <span style={{fontSize:10,lineHeight:1.8,color:INK2,maxWidth:520}}>{t("pricing_note")}</span>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          PRODUCTS — Live platforms
+          ═══════════════════════════════════════════ */}
+      <section id="products" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("prod_tag")}</div>
+        <ProximityText text={t("prod_title")} style={Object.assign({fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,fontWeight:700},CHROME)}/>
+
+        {/* ── LATEST — most recent shipped products ── */}
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:18}}>
+          <span style={{fontFamily:MONO,fontSize:9,letterSpacing:".3em",color:C}}>{lang==="it"?"// ULTIMI RILASCI · 2026":lang==="bg"?"// НАЙ-НОВИ · 2026":"// LATEST RELEASES · 2026"}</span>
+          <span style={{flex:1,height:1,background:LINE}}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:2,marginBottom:2}}>
+          {[
+            // "Established publisher" badge on the Chrome Web Store listing ("Created by the owner of the listed
+            // website. The publisher has a good record with no history of violations.") — checked 2026-10-09.
+            // Shown in our own colours with Google's wording quoted: no Google-style seal, no "Google badge" claim.
+            {name:"Supreme AdBlock",url:"https://adblock.carbonstealth.eu",tag:"PRIVACY · CHROME",verified:true,store:"https://chromewebstore.google.com/detail/supreme-adblock/chbjbiabkgocfbbfhednpbhfeipjcclk",desc:{it:"Estensione Chrome (MV3) che blocca ogni pubblicità — annunci video YouTube, sponsorizzati FB/IG, tracker e muri anti-adblock. Nessuna telemetria.",en:"Chrome extension (MV3) that blocks every ad — YouTube video ads, FB/IG sponsored posts, trackers and anti-adblock walls. Zero telemetry.",bg:"Chrome разширение (MV3), което блокира всяка реклама — вкл. видео реклами в YouTube, спонсорирани във FB/IG, тракери и anti-adblock стени. Без телеметрия."}},
+            {name:"Supreme Bot",url:"https://supremebot.carbonstealth.eu",tag:"SAAS · DISCORD",desc:{it:"Bot Discord per ticket e piattaforma SaaS multi-tenant: ticket, moduli di candidatura, pannelli, bot white-label e AI.",en:"Discord ticket bot and multi-tenant SaaS platform: tickets, application forms, panels, white-label bots and AI.",bg:"Discord бот за тикети и multi-tenant SaaS платформа: тикети, формуляри за кандидатстване, панели, white-label ботове и AI."}},
+            {name:"FiveM Bulgaria",url:"https://fivembulgaria.carbonstealth.eu",tag:"GAMING · BG",desc:{it:"Tutti i server FiveM RP bulgari in un posto: stato online, giocatori, framework (ESX, QBCore, Qbox), whitelist e Discord. Aggiornamento automatico.",en:"Every Bulgarian FiveM RP server in one place: online status, player count, framework (ESX, QBCore, Qbox), whitelist and Discord. Auto-updating.",bg:"Всички български FiveM RP сървъри на едно място: онлайн статус, брой играчи, рамка (ESX, QBCore, Qbox), whitelist и Discord. Обновява се автоматично."}},
+            {name:"Panev Ascensori",url:"https://panevascensori.it",tag:"ASCENSORI · IT",desc:{it:"Staffe brevettate per ascensori: fissaggio regolabile di porte di piano e guide del contrappeso su murature irregolari. Brevetto UIBM, made in Italy.",en:"Patented elevator brackets: adjustable fixing of landing doors and counterweight guides on irregular masonry. UIBM patent, made in Italy.",bg:"Патентовани скоби за асансьори: регулируем монтаж на етажни врати и водачи на противотежестта върху неравна зидария. Патент UIBM, made in Italy."}},
+            {name:"За Бобов дол",url:"https://zabobovdol.carbonstealth.eu",tag:"CIVIC · BG",desc:{it:"Portale civico per la città di Bobov Dol: servizi, segnalazioni, trasparenza e informazioni per i cittadini.",en:"Civic portal for the town of Bobov Dol: services, citizen reports, transparency and local information.",bg:"Граждански портал за град Бобов дол: услуги, сигнали, прозрачност и информация за жителите."}},
+            {name:"Ospedali Trasparenti",url:"https://ospedalitrasparenti.it",tag:"CIVIC · IT",desc:{it:"Portale civico per la trasparenza degli ospedali italiani: dati pubblici, accessibili e confrontabili per i cittadini.",en:"Civic portal for the transparency of Italian hospitals: public, comparable data made accessible to citizens.",bg:"Граждански портал за прозрачност на италианските болници: публични и сравними данни, достъпни за гражданите."}},
+            {name:"Мастилко",url:"https://mastilko-bg.com",tag:"PRINT · TOOLS",desc:{it:"Etichette, biglietti da visita e CV gratuiti, pronti per la stampa. Anteprima dal vivo su un vero foglio A4, senza registrazione.",en:"Free labels, business cards and CVs, print-ready. Live preview on a real A4 sheet, no signup.",bg:"Безплатни етикети, визитки и CV, готови за печат. Преглед на живо върху истински А4 лист, без регистрация."}},
+            {name:"Vizitka",url:"https://vizitka-bg.com",tag:"QR · PROFILE",desc:{it:"Biglietto da visita digitale con QR permanente. Cambi lavoro o numero — tutti i biglietti già distribuiti si aggiornano da soli.",en:"Digital business card with a permanent QR. Change your job or number — every card you already handed out updates itself.",bg:"Дигитална визитка с постоянен QR код. Смениш ли телефон или длъжност — всички вече раздадени визитки се обновяват сами."}},
+          ].map(function(p,i){
+            if(p.verified) return <div key={i} className="cs-prod-card cs-prod-verified" style={{position:"relative",border:"1px solid rgba("+CR+",.55)",padding:"22px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:190,color:"inherit",background:"linear-gradient(160deg,rgba("+CR+",.09),rgba("+CR+",.02) 55%)",boxShadow:"0 0 28px rgba("+CR+",.14), inset 0 0 18px rgba("+CR+",.05)"}}>
+              <div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10,gap:8}}>
+                  <span style={{fontFamily:MONO,fontSize:8,letterSpacing:".25em",color:INK2}}>{p.tag}</span>
+                  <span style={{display:"inline-flex",alignItems:"center",gap:5,fontFamily:MONO,fontSize:7,letterSpacing:".2em",color:C,border:"1px solid rgba("+CR+",.5)",padding:"2px 7px 2px 5px",whiteSpace:"nowrap"}}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" d="M4 12.5l5 5L20 6.5"/></svg>
+                    ESTABLISHED PUBLISHER
+                  </span>
+                </div>
+                <a href={p.url} target="_blank" rel="noopener" className="cs-stretch" style={{display:"block",fontFamily:HEAD,fontWeight:600,fontSize:"1.15rem",letterSpacing:"-.02em",marginBottom:8,color:INK,textDecoration:"none",cursor:"none"}}>{p.name}</a>
+                <div style={{fontSize:10,color:INK2,lineHeight:1.85}}>{p.desc[lang]||p.desc.en}</div>
+                <div style={{fontSize:9,color:INK2,lineHeight:1.7,marginTop:10,paddingLeft:8,borderLeft:"2px solid rgba("+CR+",.45)"}}>{lang==="it"?"Nella scheda del Chrome Web Store: «Established publisher» — creato dal proprietario del sito indicato, nessuna violazione delle norme. 63 lingue.":lang==="bg"?"В страницата в Chrome Web Store: „Established publisher“ — създадено от собственика на посочения сайт, без нарушения на правилата. 63 езика.":"On its Chrome Web Store listing: “Established publisher” — created by the owner of the listed website, no history of policy violations. 63 languages."}</div>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",gap:10,flexWrap:"wrap",fontFamily:MONO,fontSize:8,letterSpacing:".15em",marginTop:14,paddingTop:10,borderTop:"1px solid rgba("+CR+",.18)"}}>
+                <span style={{color:C}}>{p.url.replace("https://","")} {"→"}</span>
+                <a href={p.store} target="_blank" rel="noopener" style={{position:"relative",zIndex:2,color:INK,textDecoration:"none",cursor:"none"}}>CHROME WEB STORE {"↗"}</a>
+              </div>
+            </div>;
+            return <a key={i} href={p.url} target="_blank" rel="noopener" className="cs-prod-card" style={{border:"1px solid rgba("+CR+",.14)",padding:"22px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:190,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.015)"}}>
+              <div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10,gap:8}}>
+                  <span style={{fontFamily:MONO,fontSize:8,letterSpacing:".25em",color:INK2}}>{p.tag}</span>
+                  <span style={{fontFamily:MONO,fontSize:7,letterSpacing:".2em",color:C,border:"1px solid rgba("+CR+",.35)",padding:"2px 6px"}}>NEW</span>
+                </div>
+                <div style={{fontFamily:HEAD,fontWeight:600,fontSize:"1.15rem",letterSpacing:"-.02em",marginBottom:8,color:INK}}>{p.name}</div>
+                <div style={{fontSize:10,color:INK2,lineHeight:1.85}}>{p.desc[lang]||p.desc.en}</div>
+              </div>
+              <div style={{fontFamily:MONO,fontSize:8,letterSpacing:".15em",color:C,marginTop:14,paddingTop:10,borderTop:"1px solid rgba("+CR+",.1)"}}>{p.url.replace("https://","")} {"→"}</div>
+            </a>
+          })}
+        </div>
+
+        {/* ── The live platforms ── */}
+        <div style={{display:"flex",alignItems:"center",gap:12,margin:"34px 0 18px"}}>
+          <span style={{fontFamily:MONO,fontSize:9,letterSpacing:".3em",color:INK2}}>{lang==="it"?"// PIATTAFORME LIVE":lang==="bg"?"// ЖИВИ ПЛАТФОРМИ":"// LIVE PLATFORMS"}</span>
+          <span style={{flex:1,height:1,background:LINE}}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:2}}>
+          {[
+            {name:"Nexus Dominion",desc:{it:"MMO browser dark fantasy medievale. Gilde, dungeon, battaglie PvP ed economia gestita dai giocatori.",en:"Medieval dark-fantasy browser MMO. Guilds, dungeons, PvP battles and a player-driven economy.",bg:"Средновековна dark fantasy браузър MMO игра. Гилдии, подземия, PvP битки и икономика, управлявана от играчите."},url:"https://nexus.carbonstealth.eu",tag:"GAMING"},
+            {name:"Treti Mart",desc:{it:"Il marketplace bulgaro. Compra e vendi prodotti in Bulgaria con annunci gratuiti e pagamenti sicuri.",en:"The Bulgarian marketplace. Buy and sell in Bulgaria with free listings and secure payments.",bg:"Българският маркетплейс. Купувай и продавай в България с безплатни обяви и сигурни плащания."},url:"https://tretimart.carbonstealth.eu",tag:"MARKETPLACE"},
+            {name:"CS ERP Demo",desc:{it:"Demo live del sistema ERP. Prova i moduli CRM, magazzino, contabilità e dashboard BI.",en:"Live demo of the ERP system. Try the CRM, warehouse, accounting and BI dashboard modules.",bg:"Демо на живо на ERP системата. Пробвай модулите CRM, склад, счетоводство и BI табло."},url:"https://erp.carbonstealth.eu",tag:"ERP"},
+          ].map(function(p,i){
+            return <a key={i} href={p.url} target="_blank" rel="noopener" className="cs-prod-card" style={{border:"1px solid rgba(245,245,240,.06)",padding:"24px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:180,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.01)"}}>
+              <div>
+                <div style={{fontSize:8,letterSpacing:".3em",color:C,marginBottom:8}}>{p.tag}</div>
+                <div style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",marginBottom:8,color:"#C9D1D6"}}>{p.name}</div>
+                <div style={{fontSize:10,color:"#ccc",lineHeight:1.8}}>{p.desc[lang]||p.desc.it}</div>
+              </div>
+              <div style={{fontSize:8,letterSpacing:".15em",color:C,marginTop:14,paddingTop:10,borderTop:"1px solid rgba(245,245,240,.06)"}}>{p.url.replace("https://","")} {"\u2192"}</div>
+            </a>
+          })}
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          REVERSE LAB — reverse engineering + 3D printing
+          ═══════════════════════════════════════════ */}
+      <section id="lab" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("lab_tag")}</div>
+        <ProximityText text={t("lab_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#C9D1D6",fontWeight:700}}/>
+        <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("lab_desc")}</p>
+        <div className="cs-lab-grid" style={{display:"grid",gridTemplateColumns:"minmax(280px,1fr) minmax(280px,1fr)",gap:2,alignItems:"stretch"}}>
+          <div style={{border:"1px solid rgba("+CR+",.15)",background:"rgba("+CR+",.02)",minHeight:340,position:"relative"}}>
+            <ReverseLabShowcase/>
+          </div>
+          <div style={{border:"1px solid rgba(245,245,240,.06)",padding:"28px 24px",display:"flex",flexDirection:"column",justifyContent:"center",gap:18}}>
+            {[t("lab_b1"),t("lab_b2"),t("lab_b3")].map(function(b,i){
+              return <div key={i} style={{display:"flex",gap:14,alignItems:"baseline"}}>
+                <span style={{color:C,fontSize:10,letterSpacing:".2em",flexShrink:0}}>{"0"+(i+1)}</span>
+                <span style={{fontSize:11,color:"#ddd",lineHeight:1.8,letterSpacing:".05em"}}>{b}</span>
+              </div>
+            })}
+            <div className="cs-cta" {...kb(function(){scrollToId("contact")},t("lab_cta"))} style={Object.assign({marginTop:10,padding:"12px 24px",border:"1px solid "+C,color:C,fontSize:10,letterSpacing:".25em",cursor:"none",alignSelf:"flex-start"},CTA_GLOW)}>{t("lab_cta")}</div>
+          </div>
+        </div>
+
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          THE MONUMENT — permanent visitor-built crystal
+          ═══════════════════════════════════════════ */}
+      <section id="monument" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("mon_tag")}</div>
+        <ProximityText text={t("mon_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#C9D1D6",fontWeight:700}}/>
+        <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("mon_desc")}</p>
+        <div style={{border:"1px solid rgba("+CR+",.15)",background:"radial-gradient(circle at 50% 50%, rgba("+CR+",.04), transparent 70%)",height:"min(72vh,560px)",position:"relative"}}>
+          <MonumentGalaxy lang={lang}/>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          COVERAGE — Bulgaria → Milano, measured not mapped
+          ═══════════════════════════════════════════ */}
+      <section id="coverage" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("cov_tag")}</div>
+        <ProximityText text={t("cov_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#C9D1D6",fontWeight:700}}/>
+        <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("cov_desc")}</p>
+        <div style={{border:"1px solid rgba("+CR+",.15)",position:"relative"}}>
+          <CoverageMap/>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          ABOUT — Scroll-decode text
+          ═══════════════════════════════════════════ */}
+      <section id="about" style={{position:"relative",zIndex:5,padding:"120px 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:80}}>
+        <ProbeCloud />
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("about_tag")}</div>
+          <ScrollDecode
+            text={t("about_scroll")}
+            style={Object.assign({fontFamily:HEAD,fontWeight:800,fontSize:"clamp(1.6rem,3.5vw,2.8rem)",lineHeight:1.2,letterSpacing:"-.02em",textTransform:"uppercase"},CHROME)}
+          />
+          <p style={{fontSize:12,lineHeight:2,color:"#ccc",maxWidth:420,marginTop:28}}>{t("about_body")}</p>
+        </div>
+        <div style={{paddingTop:40,position:"relative",zIndex:1}}>
+          {/* Brand plate — the third render (mark + the three promises) */}
+          <div style={{maxWidth:420,marginBottom:32,border:"1px solid rgba("+CR+",.14)",boxShadow:"0 0 32px rgba("+CR+",.08)",background:"#000",overflow:"hidden"}}>
+            <img src="/brand/cs-poster.webp" alt="Carbon Stealth VCC — design, development, performance" width={1024} height={1024} loading="lazy" decoding="async" style={{display:"block",width:"100%",height:"auto"}}/>
+          </div>
+          {[[t("stat_1"),"50+"],[t("stat_2"),"11"],[t("stat_3"),"IT \u00b7 EN \u00b7 BG"],[t("stat_4"),"0"]].map(function(item,i){
+            return <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"14px 0",borderBottom:"1px solid rgba(245,245,240,.08)"}}>
+              <span style={{fontSize:9,letterSpacing:".25em",textTransform:"uppercase",color:"#ddd"}}>{item[0]}</span>
+              <DrumNumber value={item[1]} style={{fontFamily:HEAD,fontWeight:900,fontSize:i===3?"2rem":"1.4rem",letterSpacing:"-.02em",color:i===3?C:"#C9D1D6"}}/></div>})}
+        </div>
+      </section>
+
+      {/* ═══ GAMES — отделна зона, тясна лента (доклад §3) ═══ */}
+      <section id="games" aria-label={t("games_tag").replace("// ","")} style={{position:"relative",zIndex:5,padding:"40px 20px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <a href={SOL[3].url[lang]} className="cs-work-card" style={{display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"space-between",gap:16,padding:"16px 22px",border:"1px solid rgba("+CR+",.14)",background:"rgba("+CR+",.015)",textDecoration:"none",color:"inherit",cursor:"none"}}>
+          <span style={{display:"flex",alignItems:"center",gap:16,minWidth:0,flex:"1 1 320px"}}>
+            <img src={"/brand/svc/gamedev-384.webp"+LIVE_Q} width={192} height={159} loading="lazy" decoding="async" alt="" style={{width:64,height:"auto",flex:"none"}}/>
+            <span style={{minWidth:0}}><span style={{display:"block",fontFamily:MONO,fontSize:8,letterSpacing:".3em",color:C,marginBottom:6}}>{t("games_tag")}</span><span style={{display:"block",fontSize:11,lineHeight:1.8,color:INK2}}>{t("games_txt")}</span></span>
+          </span>
+          <span style={{fontFamily:MONO,fontSize:9,letterSpacing:".2em",color:C}}>{t("games_link")+" \u2192"}</span>
+        </a>
+      </section>
+
+      {/* ═══ CTA ═══ */}
+      <section id="contact" style={{position:"relative",zIndex:5,padding:"100px 20px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{maxWidth:700,margin:"0 auto"}}>
+          <EchoText fontFamily={HEAD} fontSize="clamp(2rem,6vw,5rem)" lineHeight=".9" letterSpacing="-.04em" color={C} style={CYAN_GLOW}>{t("cta_title")}</EchoText>
+          <div style={{height:24}}/>
+          <div style={{fontSize:10,letterSpacing:".15em",color:"#ccc",marginBottom:32}}>{t("cta_sub")}</div>
+
+          {/* ═══ CONTACT FORM ═══ */}
+          {formSent==="ok"||formSent==="sending" ? (
+            <div style={{padding:"40px 20px",border:"1px solid rgba(0,255,136,.3)",textAlign:"center"}}>
+              <div style={{fontFamily:HEAD,fontWeight:900,fontSize:18,color:"#00ff88",marginBottom:8}}>{formSent==="sending"?(lang==="it"?"INVIO IN CORSO...":lang==="bg"?"\u0418\u0417\u041F\u0420\u0410\u0429\u0410\u041D\u0415...":"SENDING..."):(lang==="it"?"INVIATO!":lang==="bg"?"\u0418\u0417\u041F\u0420\u0410\u0422\u0415\u041D\u041E!":"SENT!")}</div>
+              <p style={{fontSize:11,color:"#ccc"}}>{t("form_sent")}</p>
+              {formSent==="ok" && <div className="cs-stamp" aria-hidden="true">{lang==="it"?"RICEVUTO":lang==="bg"?"ПРИЕТО":"RECEIVED"} {"\u00b7"} {new Date().toISOString().slice(0,10)}</div>}
+            </div>
+          ) : (
+            <form onFocus={function(){if(!formStarted.current){formStarted.current=true;if(window.csTrack)window.csTrack("form_start",{form:"contact"})}}} onSubmit={function(e){e.preventDefault();handleFormSubmit()}} style={{display:"flex",flexDirection:"column",gap:10}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                <input value={formName} onChange={function(e){setFormName(e.target.value)}} placeholder={t("form_name")} aria-label={t("form_name")} required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+                <input value={formEmail} onChange={function(e){setFormEmail(e.target.value)}} placeholder={t("form_email")} aria-label={t("form_email")} type="email" required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><input value={formCompany} onChange={function(e){setFormCompany(e.target.value)}} placeholder={t("form_company")} aria-label={t("form_company")} autoComplete="organization" maxLength={200} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}} /><select value={formCountry} onChange={function(e){setFormCountry(e.target.value)}} aria-label={t("form_country")} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}><option value="">{t("form_country")}</option>{B2B_COUNTRY.map(function(o){return <option key={o[0]} value={o[0]}>{o[1][lang]||o[1].en}</option>})}</select></div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><select value={formSolution} onChange={function(e){setFormSolution(e.target.value)}} aria-label={t("form_solution")} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}><option value="">{t("form_solution")}</option>{B2B_SOLUTION.map(function(o){return <option key={o[0]} value={o[0]}>{o[1][lang]||o[1].en}</option>})}</select><select value={formBudget} onChange={function(e){setFormBudget(e.target.value)}} aria-label={t("form_budget")} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}><option value="">{t("form_budget")}</option>{B2B_BUDGET.map(function(o){return <option key={o[0]} value={o[0]}>{o[1][lang]||o[1].en}</option>})}</select></div>
+              <input value={formPhone} onChange={function(e){setFormPhone(e.target.value)}} placeholder={t("form_phone")} aria-label={t("form_phone")} type="tel" style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+              <textarea value={formMsg} onChange={function(e){setFormMsg(e.target.value)}} placeholder={t("form_msg")} aria-label={t("form_msg")} required rows={5} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",resize:"vertical"}}/>
+              <p style={{fontSize:9,color:"#999",lineHeight:1.6}}>{t("form_gdpr")} <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} style={{color:C,textDecoration:"none"}}>{lang==="it"?"Informativa Privacy":lang==="bg"?"\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy Policy"}</a>.</p>
+              {formSent==="error" && <div role="alert" style={{padding:"12px 16px",border:"1px solid rgba(255,51,102,.4)",background:"rgba(255,51,102,.06)",color:"#ff6688",fontSize:11,lineHeight:1.6}}>{lang==="it"?"Invio non riuscito. Riprova o scrivici direttamente a info@carbonstealth.eu":lang==="bg"?"\u0418\u0437\u043F\u0440\u0430\u0449\u0430\u043D\u0435\u0442\u043E \u0435 \u043D\u0435\u0443\u0441\u043F\u0435\u0448\u043D\u043E. \u041E\u043F\u0438\u0442\u0430\u0439\u0442\u0435 \u043E\u0442\u043D\u043E\u0432\u043E \u0438\u043B\u0438 \u043D\u0438 \u043F\u0438\u0448\u0435\u0442\u0435 \u043D\u0430 info@carbonstealth.eu":"Send failed. Please try again or email us at info@carbonstealth.eu"}</div>}
+              <button type="submit" className="cs-cta" style={Object.assign({display:"inline-block",padding:"14px 36px",border:"1px solid "+C,fontSize:10,letterSpacing:".3em",textTransform:"uppercase",cursor:"pointer",color:C,textAlign:"center",marginTop:8,fontFamily:"'Space Mono',monospace"},CTA_GLOW)}>{t("form_send")}</button>
+            </form>
+          )}
+
+          {/* Direct contacts */}
+          <div style={{display:"flex",flexWrap:"wrap",gap:20,marginTop:32,paddingTop:20,borderTop:"1px solid rgba(245,245,240,.06)"}}>
+            <a href="https://wa.me/393792969699" style={{fontSize:10,color:"#ccc",textDecoration:"none"}}>WhatsApp: +39 379 296 9699</a>
+            <a href="tel:+359877414874" style={{fontSize:10,color:"#ccc",textDecoration:"none"}}>BG: +359 877 414 874</a>
+            <a href="mailto:info@carbonstealth.eu" style={{fontSize:10,color:C,textDecoration:"none"}}>info@carbonstealth.eu</a>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      {/* ═══════════════════════════════════════════
+          FAQ — AEO Optimized for AI Answer Engines
+          ═══════════════════════════════════════════ */}
+      <section id="faq" style={{position:"relative",zIndex:5,padding:"100px 20px",borderTop:"1px solid rgba(245,245,240,.08)"}} itemScope itemType="https://schema.org/FAQPage">
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("faq_tag")}</div>
+        <ProximityText text={t("faq_title")} style={{fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,color:"#C9D1D6",fontWeight:700}}/>
+        {({
+          it: [
+            ["Quali servizi offre Carbon Stealth VCC?", "Carbon Stealth offre sviluppo web (React, Node.js, PostgreSQL), sviluppo giochi (FiveM, browser MMO), sistemi embedded e IoT (PLC, Modbus, Eurotherm), DevOps (Docker, Nginx, Hetzner VPS), branding e design, e consulenza tecnica."],
+            ["Dove si trova Carbon Stealth?", "Sede legale a Bobov Dol, Bulgaria (EIK: 208725180, indirizzo: ul. Samuil 3, 2670). Serviamo clienti da remoto in tutta Europa e nel mondo."],
+            ["Cos'\u00e8 Nexus Dominion?", "Un MMO browser dark fantasy medievale costruito con React, Vite, Node.js, TypeScript, Prisma, PostgreSQL, Redis, Socket.IO e Docker. Include 52+ modelli database, 27 pagine di gioco e combattimento PvP in tempo reale."],
+            ["Carbon Stealth sviluppa risorse FiveM?", "S\u00ec. Sviluppiamo risorse FiveM: sistemi anti-cheat con euristiche comportamentali, tablet meccanico, script e risorse racing. Supporto multi-framework QBCore e ESX."],
+            ["Con quali sistemi embedded e IoT lavorate?", "Controller forni Eurotherm EPC3004 via Modbus RTU/TCP, PLC WAGO PFC200 con CODESYS, schede controllo ascensori con 102 punti I/O e macchine a 14 stati, dispositivi IoT Arduino/ESP32."],
+            ["Qual \u00e8 lo stack tecnologico?", "React, Node.js, TypeScript, Python, Prisma ORM, PostgreSQL, Redis, Docker, Nginx, Three.js, WebGL, GSAP, Socket.IO. Infrastruttura: Hetzner VPS, Ubuntu 24.04, Let's Encrypt SSL."],
+          ],
+          en: [
+            ["What services does Carbon Stealth VCC offer?", "Carbon Stealth offers web development (React, Node.js, PostgreSQL), game development (FiveM, browser MMOs), embedded systems (PLC, Modbus, Eurotherm), DevOps (Docker, Nginx, Hetzner VPS), branding, and code rescue consulting."],
+            ["Where is Carbon Stealth located?", "Based in Bobov Dol, Bulgaria (EIK: 208725180, address: ul. Samuil 3, 2670). Serving clients remotely across Europe and worldwide."],
+            ["What is Nexus Dominion?", "A medieval dark fantasy browser MMO built with React, Vite, Node.js, TypeScript, Prisma, PostgreSQL, Redis, Socket.IO, and Docker. Features 52+ database models, 27 game pages, and real-time PvP combat."],
+            ["Does Carbon Stealth build FiveM resources?", "Yes. We build FiveM resources: anti-cheat systems with behavioral heuristics, mechanic tablet systems, scripts and racing resources. Multi-framework QBCore and ESX support."],
+            ["What embedded and IoT systems does Carbon Stealth work with?", "Eurotherm EPC3004 oven controllers via Modbus RTU/TCP, WAGO PFC200 PLCs with CODESYS, elevator control boards with 102 I/O points and 14-state state machines, Arduino/ESP32 IoT devices."],
+            ["What is the tech stack?", "React, Node.js, TypeScript, Python, Prisma ORM, PostgreSQL, Redis, Docker, Nginx, Three.js, WebGL, GSAP, Socket.IO. Infrastructure: Hetzner VPS, Ubuntu 24.04, Let's Encrypt SSL."],
+          ],
+          bg: [
+            ["\u041A\u0430\u043A\u0432\u0438 \u0443\u0441\u043B\u0443\u0433\u0438 \u043F\u0440\u0435\u0434\u043B\u0430\u0433\u0430 Carbon Stealth VCC?", "Carbon Stealth \u043F\u0440\u0435\u0434\u043B\u0430\u0433\u0430 \u0443\u0435\u0431 \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430 (React, Node.js, PostgreSQL), \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043D\u0430 \u0438\u0433\u0440\u0438 (FiveM, \u0431\u0440\u0430\u0443\u0437\u044A\u0440 MMO), \u0432\u0433\u0440\u0430\u0434\u0435\u043D\u0438 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0438 IoT (PLC, Modbus, Eurotherm), DevOps (Docker, Nginx, Hetzner VPS), \u0431\u0440\u0430\u043D\u0434\u0438\u043D\u0433 \u0438 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438 \u043A\u043E\u043D\u0441\u0443\u043B\u0442\u0430\u0446\u0438\u0438."],
+            ["\u041A\u044A\u0434\u0435 \u0441\u0435 \u043D\u0430\u043C\u0438\u0440\u0430 Carbon Stealth?", "\u0421\u0435\u0434\u0430\u043B\u0438\u0449\u0435 \u0432 \u0411\u043E\u0431\u043E\u0432 \u0434\u043E\u043B, \u0411\u044A\u043B\u0433\u0430\u0440\u0438\u044F (\u0415\u0418\u041A: 208725180, \u0430\u0434\u0440\u0435\u0441: \u0443\u043B. \u0421\u0430\u043C\u0443\u0438\u043B 3, 2670). \u041E\u0431\u0441\u043B\u0443\u0436\u0432\u0430\u043C\u0435 \u043A\u043B\u0438\u0435\u043D\u0442\u0438 \u0434\u0438\u0441\u0442\u0430\u043D\u0446\u0438\u043E\u043D\u043D\u043E \u0432 \u0446\u044F\u043B\u0430 \u0415\u0432\u0440\u043E\u043F\u0430 \u0438 \u0441\u0432\u0435\u0442\u0430."],
+            ["\u041A\u0430\u043A\u0432\u043E \u0435 Nexus Dominion?", "\u0421\u0440\u0435\u0434\u043D\u043E\u0432\u0435\u043A\u043E\u0432\u043D\u043E dark fantasy \u0431\u0440\u0430\u0443\u0437\u044A\u0440 MMO, \u0438\u0437\u0433\u0440\u0430\u0434\u0435\u043D\u043E \u0441 React, Vite, Node.js, TypeScript, Prisma, PostgreSQL, Redis, Socket.IO \u0438 Docker. \u0412\u043A\u043B\u044E\u0447\u0432\u0430 52+ \u043C\u043E\u0434\u0435\u043B\u0430 \u0432 \u0431\u0430\u0437\u0430\u0442\u0430 \u0434\u0430\u043D\u043D\u0438, 27 \u0438\u0433\u0440\u043E\u0432\u0438 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0438 \u0438 PvP \u0431\u0438\u0442\u043A\u0438 \u0432 \u0440\u0435\u0430\u043B\u043D\u043E \u0432\u0440\u0435\u043C\u0435."],
+            ["Carbon Stealth \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0432\u0430 \u043B\u0438 FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438?", "\u0414\u0430. \u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0432\u0430\u043C\u0435 FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438: \u0430\u043D\u0442\u0438\u0447\u0438\u0439\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0441 \u043F\u043E\u0432\u0435\u0434\u0435\u043D\u0447\u0435\u0441\u043A\u0438 \u0435\u0432\u0440\u0438\u0441\u0442\u0438\u043A\u0438, \u0442\u0430\u0431\u043B\u0435\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0437\u0430 \u043C\u0435\u0445\u0430\u043D\u0438\u0446\u0438, \u0441\u043A\u0440\u0438\u043F\u0442\u043E\u0432\u0435 \u0438 \u0441\u044A\u0441\u0442\u0435\u0437\u0430\u0442\u0435\u043B\u043D\u0438 \u0440\u0435\u0441\u0443\u0440\u0441\u0438. \u041F\u043E\u0434\u0434\u0440\u044A\u0436\u043A\u0430 \u043D\u0430 QBCore \u0438 ESX."],
+            ["\u0421 \u043A\u0430\u043A\u0432\u0438 \u0432\u0433\u0440\u0430\u0434\u0435\u043D\u0438 \u0438 IoT \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0440\u0430\u0431\u043E\u0442\u0438 Carbon Stealth?", "\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u0435\u0440\u0438 \u0437\u0430 \u043F\u0435\u0449\u0438 Eurotherm EPC3004 \u0447\u0440\u0435\u0437 Modbus RTU/TCP, PLC WAGO PFC200 \u0441 CODESYS, \u043F\u043B\u0430\u0442\u043A\u0438 \u0437\u0430 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043D\u0430 \u0430\u0441\u0430\u043D\u0441\u044C\u043E\u0440\u0438 \u0441\u044A\u0441 102 I/O \u0442\u043E\u0447\u043A\u0438 \u0438 14 \u0441\u044A\u0441\u0442\u043E\u044F\u043D\u0438\u044F, IoT \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u0430 Arduino/ESP32."],
+            ["\u041A\u0430\u043A\u044A\u0432 \u0435 \u0442\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0447\u043D\u0438\u044F\u0442 \u0441\u0442\u0435\u043A?", "React, Node.js, TypeScript, Python, Prisma ORM, PostgreSQL, Redis, Docker, Nginx, Three.js, WebGL, GSAP, Socket.IO. \u0418\u043D\u0444\u0440\u0430\u0441\u0442\u0440\u0443\u043A\u0442\u0443\u0440\u0430: Hetzner VPS, Ubuntu 24.04, Let's Encrypt SSL."],
+          ],
+        }[lang] || []).map(function(pair, i) {
+          return <div key={i} className="cs-faq-i" itemScope itemProp="mainEntity" itemType="https://schema.org/Question" style={{borderBottom:"1px solid rgba(245,245,240,.08)",padding:"20px 0"}}>
+            <span className="cs-faq-n" aria-hidden="true">Q.{String(i+1).padStart(2,"0")}</span>
+            <h3 itemProp="name" style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:8,color:"#C9D1D6",textShadow:"0 1px 10px rgba(0,0,0,0.5)"}}>{pair[0]}</h3>
+            <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+              <p itemProp="text" className="about-answer" style={{fontSize:11,lineHeight:1.9,color:"#ccc",maxWidth:600}}>{pair[1]}</p>
+            </div>
+          </div>;
+        })}
+      </section>
+
+      </main>
+      {/* ═══════════════════════════════════════════════════
+          FULL FOOTER — from carbonstealth.eu
+          ═══════════════════════════════════════════════════ */}
+      <footer id="footer" style={{borderTop:"1px solid rgba("+CR+",.22)",boxShadow:"0 -1px 28px rgba("+CR+",.10)",position:"relative",zIndex:5,background:"radial-gradient(ellipse at 50% 100%,rgba("+CR+",.10),transparent 55%),rgba(0,0,0,.5)"}}>
+
+        {/* TOP FOOTER — 4 columns */}
+        <div style={{padding:"60px 20px 40px",display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr",gap:40,borderBottom:"1px solid rgba(245,245,240,.08)"}}>
+
+          {/* Brand column */}
+          <div>
+            <div style={{marginBottom:16}}>
+              <img src="/brand/cs-logo-480.webp" alt="Carbon Stealth VCC" width={168} height={168} loading="lazy" decoding="async" style={{height:168,width:168,display:"block"}}/>
+            </div>
+            <p style={{fontSize:10,lineHeight:1.9,color:"#ddd",maxWidth:280,marginBottom:16}}>{t("ft_desc")}</p>
+            <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
+              <a href="https://wa.me/393792969699" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"none"}} title="WhatsApp">WA</a>
+              <a href="mailto:info@carbonstealth.eu" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"none"}} title="Email">EM</a>
+              <a href="https://www.linkedin.com/company/carbonstealth.vcc" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,letterSpacing:".1em",cursor:"none"}} title="LinkedIn">LI</a>
+              <a href="https://www.youtube.com/@CarbonStealth" target="_blank" rel="noopener" aria-label="YouTube — Carbon Stealth VCC" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,letterSpacing:".1em",cursor:"none"}} title="YouTube">YT</a>
+              <a href="https://www.tiktok.com/@zerofucksgiiven" target="_blank" rel="noopener" aria-label="TikTok" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,letterSpacing:".1em",cursor:"none"}} title="TikTok">TT</a>
+              <a href="https://share.google/0XLOlO0r1ETbGpUkZ" target="_blank" rel="noopener" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,cursor:"none"}} title={lang==="it"?"Profilo Google — lascia una recensione":lang==="bg"?"Google профил — остави отзив":"Google Business Profile — leave a review"}>G</a>
+            </div>
+          </div>
+
+          {/* Servizi column */}
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:16,fontWeight:700}}>{t("ft_servizi")}</div>
+            {({it:[
+              ["Sviluppo Siti Web","/servizi/sviluppo-siti-web/"],["E-Commerce","/servizi/ecommerce/"],["Software Custom","/servizi/sviluppo-software/"],["ERP Professionale","/servizi/erp/"],["App Mobile","/servizi/app-mobile/"],["SEO / GEO / AEO","/servizi/seo/"],["Hosting Cloud","/servizi/hosting/"],["Cybersecurity","services"]
+            ],en:[
+              ["Web Development","/en/services/web-development/"],["E-Commerce","/en/services/ecommerce/"],["Custom Software","/en/services/software-development/"],["Professional ERP","/en/services/erp/"],["Mobile Apps","/en/services/mobile-apps/"],["SEO / GEO / AEO","/en/services/seo/"],["Cloud Hosting","/en/services/hosting/"],["Cybersecurity","services"]
+            ],bg:[
+              ["\u0423\u0435\u0431 \u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430","/bg/uslugi/web-razrabotka/"],["\u0415\u043B\u0435\u043A\u0442\u0440\u043E\u043D\u043D\u0430 \u0422\u044A\u0440\u0433\u043E\u0432\u0438\u044F","/bg/uslugi/ecommerce/"],["\u0421\u043E\u0444\u0442\u0443\u0435\u0440 \u043F\u043E \u041F\u043E\u0440\u044A\u0447\u043A\u0430","/bg/uslugi/softuer/"],["\u041F\u0440\u043E\u0444\u0435\u0441\u0438\u043E\u043D\u0430\u043B\u0435\u043D ERP","/bg/uslugi/erp/"],["\u041C\u043E\u0431\u0438\u043B\u043D\u0438 \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F","/bg/uslugi/mobilni-prilozheniya/"],["SEO / GEO / AEO","/bg/uslugi/seo/"],["\u0425\u043E\u0441\u0442\u0438\u043D\u0433","/bg/uslugi/hosting/"],["\u041A\u0438\u0431\u0435\u0440\u0441\u0438\u0433\u0443\u0440\u043D\u043E\u0441\u0442","services"]
+            ]}[lang]||[]).map(function(s){
+              var ext=s[1].startsWith("http");var internal=s[1].charAt(0)==="/";return (ext||internal)?<a key={s[0]} href={s[1]} {...(ext?{target:"_blank",rel:"noopener"}:{})} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>:<div key={s[0]} onClick={function(){scrollToId(s[1])}} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none"}}>{s[0]}</div>;
+            })}
+          </div>
+
+          {/* Azienda column */}
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:16,fontWeight:700}}>{t("ft_azienda")}</div>
+            {({it:[
+              ["Chi Siamo","about"],["Portfolio","portfolio"],["Prezzi","/prezzi/"],["Blog & Risorse","/blog/"],["Aree Servite","/geo/"],["Carriere","contact"],["Contatti","contact"]
+            ],en:[
+              ["About Us","about"],["Portfolio","portfolio"],["Pricing","/en/pricing/"],["Blog & Resources","/en/blog/"],["Service Areas","/en/geo/"],["Careers","contact"],["Contact","contact"]
+            ],bg:[
+              ["\u0417\u0430 \u041D\u0430\u0441","about"],["\u041F\u043E\u0440\u0442\u0444\u043E\u043B\u0438\u043E","portfolio"],["\u0426\u0435\u043D\u0438","/bg/ceni/"],["\u0411\u043B\u043E\u0433 \u0438 \u0420\u0435\u0441\u0443\u0440\u0441\u0438","/bg/blog/"],["\u041E\u0431\u0441\u043B\u0443\u0436\u0432\u0430\u043D\u0438 \u0420\u0430\u0439\u043E\u043D\u0438","/bg/geo/"],["\u041A\u0430\u0440\u0438\u0435\u0440\u0438","contact"],["\u041A\u043E\u043D\u0442\u0430\u043A\u0442\u0438","contact"]
+            ]}[lang]||[]).map(function(s){
+              return s[1].charAt(0)==="/"
+                ? <a key={s[0]} href={s[1]} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>
+                : <div key={s[0]} onClick={function(){scrollToId(s[1])}} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none"}}>{s[0]}</div>;
+            })}
+          </div>
+
+          {/* Legale column */}
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:16,fontWeight:700}}>{t("ft_legale")}</div>
+            {({it:[
+              ["Informativa Privacy","/privacy/"],["Politica Cookie","/cookie/"],["Termini di Servizio","/termini/"],["Note legali","/note-legali/"],["Sitemap XML","/sitemap.xml"]
+            ],en:[
+              ["Privacy Policy","/en/privacy/"],["Cookie Policy","/en/cookie/"],["Terms of Service","/en/terms/"],["Legal notice","/en/legal-notice/"],["Sitemap XML","/sitemap.xml"]
+            ],bg:[
+              ["\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442","/bg/privacy/"],["\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438","/bg/cookie/"],["\u041E\u0431\u0449\u0438 \u0423\u0441\u043B\u043E\u0432\u0438\u044F","/bg/usloviya/"],["\u041F\u0440\u0430\u0432\u043D\u0438 \u0434\u0430\u043D\u043D\u0438","/bg/imprint/"],["Sitemap XML","/sitemap.xml"]
+            ]}[lang]||[]).map(function(s){
+              return <a key={s[0]} href={s[1]} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>;
+            })}
+            <div style={{marginTop:16,display:"flex",flexWrap:"wrap",gap:"6px 12px",whiteSpace:"nowrap"}}>
+              <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>SSL {lang==="it"?"PROTETTO":lang==="bg"?"\u0417\u0410\u0429\u0418\u0422\u0415\u041D":"SECURED"}</span>
+              <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>99.9% UPTIME</span>
+              <a href="/status/" style={{fontSize:8,color:C,letterSpacing:".15em",textDecoration:"none",cursor:"none"}}>{"\u25CF"} {lang==="it"?"STATO LIVE":lang==="bg"?"\u0421\u0422\u0410\u0422\u0423\u0421 \u041D\u0410 \u0416\u0418\u0412\u041E":"LIVE STATUS"} {"\u2192"}</a>
+            </div>
+          </div>
+        </div>
+
+        {/* SERVICE AREAS + RESOURCES — internal link equity to geo + blog */}
+        <div style={{padding:"24px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:32,maxWidth:1100,margin:"0 auto",width:"100%"}} className="cs-lab-grid">
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"AREE SERVITE":lang==="bg"?"ОБСЛУЖВАНИ РАЙОНИ":"SERVICE AREAS"}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px"}}>
+              {(lang==="bg"
+                ? [["София","/bg/geo/sofia/"],["Пловдив","/bg/geo/plovdiv/"],["Варна","/bg/geo/varna/"],["Бургас","/bg/geo/burgas/"],["Русе","/bg/geo/ruse/"],["Милано","/bg/geo/milano/"],["Рим","/bg/geo/roma/"]]
+                : lang==="en"
+                ? [["Milan","/en/geo/milano/"],["Rome","/en/geo/roma/"],["Turin","/en/geo/torino/"],["Florence","/en/geo/firenze/"],["Sofia","/en/geo/sofia/"],["Plovdiv","/en/geo/plovdiv/"],["Varna","/en/geo/varna/"]]
+                : [["Milano","/geo/milano/"],["Roma","/geo/roma/"],["Torino","/geo/torino/"],["Firenze","/geo/firenze/"],["Napoli","/geo/napoli/"],["Bologna","/geo/bologna/"],["Sofia","/geo/sofia/"]]
+              ).map(function(c){return <a key={c[0]} href={c[1]} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none"}}>{c[0]}</a>})}
+              <a href={lang==="it"?"/geo/":lang==="en"?"/en/geo/":"/bg/geo/"} style={{fontSize:10,color:C,textDecoration:"none",cursor:"none"}}>{lang==="it"?"tutte →":lang==="bg"?"всички →":"all →"}</a>
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"DAL BLOG":lang==="bg"?"ОТ БЛОГА":"FROM THE BLOG"}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {(function(){var b=lang==="it"?"/blog/":lang==="en"?"/en/blog/":"/bg/blog/";return (lang==="it"
+                ? [["Quanto costa un sito web nel 2026","quanto-costa-sito-web"],["WooCommerce vs Shopify","woocommerce-vs-shopify"],["Cos'è un ERP e come funziona","cos-e-un-erp"],["SEO per piccole imprese","seo-per-piccole-imprese"]]
+                : lang==="en"
+                ? [["How much does a website cost in 2026","quanto-costa-sito-web"],["WooCommerce vs Shopify","woocommerce-vs-shopify"],["What is an ERP and how it works","cos-e-un-erp"],["SEO for small businesses","seo-per-piccole-imprese"]]
+                : [["Колко струва изработката на сайт","quanto-costa-sito-web"],["WooCommerce срещу Shopify","woocommerce-vs-shopify"],["Какво е ERP система","cos-e-un-erp"],["SEO за малкия бизнес","seo-per-piccole-imprese"]]
+              ).map(function(a){return <a key={a[1]} href={b+a[1]+"/"} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none",lineHeight:1.6}}>→ {a[0]}</a>})})()}
+              <a href={lang==="it"?"/blog/":lang==="en"?"/en/blog/":"/bg/blog/"} style={{fontSize:10,color:C,textDecoration:"none",cursor:"none",marginTop:2}}>{lang==="it"?"tutti gli articoli →":lang==="bg"?"всички статии →":"all articles →"}</a>
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"GUIDE & RISORSE":lang==="bg"?"ГИДОВЕ & РЕСУРСИ":"GUIDES & RESOURCES"}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {(lang==="bg"
+                ? [["Кейс студии","/bg/keys-studii/"],["Речник (какво е…)","/bg/rechnik/"],["Сравнения (X срещу Y)","/bg/sravneniya/"],["Решения по бранш","/bg/branshove/"],["Локални услуги","/bg/uslugi-lokalni/"],["Безплатни инструменти","/bg/instrumenti/"]]
+                : lang==="en"
+                ? [["Case studies","/en/case-studies/"],["Glossary (what is…)","/en/glossary/"],["Comparisons (X vs Y)","/en/comparisons/"],["Solutions by industry","/en/industries/"],["Local services","/en/local-services/"],["Free tools","/en/tools/"]]
+                : [["Case study","/case-study/"],["Glossario (cos'è…)","/glossario/"],["Confronti (X vs Y)","/confronti/"],["Soluzioni per settore","/settori/"],["Servizi locali","/servizi-locali/"],["Strumenti gratis","/strumenti/"]]
+              ).map(function(g){return <a key={g[1]} href={g[1]} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none",lineHeight:1.6}}>→ {g[0]}</a>})}
+            </div>
+          </div>
+        </div>
+
+        {/* CONTACT BAR */}
+        <div className="cs-contactbar" style={{padding:"16px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"flex",flexWrap:"wrap",justifyContent:"center",gap:24,alignItems:"center"}}>
+          <span style={{fontSize:9,color:"#ccc",letterSpacing:".1em"}}>{lang==="it"?"Sede Legale:":lang==="bg"?"\u0421\u0435\u0434\u0430\u043B\u0438\u0449\u0435:":"Registered Office:"} ul. Samuil 3, Bobov Dol 2670, Bulgaria</span>
+          <span style={{fontSize:9,color:"#ccc"}}>EIK 208725180</span>
+          <a href="tel:+393792969699" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>IT +39 379 296 9699</a>
+          <a href="tel:+359877414874" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>BG +359 877 414 874</a>
+          <a href="mailto:info@carbonstealth.eu" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>info@carbonstealth.eu</a>
+        </div>
+
+        {/* BOTTOM BAR */}
+        <div style={{padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+          <span style={{fontSize:8,color:"#ccc",letterSpacing:".1em"}}>{"\u00a9"} 2025-2026 Carbon Stealth VCC {"\u00b7"} EIK 208725180 {"\u00b7"} Bobov Dol, Bulgaria</span>
+          <div style={{display:"flex",gap:16}}>
+            <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Privacy":lang==="bg"?"\u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy"}</a>
+            <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Cookie":lang==="bg"?"\u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438":"Cookies"}</a>
+            <a href={lang==="bg"?"/bg/usloviya/":lang==="en"?"/en/terms/":"/termini/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Termini":lang==="bg"?"\u0423\u0441\u043B\u043E\u0432\u0438\u044F":"Terms"}</a>
+          </div>
+        </div>
+
+        {/* TITLE BLOCK — the footer signs the page like an engineering drawing */}
+        <div style={{padding:"4px 20px 0"}}>
+          <div className="cs-tblock">
+            {[[lang==="it"?"Progetto":lang==="bg"?"Проект":"Project","carbonstealth.eu"],
+              [lang==="it"?"Disegnato da":lang==="bg"?"Изчертал":"Drawn by","Carbon Stealth VCC"],
+              [lang==="it"?"Scala":lang==="bg"?"Мащаб":"Scale","1 : 1"],
+              [lang==="it"?"Tolleranza":lang==="bg"?"Толеранс":"Tolerance","\u00b1 0.02 mm"],
+              ["Rev.",(function(){try{var d=new Date(document.lastModified);return isNaN(d)?"\u2014":d.toISOString().slice(0,10)}catch(e){return "\u2014"}})()],
+              [lang==="it"?"Foglio":lang==="bg"?"Лист":"Sheet","1 / 1"]].map(function(c){return <div key={c[0]}><small>{c[0]}</small><span>{c[1]}</span></div>})}
+          </div>
+        </div>
+      </footer>
+
+      {/* ═══ FLOATING WHATSAPP CTA (conversion) ═══ */}
+      <a href="https://wa.me/393792969699" target="_blank" rel="noopener" aria-label="WhatsApp" className="cs-wa"
+        style={{position:"fixed",right:"clamp(16px,3vw,28px)",bottom:cookieOk?"clamp(16px,3vw,28px)":"92px",zIndex:99998,width:56,height:56,borderRadius:"50%",background:"#25D366",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 24px rgba(37,211,102,.35)",transition:"transform .18s "+EASE}}
+        onMouseEnter={function(e){e.currentTarget.style.transform="scale(1.08)"}} onMouseLeave={function(e){e.currentTarget.style.transform="scale(1)"}}>
+        <svg width="30" height="30" viewBox="0 0 32 32" fill="#fff" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.1 1.6 5.9L4 29l8.3-1.6c1.7.9 3.6 1.4 5.7 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7.7.7-3.6-.2-.4c-1-1.6-1.5-3.4-1.5-5.3 0-5.5 4.5-9.9 10-9.9s10 4.4 10 9.9-4.5 10.2-9.9 10.2zm5.5-7.4c-.3-.2-1.8-.9-2-.9-.3-.1-.5-.2-.7.2-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.2-.2.2-.3.3-.5.1-.2.1-.4 0-.5-.1-.2-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.2-.6-.4z"/></svg>
+      </a>
+
+      {/* ═══ COOKIE CONSENT BANNER — GDPR ═══ */}
+      {!cookieOk && <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99999,background:"rgba(0,0,0,.97)",borderTop:"1px solid rgba("+CR+",.2)",padding:"16px 20px",display:"flex",flexWrap:"wrap",gap:12,alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{flex:1,minWidth:280}}>
+          <p style={{fontSize:12,color:"#ccc",lineHeight:1.7,margin:0}}>{t("cookie_text")} <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} style={{color:C,textDecoration:"none"}}>{t("cookie_more")}</a></p>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <div {...kb(rejectCookies,t("cookie_reject"))} style={{padding:"8px 20px",border:"1px solid rgba("+CR+",.4)",background:"rgba("+CR+",.1)",color:C,fontSize:11,letterSpacing:".15em",cursor:"pointer",minHeight:24}}>{t("cookie_reject")}</div>
+          <div {...kb(acceptCookies,t("cookie_accept"))} style={{padding:"8px 20px",border:"1px solid rgba("+CR+",.4)",background:"rgba("+CR+",.1)",color:C,fontSize:11,letterSpacing:".15em",cursor:"pointer",minHeight:24}}>{t("cookie_accept")}</div>
+        </div>
+      </div>}
+
+    </div>);
+}

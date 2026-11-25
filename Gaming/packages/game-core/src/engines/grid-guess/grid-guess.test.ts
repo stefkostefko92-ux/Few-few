@@ -513,4 +513,31 @@ describe("words — „й“ правилото и таймаутът", () => {
     expect(state.lives[0]).toBe(2);
     expect(state.turn).toBe(1);
   });
+
+  it("config.turnSeconds се ограничава до 10–120 s (както при Магнат)", () => {
+    const secs = (turnSeconds: unknown) =>
+      (wordsEngine.init({ seats: 2, config: { turnSeconds } }, r()) as { config?: { turnSeconds: number } }).config
+        ?.turnSeconds;
+    expect(secs(0.001)).toBe(10);
+    expect(secs(3_000_000)).toBe(120);
+    expect(secs(45)).toBe(45);
+    expect(secs(Number.NaN)).toBeUndefined();
+    expect(secs("5")).toBeUndefined();
+  });
+
+  it("твърде дълга дума се отказва (validate) и не стига до reduce", () => {
+    const s = wordsEngine.init({ seats: 2 }, r());
+    const long = "а".repeat(41);
+    expect(wordsEngine.validate!(s, 0, { type: "PLAY", word: long })).toBe(false);
+    expect(() => wordsEngine.reduce(s, { type: "PLAY", word: long }, r())).toThrow();
+    expect(wordsEngine.validate!(s, 0, { type: "PLAY", word: "а".repeat(40) })).toBe(true);
+  });
+
+  it("въведена дума в NFD („й“ = „и“ + U+0306) се сравнява като NFC", () => {
+    const s: WordsState = { ...wordsEngine.init({ seats: 2 }, r()), used: ["чадър"], lastLetter: "ч" };
+    const nfd = "чай".normalize("NFD");
+    expect(nfd).not.toBe("чай");
+    const { events } = wordsEngine.reduce(s, { type: "PLAY", word: nfd }, r());
+    expect(events).toContainEqual({ type: "PLAY", seat: 0, word: "чай" });
+  });
 });

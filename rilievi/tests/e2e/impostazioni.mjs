@@ -7,7 +7,7 @@ const order = (page) =>
   page.locator('input[name=ordine]').evaluateAll((inputs) => inputs.map((input) => input.value));
 
 export async function checkSettings(page, { base, aziendaId, sheetPath }) {
-  await page.goto(`${base}/impostazioni?azienda=${aziendaId}`);
+  await page.goto(`${base}/impostazioni/scheda?azienda=${aziendaId}`);
   await audit(page, 'settings');
   const before = await order(page);
   if (before.at(-1) !== 'note')
@@ -23,7 +23,7 @@ export async function checkSettings(page, { base, aziendaId, sheetPath }) {
     () => [...document.querySelectorAll('input[name=ordine]')].at(-3)?.value === 'note',
   );
   await page.click('button[name=salva]');
-  await page.waitForURL(/\/impostazioni\?azienda=/);
+  await page.waitForURL(/\/impostazioni\/scheda\?azienda=/);
   if (!(await page.locator('.flash').count())) fail('settings: no confirmation after saving');
   await page.goto(`${base}${sheetPath}/modifica`);
   const sections = await page
@@ -33,8 +33,8 @@ export async function checkSettings(page, { base, aziendaId, sheetPath }) {
   const at = (key) => sections.indexOf(key);
   if (!(at('serrature') < at('note') && at('note') < at('allarme')))
     fail(`settings: the form does not follow the saved order (${sections})`);
-  await page.goto(`${base}/impostazioni?azienda=${aziendaId}`);
+  await page.goto(`${base}/impostazioni/scheda?azienda=${aziendaId}`);
   await page.click('button[name=ripristina]');
-  await page.waitForURL(/\/impostazioni\?azienda=/);
+  await page.waitForURL(/\/impostazioni\/scheda\?azienda=/);
   if ((await order(page)).at(-1) !== 'note') fail('settings: the default order did not come back');
 }

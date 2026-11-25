@@ -304,26 +304,6 @@
     });
   }
 
-  // ── Дискретно появяване при скрол (уважава reduced-motion) ──
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
-      'IntersectionObserver' in window) {
-    var targets = document.querySelectorAll(
-      '.app-card, .fam-card, .step, .sys-card, .highlight-card, .preview-strip li'
-    );
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          en.target.classList.add('is-visible');
-          io.unobserve(en.target);
-        }
-      });
-    }, { rootMargin: '0px 0px -8% 0px' });
-    targets.forEach(function (el) {
-      el.classList.add('reveal');
-      io.observe(el);
-    });
-  }
-
   // ── 3D изгледът на началната страница: постерът става визьор в рамка чак при клик ──
   // (дотогава страницата не тегли нищо от 3D-то). Под 860 px визьорът е на цял екран,
   // затова там линкът просто отваря 3D страницата; същото и при отваряне в нов раздел.

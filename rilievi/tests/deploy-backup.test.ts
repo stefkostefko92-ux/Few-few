@@ -38,10 +38,11 @@ function setup() {
   const mount = join(dir, 'volume');
   for (const d of [join(release, 'deploy'), join(dir, 'bin'), join(mount, 'schede', 'c1'), shared])
     mkdirSync(d, { recursive: true });
-  copyFileSync(
-    join(import.meta.dirname, '..', 'deploy', 'backup.sh'),
-    join(release, 'deploy', 'backup.sh'),
-  );
+  for (const script of ['backup.sh', 'alert.sh'])
+    copyFileSync(
+      join(import.meta.dirname, '..', 'deploy', script),
+      join(release, 'deploy', script),
+    );
   writeFileSync(join(release, 'docker-compose.yml'), 'services: {}\n');
   writeFileSync(join(shared, 'last-good'), `${release}\n`);
   writeFileSync(join(shared, '.env'), 'INTERVENTI_SEAL_KEY=chiave\n');
@@ -60,6 +61,7 @@ function backup(s: ReturnType<typeof setup>, env: Record<string, string> = {}) {
       RILIEVI_SHARED: s.shared,
       RILIEVI_BACKUP_VERIFY: '0',
       MEDIA_MOUNT: s.mount,
+      RILIEVI_LOCK: join(s.dir, 'rilievi-deploy.lock'),
       ...env,
     },
   });
@@ -116,6 +118,28 @@ describe('the daily backup', { skip: !toolsHere && 'rsync or curl are not instal
     assert.ok(!existsSync(join(offsite, 'env')));
     assert.deepEqual(readdirSync(offsite).sort(), ['daily', 'media']);
     assert.match(run.stdout, /копие извън сървъра:/);
+  });
+
+  it('waits for a running deploy and fails loudly instead of dumping half a schema', () => {
+    const s = setup();
+    const lock = join(s.dir, 'rilievi-deploy.lock');
+    // The deploy holds the shared lock (flock on the same file) for the whole run of the backup.
+    const run = spawnSync('flock', [lock, 'bash', join(s.release, 'deploy', 'backup.sh')], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PATH: `${join(s.dir, 'bin')}:${process.env.PATH ?? ''}`,
+        RILIEVI_SHARED: s.shared,
+        RILIEVI_BACKUP_VERIFY: '0',
+        MEDIA_MOUNT: s.mount,
+        RILIEVI_LOCK: lock,
+        RILIEVI_LOCK_WAIT: '1',
+      },
+    });
+    assert.equal(run.status, 1, run.stderr);
+    assert.match(run.stderr, /деплоят държи/);
+    assert.ok(!existsSync(join(s.shared, 'backups', 'daily')), 'no dump while the deploy runs');
+    assert.ok(!existsSync(join(s.shared, 'backups', 'ULTIMO_OK')));
   });
 
   it('fails loudly without a release that answered', () => {

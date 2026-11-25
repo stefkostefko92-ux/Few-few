@@ -1,0 +1,13 @@
+[Unit]
+# Дневно: шифрованият бекъп (pg_dump + качените снимки, age към ключа на собственика) —
+# DEPLOY.md §7 „Бекъпи“. Преди сроковете (03:40), за да не са едновременно.
+Description=Linketto — дневен шифрован бекъп (02:50)
+
+[Timer]
+OnCalendar=*-*-* 02:50:00
+Persistent=true
+RandomizedDelaySec=900
+Unit=linketto-cron@backup.service
+
+[Install]
+WantedBy=timers.target

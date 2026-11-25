@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Response } from 'express';
 import { principalOf, requireCsrf, requireUser, safeNext } from '../auth/guards.js';
 import { config } from '../config.js';
 import { setFlash } from '../http/flash.js';
@@ -11,7 +11,14 @@ import { ACCETTA_PATH, COPIA_PATH } from '../legale/percorsi.js';
 import { CAMPI_ACCETTAZIONE, sigilloValido } from '../legale/sigillo.js';
 import { daAccettare, inAttesa } from '../legale/stato.js';
 import { hashTesto, leggiTesto } from '../legale/testi.js';
-import { TESTI_AGGIORNATI, VERSIONE } from '../legale/versioni.js';
+import {
+  inVigoreDal,
+  modifiche,
+  testiAggiornati,
+  versioneDaFirmare,
+  versioneProssima,
+  VERSIONE,
+} from '../legale/versioni.js';
 import { logger } from '../logger.js';
 import { CONDIZIONI_PATH, CONDIZIONI_PDF_PATH } from '../seo/paths.js';
 import { paginaStructuredData } from '../seo/structured-data.js';
@@ -38,7 +45,7 @@ condizioniRouter.get(CONDIZIONI_PATH, (req, res) => {
     jsonLd: paginaStructuredData(t, locals.canonical ?? '', {
       title: t('legale.pagina.title'),
       description: t('legale.pagina.metaDescription'),
-      updated: TESTI_AGGIORNATI,
+      updated: testiAggiornati(),
     }),
     condizioni,
     regole,
@@ -47,11 +54,49 @@ condizioniRouter.get(CONDIZIONI_PATH, (req, res) => {
   });
 });
 
-/** Текстовете като PDF — да се запазят, преди да се приемат (El Majdoub, C-322/14). */
-condizioniRouter.get(CONDIZIONI_PDF_PATH, pdfLimiter, async (_req, res) => {
+/**
+ * Версията на `/condizioni/prossima` (страницата и PDF-ът ѝ — една и съща): версия, която влиза сама след дни,
+ * е тази, която се подписва още сега (`versioneDaFirmare`); иначе — следващата (обявена или не). null — няма.
+ */
+function prossimaMostrata(): { versione: string; dal: Date | null } | null {
+  const daFirmare = versioneDaFirmare('CONDIZIONI');
+  return daFirmare !== VERSIONE.CONDIZIONI
+    ? { versione: daFirmare, dal: inVigoreDal('CONDIZIONI', daFirmare) }
+    : versioneProssima('CONDIZIONI');
+}
+const PROSSIMA_PDF_PATH = `${CONDIZIONI_PATH}/prossima.pdf`;
+
+/**
+ * Следващата версия на условията с това, което се сменя (обявата по чл. 18.1 сочи тук) — извън индекса:
+ * докато не е в сила, тя не е „условията“; каноничната страница остава `/condizioni`.
+ */
+condizioniRouter.get(`${CONDIZIONI_PATH}/prossima`, (req, res) => {
+  publicCache(req, res);
+  const prossima = prossimaMostrata();
+  if (!prossima) return res.redirect(303, CONDIZIONI_PATH);
+  const condizioni = leggiTesto('CONDIZIONI', prossima.versione);
+  const regole = leggiTesto('REGOLE');
+  res.render('site/condizioni', {
+    ...siteLocals(req, null),
+    jsonLd: null,
+    condizioni,
+    regole,
+    hash: { condizioni: hashTesto(condizioni), regole: hashTesto(regole) },
+    // PDF-ът за запазване е на СЪЩАТА версия (Кодаджията, 13 ноември 2026): който подписва следващата,
+    // пази нейния текст, не действащия.
+    pdfPath: PROSSIMA_PDF_PATH,
+    prossima: {
+      dal: prossima.dal,
+      modifiche: modifiche(leggiTesto('CONDIZIONI'), condizioni),
+    },
+  });
+});
+
+/** Условията във `versione` и правилата като PDF — да се запазят, преди да се приемат (El Majdoub, C-322/14). */
+async function inviaPdfTesti(res: Response, versione: string, indice: boolean): Promise<void> {
   const pdf = await renderCopiaAccettazione({
     titolo: res.locals.t('legale.pagina.title'),
-    testi: [leggiTesto('CONDIZIONI'), leggiTesto('REGOLE')],
+    testi: [leggiTesto('CONDIZIONI', versione), leggiTesto('REGOLE')],
     riepilogo: [],
     t: res.locals.t,
     fontDir: config().PDF_FONT_DIR,
@@ -60,10 +105,23 @@ condizioniRouter.get(CONDIZIONI_PDF_PATH, pdfLimiter, async (_req, res) => {
     .status(200)
     .set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="condizioni-rilievi-impianti-${VERSIONE.CONDIZIONI}.pdf"`,
+      'Content-Disposition': `inline; filename="condizioni-rilievi-impianti-${versione}.pdf"`,
       'Content-Length': String(pdf.length),
+      // Версия, която още не е в сила, не е „условията“ за търсачките.
+      ...(indice ? {} : { 'X-Robots-Tag': 'noindex, nofollow' }),
     })
     .end(pdf);
+}
+
+condizioniRouter.get(CONDIZIONI_PDF_PATH, pdfLimiter, (_req, res) =>
+  inviaPdfTesti(res, VERSIONE.CONDIZIONI, true),
+);
+
+/** PDF-ът на версията от `/condizioni/prossima`; няма такава — действащият. */
+condizioniRouter.get(PROSSIMA_PDF_PATH, pdfLimiter, async (_req, res) => {
+  const prossima = prossimaMostrata();
+  if (!prossima) return res.redirect(303, CONDIZIONI_PDF_PATH);
+  await inviaPdfTesti(res, prossima.versione, false);
 });
 
 condizioniRouter.get(ACCETTA_PATH, requireUser, async (req, res) => {
@@ -94,7 +152,10 @@ condizioniRouter.post(ACCETTA_PATH, requireUser, requireCsrf, async (req, res) =
     condizioni: testo(body.condizioni),
     regole: testo(body.regole),
   };
-  if (body.versioneCondizioni !== VERSIONE.CONDIZIONI || body.versioneRegole !== VERSIONE.REGOLE) {
+  if (
+    body.versioneCondizioni !== versioneDaFirmare('CONDIZIONI') ||
+    body.versioneRegole !== VERSIONE.REGOLE
+  ) {
     await renderAccetta(req, res, 409, {
       errori: {},
       valori,
@@ -133,13 +194,15 @@ condizioniRouter.post(ACCETTA_PATH, requireUser, requireCsrf, async (req, res) =
 
 /** Копието на последното приемане за фирмата — само за нейния ADMIN; печатът се проверява първо. */
 condizioniRouter.get(COPIA_PATH, requireUser, pdfLimiter, async (req, res) => {
-  // Фирмата от `?azienda=` (човек в няколко фирми), иначе първата — само където е ADMIN.
-  const admin = principalOf(req).user.memberships.filter((m) => m.role === 'ADMIN');
-  const membership =
-    typeof req.query.azienda === 'string'
-      ? admin.find((m) => m.aziendaId === req.query.azienda)
-      : admin[0];
-  const riga = membership ? await ultimaAccettazione(membership.aziendaId) : null;
+  // Фирмата от `?azienda=` (човек в няколко фирми), иначе първата — само където е ADMIN; MASTER (ние,
+  // доставчикът — „Contratti“ в конзолата) — на всяка фирма по `?azienda=`.
+  const user = principalOf(req).user;
+  const wanted = typeof req.query.azienda === 'string' ? req.query.azienda : null;
+  const admin = user.memberships.filter((m) => m.role === 'ADMIN');
+  const aziendaId = user.master
+    ? wanted
+    : (wanted ? admin.find((m) => m.aziendaId === wanted) : admin[0])?.aziendaId;
+  const riga = aziendaId ? await ultimaAccettazione(aziendaId) : null;
   if (!riga?.otpEmail || !riga.otpInviatoAt || !riga.otpVerificatoAt) {
     res.status(404).render('errors/error', {
       titleKey: 'error.notFoundTitle',

@@ -33,8 +33,8 @@ export default {
       ],
     },
     products: {
-      title: 'Lift bracket price list 2026 | Panev Ascensori',
-      description: '2026 price list excl. VAT: landing door brackets A/B, SU·SD·SC supports with SG brackets, fixed guide brackets and custom parts. Order by email.',
+      title: 'Lift bracket price list 2027 | Panev Ascensori',
+      description: '2027 price list excl. VAT: landing door brackets A/B, SU·SD·SC supports with SG brackets, fixed guide brackets and custom parts. Order by email.',
       keywords: [
         'lift bracket price list',
         'landing door bracket prices',
@@ -46,12 +46,12 @@ export default {
       ],
     },
     catalog: {
-      title: 'Lift brackets catalogue 2026 (PDF) | Panev Ascensori',
-      description: '2026 technical catalogue of lift brackets: 72 pages with 3D views, dimensions in mm, codes and price list. Browse online or download the PDF.',
+      title: 'Lift brackets catalogue 2027 (PDF) | Panev Ascensori',
+      description: '2027 technical catalogue of lift brackets: 72 pages with 3D views, dimensions in mm, codes and price list. Browse online or download the PDF.',
       keywords: [
         'lift brackets catalogue',
         'lift brackets catalogue PDF',
-        'elevator technical catalogue 2026',
+        'elevator technical catalogue 2027',
         'bracket installation drawings',
         'lift bracket price list PDF',
         'Panev Ascensori',
@@ -96,7 +96,7 @@ export default {
     },
     viewer3d: {
       title: 'Lift brackets in 3D: all 48 catalogue items | Panev',
-      description: 'All 48 brackets of the 2026 catalogue in 3D: rotate them, switch DX/SX, see them assembled with the adjustment and download an HD photo.',
+      description: 'All 48 brackets of the 2027 catalogue in 3D: rotate them, switch DX/SX, see them assembled with the adjustment and download an HD photo.',
       keywords: [
         'lift brackets 3D',
         'landing door bracket 3D model',
@@ -144,5 +144,28 @@ export default {
     companyTitle: 'Company',
     legalTitle: 'Legal',
     rights: 'All rights reserved.',
+  },
+  regola: {
+    porta: { label: 'Angular adjustment', alt: 'A 65 170 7 plate with B 65 320 bracket: angular adjustment from −8° to +8°, 3D render' },
+    guida: { label: 'Rail-to-wall distance', alt: 'SU 220 160 support with SG 80 150 bracket and counterweight guide rail: wall distance from 45 to 155 mm, 3D render' },
+    hint: 'Drag the bracket or the slider',
+    open3d: 'Open the 3D view',
+  },
+  cantiere: {
+    title: 'From the press brake to the shaft',
+    lead: 'Made in Cornaredo, fitted to uneven concrete and out-of-square walls: real photos from production and from building sites.',
+    famTitle: 'Fitted to real walls',
+    famLead: 'Photos from building sites: Panev brackets on uneven concrete and out-of-square walls, adjusted on the spot.',
+    photos: {
+      'produzione': 'Brackets in production in Cornaredo',
+      'vano-finito': 'A finished shaft: guide rails bracketed along the full height',
+      'guida-giunzione': 'Support and joining bracket on the rail, anchored to the concrete',
+      'porta-pulita': 'Three B brackets under the landing door sill',
+      'guida-supporto': 'Counterweight guide rail fixing: support and joining bracket adjusted on the shaft wall, with the plumb line',
+      'guida-vano': 'The counterweight guide rail bracketed along the shaft',
+      'porta-soglia': 'Brackets under the landing door sill, on uneven concrete',
+      'porta-staffe': 'A plates and B brackets under the sill, adjusted to an out-of-square wall',
+      'porta-regolazione': 'The hinged joint on site: the bracket follows the wall',
+    },
   },
 };

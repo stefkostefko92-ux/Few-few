@@ -119,7 +119,7 @@ describe('the governor calculation page and the calculation without a scheda', (
       assert.ok(testo.includes(`, da ${tecnico.user.name} il `));
       assert.match(
         testo,
-        /Generato con Rilievi Impianti \(Carbon Stealth VCC\), build [0-9a-f]{10}, .+ · Rif\. [0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}/,
+        /Generato con Rilievi Impianti \d+\.\d+ \(Carbon Stealth VCC\), build [0-9a-f]{10}, .+ · Rif\. [0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}/,
       );
     }
     assert.match(

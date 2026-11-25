@@ -1,7 +1,7 @@
 # Panev Ascensori SAS — llms.txt
 # https://panevascensori.it/
 # Formato: https://llmstxt.org
-# Aggiornato: 2026-11-11
+# Aggiornato: 2026-11-24
 
 > Panev Ascensori SAS è un produttore italiano di staffe brevettate (Modello di Utilità UIBM N. 202023000002112) per il fissaggio regolabile di porte di piano e guide del contrappeso di ascensori e montacarichi. Vendita B2B a listino, ordini via email a info@panevascensori.it. Sito in italiano, inglese e bulgaro.
 
@@ -16,7 +16,7 @@
 - **Telefono:** +39 379 296 9699
 - **Operatività:** esclusivamente B2B con partita IVA; fattura elettronica via SdI
 
-## Prodotti (listino 2026, prezzi IVA esclusa)
+## Prodotti (listino 2027, prezzi IVA esclusa)
 
 - **Staffe fissaggio porta di piano — serie A / B:** 5 sistemi (sezioni 37 / 45 / 65 mm), regolazione angolare ± 7° / ± 8°, spessore 4 – 5 mm, da 10,00 €
 - **Supporto universale SU + staffa di giunzione SG:** 3 configurazioni, corsa di estensione 45 – 215 mm
@@ -25,11 +25,12 @@
 - **Staffe guida SG fisse:** larghezze 50 / 60 / 80 mm, lunghezze 130 – 220 mm, da 8,60 €
 - **Soluzioni speciali:** misure su disegno esecutivo e fissaggio a parete con braccio rigido, a preventivo
 - Tutte le staffe: acciaio UNI EN 10025 zincato, sistema ambidestro (DX / SX), conformi UNI EN 81, idonee al collaudo UNI 10411
-- Spedizione gratuita in Italia sopra 500 €; consegna 2 – 5 giorni lavorativi; garanzia 2 anni
+- Spedizione gratuita in Italia sopra 500 €; consegna in circa 2 – 3 settimane lavorative (express 1 settimana su richiesta); garanzia 2 anni
 
 ## Brevetto
 
 - **Numero:** 202023000002112 — Modello di Utilità (UIBM, Ministero delle Imprese e del Made in Italy)
+- **Titolo:** Staffa di supporto per un componente strutturale di un impianto di ascensore o montacarichi
 - **Deposito:** 2023-05-19 · **Concessione:** 2025-01-07 · **Validità:** fino al 2033-05-19
 - **Classifica:** B66B · **Titolari:** v. registro UIBM N. 202023000002112
 
@@ -41,7 +42,9 @@
 - [Supporti per guide del contrappeso SU · SD · SC + SG](https://panevascensori.it/supporti-guide-contrappeso): 17 configurazioni, corsa 45 – 235 mm — [EN](https://panevascensori.it/en/counterweight-guide-rail-supports) · [BG](https://panevascensori.it/bg/opori-vodachi-protivotezhest)
 - [Staffe guida SG fisse](https://panevascensori.it/staffe-guida-sg): 15 codici, larghezze 50 / 60 / 80 mm — [EN](https://panevascensori.it/en/sg-guide-brackets) · [BG](https://panevascensori.it/bg/planki-sg)
 - [Staffe su misura e fissaggio a parete](https://panevascensori.it/staffe-su-misura): SC 50 170, SG 225 50, SN, braccio rigido, a preventivo — [EN](https://panevascensori.it/en/custom-brackets) · [BG](https://panevascensori.it/bg/planki-po-poruchka)
-- [Catalogo PDF (IT)](https://panevascensori.it/catalogo): catalogo tecnico 2026, 72 pagine con le viste 3D e il riepilogo della gamma, scaricabile
+- [Staffe per murature irregolari](https://panevascensori.it/staffe-murature-irregolari): quale regolazione per quale muro (giunto articolato ± 7° / ± 8°, corsa di estensione, base decentrata, braccio rigido), montaggio in sei passi con tre attrezzi, FAQ — [EN](https://panevascensori.it/en/brackets-for-uneven-walls) · [BG](https://panevascensori.it/bg/planki-za-neravni-steni)
+- [Il brevetto](https://panevascensori.it/brevetto): i dati del Modello di Utilità N. 202023000002112, che cosa protegge, com’è fatta la staffa brevettata, FAQ — [EN](https://panevascensori.it/en/patent) · [BG](https://panevascensori.it/bg/patent)
+- [Catalogo PDF (IT)](https://panevascensori.it/catalogo): catalogo tecnico 2027, 72 pagine con le viste 3D e il riepilogo della gamma, scaricabile
 - [Vista 3D (IT)](https://panevascensori.it/staffe-3d): i 48 articoli del catalogo in 3D, da ruotare, montare (DX / SX, con la regolazione) e fotografare; modelli generati dalle quote del catalogo — [EN](https://panevascensori.it/en/brackets-3d) · [BG](https://panevascensori.it/bg/planki-3d)
 - [Contatti e ordini (IT)](https://panevascensori.it/contatti): ordine via email, dati aziendali
 - [English](https://panevascensori.it/en/) · [Български](https://panevascensori.it/bg/)

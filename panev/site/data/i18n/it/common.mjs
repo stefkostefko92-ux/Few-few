@@ -33,8 +33,8 @@ export default {
       ],
     },
     products: {
-      title: 'Listino staffe per ascensori 2026 | Panev Ascensori',
-      description: 'Listino 2026 IVA esclusa: staffe porte di piano A/B, supporti SU·SD·SC con staffa SG, staffe guida fisse e su misura. Ordina via email.',
+      title: 'Listino staffe per ascensori 2027 | Panev Ascensori',
+      description: 'Listino 2027 IVA esclusa: staffe porte di piano A/B, supporti SU·SD·SC con staffa SG, staffe guida fisse e su misura. Ordina via email.',
       keywords: [
         'listino staffe ascensori',
         'prezzi staffe porte di piano',
@@ -46,12 +46,12 @@ export default {
       ],
     },
     catalog: {
-      title: 'Catalogo staffe ascensori 2026 (PDF) | Panev Ascensori',
-      description: 'Catalogo tecnico 2026 delle staffe per ascensori: 72 pagine con viste 3D, quote in mm, codici e listino. Sfoglialo online o scarica il PDF.',
+      title: 'Catalogo staffe ascensori 2027 (PDF) | Panev Ascensori',
+      description: 'Catalogo tecnico 2027 delle staffe per ascensori: 72 pagine con viste 3D, quote in mm, codici e listino. Sfoglialo online o scarica il PDF.',
       keywords: [
         'catalogo staffe ascensori',
         'catalogo staffe ascensori PDF',
-        'catalogo tecnico ascensori 2026',
+        'catalogo tecnico ascensori 2027',
         'disegni di montaggio staffe',
         'listino staffe PDF',
         'Panev Ascensori',
@@ -96,7 +96,7 @@ export default {
     },
     viewer3d: {
       title: 'Staffe per ascensori in 3D: 48 articoli | Panev',
-      description: 'Le 48 staffe del catalogo 2026 in 3D: ruotale, passa da DX a SX, guardale montate con la regolazione e scarica una foto HD.',
+      description: 'Le 48 staffe del catalogo 2027 in 3D: ruotale, passa da DX a SX, guardale montate con la regolazione e scarica una foto HD.',
       keywords: [
         'staffe ascensori 3D',
         'modello 3D staffe porte di piano',
@@ -144,5 +144,28 @@ export default {
     companyTitle: 'Azienda',
     legalTitle: 'Note legali',
     rights: 'Tutti i diritti riservati.',
+  },
+  regola: {
+    porta: { label: 'Regolazione angolare', alt: 'Piastra A 65 170 7 con staffa B 65 320: regolazione angolare da −8° a +8°, render 3D' },
+    guida: { label: 'Distanza guida–parete', alt: 'Supporto SU 220 160 con staffa SG 80 150 e guida del contrappeso: distanza dalla parete da 45 a 155 mm, render 3D' },
+    hint: 'Trascina la staffa o il cursore',
+    open3d: 'Apri la vista 3D',
+  },
+  cantiere: {
+    title: 'Dalla piegatura al vano',
+    lead: 'Prodotte a Cornaredo, montate su calcestruzzo irregolare e murature fuori squadra: foto reali dalla produzione e dai cantieri.',
+    famTitle: 'Montate su muri veri',
+    famLead: 'Foto dai cantieri: le staffe Panev su calcestruzzo irregolare e murature fuori squadra, regolate in opera.',
+    photos: {
+      'produzione': 'Staffe in produzione a Cornaredo',
+      'vano-finito': 'Un vano finito: guide staffate per tutta l’altezza',
+      'guida-giunzione': 'Supporto e staffa di giunzione sulla guida, ancorati al calcestruzzo',
+      'porta-pulita': 'Tre staffe B sotto la soglia della porta di piano',
+      'guida-supporto': 'Fissaggio della guida del contrappeso: supporto e staffa di giunzione regolati sul muro del vano, con il filo a piombo',
+      'guida-vano': 'La guida del contrappeso staffata lungo il vano di corsa',
+      'porta-soglia': 'Staffe sotto la soglia della porta di piano, su calcestruzzo irregolare',
+      'porta-staffe': 'Piastre A e staffe B sotto la soglia, regolate su un muro fuori squadra',
+      'porta-regolazione': 'Il giunto articolato in opera: la staffa segue la muratura',
+    },
   },
 };

@@ -13,6 +13,7 @@ import { sendMail, type MailResult } from '../mail/mailer.js';
 import { DAY } from '../time.js';
 import type { SessionUser } from '../types.js';
 import { inviteLink, newToken, tokenHash } from './tokens.js';
+import { postoLibero } from '../abbonamenti/persone.js';
 
 /** Поканата важи 7 дни; после се праща нова. */
 /** Неприетата покана се трие толкова дни след срока си (maintenance.ts) — и политиката го казва. */
@@ -21,7 +22,10 @@ export const INVITE_DAYS = 7;
 
 export type CreateInviteResult =
   | { ok: true; link: string; mail: MailResult; invite: Invite }
-  | { ok: false; error: 'roleNotAllowed' | 'userExists' | 'azienda' };
+  | {
+      ok: false;
+      error: 'roleNotAllowed' | 'userExists' | 'azienda' | 'limitePersone' | 'solaLettura';
+    };
 
 /**
  * Фирмата на поканата: MASTER избира всяка; администратор на една фирма кани винаги в нея, каквото и
@@ -51,9 +55,16 @@ export async function createInvite(
   if (!own || !outranks(own, input.role)) return { ok: false, error: 'roleNotAllowed' };
   const existing = await prisma.user.findUnique({ where: { email: input.email } });
   if (existing) return { ok: false, error: 'userExists' };
-  const { invite, token } = await prisma.$transaction((tx) =>
-    insertInvite(tx, actor, { ...input, aziendaId: azienda.id }),
-  );
+  // Фирма само за четене не взима нови хора (чл. 12.5); таванът на хората по нивото на абонамента
+  // (src/abbonamenti/persone.ts) — MASTER ги няма.
+  if (!actor.master && actor.memberships.some((m) => m.aziendaId === azienda.id && m.solaLettura))
+    return { ok: false, error: 'solaLettura' };
+  const creata = await prisma.$transaction(async (tx) => {
+    if (!actor.master && !(await postoLibero(tx, azienda.id, input.email))) return null;
+    return insertInvite(tx, actor, { ...input, aziendaId: azienda.id });
+  });
+  if (!creata) return { ok: false, error: 'limitePersone' };
+  const { invite, token } = creata;
   const ruolo = (await nomiDelleAziende([azienda.id])).get(azienda.id)?.[
     input.role as RuoloAzienda
   ];

@@ -4,11 +4,13 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireBotSecret } from "../middleware/auth.js";
-import { fireWebhooks } from "../services/webhooks.js";
+import { fireGiveawayEnded } from "../lib/webhookEvents.js";
+import { drawWinners } from "../lib/giveawayDraw.js";
+import { anchorDayOf } from "../lib/recurrence.js";
 import { notifyBot } from "../services/botNotifier.js";
-import { pickRandom } from "../lib/shuffle.js";
 import { findBestMatch } from "../lib/kbMatch.js";
 import { getServerTier, planHasFeature } from "../lib/premium.js";
+import { createWithinLimit } from "../lib/withinLimit.js";
 import { grantXpOnce, XP_REWARDS } from "../lib/game/xp.js";
 
 const router = Router();
@@ -64,29 +66,35 @@ router.post("/poll/:id/vote", async (req, res, next) => {
     if (poll.closedAt) return res.status(400).json({ error: "Poll is closed" });
     if (option < 0 || option >= poll.options.length) return res.status(400).json({ error: "Invalid option" });
 
-    // Single-choice: clicking the SAME option again removes the vote (toggle off);
-    // clicking a different option switches. Previously re-clicking just re-voted.
-    if (!poll.multiChoice) {
-      const prev = await prisma.pollVote.findFirst({ where: { pollId: poll.id, userId } });
-      if (prev && prev.option === option) {
-        await prisma.pollVote.delete({ where: { id: prev.id } });
-        const counts = await recountPoll(poll.id, poll.options.length);
-        return res.json({ toggled: "off", counts });
+    // А8: четене → изтриване → запис са ЕДНА транзакция под advisory lock по
+    // (анкета, потребител). Преди това два паралелни клика минаваха и двата през
+    // `deleteMany` + `create` и в анкета с един избор оставаха 2 гласа.
+    // Single-choice: същата опция втори път = оттегляне; друга опция = смяна.
+    const outcome = await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"pollvote:" + poll.id + ":" + userId}))`;
+      if (!poll.multiChoice) {
+        const prev = await tx.pollVote.findFirst({ where: { pollId: poll.id, userId } });
+        if (prev && prev.option === option) {
+          await tx.pollVote.delete({ where: { id: prev.id } });
+          return "off";
+        }
+        await tx.pollVote.deleteMany({ where: { pollId: poll.id, userId } });
+      } else {
+        const existing = await tx.pollVote.findUnique({
+          where: { pollId_userId_option: { pollId: poll.id, userId, option } },
+        }).catch(() => null);
+        if (existing) {
+          await tx.pollVote.delete({ where: { id: existing.id } });
+          return "off";
+        }
       }
-      await prisma.pollVote.deleteMany({ where: { pollId: poll.id, userId } });
-    } else {
-      // Multi-choice: toggle — if already voted for this option, remove
-      const existing = await prisma.pollVote.findUnique({
-        where: { pollId_userId_option: { pollId: poll.id, userId, option } },
-      }).catch(() => null);
-      if (existing) {
-        await prisma.pollVote.delete({ where: { id: existing.id } });
-        const counts = await recountPoll(poll.id, poll.options.length);
-        return res.json({ toggled: "off", counts });
-      }
+      await tx.pollVote.create({ data: { pollId: poll.id, userId, option } });
+      return "on";
+    });
+    if (outcome === "off") {
+      const counts = await recountPoll(poll.id, poll.options.length);
+      return res.json({ toggled: "off", counts });
     }
-
-    await prisma.pollVote.create({ data: { pollId: poll.id, userId, option } });
     const counts = await recountPoll(poll.id, poll.options.length);
     // v50 — XP за глас: веднъж на анкета (ключът пази от toggle-фермене).
     grantXpOnce(poll.serverId, userId, `poll:${poll.id}`, XP_REWARDS.POLL_VOTE).catch(() => {});
@@ -148,20 +156,32 @@ router.post("/giveaway/create", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Томболите са по (id, serverId) навсякъде. `/giveaway end|reroll` приемаше
+// свободно въведен id → админ на сървър A приключваше/теглеше наново томбола на
+// сървър B (червен екип, 10.10.2026). Чужд id → 404, както несъществуващ.
+const GW_SNOWFLAKE = /^\d{17,20}$/;
+const gwServer = (req) => String(req.body?.serverId ?? req.query?.serverId ?? "");
+
 router.patch("/giveaway/:id/spawned", async (req, res, next) => {
+  const serverId = gwServer(req);
+  if (!GW_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
+  if (!GW_SNOWFLAKE.test(String(req.body?.messageId))) return res.status(400).json({ error: "messageId required" });
   try {
-    const g = await prisma.giveaway.update({
-      where: { id: req.params.id },
-      data: { messageId: req.body.messageId },
+    const r = await prisma.giveaway.updateMany({
+      where: { id: req.params.id, serverId },
+      data: { messageId: String(req.body.messageId) },
     });
-    res.json(g);
+    if (r.count !== 1) return res.status(404).json({ error: "Giveaway not found" });
+    res.json({ ok: true });
   } catch (err) { next(err); }
 });
 
 router.get("/giveaway/:id", async (req, res, next) => {
+  const serverId = gwServer(req);
+  if (!GW_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
   try {
-    const g = await prisma.giveaway.findUnique({
-      where: { id: req.params.id },
+    const g = await prisma.giveaway.findFirst({
+      where: { id: req.params.id, serverId },
       include: { _count: { select: { entries: true } } },
     });
     if (!g) return res.status(404).json({ error: "Giveaway not found" });
@@ -170,13 +190,16 @@ router.get("/giveaway/:id", async (req, res, next) => {
 });
 
 router.post("/giveaway/:id/enter", async (req, res, next) => {
-  const { userId } = req.body;
+  const { userId, memberRoleIds } = req.body || {};
+  const serverId = gwServer(req);
+  if (!GW_SNOWFLAKE.test(serverId) || !GW_SNOWFLAKE.test(String(userId))) return res.status(400).json({ error: "serverId and userId required" });
   try {
-    const g = await prisma.giveaway.findUnique({ where: { id: req.params.id } });
+    const g = await prisma.giveaway.findFirst({ where: { id: req.params.id, serverId } });
     if (!g) return res.status(404).json({ error: "Giveaway not found" });
     if (g.endedAt) return res.status(400).json({ error: "Giveaway has ended" });
 
-    // Toggle — if already entered, remove
+    // Toggle — if already entered, remove. Излизането е позволено и без роли
+    // (човек, загубил ролята, може да се оттегли).
     const existing = await prisma.giveawayEntry.findUnique({
       where: { giveawayId_userId: { giveawayId: g.id, userId } },
     }).catch(() => null);
@@ -185,6 +208,20 @@ router.post("/giveaway/:id/enter", async (req, res, next) => {
       await prisma.giveawayEntry.delete({ where: { id: existing.id } });
       const entryCount = await prisma.giveawayEntry.count({ where: { giveawayId: g.id } });
       return res.json({ entered: false, entryCount, requiredRoleIds: g.requiredRoleIds });
+    }
+
+    // А4: изискваните роли се проверяват ПРЕДИ записа. Преди това записът ставаше
+    // първо и се махаше с втори toggle (`.catch(() => {})`): при двоен клик или
+    // приключила томбола записът оставаше. Липсващ/невалиден `memberRoleIds` при
+    // раздаване с изискване е отказ (fail closed) — клиентът не се вярва.
+    if (g.requiredRoleIds.length > 0) {
+      const have = Array.isArray(memberRoleIds) && memberRoleIds.length <= 250
+        ? new Set(memberRoleIds.map(String))
+        : null;
+      const missing = have ? g.requiredRoleIds.filter((r) => !have.has(r)) : g.requiredRoleIds;
+      if (missing.length > 0) {
+        return res.status(403).json({ error: "ROLE_REQUIRED", missingRoleIds: missing, requiredRoleIds: g.requiredRoleIds });
+      }
     }
 
     await prisma.giveawayEntry.create({ data: { giveawayId: g.id, userId } });
@@ -198,16 +235,17 @@ router.post("/giveaway/:id/enter", async (req, res, next) => {
 // Cross-tenant IDOR guard: giveaway_id идва като свободен текст от /giveaway
 // end|reroll, а x-bot-secret е общ за всички сървъри. Ботът праща serverId от
 // interaction.guildId; скоупваме по него (чужд/непознат id -> 404, без теглене).
+// serverId минава през същата проверка за snowflake като останалите маршрути
+// за томболи (gwServer/GW_SNOWFLAKE) — обект или празно е 400.
 function giveawayAction(reroll) {
   return async (req, res, next) => {
+    const serverId = gwServer(req);
+    if (!GW_SNOWFLAKE.test(serverId)) return res.status(400).json({ error: "serverId required" });
     try {
-      const { serverId } = req.body || {};
-      if (typeof serverId !== "string" || !serverId) {
-        return res.status(400).json({ error: "serverId required" });
-      }
       const r = await pickGiveawayWinners(req.params.id, serverId, reroll);
       if (r.status === "notfound") return res.status(404).json({ error: "Giveaway not found" });
       if (r.status === "conflict") return res.status(409).json({ error: "Giveaway already ended" });
+      if (r.status === "notended") return res.status(409).json({ error: "Giveaway has not ended yet", code: "NOT_ENDED" });
       res.json({ winners: r.winners });
     } catch (err) { next(err); }
   };
@@ -224,26 +262,23 @@ async function pickGiveawayWinners(giveawayId, serverId, reroll = false) {
   if (!g) return { status: "notfound" };
   if (!reroll && g.endedAt) return { status: "conflict" };
 
-  // Filter out previous winners on reroll
-  const eligible = reroll
-    ? g.entries.filter((e) => !g.winnerIds.includes(e.userId))
-    : g.entries;
+  // Reroll е само СЛЕД края (А3): иначе обявява победители на още течаща томбола.
+  if (reroll && !g.endedAt) return { status: "notended" };
 
-  // Fair winner selection (Fisher–Yates, not a biased sort-shuffle)
-  const winners = pickRandom(eligible, g.winnerCount).map((e) => e.userId);
+  // Fair winner selection (Fisher–Yates), без предишните победители при reroll и
+  // само хора, които още са в сървъра (А4).
+  const winners = await drawWinners(g, g.entries, { reroll });
 
   // Условен запис (race): ръчен end + cron или двама админи не бива да теглят
   // по два пъти. При end пазим endedAt: null; count 0 -> някой вече приключи.
   const written = await prisma.giveaway.updateMany({
-    where: { id: giveawayId, serverId, ...(reroll ? {} : { endedAt: null }) },
+    where: { id: giveawayId, serverId, endedAt: reroll ? { not: null } : null },
     data: { endedAt: g.endedAt || new Date(), winnerIds: winners },
   });
   if (written.count === 0) return { status: "conflict" };
 
   // Fire external webhooks (customer integrations)
-  fireWebhooks(g.serverId, "GIVEAWAY_ENDED", {
-    giveawayId, prize: g.prize, winners, entryCount: g.entries.length,
-  }).catch(() => {});
+  fireGiveawayEnded(g, winners, g.entries.length, { reroll }).catch(() => {});
 
   // Update the public Discord message + announce winners in the channel.
   // Previously missing on the /giveaway end + reroll command path, so manual
@@ -270,11 +305,28 @@ router.post("/sticky", async (req, res, next) => {
     if (!planHasFeature(tier.plan, "automation.sticky")) {
       return res.status(403).json({ error: "Sticky messages require Premium.", code: "PREMIUM_REQUIRED" });
     }
-    const sticky = await prisma.stickyMessage.upsert({
-      where: { channelId },
-      create: { serverId, channelId, content, embedTitle, embedColor, createdBy },
-      update: { content, embedTitle, embedColor, enabled: true, currentMessageId: null },
+    // А6: лимитът `stickiesPerServer` важи само при СЪЗДАВАНЕ (upsert по канал);
+    // канал със sticky на друг сървър се отказва (изолация).
+    const existing = await prisma.stickyMessage.findUnique({ where: { channelId }, select: { serverId: true } });
+    if (existing && existing.serverId !== serverId) {
+      return res.status(409).json({ error: "This channel already has a sticky on another server." });
+    }
+    const limit = tier.limits.stickiesPerServer;
+    const sticky = await prisma.$transaction(async (tx) => {
+      if (!existing) {
+        const count = await tx.stickyMessage.count({ where: { serverId } });
+        if (count >= limit) { const e = new Error("LIMIT_REACHED"); e.__limit = true; throw e; }
+      }
+      return tx.stickyMessage.upsert({
+        where: { channelId },
+        create: { serverId, channelId, content, embedTitle, embedColor, createdBy },
+        update: { content, embedTitle, embedColor, enabled: true, currentMessageId: null },
+      });
+    }, { isolationLevel: "Serializable" }).catch((err) => {
+      if (err?.__limit || err?.code === "P2034") return null;
+      throw err;
     });
+    if (!sticky) return res.status(403).json({ error: `Sticky limit reached (${limit}).`, code: "LIMIT_REACHED" });
     res.json(sticky);
   } catch (err) { next(err); }
 });
@@ -327,18 +379,30 @@ router.post("/schedule", async (req, res, next) => {
     if (recurrence && !tier.limits.recurringScheduled) {
       return res.status(403).json({ error: "Recurring messages require a higher plan.", code: "PREMIUM_REQUIRED" });
     }
-    const m = await prisma.scheduledMessage.create({
-      data: {
-        serverId, channelId, content,
-        embedTitle: embedTitle || null,
-        embedDescription: embedDescription || null,
-        embedColor: embedColor || "#00e5ff",
-        sendAt: new Date(sendAt),
-        recurrence: recurrence || null,
-        createdBy: createdBy || "bot",
-      },
+    // А6: същият атомарен лимит като таблото (`scheduledPerServer`, само чакащите).
+    const created = await createWithinLimit({
+      model: "scheduledMessage",
+      where: { serverId, sentAt: null },
+      limit: tier.limits.scheduledPerServer,
+      create: (tx) => tx.scheduledMessage.create({
+        data: {
+          serverId, channelId, content,
+          embedTitle: embedTitle || null,
+          embedDescription: embedDescription || null,
+          embedColor: embedColor || "#00e5ff",
+          sendAt: new Date(sendAt),
+          recurrence: recurrence || null,
+          // Discord не казва часовата зона на човека — смята се в UTC; денят от
+          // месеца се помни, за да не се измества месечното (А5).
+          anchorDay: recurrence ? anchorDayOf(new Date(sendAt), null) : null,
+          createdBy: createdBy || "bot",
+        },
+      }),
     });
-    res.status(201).json(m);
+    if (!created.ok) {
+      return res.status(403).json({ error: `Scheduled message limit reached (${tier.limits.scheduledPerServer}).`, code: "LIMIT_REACHED" });
+    }
+    res.status(201).json(created.row);
   } catch (err) { next(err); }
 });
 

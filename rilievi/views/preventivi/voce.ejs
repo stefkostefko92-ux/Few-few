@@ -1,0 +1,35 @@
+<%
+  // Промяна на ред от ценоразписа (routes/preventivi-listino.ts) и изтриването му. Цената на вече
+  // направените оферти не се сменя — тя е написаната в тях.
+  // `back` и `da` — откъде е дошъл човекът (настройките или страницата на офертите): там се връща.
+  const errorKeys = Object.keys(errors);
+  const coda = '?azienda=' + encodeURIComponent(azienda.id) + (da === 'impostazioni' ? '&da=impostazioni' : '');
+%><%- include('../partials/top', { titleKey: 'preventivi.listino.modifica', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="<%= back %>"><%= t('preventivi.listino.torna') %></a>
+    <h1><%= t('preventivi.listino.modifica') %></h1>
+    <p class="page-head__sub"><%= azienda.name %></p>
+  </div>
+</div>
+<div class="stack-gap">
+<p class="muted"><%= t('preventivi.listino.nota') %></p>
+<form class="form" method="post" action="/preventivi/listino/<%= id %><%= coda %>" novalidate>
+  <% if (errorKeys.length) { %><div class="errors" role="alert" tabindex="-1"><h2><%= t('preventivi.listino.errore.titolo') %></h2></div><% } %>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('_voce-campi', { maxVoci: 0 }) %>
+  <div class="toolbar">
+    <button class="btn btn--primary" type="submit"><%- include('../partials/icon', { name: 'check' }) %><%= t('preventivi.listino.salva') %></button>
+    <a class="btn" href="<%= back %>"><%= t('common.cancel') %></a>
+  </div>
+</form>
+<details class="panel buono-elimina">
+  <summary><%= t('preventivi.listino.elimina') %></summary>
+  <form method="post" action="/preventivi/listino/<%= id %>/elimina<%= coda %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <p><%= t('preventivi.listino.eliminaTesto') %></p>
+    <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('preventivi.listino.elimina') %></button>
+  </form>
+</details>
+</div>
+<%- include('../partials/bottom') %>

@@ -81,5 +81,14 @@ export async function pulisciProve(now: number): Promise<number> {
   const firme = await prisma.firmaCondizioni.deleteMany({
     where: { scadeAt: { lt: new Date(now - 24 * 3_600_000) } },
   });
-  return emissioni.count + accettazioni + firme.count;
+  // Приетите оферти (#31) — като приеманията; плащането им си отива с тях (данните на плана, privacy).
+  const offerte = await prisma.$executeRaw`
+    WITH via AS (
+      DELETE FROM "AccettazioneOfferta" o
+      WHERE o."conservaFino" < ${limite}
+        AND (o."aziendaId" IS NULL OR NOT EXISTS (SELECT 1 FROM "Azienda" z WHERE z.id = o."aziendaId"))
+      RETURNING o."pagamentoId"
+    )
+    DELETE FROM "Pagamento" p WHERE p.id IN (SELECT "pagamentoId" FROM via)`;
+  return emissioni.count + accettazioni + firme.count + offerte;
 }

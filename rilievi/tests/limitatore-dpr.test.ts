@@ -100,10 +100,10 @@ describe('the result in words under D.P.R. 1497/1963', () => {
       intervento: 'Solo il limitatore',
       applicata: 'D.P.R. 1497/1963, art. 32 — UNI 10411-1:2024, punto 18',
       v1: 'fino a 1,14 m/s',
-      limite: 'fino a 1,148 m/s (140 % della velocità di esercizio, incluso)',
+      limite: 'fino a 1,148 m/s (140% della velocità di esercizio, incluso)',
       contatto: 'Al più tardi a V1',
       avviso:
-        'Se è un montalettighe di categoria A, sopra 0,50 m/s il D.P.R. 1497/1963 vuole il paracadute progressivo.',
+        'Se è un montalettighe di categoria A, sopra 0,50 m/s il D.P.R. 1497/1963 richiede il paracadute progressivo.',
       motivo: null,
     });
   });
@@ -114,11 +114,11 @@ describe('the result in words under D.P.R. 1497/1963', () => {
     assert.equal(lenta.limite, 'sotto 0,85 m/s (escluso)');
     const veloce = sintesi(dpr(2));
     assert.equal(veloce.v1, 'fino a 2,66 m/s');
-    assert.equal(veloce.limite, 'fino a 2,66 m/s (133 % della velocità di esercizio, incluso)');
+    assert.equal(veloce.limite, 'fino a 2,66 m/s (133% della velocità di esercizio, incluso)');
     assert.equal(veloce.contatto, 'Prima di V1');
     assert.equal(
       sintesi(dpr(3)).limite,
-      'fino a 3,75 m/s (125 % della velocità di esercizio, incluso)',
+      'fino a 3,75 m/s (125% della velocità di esercizio, incluso)',
     );
   });
 

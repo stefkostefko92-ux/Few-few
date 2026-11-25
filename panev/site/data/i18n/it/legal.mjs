@@ -34,7 +34,7 @@ export default {
   },
   termsPage: {
     title: 'Condizioni commerciali',
-    updated: 'Aggiornamento listino 2026 — fa fede l’offerta commerciale in corso di validità.',
+    updated: 'Aggiornamento listino 2027 — fa fede l’offerta commerciale in corso di validità.',
     sections: [
       {
         h: 'Ambito',
@@ -42,11 +42,11 @@ export default {
       },
       {
         h: 'Prezzi',
-        p: 'Prezzi in euro, IVA esclusa, riferiti a unità singole, come da listino 2026. Le voci “a preventivo” sono quotate su commessa. Sconti per volumi e forniture continuative su richiesta. Salvo variazioni.',
+        p: 'Prezzi in euro, IVA esclusa, riferiti a unità singole, come da listino 2027. Le voci “a preventivo” sono quotate su commessa. Sconti per volumi e forniture continuative su richiesta. Salvo variazioni.',
       },
       {
         h: 'Spedizione',
-        p: 'Gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese di trasporto sono a carico del cliente e vengono indicate nella conferma d’ordine. Consegna standard 2 – 5 giorni lavorativi; express 24 – 48 ore su richiesta.',
+        p: 'Gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese di trasporto sono a carico del cliente e vengono indicate nella conferma d’ordine. Consegna standard in circa 2 – 3 settimane lavorative; express in 1 settimana su richiesta.',
       },
       {
         h: 'Pagamento',

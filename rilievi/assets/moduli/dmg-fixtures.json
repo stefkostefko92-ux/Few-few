@@ -7,7 +7,25 @@
   "sha256": "aeeb632478e11e7866e860a63d3769aa4e0f948d0a27486b4ab92a4d1d3b9011",
   "tipo": "acroform",
   "pulizia": {
-    "nonStampare": ["-TOPPA$"]
+    "nonStampare": ["-TOPPA$"],
+    "sposta": [
+      {
+        "campo": "02-Dim.Cut-IMG",
+        "y": 492.416
+      },
+      {
+        "campo": "02-Dim.Luna-IMG",
+        "y": 492.416
+      },
+      {
+        "campo": "02-Dim.Silverlight-IMG",
+        "y": 492.416
+      },
+      {
+        "campo": "02-Dim.Piane-IMG",
+        "y": 492.416
+      }
+    ]
   },
   "gruppi": [
     {
