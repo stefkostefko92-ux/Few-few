@@ -11,15 +11,15 @@
     <% changes.forEach((c) => { %><li><%= c %></li><% }) %>
   </ul>
   <ul class="plain doc-links">
-    <li><a href="<%= legalUrl('terms') %>" target="_blank" rel="noopener"><%= t('app.legalUpdate.docs.terms') %></a></li>
-    <% if (owner) { %><li><a href="<%= legalUrl('dpa') %>" target="_blank" rel="noopener"><%= t('app.legalUpdate.docs.dpa') %></a></li><% } %>
-    <li><a href="<%= legalUrl('privacy') %>" target="_blank" rel="noopener"><%= t('app.legalUpdate.docs.privacy') %></a></li>
+    <li><a href="<%= legalUrl('terms') %>" target="_blank" rel="noopener"><%= t('app.legalUpdate.docs.terms') %><span class="sr-only"> (<%= t('auth.newTab') %>)</span></a></li>
+    <% if (owner) { %><li><a href="<%= legalUrl('dpa') %>" target="_blank" rel="noopener"><%= t('app.legalUpdate.docs.dpa') %><span class="sr-only"> (<%= t('auth.newTab') %>)</span></a></li><% } %>
+    <li><a href="<%= legalUrl('privacy') %>" target="_blank" rel="noopener"><%= t('app.legalUpdate.docs.privacy') %><span class="sr-only"> (<%= t('auth.newTab') %>)</span></a></li>
   </ul>
   <form method="post" action="/app/usloviya" class="panel stack">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="next" value="<%= next %>">
-    <% if (error) { %><p class="error" role="alert"><%= owner ? t('auth.invite.errors.acceptTerms') : t('auth.member.errors.acceptTerms') %></p><% } %>
-    <%- include('../partials/legal-accept', { orgName: pending.companies.map((c) => c.legalName).join(', '), memberOnly: !owner, many: pending.companies.length > 1, invalid: error }) %>
+    <% if (error) { %><p class="error" id="e-terms" role="alert"><%= owner ? t('auth.invite.errors.acceptTerms') : t('auth.member.errors.acceptTerms') %></p><% } %>
+    <%- include('../partials/legal-accept', { orgName: pending.companies.map((c) => c.legalName).join(', '), memberOnly: !owner, many: pending.companies.length > 1, invalid: error, describedBy: 'e-terms', autofocus: error }) %>
     <div><button type="submit"><%= t('app.legalUpdate.accept') %></button></div>
   </form>
   <p class="muted"><%= t('app.legalUpdate.refuse') %> <a href="/app/sigurnost"><%= t('app.legalUpdate.security') %></a></p>

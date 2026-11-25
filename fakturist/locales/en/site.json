@@ -10,7 +10,11 @@
     "accountants": "For accountants",
     "einvoicing2028": "E-invoicing 2028",
     "news": "What’s new",
-    "help": "How it works"
+    "help": "How it works",
+    "freeInvoicing": "Free invoicing software",
+    "proforma": "Pro forma invoice",
+    "vatLedgers": "VAT ledgers",
+    "saft": "SAF-T data"
   },
   "cta": {
     "login": "Sign in",
@@ -51,6 +55,7 @@
   },
   "foot": {
     "eik": "Company ID (EIK)",
+    "register": "Commercial Register and Register of Non-Profit Legal Entities",
     "vat": "VAT no.",
     "phone": "tel.",
     "nav": "Footer links",
@@ -88,28 +93,28 @@
     "rules": {
       "1": {
         "name": "Number",
-        "text": "Ten digits, sequential, no gaps. After 0000000124 comes 0000000125.",
+        "text": "Ten digits, sequential within the series. In Fakturist also without gaps: after 0000000124 comes 0000000125.",
         "ref": "Art. 114(1)(2) VAT Act"
       },
       "2": {
         "name": "Basis for not charging VAT",
         "text": "When you do not charge VAT, you state the basis, and it is checked on issue.",
-        "ref": "Art. 114 VAT Act"
+        "ref": "Art. 114(1)(12) and (4) VAT Act"
       },
       "3": {
         "name": "VAT in euro",
-        "text": "On an invoice in a foreign currency the tax is also shown in euro.",
+        "text": "On an invoice in a foreign currency the taxable amount and the tax are also stated in euro.",
         "ref": "Art. 114(5) VAT Act"
       },
       "4": {
         "name": "Credit and debit notes",
         "text": "A credit or debit note points to the invoice it relates to.",
-        "ref": "Art. 115 VAT Act"
+        "ref": "Art. 115(4)(1) VAT Act"
       },
       "5": {
         "name": "Integrity",
-        "text": "An issued document gets a SHA-256 fingerprint and joins a chain. A change after issue shows.",
-        "ref": "Art. 114(6) VAT Act"
+        "text": "An issued document gets a SHA-256 fingerprint and joins a chain — a change after issue shows. The law requires integrity by a method of your choice; the chain is our method, not a legal requirement.",
+        "ref": "Method of your choice: Art. 114(6) VAT Act"
       },
       "title": "What we check before a document goes out",
       "lead": "The rules are not in a manual you have to read. They are part of issuing."
@@ -126,7 +131,7 @@
     "why": {
       "title": "Why EN 16931 now",
       "p1": "A PDF invoice is a picture of the data. The recipient's software cannot read the total or the VAT from it without text recognition. A structured document carries the same data in named fields: BT-1 is the number, BT-2 is the date, BT-3 is the document type.",
-      "p2": "According to the bill as introduced, mandatory structured e-invoices between companies and to the state start on 1 July 2028. Many invoicing programs today produce only PDF, without structured XML. The documents you issue in Fakturist now are already in these formats.",
+      "p2": "According to the bill as introduced, mandatory structured e-invoices between companies and to the state start on 1 July 2028. A PDF on its own is not a structured e-invoice. The documents you issue in Fakturist now are already in these formats too.",
       "more": "Guide to the 2028 e-invoices",
       "timelineLabel": "According to the text of the bill as introduced",
       "t1": {
@@ -197,7 +202,7 @@
         "a": "No. No such approval exists today. According to the bill as introduced there will be accredited providers and certified software, with the conditions set in an ordinance that is not out yet. When they are published, we will say so here."
       },
       "3": {
-        "q": "What does the free plan include?",
+        "q": "Is there a free plan?",
         "a": "One company and one user, the VAT checks and EN 16931 XML. There is a soft monthly limit on documents: a document is always issued, and above the limit we invite you to choose a paid plan."
       },
       "4": {
@@ -249,7 +254,7 @@
     },
     "pay": {
       "title": "How to pay",
-      "text": "By bank transfer to Revolut Business or by card through Revolut. We activate the plan once we receive the payment. We do not offer automatic renewal: each period is paid separately."
+      "text": "By bank transfer to Revolut Business or by card through Revolut. By card the plan turns on by itself as soon as Revolut confirms the payment; by bank transfer — once we receive the transfer. We do not offer automatic renewal: each period is paid separately."
     },
     "planned": {
       "title": "What “Coming” means",
@@ -266,15 +271,15 @@
       },
       "3": {
         "q": "How do I pay?",
-        "a": "By bank transfer to Revolut Business or by card through Revolut. We activate the plan once we receive the payment."
+        "a": "By bank transfer to Revolut Business or by card through Revolut. By card the plan turns on by itself as soon as Revolut confirms the payment; by bank transfer — once we receive the transfer."
       },
       "4": {
         "q": "Does the plan renew automatically?",
-        "a": "We do not promise automatic renewal. Each period is paid separately, and activation is manual."
+        "a": "We do not promise automatic renewal. Each period is paid separately."
       },
       "5": {
         "q": "How much does the accounting firm plan cost?",
-        "a": "The first three client companies are free; each further one is charged per month. The amounts by number of companies are on the accountants page."
+        "a": "The client companies included in the plan are free; each further one is charged per month. The amounts by number of companies are on the accountants page."
       },
       "6": {
         "q": "What does “Coming” mean in the table?",
@@ -286,7 +291,7 @@
   "accountants": {
     "meta": {
       "title": "Invoicing for accounting firms | Fakturist",
-      "description": "Issue on behalf of client companies under an authorisation (Art. 113(7) VAT Act), from one dashboard, with EN 16931 XML. The first three companies are free.",
+      "description": "Issue on behalf of client companies under an authorisation (Art. 113(7) VAT Act), from one dashboard, with EN 16931 XML. Included companies are free.",
       "keywords": "Carbon Stealth, invoicing for accountants, accounting firm software Bulgaria, authorisation Art. 113(7) VAT Act, invoice on behalf of a client, e-invoice"
     },
     "title": "Invoicing for accounting firms",
@@ -479,5 +484,246 @@
     },
     "toc": "In this guide",
     "manualNote": "The manual as a PDF — for each user, by their role — is under “Help” after signing in."
+  },
+  "landing": {
+    "seePrices": "See the prices",
+    "seeAlso": "See also",
+    "unlimited": "unlimited",
+    "limitUnknown": "a set number of",
+    "paidPlans": "the paid plans"
+  },
+  "freeInvoicing": {
+    "meta": {
+      "title": "Free online invoicing software | Fakturist",
+      "description": "Issue invoices for free in the browser: PDF and e-invoice (UBL, CII) under EN 16931, gap-free numbering, no card and no trial.",
+      "keywords": "Carbon Stealth, free invoicing software, online invoicing, invoicing software Bulgaria, issue invoices, free invoice maker, Fakturist"
+    },
+    "title": "Free invoicing software",
+    "summary": "Fakturist is online invoicing software with a free plan: one company, one user and up to {limit} documents a month, with no card and no trial that runs out. Every invoice is issued as a PDF and as XML under the European standard EN 16931 (UBL 2.1 and CII).",
+    "sections": {
+      "1": {
+        "title": "What does the free plan include?",
+        "p1": "The free plan includes:",
+        "list": {
+          "1": "Invoices, credit and debit notes, pro forma invoices.",
+          "2": "A PDF copy in Bulgarian or in Bulgarian and English.",
+          "3": "XML under EN 16931 (UBL 2.1 and CII) for every document — already now.",
+          "4": "Gap-free numbering and a check of the main VAT Act requirements on issuing.",
+          "5": "Inbox: an invoice to a company registered in Fakturist reaches it on its own.",
+          "6": "Two-factor sign-in and a chain of fingerprints that shows a change after issuing."
+        }
+      },
+      "2": {
+        "title": "How do I issue my first invoice?",
+        "steps": {
+          "1": "Register the company with its name, EIK and address.",
+          "2": "Open “New document” and choose the buyer or enter their details.",
+          "3": "Add the lines: quantity, price and VAT rate. The totals are calculated for you.",
+          "4": "Press “Issue”: the number comes from the series, and the PDF and XML are ready at once.",
+          "5": "Download the PDF or the XML and send them. If the buyer is in Fakturist, the document is in their inbox."
+        }
+      },
+      "3": {
+        "title": "Why an e-invoice and not just a PDF?",
+        "p1": "Bill No. 52-602-01-60 amending the Bulgarian VAT Act provides for structured e-invoices (UBL or CII) to become mandatory from 1 July 2028; as of 23 November 2026 it is not yet finally adopted. Fakturist already issues every document as XML under EN 16931. Sending over the e-invoicing network (Peppol) and reporting to the NRA are not available yet — they are coming and depend on the final law and the ordinance.",
+        "link": {
+          "page": "einvoicing2028",
+          "text": "Guide: e-invoicing from 2028"
+        }
+      },
+      "4": {
+        "title": "When is a paid plan worth it?",
+        "p1": "When you issue more documents, work with colleagues or want automation: unlimited documents, more users and series, recurring invoices, payment reminders, bank statement matching and an API. The prices and what each plan includes are on the “Pricing” page.",
+        "link": {
+          "page": "pricing",
+          "text": "Compare the plans on the “Pricing” page"
+        }
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "1": {
+        "q": "Is it really free?",
+        "a": "Yes. The free plan asks for no card and has no trial that runs out. If you issue more than {limit} documents in a month, issuing does not stop — we offer you a paid plan."
+      },
+      "2": {
+        "q": "Do I need to install anything?",
+        "a": "No. Fakturist runs in the browser on a computer, tablet and phone. You can also add it to your phone’s home screen as an app."
+      },
+      "3": {
+        "q": "Where are the invoices kept?",
+        "a": "On a server in the European Union (Germany), backed up every day. You can download any invoice as PDF and XML at any time, and the owner can download an archive of the whole company."
+      },
+      "4": {
+        "q": "Can I issue invoices in a foreign currency?",
+        "a": "Yes. You enter the latest ECB rate published at the moment the tax becomes chargeable (for an advance — when the payment is received), and the taxable amount and VAT in euro are calculated for you."
+      }
+    }
+  },
+  "proforma": {
+    "meta": {
+      "title": "Pro forma invoice online — free | Fakturist",
+      "description": "Make a pro forma invoice in a minute: its own numbering, a PDF by email to the customer and an invoice from it without re-entering anything once they pay.",
+      "keywords": "Carbon Stealth, pro forma invoice, pro forma invoice online, pro forma invoice template, free pro forma invoice, Fakturist"
+    },
+    "title": "Pro forma invoice online",
+    "summary": "A pro forma invoice is a request for payment, not a tax document. In Fakturist you make it from the same form as an invoice, send it as a PDF by email and, once the customer pays, turn it into an invoice without re-entering anything. Pro formas are included in every plan, the free one too.",
+    "sections": {
+      "1": {
+        "title": "What is a pro forma invoice?",
+        "p1": "A document asking the customer to pay before you issue an invoice — for example for a prepayment or an offer with concrete amounts. It is not a tax document under the VAT Act: it has no date of the taxable event, does not go into the sales ledger and does not replace the invoice."
+      },
+      "2": {
+        "title": "How do I make a pro forma in Fakturist?",
+        "steps": {
+          "1": "Open “New document” and choose the type “Pro forma invoice”.",
+          "2": "Fill in the buyer, the lines and the payment due date — as for an invoice.",
+          "3": "Save: the pro forma gets its own “ПФ-” number and a PDF that says it is not a tax document.",
+          "4": "Send it by email to the customer from its page or download the PDF."
+        }
+      },
+      "3": {
+        "title": "How does a pro forma become an invoice?",
+        "p1": "When the customer pays, press “Issue invoice” on the pro forma and choose the type: “Invoice” if the goods or service have already been delivered, or “Prepayment invoice” if the payment comes before delivery. The form is filled in from the pro forma; check the dates — for an advance it is the day the payment was received. On issuing, the pro forma is marked as invoiced and the invoice takes its number from the invoice series."
+      },
+      "4": {
+        "title": "Pro forma or advance invoice?",
+        "p1": "If you receive a payment before you deliver the goods or service, you issue an invoice for the advance within the statutory deadline after receiving it — the pro forma does not replace it. If you are VAT-registered, the tax as a rule becomes chargeable when the advance is received; if you are not, the advance invoice carries no VAT. In Fakturist choose the type “Prepayment invoice”; in the final invoice you deduct the advance by entering its number. Check advances on intra-Community supplies, reverse-charge cases and other special cases with your accountant.",
+        "link": {
+          "page": "vatLedgers",
+          "text": "How invoices go into the sales ledger"
+        }
+      }
+    },
+    "faq": {
+      "title": "Questions about pro formas",
+      "1": {
+        "q": "Is a pro forma a tax document?",
+        "a": "No. It is a request for payment. The tax document is the invoice you issue after the payment or the delivery."
+      },
+      "2": {
+        "q": "Does a pro forma go into the sales ledger?",
+        "a": "No. The ledger takes the tax documents — invoices, notes and protocols — and the sales reports. A pro forma is not one of them."
+      },
+      "3": {
+        "q": "Can I send the pro forma by email?",
+        "a": "Yes — as a PDF, from the pro forma’s page. If your company has an email in its settings, the customer’s reply goes to it."
+      },
+      "4": {
+        "q": "What does it cost?",
+        "a": "Pro formas are included in every plan, the free one too."
+      }
+    }
+  },
+  "vatLedgers": {
+    "meta": {
+      "title": "VAT sales and purchase ledgers (Bulgaria) | Fakturist",
+      "description": "The sales and purchase ledgers as files under the NRA’s description — from your issued and received invoices, with a clear list of what to enter by hand.",
+      "keywords": "Carbon Stealth, sales ledger, purchase ledger, PRODAGBI.TXT, POKUPKI.TXT, VAT ledgers Bulgaria, Fakturist"
+    },
+    "title": "VAT sales and purchase ledgers",
+    "summary": "Fakturist builds the sales ledger (PRODAGBI.TXT) from the invoices and notes you issue, and the purchase ledger (POKUPKI.TXT) from e-invoices you receive as XML. The files follow Annex 12 to the VAT Act Implementing Regulation, and what cannot be decided automatically is in a separate list for manual entry. Check them with the NRA’s program before filing; the company files the return.",
+    "sections": {
+      "1": {
+        "title": "What does Fakturist do?",
+        "list": {
+          "1": "The sales ledger for the month — from the invoices, credit and debit notes issued.",
+          "2": "The purchase ledger — from e-invoices received as XML and documents in the inbox. Invoices received as PDF or on paper are entered in your accounting program.",
+          "3": "The files use the encoding and record length from the NRA’s description, with amounts in euro.",
+          "4": "Cancelled documents are reflected according to the month of cancellation."
+        }
+      },
+      "2": {
+        "title": "What is entered automatically and what by hand?",
+        "p1": "The usual cases (20 % and 9 % rates, zero rate, exempt supplies, intra-Community supplies) are entered on their own. Cases where the right field depends on facts outside the invoice — for example another rate, imports or reverse charge from a foreign supplier — are not guessed but go to the “for manual entry” list with the reason."
+      },
+      "3": {
+        "title": "Who files the return?",
+        "p1": "The company or its accountant — Fakturist files nothing with the NRA. Check the files with the NRA’s program before filing. Fakturist is not approved or certified by the NRA; no such approval for invoicing software exists today."
+      },
+      "4": {
+        "title": "How does it work with an accounting firm?",
+        "p1": "An accounting firm with an active mandate opens the client company’s ledgers from its own account and downloads them for the month, without you sending files.",
+        "link": {
+          "page": "accountants",
+          "text": "Fakturist for accounting firms"
+        }
+      }
+    },
+    "faq": {
+      "title": "Questions about the ledgers",
+      "1": {
+        "q": "Which plan has the ledgers?",
+        "a": "The VAT ledgers are on the company’s “VAT ledgers” page in every plan."
+      },
+      "2": {
+        "q": "Can I change the month of a received invoice?",
+        "a": "Yes — in one of the next 12 months, and mark whether you have a right to input tax credit. The law (Art. 72(1) of the VAT Act) counts from the month the right arose; Fakturist counts from the month of issue — if the right arose earlier, check the deadline with your accountant."
+      },
+      "3": {
+        "q": "What about a copy of the same invoice?",
+        "a": "If the same invoice is both in “Incoming” and in the inbox, both go to the manual-entry list until you reject one — they are not entered twice."
+      }
+    }
+  },
+  "saft": {
+    "meta": {
+      "title": "SAF-T Bulgaria: sales data from invoices | Fakturist",
+      "description": "Your sales for the month as files under the SAF-T schema, version 1.0.3 — for the accounting program that files it. Fakturist does not file SAF-T.",
+      "keywords": "Carbon Stealth, SAF-T, SAF-T Bulgaria, standard audit file for tax, XSD 1.0.3, sales data, Fakturist"
+    },
+    "title": "SAF-T data from your invoices",
+    "summary": "SAF-T is a monthly file of accounting data under the NRA’s schema. Fakturist does not file SAF-T, but it gives you the sales for the month as five files under the SAF-T schema, version 1.0.3 — for the accounting program that assembles and files the whole file. The feature is in the plans {safTPlans}.",
+    "sections": {
+      "1": {
+        "title": "What is SAF-T?",
+        "p1": "The Standard Audit File for Tax: a monthly XML with accounting data — the general ledger, customers, suppliers, invoices and payments. It is being introduced in stages; check on the NRA’s website when it becomes mandatory for your company."
+      },
+      "2": {
+        "title": "What does Fakturist give you?",
+        "list": {
+          "1": "SalesInvoices — the invoices and notes issued in the month.",
+          "2": "Customers — the customers from those documents.",
+          "3": "Products — the goods and services.",
+          "4": "TaxTable and UOMTable — the tax codes and units of measure under the NRA’s nomenclatures.",
+          "5": "The files are checked automatically against a copy of the SAF-T XSD, version 1.0.3, with every Fakturist update; checking the copy against the NRA’s official archive is still to be done. Check them with the NRA’s tools before filing."
+        }
+      },
+      "3": {
+        "title": "What does Fakturist not do?",
+        "p1": "It does not file SAF-T and does not build the whole file: that needs the general ledger, purchases and balances, which live in the accounting program. Codes that cannot be determined from the invoice are not guessed but go to a list for manual review.",
+        "link": {
+          "page": "vatLedgers",
+          "text": "The VAT ledgers from the same invoices"
+        }
+      },
+      "4": {
+        "title": "How does the data reach the accountant?",
+        "steps": {
+          "1": "Open the company’s “SAF-T data” and choose the month.",
+          "2": "If needed, set the chart-of-accounts accounts and the related parties — the accountant does this.",
+          "3": "Download the files and load them into the accounting program that files SAF-T."
+        }
+      }
+    },
+    "faq": {
+      "title": "Questions about SAF-T",
+      "1": {
+        "q": "Does Fakturist file SAF-T?",
+        "a": "No. The company files it through its accounting program. Fakturist gives the sales data in its format."
+      },
+      "2": {
+        "q": "Which schema version is used?",
+        "a": "XSD 1.0.3 with the nomenclatures of its Annex 2. We check against a copy of the schema; checking it against the NRA’s official archive is still to be done."
+      },
+      "3": {
+        "q": "Which plan is it in?",
+        "a": "In the plans {safTPlans}."
+      }
+    }
+  },
+  "guides": {
+    "title": "Useful",
+    "label": "Guides"
   }
 }

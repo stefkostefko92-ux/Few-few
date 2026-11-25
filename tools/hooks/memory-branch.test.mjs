@@ -365,3 +365,138 @@ test("keepHigherVersions: при сгъване версията на агент
   assert.equal(result.agents[1].evolution.at(-1).version, "5.0.0", "по-високата в основата също се пази");
   assert.equal(keepHigherVersions(result, memory), false, "идемпотентно");
 });
+
+// Регресия 23.11.2026 (c6ddb80d96): обединяването локален ↔ отдалечен строеше дървото от `base`
+// (отдалечения) и взимаше ВСИЧКИ непаметни пътища оттам. Локалният беше сгънал по-нов main (Фактурист 2.1),
+// отдалеченият — не → върхът върна `fakturist/` на 2.0 (47 файла, −1501 реда) и `cs-revolution` App.jsx;
+// main вече беше предшественик, сгъването не поправи нищо, а PR #451 занесе връщането в main.
+// Инвариант: непаметните пътища се сливат ТРИСТРАННО (git merge-tree); конфликт там → отказ, нула commit.
+const PROD = "p/stat.txt", CAMP = "p/campaign.ts", OLD = "p/old.txt";
+const MEMORY_ONLY = [".claude/agents/_memory/testagent.md", "agents-dashboard/agents.json", "agents-dashboard/index.html"];
+/** main с продукт v1 (сгънат в клона на паметта от първия sync). */
+function productV1(f) {
+  const human = clone(f, "human");
+  mkdirSync(join(human, "p"), { recursive: true });
+  writeFileSync(join(human, PROD), "11\n");
+  writeFileSync(join(human, OLD), "старо\n");
+  git(human, "add", "-A"); git(human, "commit", "-q", "-m", "продукт v1"); git(human, "push", "-q", "origin", "main");
+  return human;
+}
+/** main → v2: променен, нов и изтрит продуктов файл. */
+function productV2(human) {
+  writeFileSync(join(human, PROD), "14\n");
+  writeFileSync(join(human, CAMP), "export const campaign = 1;\n");
+  rmSync(join(human, OLD));
+  git(human, "add", "-A"); git(human, "commit", "-q", "-m", "продукт v2"); git(human, "push", "-q", "origin", "main");
+}
+/**
+ * Два клона на паметта се разминават: единият е сгънал main v2, другият — не. `newer` казва кой е по-новият
+ * (локалният в f.work или отдалеченият, пуснат от друга сесия). Връща резултата от sync в f.work.
+ */
+async function divergedFold(f, newer, mod) {
+  const { publishLessons, syncMemoryBranch } = mod;
+  const human = productV1(f);
+  publishLessons(f.work, { testagent: { verified: [L("2026-11-23", "поука А преди разклоняването")] } });
+  assert.equal(syncMemoryBranch(f.work, { date: "2026-11-23" }).pushed, true, "M1 пуснат");
+  const other = clone(f, "other");
+  productV2(human);
+  if (newer === "local") {
+    publishLessons(f.work, { testagent: { verified: [L("2026-11-23", "поука В от локалния")] } });
+    const l = syncMemoryBranch(f.work, { date: "2026-11-23", push: false });
+    assert.ok(l.steps.includes("сгънат main"), "локалният сгъва main v2: " + l.steps.join(" · "));
+    publishLessons(other, { testagent: { verified: [L("2026-11-23", "поука Б от отдалечения")] } });
+    assert.equal(syncMemoryBranch(other, { date: "2026-11-23", fetch: false }).pushed, true, "отдалеченият (без v2) пуснат");
+  } else {
+    publishLessons(other, { testagent: { verified: [L("2026-11-23", "поука Б от отдалечения")] } });
+    const o = syncMemoryBranch(other, { date: "2026-11-23" });
+    assert.ok(o.pushed && o.steps.includes("сгънат main"), "отдалеченият сгъва v2 и пуска: " + o.steps.join(" · "));
+    publishLessons(f.work, { testagent: { verified: [L("2026-11-23", "поука В от локалния")] } });
+  }
+  return { human, r: syncMemoryBranch(f.work, { date: "2026-11-23" }) };
+}
+function assertProductKept(f, ref) {
+  assert.equal(git(f.work, "show", `${ref}:${PROD}`).out, "14", `${ref}: продуктовата промяна на main v2 е запазена`);
+  assert.equal(git(f.work, "cat-file", "-e", `${ref}:${CAMP}`).status, 0, `${ref}: новият файл на v2 е там`);
+  assert.notEqual(git(f.work, "cat-file", "-e", `${ref}:${OLD}`).status, 0, `${ref}: изтритият във v2 файл не се връща`);
+}
+
+for (const newer of ["local", "remote"]) {
+  test(`5${newer === "local" ? "а" : "б"}. разминати клони на паметта, по-новият main е в ${newer === "local" ? "ЛОКАЛНИЯ" : "ОТДАЛЕЧЕНИЯ"} → продуктът НЕ се връща`, async () => {
+    const f = fixture();
+    try {
+      const { human, r } = await divergedFold(f, newer, await lib());
+      assert.equal(r.ok, true, r.steps.join(" · "));
+      assert.equal(r.pushed, true, r.steps.join(" · "));
+      if (newer === "local") assert.ok(r.steps.includes("обединен с отдалечения"), r.steps.join(" · "));
+      const tip = "origin/agents/memory";
+      assertProductKept(f, tip);
+      const mem = memAt(f.work, tip);
+      for (const p of ["поука А", "поука Б", "поука В"]) assert.match(mem, new RegExp(p), `${p} оцелява`);
+      git(f.work, "fetch", "-q", "origin");
+      assert.equal(git(f.work, "merge-base", "--is-ancestor", "origin/main", tip).status, 0, "main е предшественик");
+      assert.deepEqual(git(f.work, "diff", "--name-only", "origin/main", tip).out.split("\n").sort(), MEMORY_ONLY, "PR-ът носи само памет + табло");
+
+      // Следващото сгъване (main напредва другаде) и сливането на PR-а пазят v2.
+      writeFileSync(join(human, "other.txt"), "още\n");
+      git(human, "add", "-A"); git(human, "commit", "-q", "-m", "още main"); git(human, "push", "-q", "origin", "main");
+      const r2 = (await lib()).syncMemoryBranch(f.work, { date: "2026-11-23" });
+      assert.ok(r2.ok && r2.steps.includes("сгънат main"), r2.steps.join(" · "));
+      assertProductKept(f, tip);
+      git(human, "fetch", "-q", "origin");
+      assert.equal(git(human, "merge", "-q", "--ff-only", "origin/agents/memory").status, 0, "PR-ът е бърз");
+      assert.equal(readFileSync(join(human, PROD), "utf8"), "14\n", "след сливането на PR-а main пази v2");
+    } finally { rmSync(f.root, { recursive: true, force: true }); }
+  });
+}
+
+test("5м. МУТАЦИЯ: дървото на обединението от `base` (старото) връща продукта на v1 (тестът хапе)", async () => {
+  const f = fixture();
+  try {
+    const mod = await mutantLib((s) => s.replace("return commitFiles(cwd, base, files, [other, base], message, mergedProductTree(cwd, base, other));", "return commitFiles(cwd, base, files, [other, base], message);"));
+    const { r } = await divergedFold(f, "local", mod);
+    assert.equal(r.ok, true, r.steps.join(" · "));
+    assert.equal(git(f.work, "show", `origin/agents/memory:${PROD}`).out, "11", "мутантът тихо връща продукта — точно инцидентът c6ddb80d96");
+  } finally { rmSync(f.root, { recursive: true, force: true }); }
+});
+
+test("6. конфликт в продуктов път при обединяване → отказ, нула commit/ref/push (никога тихо една страна)", async () => {
+  const f = fixture();
+  try {
+    const { publishLessons, syncMemoryBranch } = await lib();
+    const human = productV1(f);
+    publishLessons(f.work, { testagent: { verified: [L("2026-11-23", "поука А")] } });
+    syncMemoryBranch(f.work, { date: "2026-11-23" });
+    // Някой комитва продуктова промяна направо в agents/memory, а main сменя същия ред другояче.
+    const other = clone(f, "other");
+    git(other, "checkout", "-q", "-b", "agents/memory", "origin/agents/memory");
+    writeFileSync(join(other, PROD), "99\n");
+    git(other, "commit", "-q", "-am", "продукт направо в паметта");
+    git(other, "push", "-q", "origin", "agents/memory");
+    productV2(human);
+    publishLessons(f.work, { testagent: { verified: [L("2026-11-23", "поука В")] } });
+    const localBefore = git(f.work, "rev-parse", "agents/memory").out;
+    const originBefore = git(other, "ls-remote", "origin", "refs/heads/agents/memory").out;
+    const r = syncMemoryBranch(f.work, { date: "2026-11-23" });
+    assert.equal(r.ok, false, r.steps.join(" · "));
+    assert.equal(r.conflict, true);
+    assert.ok(r.problems.some((p) => p.includes(PROD)), "отказът назовава продуктовия път: " + r.problems.join("; "));
+    assert.equal(git(f.work, "rev-parse", "agents/memory").out, localBefore, "локалният клон не мърда");
+    assert.equal(git(other, "ls-remote", "origin", "refs/heads/agents/memory").out, originBefore, "нищо не е пуснато");
+  } finally { rmSync(f.root, { recursive: true, force: true }); }
+});
+
+test("7. git без `merge-tree --write-tree` (стар git) → ясен отказ, нула commit (симулация с мутант)", async () => {
+  const f = fixture();
+  try {
+    const { publishLessons } = await lib();
+    publishLessons(f.work, { testagent: { verified: [L("2026-11-23", "поука А")] } });
+    const other = clone(f, "other");
+    publishLessons(other, { testagent: { verified: [L("2026-11-23", "поука Б")] } });
+    (await lib()).syncMemoryBranch(other, { date: "2026-11-23" });
+    git(f.work, "fetch", "-q", "origin", "+refs/heads/agents/memory:refs/remotes/origin/agents/memory");
+    const before = git(f.work, "rev-parse", "agents/memory").out;
+    const { syncMemoryBranch } = await mutantLib((s) => s.replace('const MERGE_TREE = ["merge-tree", "--write-tree"', 'const MERGE_TREE = ["merge-tree", "--write-tree-няма"'));
+    assert.throws(() => syncMemoryBranch(f.work, { date: "2026-11-23", fetch: false, push: false }), /merge-tree --write-tree.*git ≥ 2\.38/);
+    assert.equal(git(f.work, "rev-parse", "agents/memory").out, before, "клонът не мърда");
+  } finally { rmSync(f.root, { recursive: true, force: true }); }
+});

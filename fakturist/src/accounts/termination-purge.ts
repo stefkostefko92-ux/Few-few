@@ -169,6 +169,12 @@ async function purgeOrganization(organizationId: string, now: Date): Promise<boo
           ownerReviewPendingAt: null,
           ownershipLockedAt: null,
           remindersEnabled: false,
+          // Източникът на регистрацията — „докато фирмата е регистрирана“ (политиката, SPEC 93).
+          signupSource: null,
+          signupMedium: null,
+          signupCampaign: null,
+          signupContent: null,
+          signupTerm: null,
         },
       });
       if (owners.length > 0) {

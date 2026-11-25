@@ -109,14 +109,14 @@
       <tbody data-lines>
       <% for (let i = 0; i < lineCount; i++) { %>
         <tr>
-          <td class="mono muted"><%= i + 1 %></td>
-          <td><input name="lines[<%= i %>][name]" aria-label="<%= t('app.doc.lineName') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.name') %>"<%- items.length ? ' list="catalog-items"' : '' %> data-line="<%= i %>"></td>
-          <td><input name="lines[<%= i %>][quantity]" inputmode="decimal" class="mono s" aria-label="<%= t('app.doc.quantity') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.quantity') %>"></td>
-          <td><select name="lines[<%= i %>][unitCode]" aria-label="<%= t('app.doc.unit') %> <%= i + 1 %>"><% units.forEach((u) => { %><option<%= sel('lines.' + i + '.unitCode', u, 'C62') %>><%= u %></option><% }) %></select></td>
-          <td><input name="lines[<%= i %>][netPrice]" inputmode="decimal" class="mono s" aria-label="<%= t('app.doc.price') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.netPrice') %>"></td>
-          <td><select name="lines[<%= i %>][category]" aria-label="<%= t('app.doc.category') %> <%= i + 1 %>"><% categories.forEach((c) => { %><option<%= sel('lines.' + i + '.category', c, 'S') %>><%= c %></option><% }) %></select></td>
-          <td><input name="lines[<%= i %>][rate]" inputmode="decimal" class="mono xs" aria-label="<%= t('app.doc.vatRate') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.rate', '20') %>"></td>
-          <td><input name="lines[<%= i %>][discount]" inputmode="decimal" class="mono xs" aria-label="<%= t('app.doc.discount') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.discount') %>"></td>
+          <td class="mono muted line-no"><%= i + 1 %></td>
+          <td data-label="<%= t('app.doc.lineName') %>"><input name="lines[<%= i %>][name]" aria-label="<%= t('app.doc.lineName') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.name') %>"<%- items.length ? ' list="catalog-items"' : '' %> data-line="<%= i %>"></td>
+          <td data-label="<%= t('app.doc.quantity') %>"><input name="lines[<%= i %>][quantity]" inputmode="decimal" class="mono s" aria-label="<%= t('app.doc.quantity') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.quantity') %>"></td>
+          <td data-label="<%= t('app.doc.unit') %>"><select name="lines[<%= i %>][unitCode]" aria-label="<%= t('app.doc.unit') %> <%= i + 1 %>"><% units.forEach((u) => { %><option<%= sel('lines.' + i + '.unitCode', u, 'C62') %>><%= u %></option><% }) %></select></td>
+          <td data-label="<%= t('app.doc.price') %>"><input name="lines[<%= i %>][netPrice]" inputmode="decimal" class="mono s" aria-label="<%= t('app.doc.price') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.netPrice') %>"></td>
+          <td data-label="<%= t('app.doc.category') %>"><select name="lines[<%= i %>][category]" aria-label="<%= t('app.doc.category') %> <%= i + 1 %>"><% categories.forEach((c) => { %><option<%= sel('lines.' + i + '.category', c, 'S') %>><%= c %></option><% }) %></select></td>
+          <td data-label="<%= t('app.doc.vatRate') %>"><input name="lines[<%= i %>][rate]" inputmode="decimal" class="mono xs" aria-label="<%= t('app.doc.vatRate') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.rate', '20') %>"></td>
+          <td data-label="<%= t('app.doc.discount') %>"><input name="lines[<%= i %>][discount]" inputmode="decimal" class="mono xs" aria-label="<%= t('app.doc.discount') %> <%= i + 1 %>" value="<%= val('lines.' + i + '.discount') %>"></td>
         </tr>
       <% } %>
       </tbody>

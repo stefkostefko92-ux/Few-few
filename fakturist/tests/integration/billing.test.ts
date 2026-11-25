@@ -394,6 +394,24 @@ test('сумата при Revolut не съвпада → не се активи
     }),
     1,
   );
+  // Общите условия, т. 6: връщаме до 14 дни — писмо до мастърите веднъж, със сумата и срока.
+  const refunds = await prisma.notification.findMany({
+    where: { kind: 'master.refund', payload: { path: ['paymentId'], equals: paymentId } },
+  });
+  assert.equal(refunds.length, 1, 'едно писмо на мастър, само при първото отбелязване');
+  const notice = refunds[0]!.payload as { reason: string; amountCents: number; dueBy: string };
+  assert.equal(notice.reason, 'mismatch');
+  assert.equal(notice.amountCents, marked.amountCents);
+  assert.equal(
+    new Date(notice.dueBy).getTime() - marked.paidAt!.getTime(),
+    14 * 86_400_000,
+    'до 14 дни от плащането',
+  );
+  const { composeMasterMail } = await import('../../src/mail/master-mail.js');
+  const mail = await composeMasterMail('master.refund', refunds[0]!.toEmail, refunds[0]!.payload);
+  assert.match(mail.subject, /върнете плащане до \d{2}\.\d{2}\.\d{4}/);
+  assert.match(mail.text, /не активира план/);
+  assert.match(mail.text, /т\. 6/);
   const bad = await realFetch(`${http.origin}/webhooks/revolut`, {
     method: 'POST',
     headers: {

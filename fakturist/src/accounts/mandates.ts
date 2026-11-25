@@ -1,6 +1,7 @@
 import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { HttpError } from '../auth/guards.js';
+import { lockOrganization } from './transfer-core.js';
 
 /**
  * Решение по пълномощно на кантора (чл. 113, ал. 7 ЗДДС). Потвърждава собственикът/администраторът на
@@ -22,6 +23,9 @@ export async function decideMandate(input: {
     if (!mandate) throw new HttpError(404);
     if (input.clientOrgId !== null && mandate.clientId !== input.clientOrgId)
       throw new HttpError(404);
+    // Оттеглянето — под заключването на фирмата, като приемането на предаване от кантората
+    // (`decideFirmHandover`): двете не се разминават (Разбивача, 25.11.2026).
+    if (input.decision === 'revoke') await lockOrganization(tx, mandate.clientId);
     const from = input.decision === 'approve' ? 'PENDING' : undefined;
     const updated = await tx.clientMandate.updateMany({
       where: {
@@ -37,6 +41,11 @@ export async function decideMandate(input: {
     // Оттеглено пълномощно → и поканите на кантората към собственик по него падат (иначе поканеният
     // от нея имейл става собственик след оттеглянето).
     if (input.decision === 'revoke') {
+      // И чакащото предложение фирмата да мине към тази кантора (SPEC 86) — без пълномощно не се поема.
+      await tx.firmHandover.updateMany({
+        where: { organizationId: mandate.clientId, firmId: mandate.firmId, status: 'PENDING' },
+        data: { status: 'REVOKED', decidedAt: new Date() },
+      });
       const invites = await tx.transferInvite.findMany({
         where: { mandateId: mandate.id, acceptedAt: null, revokedAt: null },
         select: { id: true },

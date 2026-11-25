@@ -81,6 +81,21 @@ export interface MandateView {
 }
 
 /**
+ * Пълномощното е в сила: потвърдено и в срока си. Едно правило за достъпа и за предаването на фирмата на
+ * кантора (Разбивача, 25.11.2026: предаване по пълномощно извън срока оставяше фирмата без никого с достъп).
+ */
+export function mandateInForce(
+  mandate: Pick<MandateView, 'status' | 'validFrom' | 'validTo'>,
+  now: Date,
+): boolean {
+  return (
+    mandate.status === 'ACTIVE' &&
+    mandate.validFrom <= now &&
+    (mandate.validTo === null || mandate.validTo >= now)
+  );
+}
+
+/**
  * Ролята на човек във фирма: пряко членство, или — за служител на кантора — ролята му в кантората,
  * ограничена до ACCOUNTANT, ако кантората има действащо пълномощно от фирмата (чл. 113, ал. 7 ЗДДС).
  * Пълномощно, което не е ACTIVE или е извън срока си, не дава нищо.
@@ -95,8 +110,7 @@ export function effectiveRole(
   if (direct) return { role: direct.role, viaFirmId: null };
   let best: { role: MemberRole; viaFirmId: string } | null = null;
   for (const mandate of mandates) {
-    if (mandate.clientId !== organizationId || mandate.status !== 'ACTIVE') continue;
-    if (mandate.validFrom > now || (mandate.validTo !== null && mandate.validTo < now)) continue;
+    if (mandate.clientId !== organizationId || !mandateInForce(mandate, now)) continue;
     const inFirm = memberships.find((m) => m.organizationId === mandate.firmId);
     if (!inFirm) continue;
     const role = weaker(inFirm.role, 'ACCOUNTANT');
