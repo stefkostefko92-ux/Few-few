@@ -4064,7 +4064,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 263
+        "lessons": 264
       },
       "evolution": [
         {
@@ -4528,9 +4528,20 @@
           "date": "2026-11-25",
           "event": "v25.7 — учене",
           "detail": "Научи: Във vizitka organizationNode носи legalName (латиница, както във вписването) и alternat… (+6 още)"
+        },
+        {
+          "version": "25.8.0",
+          "date": "2026-11-25",
+          "event": "v25.8 — учене",
+          "detail": "Научи: PR само с текст в deploy/DEPLOY.md и коментари в началото на nginx vhost (без промяна в…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „PR само с текст в deploy/DEPLOY.md и коментари в началото на nginx vhost (без промяна в…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
