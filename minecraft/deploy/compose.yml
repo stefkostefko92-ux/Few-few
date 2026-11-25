@@ -1,0 +1,103 @@
+# Pelican Panel (уеб админ панел) + MariaDB + Redis. Само панелът е публикуван и то само на
+# 127.0.0.1 — отвън се стига през nginx на хоста (TLS). Базата и Redis са във вътрешната мрежа.
+#
+# Не се пуска на ръка: minecraft/deploy/install.sh копира файла в /opt/pelican и вика
+#   docker compose --project-name pelican --env-file /opt/pelican/.env -f /opt/pelican/compose.yml up -d
+# Тайните (.env, mode 600) се генерират веднъж от install.sh и никога не влизат в репото.
+#
+# Версиите са закачени: panel v1.0.0-rc.1 (Pelican още няма стабилен 1.0). Ъпдейт = нов таг тук +
+# повторно install.sh (виж README.md → „Ъпдейт“). Миграциите на панела тичат от entrypoint-а.
+
+name: pelican
+
+services:
+  database:
+    image: mariadb:10.11
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - pelican-db:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD липсва в .env}
+      MARIADB_DATABASE: panel
+      MARIADB_USER: pelican
+      MARIADB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD липсва в .env}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  cache:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?REDIS_PASSWORD липсва в .env}", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+  panel:
+    image: ghcr.io/pelican/panel:v1.0.0-rc.1
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    ports:
+      # Само localhost: nginx на хоста терминира TLS за ${PANEL_FQDN}.
+      - "127.0.0.1:${PANEL_PORT:-4330}:80"
+    # Панелът вика Wings през https://<нод>. Без този ред името минава през resolver-а на хоста, а
+    # там може да е 127.0.0.1 (/etc/hosts) — в контейнера това е самият той → „Connection refused“.
+    # Шлюзът на мрежата е хостът: nginx слуша на 0.0.0.0:443 и TLS е за същото име.
+    extra_hosts:
+      - "${NODE_FQDN:-node-mc.carbonstealth.eu}:${PELICAN_GATEWAY:-10.240.30.1}"
+    volumes:
+      - pelican-data:/pelican-data
+      - pelican-logs:/var/www/html/storage/logs
+      - type: volume
+        source: pelican-data
+        target: /var/www/html/plugins
+        volume:
+          subpath: plugins
+    environment:
+      APP_URL: https://${PANEL_FQDN:?PANEL_FQDN липсва в .env}
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY:?APP_KEY липсва в .env}
+      XDG_DATA_HOME: /pelican-data
+      # Вграденият Caddy слуша на :80 без собствен TLS; доверява се само на шлюза на мрежата по-долу,
+      # през който идват заявките от nginx (docker-proxy).
+      BEHIND_PROXY: "true"
+      TRUSTED_PROXIES: ${PELICAN_GATEWAY:-10.240.30.1},127.0.0.1
+      DB_CONNECTION: mariadb
+      DB_HOST: database
+      DB_PORT: "3306"
+      DB_DATABASE: panel
+      DB_USERNAME: pelican
+      DB_PASSWORD: ${DB_PASSWORD}
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: cache
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      # MAIL_* нарочно ги няма: средата на контейнера бие .env, а панелът пише пощата (Brevo SMTP) в
+      # .env от Admin → Settings → Mail — зададени тук, биха отменили настройката тихо.
+
+volumes:
+  pelican-data:
+  pelican-logs:
+  pelican-db:
+
+networks:
+  default:
+    # Фиксирана подмрежа извън 172.16/12 — там Docker раздава мрежите на останалите compose стекове.
+    ipam:
+      config:
+        - subnet: ${PELICAN_SUBNET:-10.240.30.0/24}
+          gateway: ${PELICAN_GATEWAY:-10.240.30.1}

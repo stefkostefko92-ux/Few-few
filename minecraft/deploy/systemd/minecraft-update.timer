@@ -1,0 +1,10 @@
+[Unit]
+Description=Нощен ъпдейт на Paper (пропуска, ако някой играе)
+
+[Timer]
+OnCalendar=*-*-* 05:30:00 Europe/Sofia
+RandomizedDelaySec=10m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
