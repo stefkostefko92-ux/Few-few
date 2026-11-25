@@ -1,0 +1,32 @@
+<%
+  // Новините на портала (src/novita/voci.ts): по дни, от най-новия; всяка новина — със своята котва
+  // (прозорецът в портала и емисията сочат дотам). Видимият път до страницата е и в JSON-LD.
+%><%- include('top', { pageTitle: t('novita.meta.title'), description: t('novita.meta.description'), keywords: t('novita.meta.keywords'), feed, extraSheets: ['site-percorso', 'site-novita'] }) %>
+<div class="prose novita-pagina">
+  <nav class="percorso" aria-label="<%= t('novita.percorso') %>">
+    <ol>
+      <li><a href="<%= homePath %>">Rilievi Impianti</a></li>
+      <li><a href="<%= novitaPath %>" aria-current="page"><%= t('novita.nav') %></a></li>
+    </ol>
+  </nav>
+  <h1><%= t('novita.titolo') %></h1>
+  <p class="novita-pagina__lead"><%= t('novita.lead') %></p>
+  <p class="prose__updated"><%= t('novita.aggiornato', { date: fmt.dayLong(aggiornato) }) %></p>
+  <p class="novita-pagina__feed"><a href="<%= feed %>"><%= t('novita.feed') %></a></p>
+
+  <% for (const giorno of giorni) { %><section class="novita-giorno" aria-labelledby="giorno-<%= giorno.data %>">
+    <h2 id="giorno-<%= giorno.data %>"><time datetime="<%= giorno.data %>"><%= fmt.dayLong(giorno.quando) %></time></h2>
+    <div class="novita-giorno__voci">
+      <% for (const voce of giorno.voci) { %><article class="novita-voce" id="<%= voce.id %>">
+        <h3><%= t('novita.voci.' + voce.id + '.titolo') %></h3>
+        <p class="novita-voce__area"><%= t('novita.voci.' + voce.id + '.area') %></p>
+        <p><%= t('novita.voci.' + voce.id + '.testo') %></p>
+      </article>
+      <% } %>
+    </div>
+  </section>
+  <% } %>
+
+  <% if (!signedIn) { %><p class="novita-pagina__invito"><%= t('novita.invito') %> <a href="<%= homePath %>#richiesta"><%= t('novita.invitoLink') %></a></p><% } %>
+</div>
+<%- include('bottom') %>

@@ -1,7 +1,7 @@
 // bot/src/events/messageReactionRemove.js
 // v33 — Reaction Roles: махната реакция → махни ролята.
 import { Events } from "discord.js";
-import { emojiKey, getRrmForMessage } from "../utils/reactionRoles.js";
+import { consumeBotRemoval, findPair, getRrmForMessage, isRoleSafeToSelfAssign } from "../utils/reactionRoles.js";
 
 export default {
   name: Events.MessageReactionRemove,
@@ -19,9 +19,12 @@ export default {
       const rrm = await getRrmForMessage(messageId);
       if (!rrm) return;
 
-      const key = emojiKey(reaction.emoji);
-      const pair = rrm.pairs.find((p) => p.emoji === key);
+      const pair = findPair(rrm, reaction.emoji);
       if (!pair) return;
+
+      // Махане, направено от самия бот (отказана опасна роля, размяна в режим
+      // „една роля“) — не пипаме ролята: човекът може да я има по друг начин (З4).
+      if (consumeBotRemoval(messageId, user.id, pair.id)) return;
 
       if (reaction.partial) {
         reaction = await reaction.fetch().catch(() => null);
@@ -32,6 +35,12 @@ export default {
 
       const member = await message.guild.members.fetch(user.id).catch(() => null);
       if (!member) return;
+
+      // Втори пояс: ботът не пипа роля, която не би дал през реакция (опасна,
+      // managed, над бота) — махането на реакцията не е основание да я сваля.
+      const role = message.guild.roles.cache.get(pair.roleId)
+        || await message.guild.roles.fetch(pair.roleId).catch(() => null);
+      if (!isRoleSafeToSelfAssign(role, message.guild.members.me)) return;
 
       await member.roles.remove(pair.roleId, "Reaction role removed").catch((err) => {
         console.warn(`[ReactionRoles] remove role ${pair.roleId} failed: ${err?.message}`);

@@ -12,6 +12,7 @@
   <a class="btn btn--primary" href="/aziende/nuova"><%- include('../partials/icon', { name: 'plus' }) %><%= t('aziende.new') %></a>
 </div>
 <% } else { %>
+<div class="table-scorre">
 <table class="table table--stack">
   <thead><tr>
     <th scope="col"><%= t('aziende.name') %></th>
@@ -31,5 +32,6 @@
     <% } %>
   </tbody>
 </table>
+</div>
 <% } %>
 <%- include('../partials/bottom') %>

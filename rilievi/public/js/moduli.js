@@ -65,6 +65,29 @@
     if (['azienda', 'utente', 'ruolo', 'email'].includes(token)) {
       return typeof context[token] === 'string' ? context[token] : '';
     }
+    if (token.startsWith('societa')) {
+      // The company's data from its settings — of the company chosen above a new sheet.
+      const select = document.getElementById('f-azienda');
+      const id = select ? select.value : context.aziendaId;
+      const company = (context.societa && context.societa[id]) || null;
+      if (token === 'societaNome')
+        return (company && company.ragioneSociale) || surveyText('azienda');
+      const key = {
+        societaIndirizzo: 'indirizzo',
+        societaCap: 'cap',
+        societaCitta: 'citta',
+        societaProvincia: 'provincia',
+        societaTelefono: 'telefono',
+        societaEmail: 'email',
+      }[token];
+      const value = company && typeof company[key] === 'string' ? company[key] : '';
+      return token === 'societaProvincia' ? value.toUpperCase() : value;
+    }
+    if (token === 'portataPersone') {
+      const kg = surveyValue('portataKg');
+      const persone = surveyValue('capienzaPersone');
+      return kg && persone ? `${kg}/${persone}` : kg;
+    }
     if (['tipoImpianto', 'tipoPorte', 'ubicazioneMacchina'].includes(token))
       return surveyTicks(token);
     return surveyValue(token);

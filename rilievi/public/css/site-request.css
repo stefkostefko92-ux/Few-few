@@ -166,6 +166,19 @@
   overflow-wrap: anywhere;
 }
 
+/* Под таблицата абзацът не лепне за долната ѝ линия (визуалната проверка, 10 ноември 2026). */
+.prose .table-wrap + p {
+  margin-top: 16px;
+}
+
+/* Името на бисквитката не се чупи посред думата, докато таблицата е таблица (на телефон е карта). */
+@media (min-width: 760px) {
+  .prose td code {
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+}
+
 @media (max-width: 759px) {
   .prose thead {
     position: absolute;

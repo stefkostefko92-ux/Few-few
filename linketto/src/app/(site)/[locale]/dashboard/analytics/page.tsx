@@ -1,13 +1,14 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader } from '@/components/SiteChrome';
+import { DashShell } from '@/components/DashShell';
+import { ButtonLink } from '@/components/ui/Button';
+import { Card, CardHeader } from '@/components/ui/Card';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { planFor } from '@/lib/plans';
 import {
-  conversionRate,
   ctr,
   fillDailySeries,
   seriesMax,
@@ -44,6 +45,11 @@ export default async function AnalyticsPage({
   if (!profile) redirect(`/${locale}/dashboard`);
 
   const plan = planFor(user.plan);
+  const profileList = await prisma.profile.findMany({
+    where: { userId: user.id },
+    select: { id: true, slug: true },
+    orderBy: { createdAt: 'asc' },
+  });
   const now = new Date();
   const windowSince = plan.analyticsDays
     ? new Date(now.getTime() - plan.analyticsDays * 86_400_000)
@@ -62,10 +68,10 @@ export default async function AnalyticsPage({
     byCountry,
     byReferrer,
     dailyRaw,
-    sales,
+    byProduct,
   ] = await Promise.all([
-    prisma.clickEvent.count({ where: { ...where, linkId: null } }),
-    prisma.clickEvent.count({ where: { ...where, linkId: { not: null } } }),
+    prisma.clickEvent.count({ where: { ...where, linkId: null, productId: null } }),
+    prisma.clickEvent.count({ where: { ...where, OR: [{ linkId: { not: null } }, { productId: { not: null } }] } }),
     prisma.clickEvent.groupBy({
       by: ['linkId'],
       where: { ...where, linkId: { not: null } },
@@ -82,33 +88,40 @@ export default async function AnalyticsPage({
     }),
     prisma.clickEvent.groupBy({
       by: ['country'],
-      where: { ...where, linkId: null, country: { not: null } },
+      where: { ...where, linkId: null, productId: null, country: { not: null } },
       _count: { _all: true },
       orderBy: { _count: { country: 'desc' } },
       take: 40,
     }),
     prisma.clickEvent.groupBy({
       by: ['referrerHost'],
-      where: { ...where, linkId: null },
+      where: { ...where, linkId: null, productId: null },
       _count: { _all: true },
       orderBy: { _count: { referrerHost: 'desc' } },
       take: 12,
     }),
     prisma.$queryRaw<{ day: Date; views: bigint; clicks: bigint }[]>`
       SELECT date_trunc('day', "createdAt") AS day,
-        count(*) FILTER (WHERE "linkId" IS NULL) AS views,
-        count(*) FILTER (WHERE "linkId" IS NOT NULL) AS clicks
+        count(*) FILTER (WHERE "linkId" IS NULL AND "productId" IS NULL) AS views,
+        count(*) FILTER (WHERE "linkId" IS NOT NULL OR "productId" IS NOT NULL) AS clicks
       FROM "ClickEvent"
       WHERE "profileId" = ${profile.id} AND "createdAt" >= ${chartSince}
       GROUP BY 1 ORDER BY 1
     `,
-    prisma.purchase.aggregate({
-      // Върнати/оспорени покупки не са приход — извън продажбите/конверсията.
-      where: { profileId: profile.id, refundedAt: null, disputedAt: null },
+    // Продуктите водят към линка за плащане на създателя (решение О-1) —
+    // продажбите не минават през нас, затова мерим интереса: кликове по продукт.
+    prisma.clickEvent.groupBy({
+      by: ['productId'],
+      where: { ...where, productId: { not: null } },
       _count: { _all: true },
-      _sum: { amountCents: true },
+      orderBy: { _count: { productId: 'desc' } },
+      take: 15,
     }),
   ]);
+  const productTitles = await prisma.productTranslation.findMany({
+    where: { product: { profileId: profile.id } },
+    select: { productId: true, locale: true, title: true },
+  });
 
   const series = fillDailySeries(
     dailyRaw.map(
@@ -122,23 +135,34 @@ export default async function AnalyticsPage({
     now,
   );
   const max = seriesMax(series) || 1;
+  const hasTraffic = series.some((point) => point.views > 0 || point.clicks > 0);
+  // Датите по езика на таблото (не ISO) — визуалният обход.
+  const dayLabel = (iso: string | undefined) =>
+    iso ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`)) : '';
   const gap = languageDemand(
     byCountry.map((row) => ({ country: row.country, count: row._count._all })),
     profile.translations.map((tr) => tr.locale),
   );
-  const salesCount = sales._count._all;
-  const revenueCents = sales._sum.amountCents ?? 0;
+  const productClicks = byProduct.reduce((sum, row) => sum + row._count._all, 0);
+  const productTitle = (productId: string | null) => {
+    const titles = productTitles.filter((tr) => tr.productId === productId);
+    return (
+      titles.find((tr) => tr.locale === locale)?.title ??
+      titles[0]?.title ??
+      '—'
+    );
+  };
 
   const linkTitle = (linkId: string | null) => {
     const link = profile.links.find((item) => item.id === linkId);
-    return link?.url ?? '—';
+    return link?.url ? link.url.replace(/^https?:\/\/(www\.)?/, '') : '—';
   };
 
   const StatTile = ({ value, label }: { value: string; label: string }) => (
-    <div className="rounded-xl bg-slate-50 p-4 text-center">
-      <p className="text-2xl font-extrabold text-linketto-700">{value}</p>
-      <p className="mt-0.5 text-xs text-slate-500">{label}</p>
-    </div>
+    <Card padding="sm" className="text-center">
+      <p className="text-heading tabular-nums text-fg">{value}</p>
+      <p className="mt-0.5 text-small text-fg-muted">{label}</p>
+    </Card>
   );
 
   const BarList = ({
@@ -151,21 +175,21 @@ export default async function AnalyticsPage({
     const listMax = rows.reduce((m, r) => Math.max(m, r.value), 0) || 1;
     return (
       <div>
-        <h3 className="text-sm font-semibold text-slate-600">{title}</h3>
-        <ul className="mt-2 space-y-1.5 text-sm">
-          {rows.length === 0 && <li className="text-slate-400">—</li>}
+        <h3 className="text-small font-semibold text-fg-2">{title}</h3>
+        <ul className="mt-2 space-y-1.5 text-small">
+          {rows.length === 0 && <li className="text-fg-muted">—</li>}
           {rows.map((row, i) => (
             <li key={`${row.label}-${i}`} className="flex items-center gap-2">
-              <span className="w-28 shrink-0 truncate" title={row.label}>
+              <span className="w-28 shrink-0 truncate text-fg-2 sm:w-32" title={row.label}>
                 {row.label}
               </span>
-              <span className="relative h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+              <span className="relative h-2 flex-1 overflow-hidden rounded-full bg-surface-3">
                 <span
-                  className="absolute inset-y-0 left-0 rounded-full bg-linketto-500"
+                  className="absolute inset-y-0 start-0 rounded-full bg-accent"
                   style={{ width: `${Math.round((row.value / listMax) * 100)}%` }}
                 />
               </span>
-              <span className="w-10 shrink-0 text-right font-semibold text-slate-600">
+              <span className="w-10 shrink-0 text-end font-semibold tabular-nums text-fg">
                 {row.value}
               </span>
             </li>
@@ -175,73 +199,115 @@ export default async function AnalyticsPage({
     );
   };
 
-  return (
-    <>
-      <SiteHeader locale={locale as Locale} />
-      <main className="mx-auto max-w-4xl space-y-8 px-6 py-10">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">{t('analyticsTitle')}</h1>
-          <Link
-            href={`/${locale}/dashboard`}
-            className="inline-flex items-center gap-1 text-sm font-medium text-linketto-700 hover:underline"
-          >
-            <ChevronLeftIcon className="h-4 w-4" />
-            {t('analyticsBack')}
-          </Link>
-        </div>
-        <p className="text-xs text-slate-500">
-          {plan.analyticsDays
-            ? t('statsWindow', { days: plan.analyticsDays })
-            : t('statsWindowAll')}
-        </p>
+  const sectionClass = 'dash-card';
 
+  return (
+    <DashShell
+      locale={locale as Locale}
+      page="analytics"
+      profiles={profileList}
+      activeId={profile.id}
+      planId={plan.id}
+    >
+      <PageHeader
+        title={t('analyticsTitle')}
+        description={
+          <>
+            {t('analyticsIntro')}{' '}
+            {plan.analyticsDays
+              ? t('statsWindow', { days: plan.analyticsDays })
+              : t('statsWindowAll')}
+          </>
+        }
+        actions={
+          <ButtonLink
+            href={`/${locale}/dashboard${profileList[0]?.id === profile.id ? '' : `?p=${profile.id}`}#stats`}
+            variant="secondary"
+            size="sm"
+            className="gap-1.5"
+          >
+            <ChevronLeftIcon className="h-4 w-4 rtl:rotate-180" />
+            {t('analyticsBack')}
+          </ButtonLink>
+        }
+      />
+      <div className="space-y-6">
         {/* Ключови числа */}
-        <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <section aria-label={t('statsSection')} className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatTile value={String(views)} label={t('statsViews')} />
           <StatTile value={String(clicks)} label={t('statsClicks')} />
           <StatTile value={`${ctr(views, clicks)}%`} label={t('analyticsCtr')} />
-          <StatTile
-            value={`${conversionRate(views, salesCount)}%`}
-            label={t('analyticsConversion')}
-          />
+          <StatTile value={String(productClicks)} label={t('analyticsProductClicks')} />
         </section>
 
         {/* Тренд по дни */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold">{t('analyticsTrend')}</h2>
-          <p className="mt-1 text-xs text-slate-500">{t('analyticsLast30')}</p>
-          <div className="mt-4 flex h-40 items-end gap-[3px]">
-            {series.map((point) => (
+        <Card as="section" className={sectionClass}>
+          <CardHeader title={t('analyticsTrend')} description={t('analyticsLast30')} />
+          {!hasTraffic && (
+            <p className="mt-4 rounded-control border border-dashed border-line p-3 text-small text-fg-muted">
+              {t('analyticsNoTraffic')}
+            </p>
+          )}
+          <div className="mt-5 flex gap-3">
+            <div
+              aria-hidden
+              className="flex h-44 flex-col justify-between text-end text-micro tabular-nums text-fg-muted"
+            >
+              <span>{max}</span>
+              <span>0</span>
+            </div>
+            <div className="min-w-0 flex-1">
               <div
-                key={point.date}
-                className="group relative flex flex-1 flex-col items-center justify-end gap-[2px]"
-                title={`${point.date} · ${point.views} / ${point.clicks}`}
+                className="flex h-44 items-end gap-[3px] border-b border-line-input"
+                style={{
+                  backgroundImage:
+                    'repeating-linear-gradient(to top, transparent 0, transparent calc(25% - 1px), rgb(var(--c-line)) calc(25% - 1px), rgb(var(--c-line)) 25%)',
+                }}
               >
-                <span
-                  className="w-full rounded-t bg-linketto-500"
-                  style={{ height: `${Math.round((point.views / max) * 150)}px` }}
-                />
-                <span
-                  className="w-full rounded-t bg-linketto-200"
-                  style={{ height: `${Math.round((point.clicks / max) * 150)}px` }}
-                />
+                {series.map((point) => (
+                  <div
+                    key={point.date}
+                    className="group relative flex h-full min-w-0 flex-1 items-end justify-center gap-px rounded-t transition-colors hover:bg-fg/[0.06]"
+                    title={`${point.date} · ${point.views} / ${point.clicks}`}
+                  >
+                    <span
+                      className="w-1/2 rounded-t-[3px] bg-accent"
+                      style={{
+                        height: `${point.views > 0 ? Math.max(2, (point.views / max) * 100) : 0}%`,
+                      }}
+                    />
+                    <span
+                      className="w-1/2 rounded-t-[3px] bg-chart2"
+                      style={{
+                        height: `${point.clicks > 0 ? Math.max(2, (point.clicks / max) * 100) : 0}%`,
+                      }}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
+              <div
+                aria-hidden
+                className="mt-1.5 flex justify-between text-micro tabular-nums text-fg-muted"
+              >
+                <span>{dayLabel(series[0]?.date)}</span>
+                <span>{dayLabel(series[series.length - 1]?.date)}</span>
+              </div>
+            </div>
           </div>
-          <div className="mt-3 flex gap-4 text-xs text-slate-500">
+          <div className="mt-4 flex gap-4 text-small text-fg-2">
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-linketto-500" />
+              <span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-accent" />
               {t('statsViews')}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-linketto-200" />
+              <span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-chart2" />
               {t('statsClicks')}
             </span>
           </div>
-        </section>
+        </Card>
 
         {/* Разбивки */}
-        <section className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 sm:grid-cols-2">
+        <Card as="section" className={`${sectionClass} grid gap-8 sm:grid-cols-2`}>
           <BarList
             title={t('statsByLink')}
             rows={byLink.map((row) => ({
@@ -270,40 +336,45 @@ export default async function AnalyticsPage({
               value: row._count._all,
             }))}
           />
-        </section>
+        </Card>
 
         {/* Езикова дупка */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold">{t('gapSection')}</h2>
+        <Card as="section" className={sectionClass}>
+          <CardHeader title={t('gapSection')} />
           {gap.mappedVisitors === 0 ? (
-            <p className="mt-2 text-sm text-slate-400">{t('gapNoData')}</p>
+            <p className="mt-2 text-small text-fg-muted">{t('gapNoData')}</p>
           ) : (
-            <BarList
-              title={t('analyticsByAudienceLang')}
-              rows={gap.demand.map((row) => ({
-                label: `${row.name}${row.hasTranslation ? '' : ' •'}`,
-                value: row.visitors,
-              }))}
-            />
+            <div className="mt-4">
+              <BarList
+                title={t('analyticsByAudienceLang')}
+                rows={gap.demand.map((row) => ({
+                  label: `${row.name}${row.hasTranslation ? '' : ' •'}`,
+                  value: row.visitors,
+                }))}
+              />
+            </div>
           )}
-        </section>
+        </Card>
 
-        {/* Продажби */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold">{t('analyticsSales')}</h2>
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <StatTile value={String(salesCount)} label={t('analyticsSales')} />
-            <StatTile
-              value={`€${(revenueCents / 100).toFixed(2)}`}
-              label={t('analyticsRevenue')}
-            />
-            <StatTile
-              value={`${conversionRate(views, salesCount)}%`}
-              label={t('analyticsConversion')}
-            />
-          </div>
-        </section>
-      </main>
-    </>
+        {/* Интерес към продуктите (кликове към линка за плащане) */}
+        <Card as="section" className={sectionClass}>
+          <CardHeader title={t('analyticsProducts')} />
+          {byProduct.length === 0 ? (
+            <p className="mt-2 text-small text-fg-muted">{t('analyticsNoProductClicks')}</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-line text-small">
+              {byProduct.map((row) => (
+                <li key={row.productId} className="flex items-center justify-between gap-3 py-2">
+                  <span className="min-w-0 truncate text-fg-2">{productTitle(row.productId)}</span>
+                  <span className="shrink-0 font-semibold tabular-nums text-fg">
+                    {row._count._all} · {ctr(views, row._count._all)}%
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+    </DashShell>
   );
 }

@@ -3,6 +3,12 @@
 (() => {
   'use strict';
 
+  // The installed app (src/pwa/manifest.ts): its service worker keeps nothing and only answers a page
+  // that cannot load because the device is offline (public/js/sw.js, served as /sw.js).
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+
   // Live search: the server renders the results fragment (X-Partial), we swap it in and keep the URL.
   const searchForm = document.querySelector('[data-live-search]');
   const results = document.querySelector('[data-results]');
@@ -247,6 +253,48 @@
     links.forEach((_, id) => {
       const section = document.getElementById(id);
       if (section) observer.observe(section);
+    });
+  }
+
+  // A table wider than its box scrolls inside it (.table-scorre, tabelle-strette.css). With no link or field
+  // in the table the keyboard could never move it: while it really scrolls, the box itself takes the focus
+  // and is named after its table (WCAG 2.1.1; axe "scrollable-region-focusable"). When it fits, nothing.
+  const scorrevoli = document.querySelectorAll('.table-scorre');
+  if (scorrevoli.length && 'ResizeObserver' in window) {
+    // What Tab really stops on (a hidden field, a disabled one or tabindex="-1" does not count).
+    const ATTIVO =
+      'a[href], button:not([disabled]), input:not([type=hidden]):not([disabled]), select:not([disabled]), ' +
+      'textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), summary';
+    const nome = (box) => {
+      const caption = box.querySelector('caption');
+      if (caption && caption.textContent.trim()) return caption.textContent.trim();
+      for (let el = box.previousElementSibling; el; el = el.previousElementSibling) {
+        if (/^H[1-6]$/.test(el.tagName)) return el.textContent.trim();
+      }
+      const titolo = document.querySelector('main h1');
+      return titolo ? titolo.textContent.trim() : document.title;
+    };
+    const aggiorna = (box) => {
+      const scorre = box.scrollWidth > box.clientWidth + 1 && !box.querySelector(ATTIVO);
+      if (scorre && !('scorreFuoco' in box.dataset)) {
+        box.dataset.scorreFuoco = '';
+        box.tabIndex = 0;
+        box.setAttribute('role', 'region');
+        box.setAttribute('aria-label', nome(box));
+      } else if (!scorre && 'scorreFuoco' in box.dataset) {
+        delete box.dataset.scorreFuoco;
+        box.removeAttribute('tabindex');
+        box.removeAttribute('role');
+        box.removeAttribute('aria-label');
+      }
+    };
+    // The box and the table in it: a table that grows (a font arriving) inside a box of the same size counts too.
+    const osserva = new ResizeObserver((entries) =>
+      entries.forEach((e) => aggiorna(e.target.closest('.table-scorre'))),
+    );
+    scorrevoli.forEach((box) => {
+      osserva.observe(box);
+      if (box.firstElementChild) osserva.observe(box.firstElementChild);
     });
   }
 })();

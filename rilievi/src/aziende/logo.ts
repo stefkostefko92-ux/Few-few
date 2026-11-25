@@ -78,7 +78,3 @@ export async function normalizeLogo(
     return { ok: false, error: 'corrupt' };
   }
 }
-
-export function isLogoType(value: unknown): value is LogoType {
-  return value === 'image/png' || value === 'image/jpeg';
-}

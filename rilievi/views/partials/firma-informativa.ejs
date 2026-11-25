@@ -1,0 +1,13 @@
+<%
+  // Над подписите (листът за интервенция, протоколът; routes/firma-copia.ts): информацията по чл. 13 GDPR
+  // на фирмата — отворена, чете се преди подписа — и по избор имейл за копието. Текстът — само текст.
+%><section class="section informativa-firma" aria-labelledby="h-informativa">
+  <h2 class="section__title" id="h-informativa"><%= t('legale.informativa.titolo') %></h2>
+  <p class="informativa-firma__testo"><%= informativa %></p>
+  <div class="field">
+    <label class="field__label" for="f-copiaEmail"><%= t('legale.informativa.copiaEmail') %></label>
+    <input class="input" id="f-copiaEmail" name="copiaEmail" type="email" maxlength="254" autocomplete="off" inputmode="email" value="<%= copiaEmail %>" aria-describedby="hint-copiaEmail<% if (erroreCopia) { %> err-copiaEmail<% } %>"<% if (erroreCopia) { %> aria-invalid="true"<% } %>>
+    <p class="field__hint" id="hint-copiaEmail"><%= t('legale.informativa.copiaEmailHint') %></p>
+    <% if (erroreCopia) { %><p class="field__error" id="err-copiaEmail"><%= t('legale.informativa.copiaEmailErrata') %></p><% } %>
+  </div>
+</section>

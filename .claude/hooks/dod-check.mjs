@@ -15,7 +15,8 @@ import { fileURLToPath } from "node:url";
 import { checkScope } from "../../tools/agents/scope-check.mjs";
 import { validateHandoff, knownAgentIds } from "../../tools/agents/handoff.mjs";
 import { evalMode } from "../../tools/lib/eval-mode.mjs";
-import { isHandback } from "./memory-capture.mjs";
+import { isHandback, assistantTexts, learnProblems, LEARN_SCHEMA } from "./memory-capture.mjs";
+import { isMain } from "../../tools/lib/is-main.mjs";
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -38,7 +39,7 @@ export function collectToolUses(jsonl) {
   const walk = (o) => {
     if (!o || typeof o !== "object") return;
     if (Array.isArray(o)) { o.forEach(walk); return; }
-    if (o.type === "tool_use" && o.name) uses.push({ name: o.name, input: o.input || {} });
+    if (o.type === "tool_use" && o.name) uses.push({ name: o.name, input: o.input || {}, ...(o.id ? { id: o.id } : {}) });
     for (const v of Object.values(o)) walk(v);
   };
   for (const line of String(jsonl).split("\n")) {
@@ -46,7 +47,28 @@ export function collectToolUses(jsonl) {
     if (!t) continue;
     try { walk(JSON.parse(t)); } catch { /* skip непарсим ред */ }
   }
-  return uses;
+  // Отказан или паднал запис НЕ е запис (2026-10-27, пълна оценка: Геймъра — четири Write в cs_shop/
+  // отказани от правата, а куката го върна „пусни manifest-lint“ за несъществуващи файлове; агентът
+  // отговори само на връщането и самият ресурс не стигна до оркестратора).
+  const failed = failedToolIds(jsonl);
+  return failed.size ? uses.filter((u) => !(u.id && failed.has(u.id))) : uses;
+}
+
+/** id-тата на tool_use с tool_result is_error: true (отказ от правата, грешка на инструмента). */
+export function failedToolIds(jsonl) {
+  const ids = new Set();
+  const walk = (o) => {
+    if (!o || typeof o !== "object") return;
+    if (Array.isArray(o)) { o.forEach(walk); return; }
+    if (o.type === "tool_result" && o.is_error === true && o.tool_use_id) ids.add(o.tool_use_id);
+    for (const v of Object.values(o)) walk(v);
+  };
+  for (const line of String(jsonl).split("\n")) {
+    const t = line.trim();
+    if (!t) continue;
+    try { walk(JSON.parse(t)); } catch { /* skip */ }
+  }
+  return ids;
 }
 
 // Съдържанието на tool_result записите, в РЕДА на появата им. Дотук хукът събираше само
@@ -79,13 +101,15 @@ export function collectToolResults(jsonl) {
 // не „✗" (то се среща в легитимни одитни таблици). Броим ПОСЛЕДНОТО срещане на семейството —
 // пуснал гейта, видял червено, поправил, пуснал пак зелено е ПРАВИЛНИЯТ поток и не бива да блокира.
 const RESULT_MARKERS = [
-  { name: "гейтът на агентския слой", green: /СТАТУС: гейтът е зелен/, red: /СТАТУС: ГЕЙТЪТ Е ЧЕРВЕН/ },
-  { name: "надзорът над екипа (oversee)", green: /СТАТУС: екипът е здрав/, red: /СТАТУС: има твърди проблеми/ },
+  // Котва в началото на реда (02.11.2026): маркерът без котва съвпадаше със СОБСТВЕНИЯ код на куката, когато агент
+  // покажеше този файл (grep/cat) — „червен гейт“, който никога не е пускан и не се изчиства.
+  { name: "гейтът на агентския слой", green: /^(?:\x1b\[[\d;]*m)?СТАТУС: гейтът е зелен/m, red: /^(?:\x1b\[[\d;]*m)?СТАТУС: ГЕЙТЪТ Е ЧЕРВЕН/m },
+  { name: "надзорът над екипа (oversee)", green: /^СТАТУС: екипът е здрав/m, red: /^СТАТУС: има твърди проблеми/m },
   { name: "тестовете", green: /^# fail 0$/m, red: /^# fail (?!0$)\d+$/m },
   // ВНИМАНИЕ (собствен FP, хванат от теста): първият вариант търсеше „изтекл" и съвпадаше със
   // ЗЕЛЕНИЯ ред „чисто — нула изтекли тайни". Маркерът трябва да е точният низ на провала
   // (`secret-scan: N възможни тайни`), не дума, която се среща и в успешното съобщение.
-  { name: "secret-scan", green: /secret-scan: чисто/, red: /secret-scan: \d+ възможни тайни/ },
+  { name: "secret-scan", green: /^(?:\x1b\[[\d;]*m)?. secret-scan: чисто/m, red: /^(?:\x1b\[[\d;]*m)?. secret-scan: \d+ възможни тайни/m },
 ];
 
 /**
@@ -108,6 +132,47 @@ export function collectBashRuns(jsonl) {
 
 const cmdKey = (c) => String(c || "").replace(/\s+/g, " ").trim();
 
+// Ключ на тестово пускане (02.11.2026): продуктът (последното `cd` преди него, по име на папката) + самото
+// извикване с аргументите. Червен TDD ран вътре в еднократна команда (heredoc, който пише тестове, после
+// `npm test`) се изчиства от по-късно зелено `npm test` в същия продукт — повтарянето на мутиращата команда
+// само за куката е вредно. `node --test b.test.mjs` пак НЕ изчиства `a.test.mjs` (аргументите са в ключа).
+const TEST_RUN = /(?:npm|pnpm|yarn)\s+(?:run\s+)?test\b|node\s+--test\b[^|;&>\n]*|npx\s+(?:tsx\s+--test|vitest|jest|playwright\s+test)\b[^|;&>\n]*/g;
+// Временно копие (мутационна проба, PoC): /tmp/… или scratchpad — нарочно червено там не е гейт на репото
+// (02.11.2026, Геймъра и Кодаджията: мутация в копие „заключваше“ куката, защото там зелено не идва).
+const SCRATCH = /^(?:\/tmp\/|\/var\/tmp\/)|\/scratchpad(?:\/|$)/;
+export const SCRATCH_RUN = "<временно копие>";
+export function testRunKey(cmd) {
+  const c = String(cmd || "");
+  const keys = [];
+  let scratch = 0;
+  for (const m of c.matchAll(TEST_RUN)) {
+    const before = c.slice(0, m.index);
+    const cds = [...before.matchAll(/\bcd\s+("[^"]+"|'[^']+'|[^\s;&|]+)/g)];
+    const full = cds.length ? cds[cds.length - 1][1].replace(/["']/g, "").replace(/\/+$/, "") : "";
+    const arg = m[0].split(/\s+/).slice(2).find((a) => a.startsWith("/")) || "";
+    if (SCRATCH.test(full) || SCRATCH.test(arg)) { scratch++; continue; }
+    keys.push(full.split("/").pop() + "::" + m[0].replace(/\s+/g, " ").trim());
+  }
+  if (!keys.length && scratch) return SCRATCH_RUN;
+  return keys.length ? keys.join(" && ") : "";
+}
+
+/**
+ * `node --test <папка>` (02.11.2026): на Node 22 папката не се обхожда — пуска се като модул, пада с
+ * MODULE_NOT_FOUND и дава „# fail 1“. Това е грешно извикване, не червен тест: не се брои, а следващото
+ * правилно пускане решава. Само когато ВСИЧКИ провали са такива папки (без разширение, назовани в
+ * командата); липсващ тестов ФАЙЛ или истински червен тест в същата команда пак хапе.
+ */
+export function isDirTestMisuse(cmd, out) {
+  const m = /node\s+--test\b([^|;&>\n]*)/.exec(String(cmd || ""));
+  if (!m) return false;
+  const args = m[1].trim().split(/\s+/).filter((a) => a && !a.startsWith("-")).map((a) => a.replace(/["']/g, "").replace(/\/+$/, ""));
+  const missing = [...String(out || "").matchAll(/Cannot find module '([^']+)'/g)].map((x) => x[1].replace(/\/+$/, ""));
+  const fail = Number((/^#\s*fail\s+(\d+)/m.exec(String(out || "")) || [])[1] || 0);
+  if (!missing.length || fail !== missing.length) return false;
+  return missing.every((p) => !/\.[a-z0-9]+$/i.test(p) && args.some((a) => a && (p === a || p.endsWith("/" + a))));
+}
+
 /**
  * Гейт, чийто ПОСЛЕДЕН резултат е ЧЕРВЕН → работата не е „готова". Резултат = низ (стар формат) или
  * { cmd, out }. При сдвоени резултати червеното на ЕДНА команда се изчиства само от по-късно зелено на
@@ -120,7 +185,9 @@ export function checkFailedGates(results) {
     const last = new Map();
     for (const r of results) {
       const out = typeof r === "string" ? r : String(r?.out ?? "");
-      const key = typeof r === "string" ? "" : cmdKey(r?.cmd);
+      const key = typeof r === "string" ? "" : (m.name === "тестовете" && testRunKey(r?.cmd)) || cmdKey(r?.cmd);
+      if (key === SCRATCH_RUN) continue; // временно копие — не е гейт на репото
+      if (m.name === "тестовете" && typeof r !== "string" && isDirTestMisuse(r?.cmd, out)) continue;
       if (m.red.test(out)) last.set(key, "red");
       else if (m.green.test(out)) last.set(key, "green");
     }
@@ -167,6 +234,7 @@ export function checkHandoffViolation(finalText, agentIds) {
   const r = validateHandoff(finalText, { agentIds });
   if (r.ok) return null;
   return {
+    kind: "handoff",
     files: ["(край на отговора)"],
     gate: `договорът ПРЕДАВАНЕ е нарушен — ${r.problems.map((p) => `[${p.field}] ${p.msg}`).join(" · ")}`,
   };
@@ -285,6 +353,31 @@ export function checkDoD(uses, root) {
   return violations;
 }
 
+// Поуки, които агентът е проверил, но написал в схема, която куката не разчита, изчезваха тихо
+// (2026-10-09: 5 в Карантина, 6 изобщо незаписани в една задача). Тук те връщат агента да препише
+// блока, докато още има контекста — по същия начин като ПРЕДАВАНЕ.
+export function checkLearnViolation(jsonl, agent = "", known = null) {
+  const lines = String(jsonl).split("\n");
+  const problems = learnProblems(assistantTexts(lines).join("\n"), { agent, known });
+  return problems.length ? { kind: "learn", files: ["(блокът learn)"], gate: problems.join(" · ") } : null;
+}
+
+// Последното съобщение на агента е единственото, което оркестраторът получава. Връщането с общото
+// „пусни гейта“ караше агента да прати само поправения блок — същинският отговор се губеше (2026-10-27:
+// 4 пъти в една сесия, вкл. проба на Продавача, оценена 4/5 само заради това).
+export const HANDOFF_FORMAT = "## ПРЕДАВАНЕ\nОт: <твоя id> → Към: <id или име на наш агент, или „човек“>\nСтатус: наред | има бележки | блокер\nНаходки: <всяка с файл:ред + увереност>\nИзход/артефакт: <какво произведе>\nСледваща стъпка: <какво прави следващият и защо>";
+
+// Всяко връщане, не само за ПРЕДАВАНЕ: агентът отговаря на връщането, а оркестраторът вижда САМО
+// последното съобщение — „кодът е в предишното ми съобщение“ значи изгубен отговор (Геймъра, 27.10).
+export const REPEAT_ALL = "След като оправиш това, повтори ЦЕЛИЯ си отговор (находки, код/изход, препоръки) — оркестраторът получава само последното ти съобщение; „виж предишното ми съобщение“ значи изгубен отговор. Завърши с блока ПРЕДАВАНЕ.";
+
+export function violationMessage(v) {
+  if (v.kind === "handoff") return `${v.gate}. Последното ти съобщение е единственото, което оркестраторът получава — повтори ЦЕЛИЯ си отговор (находки, изход, препоръки), не само блока, и го завърши с блока, всяко поле на свой ред:\n${HANDOFF_FORMAT}`;
+  if (v.kind === "failed") return `DoD НЕ е изпълнен: ${v.gate}. Поправи причината и пусни отново, преди да приключиш.`;
+  if (v.kind === "learn") return `Блокът learn няма да стигне до паметта: ${v.gate}. Препиши го точно по схемата (всяко поле на свой ред, текстът и източникът на един ред):\n${LEARN_SCHEMA}`;
+  return `DoD гейт НЕ е пуснат: писа ${v.files.join(", ")} без да пуснеш „${v.gate}". Пусни гейта сега и поправи HIGH находките, преди да приключиш.`;
+}
+
 function main() {
   let payload = {};
   try { payload = JSON.parse(readStdin()); } catch { process.exit(0); }
@@ -307,13 +400,13 @@ function main() {
   // защото инструкцията е различна: не „пусни гейта", а „поправи го, той е червен".
   const fg = checkFailedGates(collectBashRuns(jsonl));
   if (fg) violations.push({ ...fg, kind: "failed" });
+  const lv = checkLearnViolation(jsonl, payload.agent_type || "", knownAgentIds(join(ROOT, ".claude", "agents")));
+  if (lv) violations.push(lv);
   if (!violations.length) process.exit(0);
-  const msg = violations.map((v) => v.kind === "failed"
-    ? `DoD НЕ е изпълнен: ${v.gate}. Поправи причината и пусни отново, преди да приключиш.`
-    : `DoD гейт НЕ е пуснат: писа ${v.files.join(", ")} без да пуснеш „${v.gate}". Пусни гейта сега и поправи HIGH находките, преди да приключиш.`).join("\n");
+  const msg = violations.map(violationMessage).join("\n") + (violations.some((v) => v.kind === "handoff") ? "" : `\n${REPEAT_ALL}`);
   if (payload.stop_hook_active) { console.log(`⚠ dod-check (advisory, без повторно връщане): ${msg}`); process.exit(0); }
   console.error(msg);
   process.exit(2); // харнесът връща агента с инструкцията
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) { try { main(); } catch { process.exit(0); } }
+if (isMain(import.meta.url)) { try { main(); } catch { process.exit(0); } }

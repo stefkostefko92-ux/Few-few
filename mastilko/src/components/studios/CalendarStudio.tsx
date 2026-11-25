@@ -1,6 +1,6 @@
 "use client";
 
-import { z } from "zod";
+import { z } from "zod/v3";
 import { resolveTheme, fontVars, sheetBg, readableAccent, textOnSolid, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { bgHolidays } from "@/lib/bg-holidays";
 import { useLocalState } from "@/lib/use-local-state";

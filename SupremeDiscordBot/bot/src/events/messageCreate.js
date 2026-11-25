@@ -8,6 +8,8 @@ import * as Sentry from "@sentry/node";
 import api, { logTicketMessage } from "../utils/api.js";
 import { onMessageForXp, getGameSettings } from "../utils/game.js";
 import { onCounting } from "../utils/minigames.js";
+import { firstSeen } from "../utils/messageDedupe.js";
+import { onBaitMessage } from "../utils/bait.js";
 import {
   ticketChannelCache,
   CACHE_TTL,
@@ -21,11 +23,20 @@ export default {
   async execute(message) {
     if (message.author.bot) return;
     if (!message.guildId) return;
+    // v52 — капан за спам ботове: съобщение в канала-капан не стига до нищо
+    // друго (XP, counting, sticky…). Решава каналът, съдържанието не се чете.
+    if (await onBaitMessage(message).catch(() => false)) return;
     // v50 — Server Season: брои събитието за XP (не чете съдържание). Fire-and-forget.
     onMessageForXp(message).catch(() => {});
     // Етап 3 — Counting: съдържанието се чете САМО в обявения counting канал
     // (настройките са кеширани 60 s в utils/game.js; извън канала е един if).
-    getGameSettings(message.guildId).then((s) => onCounting(message, s)).catch(() => {});
+    // И3: едно съобщение се брои веднъж — event модулите работят и за главния, и
+    // за white-label клиента (един процес); без заявка вторият клиент виждаше
+    // „грешно число“ за същото съобщение и нулираше броенето.
+    getGameSettings(message.guildId).then((s) => {
+      if (s?.countingChannelId && s.countingChannelId === message.channelId && !firstSeen(`count:${message.id}`)) return null;
+      return onCounting(message, s);
+    }).catch(() => {});
 
     // ═══ v1.8 Sticky Messages ═══
     // Check if this channel has a sticky message. If so, delete previous

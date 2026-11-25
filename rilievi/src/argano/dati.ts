@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CLASSE, CORDATURE } from './fune.js';
 import { CATENE, funeDi, FUNI_COMPENSAZIONE } from './tabelle.js';
 
 /**
@@ -6,6 +7,8 @@ import { CATENE, funeDi, FUNI_COMPENSAZIONE } from './tabelle.js';
  * уредбата (товар, маси, скорост, ход, окачване, място на машината), новото аргано (задвижване, обороти
  * или скорост при VVVF, предавателно число, ролка, канал, обхват) и въжетата с компенсацията. Формата
  * праща низове („6,5“ и „6.5“ — едно и също); пази се JSON-ът от `datiSchema`, чете се с недоверие.
+ * Добавеното после (2 ноември 2026) е по избор и липсва, когато е празно — записаното преди него се
+ * чете както е: „cordatura“, нишките, формацията и класът на въже на ръка, компенсация на ръка.
  */
 
 export const SOSPENSIONI = ['1:1', '1:2', '1:4'] as const;
@@ -37,17 +40,23 @@ export const datiSchema = z
     funiSostituzione: z.boolean(),
     funiNumero: z.number().int().min(1).max(20),
     fune: z.string().max(40),
+    funeCordatura: z.enum(CORDATURE).optional(),
     funeAltro: z
       .object({
         d: numero(3, 40),
         sezione: numero(1, 2_000),
         rottura: numero(100, 2_000_000),
         massa: numero(0.01, 20),
+        trefoli: z.number().int().min(3).max(12).optional(),
+        formazione: z.string().min(1).max(40).optional(),
+        classe: z.string().regex(CLASSE).optional(),
       })
       .nullable(),
     compensazione: z.enum(COMPENSAZIONI),
     compNumero: z.number().int().min(0).max(20),
     compMisura: numero(0, 40),
+    /** Верига или въже за компенсация извън таблиците: мярката и линейната маса на ръка. */
+    compAltro: z.object({ d: numero(3, 40), massa: numero(0.05, 20) }).optional(),
     compMetaCorsa: z.boolean(),
     massaTenditore: numero(0, 5_000),
     diametroTenditore: numero(0, 2_000),
@@ -59,6 +68,7 @@ export const datiSchema = z
   .refine(
     (d) =>
       d.compensazione === 'nessuna' ||
+      d.compAltro !== undefined ||
       misuraCompensazione(d.compensazione, d.compMisura) !== undefined,
   );
 
@@ -74,7 +84,8 @@ export function datiSalvati(json: unknown): DatiArgano | null {
   return parsed.success ? parsed.data : null;
 }
 
-export type ErroreCampo = 'required' | 'decimal' | 'range' | 'option' | 'integer';
+export type ErroreCampo =
+  'required' | 'decimal' | 'range' | 'option' | 'integer' | 'tooLong' | 'classe';
 export type ErroriArgano = Partial<Record<string, ErroreCampo>>;
 
 /** Числото от формата: празно → null, „6,5“ = „6.5“; друго — грешка. */
@@ -108,6 +119,9 @@ const LIMITI: Record<string, [number, number, boolean?]> = {
   altroSezione: [1, 2_000],
   altroRottura: [100, 2_000_000],
   altroMassa: [0.01, 20],
+  altroTrefoli: [3, 12, true],
+  compAltroD: [3, 40],
+  compAltroMassa: [0.05, 20],
 };
 
 export const limiteDi = (campo: string): [number, number] => {
@@ -117,6 +131,10 @@ export const limiteDi = (campo: string): [number, number] => {
 
 const scelta = <T extends string>(raw: unknown, valori: readonly T[]): T | null =>
   typeof raw === 'string' && (valori as readonly string[]).includes(raw) ? (raw as T) : null;
+
+/** Ключ само със стойност: празното по избор не влиза в записа. */
+const se = <K extends string, V>(chiave: K, valore: V | null): Partial<Record<K, V>> =>
+  valore === null ? {} : ({ [chiave]: valore } as Record<K, V>);
 
 /** Формата → входът на изчислението и грешките по поле (името на полето във формата). */
 export function parseDatiArgano(body: Record<string, unknown>): {
@@ -147,6 +165,34 @@ export function parseDatiArgano(body: Record<string, unknown>): {
     if (v === null) errori[campo] = 'option';
     return v;
   };
+  /** Текст по избор на един ред, без управляващи знаци; празно → null. */
+  const testo = (campo: string, max: number): string | null => {
+    const raw = body[campo];
+    if (raw === undefined) return null;
+    if (typeof raw !== 'string') {
+      errori[campo] = 'option';
+      return null;
+    }
+    const v = raw
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (v.length > max) errori[campo] = 'tooLong';
+    return v === '' || v.length > max ? null : v;
+  };
+  /** Класът на якост — „1570“ или „1370/1770“ (интервалите не броят). */
+  const classe = (campo: string): string | null => {
+    const v = testo(campo, 40)?.replace(/\s/g, '') ?? null;
+    if (v !== null && !CLASSE.test(v)) {
+      errori[campo] = 'classe';
+      return null;
+    }
+    return v;
+  };
+  const funeCordatura =
+    body.funeCordatura === undefined || body.funeCordatura === ''
+      ? null
+      : opt('funeCordatura', CORDATURE);
   const azionamento = opt('azionamento', AZIONAMENTI);
   const fune =
     typeof body.fune === 'string' && (body.fune === 'altro' || funeDi(body.fune))
@@ -155,8 +201,15 @@ export function parseDatiArgano(body: Record<string, unknown>): {
   if (fune === null) errori.fune = 'option';
   const compensazione = opt('compensazione', COMPENSAZIONI);
   const conComp = compensazione !== null && compensazione !== 'nessuna';
-  const compMisura = conComp ? num('compMisura', true) : 0;
-  if (conComp && compMisura !== null && !misuraCompensazione(compensazione, compMisura))
+  // „altro“ в мерките — верига или въже извън таблиците: мярката и масата на ръка.
+  const misuraAltra = conComp && body.compMisura === 'altro';
+  const compMisura = conComp && !misuraAltra ? num('compMisura', true) : 0;
+  if (
+    conComp &&
+    !misuraAltra &&
+    compMisura !== null &&
+    !misuraCompensazione(compensazione, compMisura)
+  )
     errori.compMisura = 'option';
   const candidato = {
     portata: num('portata', true),
@@ -181,6 +234,7 @@ export function parseDatiArgano(body: Record<string, unknown>): {
     funiSostituzione: body.funiSostituzione === 'si',
     funiNumero: num('funiNumero', true),
     fune,
+    ...se('funeCordatura', funeCordatura),
     funeAltro:
       fune === 'altro'
         ? {
@@ -188,11 +242,17 @@ export function parseDatiArgano(body: Record<string, unknown>): {
             sezione: num('altroSezione', true),
             rottura: num('altroRottura', true),
             massa: num('altroMassa', true),
+            ...se('trefoli', num('altroTrefoli', false)),
+            ...se('formazione', testo('altroFormazione', 40)),
+            ...se('classe', classe('altroClasse')),
           }
         : null,
     compensazione,
     compNumero: conComp ? num('compNumero', true) : 0,
     compMisura,
+    ...(misuraAltra
+      ? { compAltro: { d: num('compAltroD', true), massa: num('compAltroMassa', true) } }
+      : {}),
     compMetaCorsa: body.compMetaCorsa === 'si',
     massaTenditore: num('massaTenditore', false) ?? 0,
     diametroTenditore: num('diametroTenditore', false) ?? 0,

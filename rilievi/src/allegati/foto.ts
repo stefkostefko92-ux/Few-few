@@ -18,11 +18,24 @@ export const RIQUADRO = { width: 490, height: 368 } as const;
 export type Uscite = Pick<Percorsi, 'file' | 'mini' | 'riquadro'>;
 
 /**
- * Таванът на пикселите срещу „бомби“: JPEG и WebP се декодират умалени (shrink-on-load), затова и
- * снимка от 200 Mpx не пълни паметта; PNG и AVIF се декодират цели — до 60 Mpx.
+ * Таванът на пикселите срещу „бомби“ — фоновият процес има 1 GB (docker-compose.yml). Обикновеният JPEG
+ * и WebP се декодират умалени (shrink-on-load): и 200 Mpx не пълнят паметта. Цели се декодират PNG (на
+ * ивици — 60 Mpx са ~150 MB), прогресивният JPEG (~6 байта на пиксел: 208 Mpx бяха 1,3 GB) и AVIF (~19
+ * байта на пиксел: 60 Mpx от файл от 1,7 KB бяха 1,1 GB) — одит, 4 ноември 2026, sharp 0.35. Снимка
+ * от телефон е до ~50 Mpx, а по-голямата браузърът умалява до 2560 px преди качването (carica.js).
  */
-function maxPixels(formato: FormatoFoto | 'png-frame'): number {
-  return formato === 'jpeg' || formato === 'webp' ? 220_000_000 : 60_000_000;
+export function limitePixel(formato: FormatoFoto | 'png-frame', progressivo: boolean): number {
+  if (formato === 'jpeg') return progressivo ? 50_000_000 : 220_000_000;
+  if (formato === 'webp') return 220_000_000;
+  if (formato === 'avif') return 30_000_000;
+  return 60_000_000;
+}
+
+/** Снимката е над тавана си — човекът вижда „troppo grande“, процесът остава жив. */
+export class FotoTroppoGrande extends Error {
+  constructor() {
+    super('снимката е над тавана на пикселите');
+  }
 }
 
 export interface EsitoFoto {
@@ -38,13 +51,16 @@ export async function comprimiFoto(
 ): Promise<EsitoFoto> {
   const image = sharp(sorgente, {
     failOn: 'error',
-    limitInputPixels: maxPixels(formato),
+    limitInputPixels: limitePixel(formato, false),
     animated: false,
   });
   // Сигнатурата и декодерът трябва да са съгласни — иначе файлът се представя за друг.
   const meta = await image.metadata();
   const decoded = meta.format === 'heif' ? 'avif' : meta.format;
   if (decoded !== formato) throw new Error(`снимката не е ${formato}, а ${String(meta.format)}`);
+  // Само от главата на файла, преди декодирането: прогресивният JPEG — по своя таван.
+  const pixel = (meta.width ?? 0) * (meta.height ?? 0);
+  if (pixel > limitePixel(formato, meta.isProgressive === true)) throw new FotoTroppoGrande();
   const info = await image
     .rotate()
     .resize({ width: LATO_FOTO, height: LATO_FOTO, fit: 'inside', withoutEnlargement: true })
@@ -60,7 +76,10 @@ export async function miniature(
   sorgente: string | Buffer,
   uscite: Pick<Uscite, 'mini' | 'riquadro'>,
 ): Promise<void> {
-  const image = sharp(sorgente, { failOn: 'error', limitInputPixels: maxPixels('png-frame') })
+  const image = sharp(sorgente, {
+    failOn: 'error',
+    limitInputPixels: limitePixel('png-frame', false),
+  })
     .rotate()
     .flatten({ background: '#ffffff' });
   await Promise.all([

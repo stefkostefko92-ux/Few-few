@@ -8,11 +8,12 @@
   const H = 200;
   const MAX_POINTS = 6000;
 
-  for (const pad of document.querySelectorAll('[data-firma]')) {
+  const attiva = (pad) => {
     const canvas = pad.querySelector('[data-firma-canvas]');
     const input = pad.querySelector('[data-firma-input]');
     const clear = pad.querySelector('[data-firma-clear]');
-    if (!canvas || !input) continue;
+    if (!canvas || !input || pad.dataset.firmaPronta) return;
+    pad.dataset.firmaPronta = '1';
     const ctx = canvas.getContext('2d');
     let strokes = [];
     try {
@@ -81,5 +82,12 @@
     });
     draw();
     save();
-  }
+  };
+
+  for (const pad of document.querySelectorAll('[data-firma]')) attiva(pad);
+  // Pads added later (a new work row on the buono di lavoro, public/js/buoni.js) announce themselves.
+  document.addEventListener('rilievi:firma', (event) => {
+    if (event.target instanceof Element)
+      for (const pad of event.target.querySelectorAll('[data-firma]')) attiva(pad);
+  });
 })();

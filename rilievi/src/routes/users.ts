@@ -144,7 +144,13 @@ usersRouter.post('/utenti/invita', manage, requireCsrf, async (req, res) => {
   }
   const result = await createInvite(actor, { email, name, role, aziendaId: body.azienda });
   if (!result.ok) {
-    const status = { userExists: 409, roleNotAllowed: 403, azienda: 400 }[result.error];
+    const status = {
+      userExists: 409,
+      roleNotAllowed: 403,
+      azienda: 400,
+      limitePersone: 422,
+      solaLettura: 403,
+    }[result.error];
     await renderInviteForm(req, res, status, form, `users.error.${result.error}`);
     return;
   }

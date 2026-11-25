@@ -29,7 +29,7 @@ const SOSTITUZIONI: ReadonlyArray<{ campi: readonly string[]; testo: string }> =
   { campi: ['arganoPreventivo'], testo: "dell'argano" },
   { campi: ['centralinaDaFare'], testo: 'della centralina' },
   {
-    campi: ['operatore', 'sospensioni', 'serrature', 'pattinoRetrattile'],
+    campi: ['operatore', 'sospensioni', 'serrature', 'pattinoRetrattile', 'contattiAntine'],
     testo: 'dei meccanismi delle porte',
   },
   { campi: ['bottoniereSostituire'], testo: 'delle bottoniere' },
@@ -42,7 +42,15 @@ const INSTALLAZIONI: ReadonlyArray<{ campi: readonly string[]; testo: string }> 
     testo: 'del sistema di telesoccorso',
   },
   {
-    campi: ['ami100', 'kitControlloGanasce', 'controlloQuadro', 'stopArgano'],
+    // Решенията за намалената яма или горно пространство (AMI 100, семафор, OKATT…) — отметнатото.
+    campi: [
+      'testataInterventi',
+      'fossaInterventi',
+      'kitControlloGanasce',
+      'controlloQuadro',
+      'stopArgano',
+      'bloccaPortineDaInstallare',
+    ],
     testo: 'di nuovi dispositivi di sicurezza',
   },
 ];
@@ -53,18 +61,46 @@ function elenco(parti: readonly string[]): string {
   return `${parti.slice(0, -1).join(', ')} e ${parti.at(-1)}`;
 }
 
-/** Какво се сменя и монтира според картата — само видимите полета с „Sì“ (скритото не казва нищо). */
+/**
+ * Какво се сменя и монтира според картата — само видимите полета с „Sì“ или с поне една отметка
+ * (скритото не казва нищо).
+ */
 export function lavoriDi(scheda: ValoriScheda): {
   sostituzione: string[];
   installazione: string[];
 } {
   const attivi = activeFields((key) => scheda[key]);
   const si = (campi: readonly string[]) =>
-    campi.some((campo) => attivi.has(campo) && scheda[campo] === true);
+    campi.some((campo) => {
+      const value = scheda[campo];
+      return attivi.has(campo) && (value === true || (Array.isArray(value) && value.length > 0));
+    });
   return {
     sostituzione: SOSTITUZIONI.filter((v) => si(v.campi)).map((v) => v.testo),
     installazione: INSTALLAZIONI.filter((v) => si(v.campi)).map((v) => v.testo),
   };
+}
+
+/**
+ * Смяната на табло, аргано или централа е modifica costruttiva — D.P.R. 162/1999, чл. 2, ал. 1, б. i), т. 5
+ * („sostituzione di macchinario, … quadro elettrico, gruppo cilindro-pistone“): ново съобщение до общината и
+ * проверяващия (чл. 12, ал. 4) и извънредна проверка (чл. 14, ал. 3) —
+ * research/norme-ascensori/leggi/dpr-162-1999.md:67-71, :240-242, :278. Централата е машината на хидравличния
+ * асансьор. Само видимите „Sì“ — скритият въпрос не казва нищо.
+ */
+export type ModificaCostruttiva = 'quadro' | 'argano' | 'centralina';
+
+const MODIFICHE: ReadonlyArray<{ campo: string; parte: ModificaCostruttiva }> = [
+  { campo: 'quadroSostituire', parte: 'quadro' },
+  { campo: 'arganoPreventivo', parte: 'argano' },
+  { campo: 'centralinaDaFare', parte: 'centralina' },
+];
+
+export function modificheCostruttive(scheda: ValoriScheda): ModificaCostruttiva[] {
+  const attivi = activeFields((key) => scheda[key]);
+  return MODIFICHE.filter((m) => attivi.has(m.campo) && scheda[m.campo] === true).map(
+    (m) => m.parte,
+  );
 }
 
 /** „2026-11-03“ → „3/11“, както в примера на собственика („Dal 3/11 l'impianto è fermo…“). */

@@ -44,22 +44,22 @@ describe('the company data and the sign template in the settings', () => {
   it('are saved by the company ADMIN, logged without the data, refused below ADMIN', async () => {
     const azienda = await makeAzienda();
     const { browser: admin } = await signedIn('ADMIN', azienda.id);
-    const saved = await admin.submit('/impostazioni', '/impostazioni/dati', {
+    const saved = await admin.submit('/impostazioni/azienda', '/impostazioni/dati', {
       azienda: azienda.id,
       ...DATI,
     });
     assert.equal(saved.status, 303);
-    assert.equal(saved.location, `/impostazioni?azienda=${azienda.id}#h-dati`);
+    assert.equal(saved.location, `/impostazioni/azienda?azienda=${azienda.id}`);
     const row = await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } });
     assert.deepEqual(row.datiSocietari, DATI);
-    const page = await admin.get('/impostazioni');
+    const page = await admin.get('/impostazioni/azienda');
     assert.match(page.body, /value="info@ascensoriprova\.example"/);
     const log = await prisma.auditLog.findFirstOrThrow({
       where: { aziendaId: azienda.id, action: 'AZIENDA_DATI' },
     });
     assert.doesNotMatch(JSON.stringify(log), /ascensoriprova|Via Roma/);
 
-    const scelto = await admin.submit('/impostazioni', '/impostazioni/cartello', {
+    const scelto = await admin.submit('/impostazioni/cartelli', '/impostazioni/cartello', {
       azienda: azienda.id,
       modello: 'grafite-oro',
     });
@@ -67,7 +67,7 @@ describe('the company data and the sign template in the settings', () => {
     const after = await prisma.azienda.findUniqueOrThrow({ where: { id: azienda.id } });
     assert.equal(after.cartelloModello, 'grafite-oro');
     assert.match(
-      (await admin.get('/impostazioni')).body,
+      (await admin.get('/impostazioni/cartelli')).body,
       /value="grafite-oro" checked>/,
       'the chosen template is ticked',
     );
@@ -84,7 +84,7 @@ describe('the company data and the sign template in the settings', () => {
   it('refuses a wrong value, a forged field and another company, saving nothing', async () => {
     const [azienda, altra] = [await makeAzienda(), await makeAzienda()];
     const { browser: admin } = await signedIn('ADMIN', azienda.id);
-    const wrong = await admin.submit('/impostazioni', '/impostazioni/dati', {
+    const wrong = await admin.submit('/impostazioni/azienda', '/impostazioni/dati', {
       azienda: azienda.id,
       ...DATI,
       email: 'non-una-email',
@@ -94,32 +94,36 @@ describe('the company data and the sign template in the settings', () => {
     assert.match(wrong.body, /Indirizzo email non valido\./);
     assert.match(wrong.body, /Solo cifre, spazi e \+ \( \) \. \/ -/);
     assert.match(wrong.body, /value="Ascensori Prova S\.r\.l\."/, 'the typed values come back');
-    const forged = await admin.submit('/impostazioni', '/impostazioni/dati', {
+    const forged = await admin.submit('/impostazioni/azienda', '/impostazioni/dati', {
       azienda: azienda.id,
       ...DATI,
       citta: ['Milano', 'Roma'],
     });
     assert.equal(forged.status, 422);
-    const tooLong = await admin.submit('/impostazioni', '/impostazioni/dati', {
+    const tooLong = await admin.submit('/impostazioni/azienda', '/impostazioni/dati', {
       azienda: azienda.id,
       provincia: 'MIL',
     });
     assert.equal(tooLong.status, 422);
     assert.equal(
-      (await admin.submit('/impostazioni', '/impostazioni/dati', { azienda: altra.id, ...DATI }))
-        .status,
+      (
+        await admin.submit('/impostazioni/azienda', '/impostazioni/dati', {
+          azienda: altra.id,
+          ...DATI,
+        })
+      ).status,
       404,
     );
     assert.equal(
       (
-        await admin.submit('/impostazioni', '/impostazioni/cartello', {
+        await admin.submit('/impostazioni/cartelli', '/impostazioni/cartello', {
           azienda: altra.id,
           modello: 'blu',
         })
       ).status,
       404,
     );
-    const unknown = await admin.submit('/impostazioni', '/impostazioni/cartello', {
+    const unknown = await admin.submit('/impostazioni/cartelli', '/impostazioni/cartello', {
       azienda: azienda.id,
       modello: '../rosso',
     });
@@ -195,6 +199,33 @@ describe('the stop signs', () => {
     assert.equal(tooLong.status, 422);
     assert.match(tooLong.body, /Massimo 600 caratteri\./);
     assert.equal(await prisma.cartello.count({ where: { aziendaId: azienda.id } }), 0);
+  });
+
+  it('show the notices of a stop for danger still to do, and refuse a day without the tick', async () => {
+    const azienda = await makeAzienda();
+    const { browser } = await signedIn('TECNICO', azienda.id);
+    const id = await create(browser, {
+      ...CARTELLO,
+      pericolo: 'si',
+      avvisoProprietarioAt: '2026-11-03',
+      avvisoVerificatoreAt: '',
+      avvisoComuneAt: '',
+    });
+    const page = (await browser.get(`/cartelli/${id}`)).body;
+    assert.match(page, /Comunicazioni per il fermo \(art\. 15 c\. 7\)/);
+    assert.match(page, /Proprietario informato il<\/dt><dd>03\/11\/2026<\/dd>/);
+    assert.equal(page.match(/Da comunicare/g)?.length, 2);
+    assert.match(page, /Mancano ancora 2 comunicazioni dell&#39;art\. 15 c\. 7\./);
+
+    const senza = await browser.submit('/cartelli/nuovo', '/cartelli', {
+      ...CARTELLO,
+      avvisoComuneAt: '2026-11-04',
+    });
+    assert.equal(senza.status, 422);
+    assert.match(senza.body, /href="#f-pericolo"/);
+    assert.match(senza.body, /id="f-pericolo"[^>]*aria-invalid="true"/);
+    assert.match(senza.body, /value="2026-11-04"/);
+    assert.equal(await prisma.cartello.count({ where: { aziendaId: azienda.id } }), 1);
   });
 
   it('save a change only over the version that was opened, and delete for good', async () => {
@@ -276,7 +307,8 @@ describe('the side bar', () => {
     assert.match(group('master'), /href="\/richieste"/);
     assert.doesNotMatch(group('amministrazione'), /href="\/aziende"|href="\/richieste"/);
     assert.match(group('amministrazione'), /href="\/impostazioni"/);
-    assert.match(group('assistenza'), /href="\/cartelli"/);
+    assert.match(group('documenti'), /href="\/cartelli"/);
+    assert.match(group('master'), /href="\/master"/);
 
     const azienda = await makeAzienda();
     const { browser: admin } = await signedIn('ADMIN', azienda.id);

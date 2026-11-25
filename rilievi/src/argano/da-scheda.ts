@@ -83,12 +83,22 @@ export function formDaDati(dati: Record<string, unknown>): ValoriForm {
     else if (typeof valore === 'string') form[campo] = valore;
     else if (valore === true) form[campo] = 'si';
   }
-  const altro = dati.funeAltro as Record<string, number> | null | undefined;
+  const altro = dati.funeAltro as Record<string, number | string> | null | undefined;
   if (altro) {
-    form.altroD = testo(altro.d)!;
-    form.altroSezione = testo(altro.sezione)!;
-    form.altroRottura = testo(altro.rottura)!;
-    form.altroMassa = testo(altro.massa)!;
+    form.altroD = testo(altro.d as number)!;
+    form.altroSezione = testo(altro.sezione as number)!;
+    form.altroRottura = testo(altro.rottura as number)!;
+    form.altroMassa = testo(altro.massa as number)!;
+    if (typeof altro.trefoli === 'number') form.altroTrefoli = testo(altro.trefoli)!;
+    if (typeof altro.formazione === 'string') form.altroFormazione = altro.formazione;
+    if (typeof altro.classe === 'string') form.altroClasse = altro.classe;
+  }
+  // Компенсация извън таблиците: изборът на мярка е „altro“, мярката и масата — в своите полета.
+  const compAltro = dati.compAltro as Record<string, number> | undefined;
+  if (compAltro) {
+    form.compMisura = 'altro';
+    form.compAltroD = testo(compAltro.d)!;
+    form.compAltroMassa = testo(compAltro.massa)!;
   }
   return form;
 }

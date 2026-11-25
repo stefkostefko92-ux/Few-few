@@ -121,6 +121,12 @@ export function argomentiVideo(
     '-y',
     '-protocol_whitelist',
     'file',
+    // Декодерът — на една нишка: иначе взима по нишка за всяко ядро на хоста (`cpus` на контейнера не
+    // ги крие), а 8K клип на 4 ядра стигаше 1 GB — тавана на процеса (одит, 4 ноември 2026: 0,6 GB).
+    '-threads',
+    '1',
+    '-filter_threads',
+    '1',
     '-f',
     DEMUXER[formato],
     '-i',
