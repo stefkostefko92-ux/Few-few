@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 748
+        "lessons": 749
       },
       "evolution": [
         {
@@ -2188,9 +2188,20 @@
           "date": "2026-11-25",
           "event": "v70.0 — учене",
           "detail": "Научи: В live-run worktree permission системата иска одобрение за node --test, node tools/agen…"
+        },
+        {
+          "version": "70.1.0",
+          "date": "2026-11-25",
+          "event": "v70.1 — учене",
+          "detail": "Научи: .pr-review/361.diff (arena minimon_fleece) е пълен — 29 diff заглавки при 29 файла в 36…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/361.diff (arena minimon_fleece) е пълен — 29 diff заглавки при 29 файла в 36…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
