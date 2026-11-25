@@ -1,0 +1,47 @@
+<%- include('../partials/site-head') %>
+<main id="main">
+
+<article class="article" aria-labelledby="h1">
+  <header class="page-head">
+    <div class="wrap">
+      <h1 id="h1"><%= t('help.title') %></h1>
+      <p class="lead" data-speakable><%= t('help.lead') %></p>
+    </div>
+  </header>
+
+  <div class="wrap article-grid">
+    <aside class="toc" aria-label="<%= t('site.help.toc') %>">
+      <p class="toc-title"><%= t('site.help.toc') %></p>
+      <ol>
+<% for (const s of helpSections) { -%>
+        <li><a href="#<%= s.id %>"><%= s.title %></a></li>
+<% } -%>
+      </ol>
+    </aside>
+
+    <div class="prose">
+<% for (const s of helpSections) { -%>
+      <h2 id="<%= s.id %>"><%= s.title %></h2>
+      <p><%= s.intro %></p>
+      <ol>
+<% for (const step of s.steps) { -%>
+        <li><%= step %></li>
+<% } -%>
+      </ol>
+<% if (s.tips.length > 0) { -%>
+      <ul>
+<% for (const tip of s.tips) { -%>
+        <li><%= tip %></li>
+<% } -%>
+      </ul>
+<% } -%>
+<% } -%>
+      <p class="summary"><%= t('site.help.manualNote') %></p>
+    </div>
+  </div>
+</article>
+
+<%- include('../partials/site-faq') %>
+<%- include('../partials/site-cta') %>
+</main>
+<%- include('../partials/site-foot') %>

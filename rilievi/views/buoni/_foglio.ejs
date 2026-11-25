@@ -1,0 +1,85 @@
+<%
+  // „Buono di lavoro“ като на хартия, само за четене: общите данни, редовете с работа, проверките, отчетът.
+  // Подписите по редовете и проверките — щрихите (валидните), иначе „—“; подписите долу са в show.ejs.
+  const d = dati;
+  const giorno = (day) => day ? fmt.day(new Date(day + 'T00:00:00Z')) : '—';
+  const esitoLabel = (e) => e === 'ok' ? t('buoni.esito.ok') : e === 'nonOk' ? t('buoni.esito.nonOk') : '—';
+  const siNo = (v) => v === true ? t('buoni.si') : v === false ? t('buoni.no') : '—';
+%><article class="buono-foglio" aria-labelledby="h-foglio">
+  <h2 class="visually-hidden" id="h-foglio"><%= t('buoni.titolo') %></h2>
+  <section aria-labelledby="h-dati">
+    <h3 class="buono-foglio__titolo" id="h-dati"><%= t('buoni.sezione.dati') %></h3>
+    <dl class="buono-letta buono-letta--dati">
+      <% for (const [k, v] of [['numero', d.numero], ['dataConferma', giorno(d.dataConferma)], ['geometra', d.geometra], ['ordine', d.ordine], ['offerta', d.offerta], ['inizioPrevisto', giorno(d.inizioPrevisto)], ['finePrevista', giorno(d.finePrevista)], ['matricola', d.matricola]]) { %><div><dt><%= t('buoni.campo.' + k) %></dt><dd><%= v || '—' %></dd></div>
+      <% } %>
+      <div class="buono-letta__wide"><dt><%= t('buoni.campo.ubicazione') %></dt><dd><%= d.ubicazione || '—' %></dd></div>
+      <div class="buono-letta__wide"><dt><%= t('buoni.campo.pos') %></dt><dd><%= siNo(d.pos) %> <span class="muted"><%= t('buoni.posNota') %></span></dd></div>
+      <div class="buono-letta__wide"><dt><%= t('buoni.campo.note') %></dt><dd class="buono-testo"><%= d.note || '—' %></dd></div>
+    </dl>
+  </section>
+
+  <section aria-labelledby="h-seq">
+    <h3 class="buono-foglio__titolo" id="h-seq"><%= t('buoni.sezione.sequenze') %></h3>
+    <% if (d.sequenze.length === 0) { %><p class="muted">—</p><% } else { %>
+    <div class="table-scorre">
+    <table class="table buono-tabella">
+      <caption class="visually-hidden"><%= t('buoni.sezione.sequenze') %></caption>
+      <thead><tr>
+        <th scope="col"><%= t('buoni.riga.numero') %></th>
+        <th scope="col"><%= t('buoni.riga.descrizione') %></th>
+        <th scope="col"><%= t('buoni.riga.esito') %></th>
+        <th scope="col"><%= t('buoni.riga.dataFirma') %></th>
+        <th scope="col"><%= t('buoni.riga.fornitore') %></th>
+      </tr></thead>
+      <tbody>
+        <% d.sequenze.forEach((r, i) => { const f = firme.get(postoRiga(r.id)); %><tr>
+          <td class="num"><%= i + 1 %></td>
+          <td class="buono-testo"><%= r.descrizione || '—' %></td>
+          <td><%= esitoLabel(r.esito) %></td>
+          <td><%= giorno(r.data) %><%- include('_firma-vista', { f, label: t('buoni.riga.firma') }) %></td>
+          <td><%= r.fornitore || '—' %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    </div>
+    <% } %>
+  </section>
+
+  <section aria-labelledby="h-ctl">
+    <h3 class="buono-foglio__titolo" id="h-ctl"><%= t('buoni.sezione.controlli') %></h3>
+    <div class="table-scorre">
+    <table class="table buono-tabella">
+      <caption class="visually-hidden"><%= t('buoni.sezione.controlli') %></caption>
+      <thead><tr>
+        <th scope="col"><%= t('buoni.controllo.colonna') %></th>
+        <th scope="col"><%= t('buoni.controllo.esito') %></th>
+        <th scope="col"><%= t('buoni.controllo.data') %></th>
+        <th scope="col"><%= t('buoni.controllo.firma') %></th>
+      </tr></thead>
+      <tbody>
+        <% let gruppo = 'generale'; for (const c of controlli) { const v = d.controlli[c.key]; %>
+        <% if (c.gruppo !== gruppo) { gruppo = c.gruppo; %><tr class="buono-tabella__gruppo"><th scope="rowgroup" colspan="4"><%= t('buoni.controllo.gruppoQuadro') %></th></tr><% } %>
+        <tr>
+          <th scope="row"><%= t('buoni.controllo.' + c.key) %></th>
+          <td><%= esitoLabel(v.esito) %></td>
+          <td><%= giorno(v.data) %></td>
+          <td><%- include('_firma-vista', { f: firme.get(postoControllo(c.key)), label: t('buoni.controllo.' + c.key) }) %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+    </div>
+    <dl class="buono-letta"><div class="buono-letta__wide"><dt><%= t('buoni.campo.noteControlli') %></dt><dd class="buono-testo"><%= d.noteControlli || '—' %></dd></div></dl>
+  </section>
+
+  <section aria-labelledby="h-res">
+    <h3 class="buono-foglio__titolo" id="h-res"><%= t('buoni.sezione.resoconto') %></h3>
+    <dl class="buono-letta buono-letta--dati">
+      <div><dt><%= t('buoni.campo.inizioLavori') %></dt><dd><%= giorno(d.inizioLavori) %><%= d.inizioOra ? ' · ' + d.inizioOra : '' %></dd></div>
+      <div><dt><%= t('buoni.campo.fineLavori') %></dt><dd><%= giorno(d.fineLavori) %><%= d.fineOra ? ' · ' + d.fineOra : '' %></dd></div>
+      <div class="buono-letta__wide"><dt><%= t('buoni.campo.sospensioni') %></dt><dd class="buono-testo"><%= d.sospensioni || '—' %></dd></div>
+      <div class="buono-letta__wide"><dt><%= t('buoni.campo.tecnici') %></dt><dd><%= d.tecnici || '—' %></dd></div>
+    </dl>
+  </section>
+</article>

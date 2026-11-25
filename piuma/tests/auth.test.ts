@@ -1,8 +1,37 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { ALL_ROLES, assignableRoles, can, outranks } from '../src/auth/rbac.js';
-import { passwordPolicyError } from '../src/auth/password.js';
-import { base32Decode, base32Encode, otpauthUrl, totpCode, verifyTotp } from '../src/auth/totp.js';
+import { PASSWORD_MAX_LENGTH, passwordPolicyError } from '../src/auth/password.js';
+import {
+  base32Decode,
+  base32Encode,
+  matchTotpStep,
+  otpauthUrl,
+  totpCode,
+} from '../src/auth/totp.js';
+import { loginSchema } from '../src/admin/auth-routes.js';
+import { consumeTotpStep, type TotpStepStore } from '../src/auth/totp-replay.js';
+
+/**
+ * Фалшив склад, който тълкува САМОТО условие на Prisma (`OR: [{ totpLastStep: null }, { totpLastStep:
+ * { lt } }]`) — така тестът проверява и клаузата, която отива в базата, не само извикването.
+ */
+function fakeStepStore(rows: Map<string, { totpLastStep: number | null }>): TotpStepStore {
+  return {
+    async updateMany({ where, data }) {
+      const row = rows.get(where.id);
+      if (!row) return { count: 0 };
+      const ok = where.OR.some((c) =>
+        c.totpLastStep === null
+          ? row.totpLastStep === null
+          : row.totpLastStep !== null && row.totpLastStep < c.totpLastStep.lt,
+      );
+      if (!ok) return { count: 0 };
+      row.totpLastStep = data.totpLastStep;
+      return { count: 1 };
+    },
+  };
+}
 import { MemoryNonceStore } from '../src/agent/nonce-store.js';
 import {
   canonicalString,
@@ -58,7 +87,8 @@ test('никой не управлява равен или по-висок; OWNE
 
 test('политика за пароли', () => {
   assert.ok(passwordPolicyError('кратка1'));
-  assert.ok(passwordPolicyError('самобуквибезцифри'));
+  // От 2026-11-15 без правило за състав (ASVS 5.0 v6.2.5): дълга парола само от букви е позволена.
+  assert.equal(passwordPolicyError('самобуквибезцифри'), null);
   assert.equal(passwordPolicyError('PiumaDemo2026!'), null);
 });
 
@@ -79,13 +109,45 @@ test('TOTP съвпада с RFC 6238 тестовите вектори', () => 
   assert.equal(totpCode(secret, 2000000000), '279037');
 });
 
-test('проверката приема ±1 стъпка и отхвърля друг код', () => {
+/* ---------- TOTP: един код = едно ползване (ASVS 5.0 v6.5.1, находка на Прониквача 2026-11-15) ---------- */
+
+test('matchTotpStep връща стъпката на съвпадението в прозореца ±1, иначе null', () => {
   const secret = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
-  assert.equal(verifyTotp(secret, '287082', 59), true);
-  assert.equal(verifyTotp(secret, '287082', 59 + 30), true);
-  assert.equal(verifyTotp(secret, '287082', 59 + 90), false);
-  assert.equal(verifyTotp(secret, '000000', 59), false);
-  assert.equal(verifyTotp(secret, 'abc', 59), false);
+  assert.equal(matchTotpStep(secret, '287082', 59), 1);
+  assert.equal(matchTotpStep(secret, '287082', 89), 1, 'дрейф −1 връща същата стъпка');
+  assert.equal(matchTotpStep(secret, '287082', 149), null);
+  assert.equal(matchTotpStep(secret, '000000', 59), null, 'друг код');
+  assert.equal(matchTotpStep(secret, 'abc', 59), null);
+});
+
+/* Регресия (ревю, 2026-11-15): входът пускаше пароли до 200 знака, а политиката — до 256; парола
+   201–256 знака се приемаше при смяна и после никога не влизаше. */
+test('входът приема паролата до тавана на политиката и не над него', () => {
+  const email = 'owner@example.com';
+  const at = (n: number) => loginSchema.safeParse({ email, password: 'a'.repeat(n) }).success;
+  assert.equal(at(PASSWORD_MAX_LENGTH), true);
+  assert.equal(at(PASSWORD_MAX_LENGTH + 1), false);
+});
+
+test('consumeTotpStep: същият код втори път е отказ (повторение), по-стара стъпка — отказ, по-нова — минава', async () => {
+  const rows = new Map<string, { totpLastStep: number | null }>([['u1', { totpLastStep: null }]]);
+  const store = fakeStepStore(rows);
+  assert.equal(await consumeTotpStep('u1', 5, store), true);
+  assert.equal(await consumeTotpStep('u1', 5, store), false, 'повторение на същата стъпка');
+  assert.equal(await consumeTotpStep('u1', 4, store), false, 'по-стара стъпка');
+  assert.equal(await consumeTotpStep('u1', 6, store), true);
+  assert.equal(rows.get('u1')!.totpLastStep, 6);
+});
+
+test('паролата: без правило „букви и цифри“ (ASVS v6.2.5), но с таван и списък чести пароли (v6.2.4)', () => {
+  assert.equal(
+    passwordPolicyError('дъб фреза ренде лодка'),
+    null,
+    'само букви и интервали са позволени',
+  );
+  assert.notEqual(passwordPolicyError('football2026!'), null, 'често срещана');
+  assert.notEqual(passwordPolicyError('sunshine-1234'), null, 'често срещана');
+  assert.notEqual(passwordPolicyError('a'.repeat(PASSWORD_MAX_LENGTH + 1)), null, 'над тавана');
 });
 
 test('otpauth URL носи издател, акаунт и параметри', () => {

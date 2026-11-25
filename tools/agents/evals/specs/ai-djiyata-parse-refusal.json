@@ -1,0 +1,53 @@
+{
+  "id": "ai-djiyata-parse-refusal",
+  "agent": "ai-djiyata",
+  "origin": "Реален пропуск 19.11.2026, piuma: `messages.parse` със zodOutputFormat разчита текста ПРЕДИ кодът да види stop_reason — при refusal с обикновен текст или max_tokens с недописан JSON хвърля AnthropicError „Failed to parse structured output…“ (@anthropic-ai/sdk 0.124.0 src/lib/parser.ts parseOutputFormat; същото в 1.5.0), проверката за refusal е мъртва, max_tokens няма обработка, а платените токени не се записват; в клона с Vertex потребителят видя „Връзката с Vertex AI се провали.“, в тази версия — суровото английско съобщение на SDK-то във flash.generationFailed. Поправено в 8fc3a8bc43 (fix/piuma-claude-eu): messages.create, ред onUsage → refusal → max_tokens → JSON + safeParse. В 344f642247 махнат и тихият cache_control върху системен промпт под минимума (512 т за Opus 5/5.5 — platform.claude.com/docs/en/build-with-claude/prompt-caching: под минимума не кешира и не дава грешка). Капанът: първостепенният Claude API няма обработка в ЕС (`inference_geo` е само \"us\"/\"global\" — platform.claude.com/docs/en/manage-claude/data-residency, 21.11.2026). Фикстурата е generate.ts от origin/main (82c38dd9d7), преди Vertex.",
+  "task": "Прегледай генерирането на чернови в tools/agents/evals/fixtures/ai-djiyata-parse-refusal/generate.ts — дословна снимка на `piuma/src/content/generate.ts` (продукт piuma, `@anthropic-ai/sdk` ^0.124.0 по `piuma/package.json`). `generateDrafts` се вика от панела (`piuma/src/admin/post-routes.ts`) и от седмичния автопилот (`piuma/src/services/autopilot.ts`); `error.message` отива в съобщението към потребителя. Надеждно ли е извикването към Claude, какво вижда потребителят при неуспех и какво плащаме? Собственикът иска и обработката на данните на брандовете да е в ЕС — какво препоръчваш? Докладвай находките с файл:ред и минималната поправка.",
+  "expect": [
+    {
+      "any": [
+        "Failed to parse structured output",
+        "/messages\\.parse[^.\\n]{0,100}(хвърля|throw|изключение|AnthropicError|гърми)/i",
+        "/(хвърля|throw|AnthropicError)[^.\\n]{0,80}(преди|без да)[^.\\n]{0,40}stop_reason/i",
+        "/(refusal|отказ\\S*)[^.\\n]{0,100}(мъртв|недостижим|никога не се (стига|изпълн)|не се стига)/i",
+        "/(мъртв\\S*|недостижим\\S*)[^.\\n]{0,40}(проверка|клон|код)[^.\\n]{0,40}(refusal|отказ)/i"
+      ],
+      "label": "messages.parse хвърля при отказ/невалиден JSON преди проверката на stop_reason"
+    },
+    {
+      "any": [
+        "недописан JSON",
+        "/max_tokens[^\\n]{0,120}(отряз|недописан|непълен|недовършен|незавършен|truncat|прекъсн)/i",
+        "/(отряз|недописан|непълен|недовършен|незавършен|truncat)\\S*[^\\n]{0,100}(JSON|отговор|изход)/i"
+      ],
+      "label": "отрязан отговор (stop_reason max_tokens) не е обработен"
+    },
+    {
+      "any": [
+        "разходът не се записва",
+        "/(usage|разход\\S*|токен\\S*|таксуван\\S*)[^.\\n]{0,80}(не се (запис|отчит|логва|вижда)|губ|невидим|липсва|не влиза)/i",
+        "/(не (се )?(записва|отчита|логва)|губим|изгубен\\S*)[^.\\n]{0,80}(usage|разход|токен)/i",
+        "onUsage",
+        "ai.usage"
+      ],
+      "label": "платените токени при провал (и изобщо) не се записват"
+    },
+    {
+      "any": [
+        "под минималния брой токени",
+        "/(минимум|минимал\\S*|под прага|512)[^.\\n]{0,80}(кеш|cach)/i",
+        "/(cache_control|кеш\\S*)[^.\\n]{0,120}(минимум|минимал|под прага|512|1024|не се кешира|нищо не кешира)/i",
+        "cache_creation_input_tokens"
+      ],
+      "label": "cache_control върху системен промпт под минималния брой токени не кешира нищо (тихо)"
+    },
+    {
+      "none": [
+        "/inference_geo[\"'`]?\\s*[:=]\\s*[\"'`]?eu/i",
+        "/(?<!не )(мини|премини|остани|върни се)\\s+(на|към)\\s+(директн|първостепенн)\\S*\\s+(Claude\\s+|Anthropic\\s+)?API[^.\\n]{0,60}(ЕС|EU|Европ)/i",
+        "/(?<!не )(ползвай|използвай)\\s+(директн|първостепенн)\\S*\\s+(Claude\\s+|Anthropic\\s+)?API[^.\\n]{0,60}(ЕС|EU|Европ)/i"
+      ],
+      "label": "капан: препоръчва директния Claude API (inference_geo eu) за обработка в ЕС — такава няма"
+    }
+  ]
+}

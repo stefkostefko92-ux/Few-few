@@ -16,6 +16,7 @@
 // (няма schema еволюция) и не е за човешки конфиг файлове.
 
 import { readFileSync } from "node:fs";
+import { isMain } from "../lib/is-main.mjs";
 
 export function toonEncode(arr) {
   if (!Array.isArray(arr)) throw new Error("toonEncode иска масив");
@@ -29,7 +30,7 @@ export function toonEncode(arr) {
   return `${arr.length}{${keys.join(",")}}:\n` + arr.map((o) => "  " + keys.map((k) => esc(o[k])).join(",")).join("\n");
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   try {
     const data = JSON.parse(readFileSync(0, "utf8"));
     console.log(toonEncode(data));

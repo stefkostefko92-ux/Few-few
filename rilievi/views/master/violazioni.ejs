@@ -1,0 +1,37 @@
+<%
+  // Регистърът на нарушенията (routes/master-registri.ts; чл. 33(5) GDPR): процедурата отгоре, после всяко
+  // нарушение — кога е открито, ролята ни, рискът, кой е уведомен и дали е затворено.
+%><%- include('../partials/top', { titleKey: 'master.violazioni.title' }) %>
+<div class="page-head">
+  <div>
+    <a href="/master"><%= t('master.console.title') %></a>
+    <h1><%= t('master.violazioni.title') %></h1>
+    <p class="page-head__sub"><%= t('master.violazioni.sub') %></p>
+  </div>
+  <div class="toolbar"><a class="btn btn--primary" href="/master/violazioni/nuova"><%- include('../partials/icon', { name: 'plus' }) %><span><%= t('master.violazioni.nuova') %></span></a></div>
+</div>
+<div class="stack-gap">
+  <p class="notice"><%= t('master.violazioni.procedura') %></p>
+  <% if (righe.length === 0) { %><p class="muted"><%= t('master.violazioni.nessuna') %></p><% } else { %>
+  <div class="table-scorre">
+  <table class="table table--stack">
+    <thead><tr>
+      <% for (const c of ['rilevata', 'titolo', 'ruolo', 'rischio', 'avvisi', 'stato']) { %><th scope="col"><%= t('master.violazioni.colonne.' + c) %></th>
+      <% } %>
+    </tr></thead>
+    <tbody>
+      <% for (const v of righe) {
+           const avvisi = [v.titolariAvvisatiAt && 'avvisiTitolari', v.autoritaNotificataAt && 'avvisiAutorita', v.interessatiAvvisatiAt && 'avvisiInteressati'].filter(Boolean); %><tr>
+        <td data-label="<%= t('master.violazioni.colonne.rilevata') %>"><%= fmt.dateTime(v.rilevataAt) %></td>
+        <th scope="row" data-label="<%= t('master.violazioni.colonne.titolo') %>"><a href="/master/violazioni/<%= v.id %>"><%= v.titolo %></a></th>
+        <td data-label="<%= t('master.violazioni.colonne.ruolo') %>"><%= t('master.violazioni.ruoli.' + v.ruolo) %></td>
+        <td data-label="<%= t('master.violazioni.colonne.rischio') %>"><%= t('master.violazioni.rischi.' + v.rischio) %></td>
+        <td data-label="<%= t('master.violazioni.colonne.avvisi') %>"><%= avvisi.length ? avvisi.map((k) => t('master.violazioni.' + k)).join(', ') : t('master.violazioni.nessunAvviso') %><% if (v.ruolo === 'TITOLARE' && v.rischio !== 'IMPROBABILE' && !v.autoritaNotificataAt) { %><br><strong><%= t('master.violazioni.scadenza', { data: fmt.dateTime(v.scadenza) }) %></strong><% } %></td>
+        <td data-label="<%= t('master.violazioni.colonne.stato') %>"><%= v.chiusaAt ? t('master.violazioni.chiusa', { data: fmt.dayRoma(v.chiusaAt) }) : t('master.violazioni.aperta') %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  </div><% } %>
+</div>
+<%- include('../partials/bottom') %>

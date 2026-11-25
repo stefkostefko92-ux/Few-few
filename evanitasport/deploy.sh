@@ -23,7 +23,7 @@ echo "════════════════════════�
 # 1. Create web root
 echo "[1/6] Creating web root..."
 sudo mkdir -p $WEB_ROOT
-sudo cp -r index.html 404.html css js images favicon.svg apple-touch-icon.png robots.txt sitemap.xml llms.txt indexnow-key.txt .well-known $WEB_ROOT/
+sudo cp -r index.html 404.html poveritelnost.html css js fonts images favicon.svg apple-touch-icon.png robots.txt sitemap.xml llms.txt indexnow-key.txt .well-known $WEB_ROOT/
 sudo chown -R www-data:www-data $WEB_ROOT
 sudo chmod -R 755 $WEB_ROOT
 

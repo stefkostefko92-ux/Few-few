@@ -1,0 +1,26 @@
+<%
+  const L = [
+    { i: 0, raw: '&lt;Invoice&nbsp;…&gt;' },
+    { i: 1, bt: 'BT-1', tag: 'cbc:ID', val: '0000000124' },
+    { i: 1, bt: 'BT-2', tag: 'cbc:IssueDate', val: '2026-11-12' },
+    { i: 1, bt: 'BT-3', tag: 'cbc:InvoiceTypeCode', val: '380' },
+    { i: 1, bt: 'BT-5', tag: 'cbc:DocumentCurrencyCode', val: 'EUR' },
+    { i: 1, raw: '…' },
+    { i: 1, raw: '<span class="x-t">&lt;cac:TaxTotal&gt;</span>' },
+    { i: 2, bt: 'BT-110', tag: 'cbc:TaxAmount', val: '200.00', attr: ' currencyID="EUR"' },
+    { i: 1, raw: '<span class="x-t">&lt;/cac:TaxTotal&gt;</span>' },
+    { i: 1, raw: '<span class="x-t">&lt;cac:LegalMonetaryTotal&gt;</span>' },
+    { i: 2, bt: 'BT-115', tag: 'cbc:PayableAmount', val: '1200.00', attr: ' currencyID="EUR"' },
+    { i: 1, raw: '<span class="x-t">&lt;/cac:LegalMonetaryTotal&gt;</span>' },
+    { i: 0, raw: '<span class="x-t">&lt;/Invoice&gt;</span>' },
+  ];
+-%>
+<figure class="xml">
+  <div class="xml-bar"><span class="xml-file">0000000124.xml</span><span class="xml-std">UBL 2.1</span></div>
+  <div class="xml-scroll" tabindex="0" role="region" aria-label="<%= t('site.home.doc.xmlCaption') %>">
+    <pre class="xml-code"><code><% for (const l of L) { %><span class="xl"><span class="xl-bt"><%= l.bt || '' %></span><span class="xl-src i<%= l.i %>"><% if (l.raw) { %><%- l.raw.startsWith('&lt;Invoice') ? '<span class="x-t">' + l.raw + '</span>' : l.raw %><% } else { %><span class="x-t">&lt;<%= l.tag %><%= l.attr || '' %>&gt;</span><span class="x-v"><%= l.val %></span><span class="x-t">&lt;/<%= l.tag %>&gt;</span><% } %></span></span><% } %></code></pre>
+  </div>
+<% if (locals.caption !== false) { -%>
+  <figcaption><%= t('site.home.doc.xmlCaption') %></figcaption>
+<% } -%>
+</figure>

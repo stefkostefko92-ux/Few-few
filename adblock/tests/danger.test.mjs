@@ -53,7 +53,7 @@ await bg.applyState();
 const h = await sendMessage(mock.listeners, { type: "getHealth" });
 ok(`engine health: the warning page is armed for every listed site, and the rule budget is shown (${JSON.stringify(h && h.capacity)})`,
   h && h.malwareOn === true && h.dynamic.danger === new Set(listed).size && h.capacity && h.capacity.dynamic === mock.dynamic().length && h.capacity.dynamicMax === 30000 &&
-  h.capacity.regex === danger().length && h.capacity.regexMax === 1000);
+  h.capacity.regex === mock.dynamic().filter((x) => x.condition && x.condition.regexFilter).length && h.capacity.regex >= danger().length && h.capacity.regexMax === 1000);
 
 // "Continue anyway"
 const host = listed.find((x) => /^[a-z0-9-]+\.(com|net|org)$/.test(x));

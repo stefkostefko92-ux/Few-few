@@ -29,6 +29,15 @@
         "може би без проверка"
       ],
       "label": "капан: хипотеза без repro"
+    },
+    {
+      "none": [
+        "LLM06 excessive",
+        "LLM07 system",
+        "LLM06 (excessive",
+        "LLM07 (system"
+      ],
+      "label": "капан: OWASP LLM код без година по старата номерация (2026: excessive agency = LLM03, system prompt = LLM08)"
     }
   ]
 }

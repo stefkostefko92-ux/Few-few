@@ -28,7 +28,8 @@
       send: 'Изпрати',
       thinking: 'Мисли…',
       error: 'Нещо се обърка. Опитай пак.',
-      refusal: 'Асистентът не може да помогне с тази заявка.',
+      refusal:
+        'Асистентът не може да помогне с тази заявка. Няма да я взема предвид в следващите отговори — можеш да зададеш друг въпрос.',
       truncated: '(отговорът е съкратен)',
     },
     en: {
@@ -42,7 +43,8 @@
       send: 'Send',
       thinking: 'Thinking…',
       error: 'Something went wrong. Please try again.',
-      refusal: 'The assistant cannot help with this request.',
+      refusal:
+        'The assistant can’t help with this request. It won’t be taken into account in later answers — you can ask something else.',
       truncated: '(answer was shortened)',
     },
     it: {
@@ -56,7 +58,8 @@
       send: 'Invia',
       thinking: 'Sto pensando…',
       error: 'Qualcosa è andato storto. Riprova.',
-      refusal: "L'assistente non può aiutare con questa richiesta.",
+      refusal:
+        "L'assistente non può aiutarti con questa richiesta. Non ne terrà conto nelle risposte successive: puoi fare un'altra domanda.",
       truncated: '(risposta abbreviata)',
     },
   };
@@ -95,9 +98,10 @@
     '<button class="fab" type="button" aria-haspopup="dialog"></button>' +
     '<section class="panel" role="dialog" aria-modal="false" hidden>' +
     '<div class="head"><span class="ttl"></span><button class="x" type="button">×</button></div>' +
-    '<p class="note"><strong class="ai"></strong> <span class="pv"></span></p>' +
+    // id е в собствения (затворен) Shadow DOM — уникално е и при няколко уиджета на страница.
+    '<p class="note" id="agentgw-ai-note"><strong class="ai"></strong> <span class="pv"></span></p>' +
     '<div class="log" role="log" aria-live="polite"></div>' +
-    '<form><textarea maxlength="4000" rows="2"></textarea><button class="btn" type="submit"></button></form>' +
+    '<form><textarea maxlength="4000" rows="2" aria-describedby="agentgw-ai-note"></textarea><button class="btn" type="submit"></button></form>' +
     '</section>';
 
   var fab = root.querySelector('.fab');
@@ -176,6 +180,7 @@
     history.push({ role: 'user', content: text });
     var out = bubble('a', t.thinking);
     var answer = '';
+    var refused = false;
 
     fetch(base + '/v1/chat', {
       method: 'POST',
@@ -210,14 +215,19 @@
           if (!data) return;
           var d = JSON.parse(data);
           if (ev === 'delta') {
+            if (refused) return;
             answer += d.text;
             out.textContent = answer;
             logEl.scrollTop = logEl.scrollHeight;
           } else if (ev === 'refusal') {
-            out.textContent = answer ? answer + '\n\n' + t.refusal : t.refusal;
+            // Нулиране на контекста след отказ (docs: handle-streaming-refusals): частичният
+            // отговор не се показва и не се пази, а отказаният ход излиза от историята.
+            refused = true;
+            answer = '';
+            out.textContent = t.refusal;
           } else if (ev === 'error') {
             throw new Error(d.message || t.error);
-          } else if (ev === 'done' && d.truncated) {
+          } else if (ev === 'done' && d.truncated && !refused) {
             out.textContent = answer + '\n' + t.truncated;
           }
         }
@@ -236,7 +246,7 @@
         return pump();
       })
       .then(function () {
-        if (answer) history.push({ role: 'assistant', content: answer });
+        if (answer && !refused) history.push({ role: 'assistant', content: answer });
         else history.pop();
       })
       .catch(function (err) {

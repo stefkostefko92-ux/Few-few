@@ -1,0 +1,8 @@
+<%# Съобщенията на /stato — вид, заглавие, кога, текстът (само текст, редовете запазени). %><ul class="stato-avvisi" role="list">
+  <% for (const a of lista) { %><li class="stato-avviso stato-avviso--<%= a.tipo.toLowerCase() %>">
+    <p class="stato-avviso__testa"><span class="stato-avviso__tipo"><%= t('stato.tipo.' + a.tipo) %></span> <strong><%= a.titolo %></strong></p>
+    <p class="muted"><%= quando(a) %></p>
+    <p class="stato-avviso__testo"><%= a.testo %></p>
+  </li>
+  <% } %>
+</ul>

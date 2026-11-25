@@ -856,5 +856,50 @@
   },
   "welTest": {
     "message": "Pažiūrėkite, kaip veikia, bandomajame puslapyje"
+  },
+  "modeHere": {
+    "message": "Apsauga čia"
+  },
+  "modeBasic": {
+    "message": "Pagrindinė"
+  },
+  "modeStandard": {
+    "message": "Standartinė"
+  },
+  "modeStrict": {
+    "message": "Griežta"
+  },
+  "opt_mode": {
+    "message": "Apsaugos lygis"
+  },
+  "opt_mode_sub": {
+    "message": "Visoms svetainėms. Norėdami vienai svetainei nustatyti atskirą lygį, atidarykite plėtinį toje svetainėje."
+  },
+  "modeHint": {
+    "message": "Pagrindinė: tik blokavimas tinkle. Standartinė: rekomenduojama. Griežta: ir rėmelių viduje. Puslapis įkeliamas iš naujo."
+  },
+  "modeBasicDesc": {
+    "message": "Tik blokavimas tinkle: lengviausia, beveik niekas nesugenda. YouTube išlaiko savo apsaugą."
+  },
+  "modeStandardDesc": {
+    "message": "Rekomenduojama: visiška apsauga pačiame puslapyje."
+  },
+  "modeStrictDesc": {
+    "message": "Ir įterptų rėmelių viduje: paslepia daugiausia, naudoja daugiausia atminties."
+  },
+  "opt_who": {
+    "message": "Ką sustabdėme"
+  },
+  "opt_who_sub": {
+    "message": "Įmonės, su kurių serveriais per pastarąsias 30 dienų neleidome jūsų naršyklei susisiekti. Skaičiuojama tik šiame įrenginyje, pagal įmonę ir dieną: jokių adresų, jokių svetainių."
+  },
+  "opt_who_empty": {
+    "message": "Dar nieko nesuskaičiuota. Kurį laiką panaršykite ir pažiūrėkite vėl."
+  },
+  "opt_who_row": {
+    "message": "Užklausos: $1 · Dienos: $2"
+  },
+  "managedNote": {
+    "message": "Nustatė jūsų organizacija"
   }
 }

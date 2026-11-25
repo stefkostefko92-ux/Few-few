@@ -2,17 +2,24 @@
 // from; the local frame (u along the grain/length axis, v across) is derived so that eu × ev = face normal,
 // which keeps every part non-mirrored when it is laid face-up on the CNC table.
 import { IDX, AX, sub, dot, neg, crossDir, r1 } from './util.js';
+import { translator } from './i18n.js';
 
 export const THROUGH_EXTRA = 1.5; // through-drill depth below the sheet, mm
 
-export function createCtx() {
+// lang: the language of the model's texts (i18n.js); ctx.t says them.
+export function createCtx(lang = 'bg') {
   let n = 1;
   const hwLines = new Map();
+  const t = translator(lang);
   return {
+    t,
+    lang: t.lang,
     parts: [],
     warnings: [],
     groups: [], // movable groups for 3D: doors (swing) and drawers (slide)
     symbols: [], // non-board items drawn in 3D/drawings: handles, rails, mattress, slats, legs
+    cells: [], // the cells of a free carcass as built (cells.js): what the constructor draws and selects
+    runs: [], // the walls of a Г or П kitchen and where each stands in the room (kitchen.js, transform.js)
     nextId() {
       const id = `P${String(n).padStart(2, '0')}`;
       n += 1;
@@ -125,14 +132,9 @@ export function edgeSummary(part) {
   };
 }
 
-const DIR_BG = { '+z': 'отпред', '-z': 'отзад', '+y': 'горе', '-y': 'долу', '-x': 'ляво', '+x': 'дясно' };
-
 // Which real-world edge sits at u = 0, u = L, v = 0 and v = W of the drawing (face A up).
-export function edgeLabels(part) {
+export function edgeLabels(part, t = translator('bg')) {
   const { eu, ev } = part.frame;
-  const name = (dir) => {
-    const base = DIR_BG[dir];
-    return dir[1] === 'x' ? `${base} (гледано отпред)` : base;
-  };
+  const name = (dir) => (dir[1] === 'x' ? t('edge.seenFromFront', { side: t(`dir.${dir}`) }) : t(`dir.${dir}`));
   return { u0: name(neg(eu)), u1: name(eu), v0: name(neg(ev)), v1: name(ev) };
 }
