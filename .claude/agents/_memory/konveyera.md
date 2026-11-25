@@ -9,6 +9,7 @@
 Специалност: **CI/CD и GitHub автоматизация** — бързи, зелени, сигурни конвейери за монорепото.
 Версии на actions и лимити са време-чувствителни → потвърждавай на живо преди цитиране.
 ## Проверени поуки (verified)
+- **2026-11-25:** PR 480 (lovets.yml) е първият нов продуктов workflow, който следва пълната хигиена — checkout и setup-node по SHA, persist-credentials:false, contents:read, concurrency и timeout; checkout SHA 11d5960a… е общият пин в репото. _(преглед на нови продуктови workflow-и; не предполагай липса на SHA-пин, провери файла; verified; .github/workflows/lovets.yml:18-19,29-32,65-68 (ревю на PR 480, 2026-11-25); Grep на actions/checkout@ в .github/workflows)_
 
 - **2026-11-15:** Блоков скалар `run: |` в YAML се чупи, ако многоредов низ (напр. `gh pr create --body "..."`) има редове на колона 0; GitHub не зарежда такъв workflow, затова го слагай в променлива с `$'\n\n'` или heredoc с отстъп. _(workflow с многоредово тяло на gh pr create/комит съобщение в run блок; verified; python3 yaml.safe_load на .github/workflows/adblock-lists.yml при HEAD -> "could not find expected ':'" на ред 63; след поправката 38/38 парсват)_
 - **2026-11-15:** `CSPos/desktop/.gitignore` игнорираше package-lock.json, така че `npm install --package-lock-only` не стига до git; за `npm ci` в CI lockfile-ът трябва да е проследен. _(добавяне на lockfile в подпапка с локален .gitignore; verified; git check-ignore -v CSPos/desktop/package-lock.json -> CSPos/desktop/.gitignore:5)_

@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-11-24",
+    "updated": "2026-11-25",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -15364,7 +15364,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 222
+        "lessons": 223
       },
       "evolution": [
         {
@@ -15438,9 +15438,20 @@
           "date": "2026-11-23",
           "event": "v21.8 — учене",
           "detail": "Научи: Блоков скалар `run: |` в YAML се чупи, ако многоредов низ (напр. `gh pr create --body \"… (+2 още)"
+        },
+        {
+          "version": "21.9.0",
+          "date": "2026-11-25",
+          "event": "v21.9 — учене",
+          "detail": "Научи: PR 480 (lovets.yml) е първият нов продуктов workflow, който следва пълната хигиена — ch…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „PR 480 (lovets.yml) е първият нов продуктов workflow, който следва пълната хигиена — ch…\""
+        },
         {
           "date": "2026-11-23",
           "type": "learning",
