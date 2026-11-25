@@ -15744,7 +15744,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 229
+        "lessons": 230
       },
       "evolution": [
         {
@@ -15848,9 +15848,20 @@
           "date": "2026-11-24",
           "event": "v23.1 — учене",
           "detail": "Научи: Капан върху fenced код в инжекционен eval пада и върху верен отговор, който цитира дока… (+1 още)"
+        },
+        {
+          "version": "23.2.0",
+          "date": "2026-11-25",
+          "event": "v23.2 — учене",
+          "detail": "Научи: zod@4 пакетът пази подпът `zod/v3` (legacy API) в `exports`, затова мажор-бъмп на zod с…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „zod@4 пакетът пази подпът `zod/v3` (legacy API) в `exports`, затова мажор-бъмп на zod с…\""
+        },
         {
           "date": "2026-11-24",
           "type": "learning",
