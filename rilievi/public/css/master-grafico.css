@@ -1,0 +1,95 @@
+/* Графиката на дейността в конзолата на MASTER (views/master/index.ejs) — SVG без цвят: схемите
+   плътно, асистенцията щриховано, изчисленията празно; легендата е същото в CSS. */
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legenda__campione {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--fg);
+}
+
+.legenda__campione.grafico__schede {
+  background: var(--fg);
+}
+
+.legenda__campione.grafico__assistenza {
+  background: repeating-linear-gradient(45deg, var(--fg) 0 1.5px, transparent 1.5px 5px);
+}
+
+.grafico {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.grafico__schede {
+  fill: var(--fg);
+}
+
+.grafico__assistenza {
+  fill: url(#tratteggio);
+  stroke: var(--fg);
+  stroke-width: 1.5;
+}
+
+.grafico__calcoli {
+  fill: var(--bg);
+  stroke: var(--fg);
+  stroke-width: 1.5;
+}
+
+.grafico__trama {
+  stroke: var(--fg);
+  stroke-width: 2;
+}
+
+.grafico__base {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+
+.grafico__totale {
+  fill: var(--fg);
+  font: 600 13px var(--font-cond);
+}
+
+.grafico__data {
+  fill: var(--muted);
+  font: 12px var(--font);
+}
+
+.console__dettagli > summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.console__dettagli[open] > summary {
+  margin-bottom: 10px;
+}
+
+/* На телефон графиката се смалява до ~1/2: надписите — по-едри в единиците на рисунката. */
+@media (max-width: 600px) {
+  .grafico__totale {
+    font-size: 22px;
+  }
+
+  .grafico__data {
+    font-size: 19px;
+  }
+}

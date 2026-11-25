@@ -1,0 +1,12 @@
+<%
+  // Ключът „Attiva i preventivi“ на избора на фирма (_scelta-azienda.ejs) — само за MASTER, след формата (форма във
+  // форма не може). Същият запис като на страницата на фирмата (`POST /aziende/:id/preventivi`, одит
+  // AZIENDA_PREVENTIVI); `dopo` казва на коя форма да се върне — с избраната фирма. Без избрана изключена фирма
+  // адресът е празен, а бутонът — скрит; public/js/offerte-spente.js го сменя при избора.
+  // Входът: spente, azienda, dopo ('preventivo' | 'cliente' | 'listino').
+  const scelta = spente.find((a) => a.id === azienda);
+%><% if (spente.length) { %><form id="f-attiva-offerte" method="post" action="<%= scelta ? '/aziende/' + scelta.id + '/preventivi' : '' %>" hidden data-attiva-offerte>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="attivi" value="1">
+  <input type="hidden" name="dopo" value="<%= dopo %>">
+</form><% } %>

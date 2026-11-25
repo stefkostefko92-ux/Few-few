@@ -1,0 +1,19 @@
+import type { Metadata } from 'next';
+import { NewsletterTokenPage } from '@/components/newsletter/NewsletterTokenPage';
+
+export const dynamic = 'force-dynamic';
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  return { title: `@${(await params).slug} · Linketto`, robots: { index: false } };
+}
+
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ token?: string; invalid?: string }>;
+}) {
+  const { slug } = await params;
+  const { token, invalid } = await searchParams;
+  return <NewsletterTokenPage slug={slug} token={token ?? ''} mode="unsubscribe" invalid={invalid === '1'} />;
+}

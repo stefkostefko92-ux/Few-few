@@ -39,12 +39,13 @@ export function ShareButton({
   }
 
   return (
-    <div className="absolute end-4 top-4 z-20 text-start">
+    <div className="absolute end-2 top-2 z-20 text-start sm:end-4 sm:top-4">
       <button
         type="button"
         onClick={onShare}
         aria-expanded={open}
-        className="inline-flex items-center gap-1.5 rounded-full border border-current px-3 py-1.5 text-xs font-semibold opacity-70 transition hover:opacity-100"
+        className="pf-muted inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 text-xs font-semibold transition-transform hover:-translate-y-px"
+        style={{ borderColor: 'color-mix(in srgb, var(--pf-fg) 26%, transparent)' }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

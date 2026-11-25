@@ -9,10 +9,11 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import QRCode from "qrcode";
-import { KeyRound, ShieldCheck, ShieldAlert, Copy, RefreshCw, Trash2 } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Copy, RefreshCw, Trash2 } from "lucide-react";
 import { getMfaStatus, mfaSetup, mfaEnable, mfaDisable, mfaRegenerateCodes } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 import Modal from "../components/Modal";
 
@@ -111,12 +112,7 @@ export default function SecurityPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-3xl">
-      <div className="mb-8">
-        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-          <KeyRound className="w-7 h-7 text-cs-cyan" /> {t("security.title")}
-        </h1>
-        <p className="text-cs-muted mt-2">{t("security.subtitle")}</p>
-      </div>
+      <PageHeader title={t("security.title")} subtitle={t("security.subtitle")} />
 
       {status?.enrollmentRequired && (
         <div role="alert" className="cs-card bg-warning/10 border-warning/30 mb-6 flex items-start gap-3">

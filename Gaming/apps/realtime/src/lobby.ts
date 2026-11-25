@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { Server } from "socket.io";
 import {
-  SELF_EXCLUDED_CODE,
   SOCKET_EVENTS,
   seatRange,
   teamsFor,
@@ -17,9 +16,12 @@ import { RandomBot } from "./bot.js";
 import { redis } from "./redis.js";
 import type { RoomSeat } from "./room.js";
 import { logger } from "./logger.js";
+import { blockedMessage, type PlayBlock } from "./responsible.js";
 
 const userRoom = (userId: string): string => `u:${userId}`;
-const BOT_NAME = "АСО Бот";
+const BOT_NAME = "Бот";
+/** Ботовете са номерирани по реда на местата: „Бот 1“, „Бот 2“… (клиентът го превежда). */
+export const botName = (n: number): string => `${BOT_NAME} ${n}`;
 
 interface Slot {
   userId: string | null;
@@ -142,10 +144,11 @@ export class Lobby {
   }
 
   toSeats(): LobbySeat[] {
+    let bots = 0;
     return this.slots.map((s, seat) => ({
       seat,
       userId: s.userId,
-      displayName: s.userId === null && !s.isBot ? "" : s.displayName,
+      displayName: s.isBot ? botName(++bots) : s.userId === null ? "" : s.displayName,
       isBot: s.isBot,
       isHost: s.userId !== null && s.userId === this.hostUserId,
       team: teamOfSeat(this.game, seat),
@@ -183,13 +186,14 @@ export class Lobby {
   /** Build the authoritative room seating from the occupied slots, compacted to
    *  a contiguous 0..n-1 range (variable-seat games may have left gaps). */
   toRoomSeats(seed: string): RoomSeat[] {
+    let bots = 0;
     return this.slots
       .filter((s) => s.userId !== null || s.isBot)
       .map((s, seat) => ({
         seat,
         userId: s.isBot ? null : s.userId,
         isBot: s.isBot,
-        displayName: s.isBot ? BOT_NAME : s.displayName || "Играч",
+        displayName: s.isBot ? botName(++bots) : s.displayName || "Играч",
         bot: s.isBot ? new RandomBot(`${seed}:bot:${seat}`) : undefined,
       }));
   }
@@ -222,25 +226,21 @@ export interface LobbyLauncher {
 export class LobbyManager {
   private readonly lobbies = new Map<string, Lobby>();
   /** Resolves a userId → display name; injected to avoid a DB import here.
-   *  `selfExcluded` (отговорна игра) връща активно самоизключените сред ids —
-   *  също инжектирано (по подразбиране никой, напр. в тестове на седенето). */
+   *  `selfExcluded` (отговорна игра) връща блокираните сред ids — самоизключени
+   *  или стигнали дневния си лимит; също инжектирано (по подразбиране никой). */
   constructor(
     private readonly io: Server,
     private readonly launcher: LobbyLauncher,
     private readonly nameOf: (userId: string) => Promise<string>,
-    private readonly selfExcluded: (userIds: string[]) => Promise<Map<string, Date>> = async () => new Map(),
+    private readonly selfExcluded: (userIds: string[]) => Promise<Map<string, PlayBlock>> = async () => new Map(),
   ) {}
 
-  /** Отговорна игра: самоизключен играч не влиза в стая. Уведомява го и връща true. */
+  /** Отговорна игра: самоизключен или стигнал дневния си лимит не влиза в стая. Уведомява го и връща true. */
   private async refuseSelfExcluded(userId: string): Promise<boolean> {
     const ex = await this.selfExcluded([userId]);
-    const until = ex.get(userId);
-    if (!until) return false;
-    this.io.to(userRoom(userId)).emit(SOCKET_EVENTS.ERROR, {
-      code: SELF_EXCLUDED_CODE,
-      message: "Самоизключването е активно — масите са недостъпни до изтичането му",
-      until: until.toISOString(),
-    });
+    const block = ex.get(userId);
+    if (!block) return false;
+    this.io.to(userRoom(userId)).emit(SOCKET_EVENTS.ERROR, blockedMessage(block));
     return true;
   }
 
@@ -396,7 +396,7 @@ export class LobbyManager {
     const humans = info.members.filter((m) => !m.isBot && m.userId !== null);
     const alive = new Set<string>();
     // Самоизключил се по време на мача → не го връщаме в стаята.
-    const excluded = await this.selfExcluded(humans.map((m) => m.userId!)).catch(() => new Map<string, Date>());
+    const excluded = await this.selfExcluded(humans.map((m) => m.userId!)).catch(() => new Map<string, PlayBlock>());
     for (const m of humans) {
       const id = m.userId!;
       if (excluded.has(id)) continue;

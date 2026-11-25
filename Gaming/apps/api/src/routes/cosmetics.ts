@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { Prisma, prisma } from "@aso/db";
+import { recordLedger } from "@aso/db/ledger";
 import {
   buyCosmeticSchema,
   equipCosmeticSchema,
@@ -104,6 +105,7 @@ cosmeticsRouter.post(
           data: { gems: { decrement: cosmetic.gemPrice } },
         });
         if (debited.count !== 1) throw badRequest("insufficient_gems", "Нямаш достатъчно камъни");
+        await recordLedger(tx, { userId, currency: "GEMS", delta: -cosmetic.gemPrice, reason: "SHOP", refId: id });
         await tx.inventoryItem.create({ data: { userId, cosmeticId: id } });
         const fresh = await tx.user.findUnique({ where: { id: userId }, select: { gems: true } });
         gems = fresh?.gems ?? gems;
