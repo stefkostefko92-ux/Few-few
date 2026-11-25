@@ -84,7 +84,7 @@ const SCREENS = [
 ];
 // Собствени имена — фирмите-обработващи в страницата за поверителност и
 // импресумът (адресът на фирмата не се превежда). Имена на HTTP заглавия също.
-const PROPER = /^(Hetzner Online GmbH|Stripe Payments Europe Ltd|Discord Inc\.|Google LLC \(Gemini API\)|Minecraft\\nValorant\\nAmong Us)$|^Carbon Stealth VCC\b|^X-[\w-]+:/;
+const PROPER = /^(netcup GmbH|Stripe Payments Europe Ltd|Discord Inc\.|Google LLC \(Gemini API\)|Minecraft\\nValorant\\nAmong Us)$|^Carbon Stealth VCC\b|^X-[\w-]+:/;
 // Коментарите не се показват: махаме ги, като пазим новите редове (за номерата).
 const stripComments = (s) =>
   s.replace(/\{\/\*[\s\S]*?\*\/\}|\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))

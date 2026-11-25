@@ -10,6 +10,8 @@ import { lockOrganization } from './transfer-core.js';
 import { revokeOpenMemberInvites } from './member-invite-revoke.js';
 import { accessPoint } from '../peppol/settings.js';
 import { disableOrganization, participantFor } from '../peppol/participants.js';
+import { pendingLegal } from '../legal/pending.js';
+import { queueRefundNotice, unusedPaid } from '../billing/refund-notice.js';
 
 /**
  * Прекратяване на фирма (SPEC 65–66; общите условия т. 11, договорът за обработване т. 11). Заявката
@@ -131,6 +133,11 @@ export async function requestTermination(
   const now = input.now ?? new Date();
   const purgeAfter = new Date(now.getTime() + TERMINATION_GRACE_MS);
   const supplier = await setting('billing.supplierOrgId');
+  // Собственик, който прекратява, без да е приел новата версия на условията (SPEC 92), се отказва от нея:
+  // общите условия, т. 11 и 15 — връщаме платеното за неизползвания период (мастърите получават сумата).
+  const refused =
+    !input.actor.master &&
+    (await pendingLegal(input.actor.userId)).companies.some((c) => c.id === input.organizationId);
   await prisma.$transaction(async (tx) => {
     const org = await lockOrg(tx, input.organizationId);
     if (org.deletedAt) throw new TerminationError('notFound');
@@ -178,6 +185,20 @@ export async function requestTermination(
       legalName: org.legalName,
       purgeAfter: purgeAfter.toISOString(),
     });
+    const unused = refused ? await unusedPaid(tx, org.id, now) : null;
+    if (unused) {
+      await queueRefundNotice(tx, {
+        reason: 'legalRefused',
+        organizationId: org.id,
+        legalName: org.legalName,
+        paymentId: unused.paymentId,
+        amountCents: unused.amountCents,
+        paidCents: unused.paidCents,
+        currency: unused.currency,
+        paidAt: unused.paidAt.toISOString(),
+        dueBy: null,
+      });
+    }
     await audit(tx, {
       actorId: input.actor.userId,
       organizationId: org.id,
@@ -187,6 +208,7 @@ export async function requestTermination(
       details: {
         by: input.actor.master ? 'master' : 'owner',
         purgeAfter: purgeAfter.toISOString(),
+        ...(refused ? { reason: 'legal.refused', refundCents: unused?.amountCents ?? 0 } : {}),
       },
     });
   });

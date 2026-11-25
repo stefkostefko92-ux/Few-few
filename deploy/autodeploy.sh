@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto semki}"
 
 # fivem (Thraex PVP — Docker Compose модел) — web слуша само на
 # 127.0.0.1:3010, зад Nginx с TLS. Отделен `cron` контейнер върти пингването,
@@ -95,6 +95,10 @@ PANEV_DIR="${PANEV_DIR:-/opt/panev}"
 PANEV_SERVICE="${PANEV_SERVICE:-panev}"
 PANEV_ENV="${PANEV_ENV:-/etc/panev/panev.env}"
 PANEV_HEALTH_URL="${PANEV_HEALTH_URL:-http://127.0.0.1:4102/api/health}"
+# IndexNow след здрав релийз (PANEV_INDEXNOW=0 го спира — напр. на тестова машина). Ключът НЕ се
+# задава тук: той е името на файла `panev/<key>.txt` в архива.
+PANEV_SITE="${PANEV_SITE:-https://panevascensori.it}"
+PANEV_INDEXNOW="${PANEV_INDEXNOW:-1}"
 
 # ospedali (Ospedali Trasparenti — systemd модел, като medqr/vizitka, НО без npm
 # ci/build: лек Node сервиз с нула зависимости обслужва предбилднатия статичен сайт
@@ -196,6 +200,12 @@ KORPORA_LAST_GOOD="${KORPORA_LAST_GOOD:-$KORPORA_SHARED/last-good}"
 RILIEVI_SHARED="${RILIEVI_SHARED:-/opt/few-few/shared/rilievi}"
 RILIEVI_LAST_GOOD="${RILIEVI_LAST_GOOD:-$RILIEVI_SHARED/last-good}"
 
+# semki (Semki Bot — Discord бот за семките във FiveM + дашборд; Docker Compose: db + app на
+# 127.0.0.1:4340 зад nginx на хоста, vps2.carbonstealth.eu). Моделът на rilievi: стъпките са в
+# semki/deploy/deploy.sh — тайните от /opt/few-few/shared/semki/.env, бекъп преди миграция, сонда с
+# маркер "app":"semki", vhost-ът от репото. Тук остават откатът и паметта за последния работещ release.
+SEMKI_SHARED="${SEMKI_SHARED:-/opt/few-few/shared/semki}"
+SEMKI_LAST_GOOD="${SEMKI_LAST_GOOD:-$SEMKI_SHARED/last-good}"
 # fakturist (Фактурист — Docker Compose: db + app на 127.0.0.1:4340 зад nginx на хоста). Моделът на
 # rilievi: стъпките са в fakturist/deploy/deploy.sh (същият скрипт и за ръчния деплой) — тайните от
 # /opt/few-few/shared/fakturist/.env, бекъп преди миграция, сонда на /health с проверка, че портът е
@@ -697,6 +707,7 @@ EOF
       && warn "panev: SMTP_PASS все още е CHANGE_ME — формата пише в базата, но НЕ праща имейл."
     [ -e /etc/nginx/sites-enabled/panev.conf ] \
       || warn "panev: няма /etc/nginx/sites-enabled/panev.conf — сайтът върви само на 127.0.0.1:4102 (виж panev/DEPLOY.md)."
+    panev_ping_indexnow   # търсачките — само към release, минал здравната проба
   else
     deploy_failed=1
     warn "panev health провал — спирам услугата и връщам базата (кодът само при наличен предишен деплой)."
@@ -720,6 +731,30 @@ EOF
       warn "panev: първи деплой — няма предишна версия. Кодът остава в $PANEV_DIR, услугата остава спряна (виж: journalctl -u $PANEV_SERVICE -b)."
     fi
   fi
+}
+
+# IndexNow след зелена здравна проба. До 13.11.2026 беше ръчна стъпка и се провали на живо:
+# командата беше пусната от /root („Cannot find module '/root/tools/seo/indexnow.mjs'“). А късата
+# форма — само с адреса на сайта — спира и от правилната директория с „Липсва валиден IndexNow
+# ключ“: ключът на Panev е на `<key>.txt` в корена на сайта (схемата на Supreme), не на
+# `/indexnow-key.txt`. Затова се пуска от корена на release-а и ключът се подава явно — и файлът,
+# и публичният му адрес. Името на файла Е ключът → не се повтаря в скрипта и смяната му не иска
+# промяна тук (в panev/ стои точно един такъв файл — пази го panev/test/indexnow-key.test.js).
+# Провалът е предупреждение, не провал на деплоя (минава при следващия).
+panev_ping_indexnow() {
+  [ "$PANEV_INDEXNOW" = "1" ] || return 0
+  local site="${PANEV_SITE%/}" key_file key
+  key_file="$(ls "$SRC"/panev/*.txt 2>/dev/null | grep -E '/[0-9a-f]{32}\.txt$' | head -1 || true)"
+  [ -n "$key_file" ] || { warn "panev: няма IndexNow ключ (<key>.txt) в panev/ — пропускам подаването."; return 0; }
+  key="$(basename "$key_file" .txt)"
+  local args=("$site" --key-file "panev/${key}.txt" --key-location "$site/${key}.txt")
+  # Адресите идват от sitemap-а на САМИЯ release (той току-що мина пробата), не от живия сайт:
+  # подаването не зависи от това дали сървърът стига собствения си публичен адрес. Липсва ли
+  # файлът, остава подразбирането на инструмента — живият sitemap; не се ли прочете, той спира с
+  # грешка и не подава нищо (тук: предупреждение).
+  if [ -f "$SRC/panev/sitemap.xml" ]; then args+=(--sitemap panev/sitemap.xml); fi
+  ( cd "$SRC" && node tools/seo/indexnow.mjs "${args[@]}" ) \
+    || warn "panev: IndexNow подаването пропадна — не е фатално, минава при следващия деплой (ръчно: panev/DEPLOY.md → „IndexNow“)."
 }
 
 # ── 3b'') ospedali — systemd, БЕЗ npm ci/build (нула зависимости) ─────────────
@@ -1593,6 +1628,7 @@ deploy_fakturist() {
     0)
       install -d -m 700 "$(dirname "$FAKTURIST_LAST_GOOD")"
       printf '%s\n' "$(readlink -f "$d")" > "$FAKTURIST_LAST_GOOD.tmp" && mv -f "$FAKTURIST_LAST_GOOD.tmp" "$FAKTURIST_LAST_GOOD"
+      fakturist_indexnow   # търсачките — само към работещ release
       ;;
     3) warn "fakturist: тази машина още не е настроена (няма .env) — пропускам, не е провал (fakturist/deploy/setup-env.sh)." ;;
     4)
@@ -1605,6 +1641,25 @@ deploy_fakturist() {
       ;;
     *) deploy_failed=1; warn "fakturist: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
   esac
+}
+
+# IndexNow след зелен деплой (правилото на репото; собственикът, 25.11.2026: „да праща към търсачките“) —
+# Bing, Yandex, Seznam, Naver, Yep с едно подаване; Google не участва (там — sitemap и Search Console).
+# Ключът е fakturist/public/indexnow-key.txt; приложението го сервира на /indexnow-key.txt и /<ключ>.txt,
+# адресите идват от sitemap.xml на живия сайт. Не е фатално: при провал минава при следващия деплой.
+# FAKTURIST_INDEXNOW=0 го спира (напр. деплой на тестов домейн, който не бива да се индексира).
+fakturist_indexnow() {
+  [ "${FAKTURIST_INDEXNOW:-1}" = "1" ] || return 0
+  local keyfile="$SRC/fakturist/public/indexnow-key.txt" key site
+  site="https://${FAKTURIST_DOMAIN:-fakturist.carbonstealth.eu}"
+  [ -f "$keyfile" ] || { warn "fakturist: няма public/indexnow-key.txt — пропускам IndexNow."; return 0; }
+  command -v node >/dev/null 2>&1 || { warn "fakturist: няма node на хоста — пропускам IndexNow."; return 0; }
+  key="$(tr -d '[:space:]' < "$keyfile")"
+  if ( cd "$SRC" && node tools/seo/indexnow.mjs "$site" --key-file "$keyfile" --key-location "$site/${key}.txt" ); then
+    ok "fakturist: IndexNow уведоми Bing/Yandex/Seznam/Naver/Yep."
+  else
+    warn "fakturist: IndexNow подаването пропадна — не е фатално, минава при следващия деплой."
+  fi
 }
 
 # Откат САМО на кода към последния release, който е отговорил (никога провалилият се). Без нов дъмп:
@@ -1625,6 +1680,55 @@ fakturist_rollback() {
     ok "fakturist: предишният код отговаря."
   else
     warn "fakturist: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    return 1
+  fi
+}
+
+# ── 3й-кватер) semki — Docker Compose (db + app); стъпките са в semki/deploy/deploy.sh ──
+# Кодовете са като на rilievi: 0 — жив; 3 — няма .env (машината не е настроена: пропуск, не провал);
+# 4 — контейнерите са сменени, но Semki не отговаря → откат на кода; друго — спрян преди смяната.
+deploy_semki() {
+  local d="$SRC/semki" rc=0
+  [ -d "$d" ] || { warn "Няма semki/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "semki: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам semki (Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  bash "$d/deploy/deploy.sh" || rc=$?
+  case "$rc" in
+    0)
+      install -d -m 700 "$(dirname "$SEMKI_LAST_GOOD")"
+      printf '%s\n' "$(readlink -f "$d")" > "$SEMKI_LAST_GOOD.tmp" && mv -f "$SEMKI_LAST_GOOD.tmp" "$SEMKI_LAST_GOOD"
+      ;;
+    3) warn "semki: тази машина още не е настроена (няма .env) — пропускам, не е провал (semki/DEPLOY.md, т. 2)." ;;
+    4)
+      deploy_failed=1
+      if docker compose -f "$d/docker-compose.yml" logs --no-color --tail 300 app 2>/dev/null | grep -qE 'P3009|P3018'; then
+        warn "semki: миграцията на базата се провали — откат само на кода не помага. Бекъпът отпреди нея е в $SEMKI_SHARED/backups; процедурата — semki/DEPLOY.md, „Провалена миграция“."
+      else
+        semki_rollback "$d" || true
+      fi
+      ;;
+    *) deploy_failed=1; warn "semki: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
+  esac
+}
+
+# Откат САМО на кода към последния release, който е отговорил (никога провалилият се). Без нов дъмп.
+semki_rollback() {
+  local failed prev="" cand
+  failed="$(readlink -f "$1" || true)"
+  cand="$(cat "$SEMKI_LAST_GOOD" 2>/dev/null || true)"
+  if [ -n "$cand" ] && [ -f "$cand/deploy/deploy.sh" ] && [ "$(readlink -f "$cand" || true)" != "$failed" ]; then
+    prev="$cand"
+  fi
+  if [ -z "$prev" ]; then
+    warn "semki: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
+    return 1
+  fi
+  warn "semki: връщам предишния код ($prev)…"
+  if SEMKI_SKIP_BACKUP=1 bash "$prev/deploy/deploy.sh"; then
+    ok "semki: предишният код отговаря."
+  else
+    warn "semki: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
     return 1
   fi
 }
@@ -2413,6 +2517,7 @@ for p in $PROJECTS; do
     gaming|Gaming|aso) deploy_gaming ;;
     rilievi)    deploy_rilievi ;;
     fakturist)  deploy_fakturist ;;
+    semki)      deploy_semki ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     fivem|FiveM)          deploy_fivem ;;
@@ -2445,9 +2550,9 @@ fi
 # Третото: release-ът, към който сочи паметта на Korpora за последния работещ (KORPORA_LAST_GOOD).
 # Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
 # код, който никога не е разгръщан за Korpora. Същото за Rilievi (RILIEVI_LAST_GOOD): там е и
-# docker-compose.yml, от който тече дневният бекъп. И за Фактурист (FAKTURIST_LAST_GOOD).
+# docker-compose.yml, от който тече дневният бекъп. И за Фактурист (FAKTURIST_LAST_GOOD) и Semki (SEMKI_LAST_GOOD).
 prune_releases() {
-  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk old old_real keep protected
+  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
@@ -2455,12 +2560,13 @@ prune_releases() {
   lg_fak="$(readlink -f "$(cat "$FAKTURIST_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   # Целта на отката на linketto: без нея деплоите на други продукти я изтриваха изпод отката.
   lg_lnk="$(readlink -f "$(cat "$LINKETTO_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  lg_semki="$(readlink -f "$(cat "$SEMKI_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
     [ -n "$old_real" ] || continue
     keep=0
-    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lg_ril" "$lg_fak" "$lg_lnk"; do
+    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lg_ril" "$lg_fak" "$lg_lnk" "$lg_semki"; do
       [ -n "$protected" ] || continue
       case "$protected" in
         "$old_real"|"$old_real"/*) keep=1 ;;

@@ -23,9 +23,12 @@ export const KNOWN_PROJECTS = [
   'piuma',
   'korpora',
   'rilievi',
+  'fakturist',
+  'semki',
   'gaming',
   'fivem',
   'adblock',
+  'linketto',
   'vpsdashboard',
 ];
 

@@ -24,6 +24,9 @@ const OPEN: readonly RegExp[] = [
 export function safeNext(value: unknown): string {
   if (typeof value !== 'string' || value.length > 1000) return '/app';
   if (!/^\/app(?:[/?#]|$)/.test(value) || value.includes('\\')) return '/app';
+  // Втвърдяване (Разбивача, 25.11.2026): без „//“, сегмент „..“ (и кодиран) и управляващи знаци — браузърът ги
+  // нормализира извън `/app`, макар и на същия сайт.
+  if (/\/\/|(?:^|\/)(?:\.|%2e){2}(?:[/?#]|$)|[\u0000-\u001f\u007f]/i.test(value)) return '/app';
   if (/^\/app\/usloviya(?:[/?#]|$)/.test(value)) return '/app';
   return value;
 }
@@ -39,7 +42,7 @@ export async function requireCurrentLegal(
     next();
     return;
   }
-  if (!hasPending(await pendingLegal(user.id))) {
+  if (!hasPending(await pendingLegal(user.id, user.platformRole))) {
     next();
     return;
   }

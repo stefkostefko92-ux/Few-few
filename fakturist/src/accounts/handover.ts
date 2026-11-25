@@ -155,7 +155,10 @@ export async function handoverStatus(
     prisma.clientMandate.findMany({
       where: {
         clientId: organizationId,
+        // В сила — като `mandateInForce`: потвърдено и в срока си.
         status: 'ACTIVE',
+        validFrom: { lte: now },
+        OR: [{ validTo: null }, { validTo: { gte: now } }],
         firm: { deletedAt: null, terminatedAt: null },
       },
       orderBy: { createdAt: 'asc' },
