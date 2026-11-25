@@ -112,7 +112,9 @@ cd /root && unzip -o Few-few.zip >/dev/null
 sudo PROJECTS="fivem" bash /root/few-few-*/deploy/autodeploy.sh
 ```
 
-Веднага след това **попълни `BREVO_API_KEY`** (Brevo → SMTP & API → API keys) и пусни пак — без него
+Веднага след това **попълни `BREVO_API_KEY`** (Brevo → SMTP & API → API keys) и пусни пак. Без него
+autodeploy **не обновява** FiveM: имейлите минават само през Brevo, а нов код без ключ би спрял тихо
+писмата по DSA — без него
 уведомленията по чл. 16 и чл. 17 DSA не тръгват.
 
 **Панелът НЕ пуска вход, докато TLS не е издаден — и това не е дефект.**
@@ -281,6 +283,22 @@ docker compose exec -T cron npx tsx scripts/dedupe-servers.ts --apply    # бе�
    ```
 5. **Search Console:** нов ресурс за `thraex.carbonstealth.eu`, „Промяна на адреса“ от стария и нов
    `sitemap.xml`.
+
+## Преход Resend → Brevo (еднократно, 25.11.2026)
+
+Имейлите на всички продукти минават през Brevo (Sendinblue SAS, ЕС). Редът пази писмата по DSA
+без прекъсване:
+
+1. Brevo → SMTP & API → API keys: нов ключ → `BREVO_API_KEY=` в `/opt/few-few/shared/fivem/.env`.
+   `RESEND_API_KEY` **остава** засега — старият release още праща през него.
+2. Brevo → Senders, Domains & Dedicated IPs → Domains: потвърди `thraex.carbonstealth.eu`
+   (DKIM, DMARC и Brevo code записите в DNS).
+3. В настройките на транзакционните писма в Brevo **изключи** проследяването на отваряния и кликове. Писмата са
+   само текст, а политиката обещава, че не проследяваме.
+4. Деплой (`PROJECTS="fivem"`). Без ключ от т. 1 autodeploy отказва да обнови FiveM.
+5. Пусни пробен сигнал от сайта и провери, че потвърждението пристига.
+6. Едва тогава: махни `RESEND_API_KEY` от `.env`, отмени ключа в Resend и поискай изтриване на
+   данните там (чл. 28, ал. 3, б. „ж“ ОРЗД).
 
 Вписаните в панела трябва да влязат наново: бисквитката `__Host-` важи само за един адрес.
 

@@ -55,7 +55,7 @@ const bg: LegalSet = {
       },
       { h: 'Кой още вижда данните' },
       {
-        p: 'Доставчикът на сървърна инфраструктура е в ЕС. Изходящата поща минава през Brevo (Sendinblue SAS, Франция — ЕС). Двамата действат като обработващи по чл. 28 ОРЗД и обработват данните в ЕС. Не продаваме и не предоставяме данни за реклама.',
+        p: 'Доставчикът на сървърна инфраструктура е в ЕС. Изходящата поща минава през Brevo (Sendinblue SAS, Франция — ЕС). Двамата действат като обработващи по чл. 28 ОРЗД. Brevo съхранява данните в ЕС; ако негов подобработващ ги обработва извън ЕС, това става при гаранциите по чл. 46 ОРЗД (стандартни договорни клаузи), описани в договора на Brevo за обработване на данни — копие се предоставя при поискване. Писмата ни са само текст, без пиксели и без проследяване на отварянията и кликовете. Не продаваме и не предоставяме данни за реклама.',
       },
       { h: 'Какво НЕ събираме' },
       {
@@ -227,7 +227,7 @@ const en: LegalSet = {
       },
       { h: 'Who else sees the data' },
       {
-        p: 'The server infrastructure provider is in the EU. Outgoing email goes through Brevo (Sendinblue SAS, France — EU). Both act as processors under Art. 28 GDPR and process the data in the EU. We do not sell or share data for advertising.',
+        p: 'The server infrastructure provider is in the EU. Outgoing email goes through Brevo (Sendinblue SAS, France — EU). Both act as processors under Art. 28 GDPR. Brevo stores the data in the EU; where one of its sub-processors processes it outside the EU, this happens under the safeguards of Art. 46 GDPR (standard contractual clauses) set out in Brevo’s data processing agreement — a copy is available on request. Our emails are plain text, with no pixels and no open or click tracking. We do not sell or share data for advertising.',
       },
       { h: 'What we do NOT collect' },
       {

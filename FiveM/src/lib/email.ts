@@ -34,10 +34,15 @@ export function parseSender(raw: string): Sender | null {
   return /^[^<>\s]+@[^<>\s]+\.[^<>\s]+$/.test(s) ? { email: s } : null;
 }
 
+const DEFAULT_SENDER: Sender = { name: 'Thraex PVP', email: 'no-reply@thraex.carbonstealth.eu' };
+
 function sender(): Sender {
-  return (
-    parseSender(readEnv('EMAIL_FROM') ?? '') ?? { name: 'Thraex PVP', email: 'no-reply@thraex.carbonstealth.eu' }
-  );
+  const raw = readEnv('EMAIL_FROM');
+  if (!raw) return DEFAULT_SENDER;
+  const parsed = parseSender(raw);
+  // Сгрешен EMAIL_FROM не бива да минава тихо към подразбиращия се подател (преглед на PR #489).
+  if (!parsed) console.warn('[email] EMAIL_FROM не е „Име <адрес>“ или адрес — ползвам подателя по подразбиране');
+  return parsed ?? DEFAULT_SENDER;
 }
 
 /** Тялото на POST /v3/smtp/email — чисто, за тестовете. */
