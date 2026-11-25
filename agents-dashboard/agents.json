@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 772
+        "lessons": 773
       },
       "evolution": [
         {
@@ -2139,9 +2139,20 @@
           "date": "2026-11-25",
           "event": "v72.6 — учене",
           "detail": "Научи: В deploy/autodeploy.sh release-ите имат обвивка (<TS>/<обвивка>/<продукт>/) при GitHub …"
+        },
+        {
+          "version": "72.7.0",
+          "date": "2026-11-25",
+          "event": "v72.7 — учене",
+          "detail": "Научи: В live-run worktree node --test върху единичен тестов файл иска одобрение, затова гейто…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „В live-run worktree node --test върху единичен тестов файл иска одобрение, затова гейто…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
