@@ -7080,7 +7080,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 306
+        "lessons": 307
       },
       "evolution": [
         {
@@ -7508,9 +7508,20 @@
           "date": "2026-11-25",
           "event": "v28.0 — учене",
           "detail": "Научи: prune_releases в autodeploy.sh пази целта на всеки $SHARED_DIR/*/last-good (първия ред,…"
+        },
+        {
+          "version": "28.1.0",
+          "date": "2026-11-25",
+          "event": "v28.1 — учене",
+          "detail": "Научи: jobs.start във vpsdash слива spec.env върху process.env, затова spec само с env за тайн…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „jobs.start във vpsdash слива spec.env върху process.env, затова spec само с env за тайн…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
