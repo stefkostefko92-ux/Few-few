@@ -1278,7 +1278,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 786
+        "lessons": 787
       },
       "evolution": [
         {
@@ -2150,9 +2150,20 @@
           "date": "2026-11-25",
           "event": "v74.0 — учене",
           "detail": "Научи: FiveM docker-compose подава целия .env с env_file на трите услуги, затова при смяна на … (+6 още)"
+        },
+        {
+          "version": "74.1.0",
+          "date": "2026-11-25",
+          "event": "v74.1 — учене",
+          "detail": "Научи: Под set -e присвояване var=\"$(cmd)\" прекратява скрипта, ако cmd върне ненулев код, зато…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Под set -e присвояване var=\"$(cmd)\" прекратява скрипта, ако cmd върне ненулев код, зато…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
