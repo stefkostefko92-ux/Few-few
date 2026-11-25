@@ -2597,8 +2597,7 @@ rescue_release_env() {
 }
 
 prune_releases() {
-  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected mounts m lg
-  local -a lg_any=()
+  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected mounts m lg lg_any=""
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
@@ -2612,7 +2611,7 @@ prune_releases() {
   # продукт от main изтри папката, към която сочеха и откатът, и командите от DEPLOY.md).
   for lg in "${SHARED_DIR:-/opt/few-few/shared}"/*/last-good; do
     [ -f "$lg" ] || continue
-    lg_any+=("$(readlink -f "$(head -n 1 "$lg" 2>/dev/null || true)" 2>/dev/null || true)")
+    lg_any="$lg_any$(readlink -f "$(head -n 1 "$lg" 2>/dev/null || true)" 2>/dev/null || true)"$'\n'
   done
   if ! mounts="$(release_mount_sources)"; then
     warn "Docker не отговаря — не трия стари releases (не мога да видя кои монтират контейнерите)."
@@ -2625,12 +2624,18 @@ prune_releases() {
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
     [ -n "$old_real" ] || continue
     keep=0
-    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lg_ril" "$lg_fak" "$lg_lnk" "$lg_semki" ${lg_any[@]+"${lg_any[@]}"}; do
+    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lg_ril" "$lg_fak" "$lg_lnk" "$lg_semki"; do
       [ -n "$protected" ] || continue
       case "$protected" in
         "$old_real"|"$old_real"/*) keep=1 ;;
       esac
     done
+    while IFS= read -r protected; do
+      [ -n "$protected" ] || continue
+      case "$protected" in
+        "$old_real"|"$old_real"/*) keep=1 ;;
+      esac
+    done <<< "$lg_any"
     while IFS= read -r m; do
       [ -n "$m" ] || continue
       case "$m" in
