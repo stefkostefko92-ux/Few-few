@@ -7091,7 +7091,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 307
+        "lessons": 308
       },
       "evolution": [
         {
@@ -7525,9 +7525,20 @@
           "date": "2026-11-25",
           "event": "v28.1 — учене",
           "detail": "Научи: jobs.start във vpsdash слива spec.env върху process.env, затова spec само с env за тайн…"
+        },
+        {
+          "version": "28.2.0",
+          "date": "2026-11-25",
+          "event": "v28.2 — учене",
+          "detail": "Научи: Чистенето на releases от vpsdash (POST /api/reclaim/run) пресмята списъка на сървъра не…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Чистенето на releases от vpsdash (POST /api/reclaim/run) пресмята списъка на сървъра не…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
