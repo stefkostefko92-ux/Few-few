@@ -19,7 +19,7 @@
   let customSelectors = [];
   let procSelectors = [];
   let unhideSelectors = [];
-  let genericHideHost = false; // EasyList $generichide за този хост
+  let genericHideHost = false; // EasyList $generichide за този хост (и YouTube — виж isYouTube)
 
   const host = location.hostname.replace(/^www\./, "");
   // Multi-part публични суфикси (co.uk, com.au, ...) — иначе isThirdParty би
@@ -34,6 +34,10 @@
   // Not on YouTube: an attribute of ours on <html> is a tell its scripts can read;
   // youtube.css (ungated) covers YouTube's ad surfaces there.
   const isYouTube = /(^|\.)youtube(-nocookie)?\.com$/.test(host);
+  // На YouTube и нищо генерично в JS (AD_SELECTORS, unhide маркери, Smart Detection): всяко от тях
+  // пише data-tbab-* атрибут и inline style по елементите на страницата — четими от скриптовете ѝ.
+  // Рекламите там покриват youtube_ads.css (стил на разширението — няма го в document.styleSheets) и youtube_main.js.
+  if (isYouTube) genericHideHost = true;
   const gate = (on) => {
     if (isYouTube) return;
     try {
@@ -315,6 +319,7 @@
   // EasyList #@# exceptions за този домейн: маркираме елементите, така hide()
   // ги прескача, а inline display:revert надделява над генеричния CSS файл.
   function applyUnhide() {
+    if (isYouTube) return; // нищо генерично не е скрито там → нищо за връщане (и без маркер по #player-ads)
     for (const sel of unhideSelectors) {
       let nodes;
       try {
@@ -464,6 +469,7 @@
         /\blazy\b/i.test(p.className || "") || p.querySelector("[loading='lazy']")
       ) return;
       p.style.setProperty("display", "none", "important");
+      p.dataset.tbabCollapsed = "1"; // so taking the rule back can give the wrapper back too
     });
   }
 
@@ -553,7 +559,7 @@
   }
 
   function smartScan() {
-    if (!enabled || allowed || cosmeticsOff || !smartEnabled) return; // Smart Detection also hides → same per-site switch
+    if (!enabled || allowed || cosmeticsOff || !smartEnabled || isYouTube) return; // Smart Detection also hides → same per-site switch; never on YouTube
     const items = [];
     scanFrames(items);
     scanSticky(items);
@@ -610,13 +616,27 @@
   // YouTube tab that did not trigger the bypass would otherwise keep its
   // manipulated DOM for the whole window while we claim a clean client.
   // (:remove()-d nodes are gone for good; only a reload brings those back.)
+  function revealEl(el) {
+    el.style.removeProperty("display");
+    delete el.dataset.tbabHidden;
+    const p = el.parentElement;
+    if (p && p.dataset.tbabCollapsed) { p.style.removeProperty("display"); delete p.dataset.tbabCollapsed; }
+  }
   function revealHidden() {
     try {
-      document.querySelectorAll("[data-tbab-hidden]").forEach((el) => {
-        el.style.removeProperty("display");
-        delete el.dataset.tbabHidden;
-      });
+      document.querySelectorAll("[data-tbab-hidden]").forEach(revealEl);
+      document.querySelectorAll("[data-tbab-collapsed]").forEach((p) => { p.style.removeProperty("display"); delete p.dataset.tbabCollapsed; });
     } catch {}
+  }
+  // A rule taken back (the popup's "Undo", × in Settings, a line deleted from My filters):
+  // what only that rule hid comes back at once, no reload; hide() then re-hides whatever
+  // another rule still covers.
+  function revealGone(before) {
+    const now = new Set(customSelectors);
+    for (const sel of before) {
+      if (now.has(sel)) continue;
+      try { document.querySelectorAll(sel).forEach((el) => { if (el.dataset.tbabHidden) revealEl(el); }); } catch {}
+    }
   }
   const recomputeCosmeticsOff = () => {
     const was = cosmeticsOff;
@@ -648,7 +668,7 @@
             unhideSelectors = Array.isArray(res.unhide) ? res.unhide : [];
             // EasyList $generichide за този хост → не прилагай генеричния CSS
             // (иначе скриваме легитимен UI, напр. Google sign-in, Ads Manager).
-            genericHideHost = !!res.genericHide;
+            genericHideHost = !!res.genericHide || isYouTube;
             if (genericHideHost) gate(false);
             rebuildSelectors();
             hide();
@@ -706,7 +726,9 @@
       if (changes.customHidden) pickerMap = changes.customHidden.newValue || {};
       if (changes.userFilters) userText = changes.userFilters.newValue || "";
       if (changes.liveConfig) liveCosmetic = (changes.liveConfig.newValue && changes.liveConfig.newValue.cosmetic) || [];
+      const before = customSelectors;
       rebuildSelectors();
+      revealGone(before);
       if (enabled && !allowed) hide();
     }
   });
@@ -797,5 +819,30 @@
       smartScan();
       collapseEmpty();
     }, 1000);
+  }
+
+  // The popup's "Connections on this page": the other sites this page loaded something
+  // from, read from the browser's own Resource Timing list (what loaded, not what we
+  // blocked), counted per host. Only for our popup (extension messages) and only the top
+  // frame; nothing is stored or sent.
+  const baseOf = (h) => h.split(".").slice(MULTI_TLD.test(h) ? -3 : -2).join(".");
+  if (window === window.top) {
+    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      if (!msg || msg.type !== "getConnections") return;
+      const counts = new Map();
+      let entries = [];
+      try { entries = performance.getEntriesByType("resource"); } catch {}
+      for (const e of entries) {
+        let h = "";
+        try {
+          const u = new URL(e.name);
+          if (u.protocol !== "https:" && u.protocol !== "http:") continue;
+          h = u.hostname.toLowerCase();
+        } catch { continue; }
+        if (!h || baseOf(h) === baseHost) continue; // the site's own hosts are not "other sites"
+        counts.set(h, (counts.get(h) || 0) + 1);
+      }
+      sendResponse({ ok: true, hosts: [...counts].sort((a, b) => b[1] - a[1]).slice(0, 60).map(([h, n]) => ({ host: h, n })) });
+    });
   }
 })();

@@ -1,0 +1,39 @@
+/* Korpora — the notices of the signed-in product (an expired plan, an unverified email): a bordered panel with an
+   icon, a heading and a line; bad and warn tint the border and the background. Split from app.css (300-line cap). */
+/* notices (expired plan, unverified email) */
+.notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel);
+  margin: 0 0 20px;
+}
+.notice > .i {
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+}
+.notice h2 {
+  font-size: 1.05rem;
+  margin: 0 0 4px;
+}
+.notice p {
+  margin: 0 0 10px;
+}
+.notice-bad {
+  border-color: var(--red);
+  background: var(--red-soft);
+}
+.notice-bad > .i {
+  color: var(--red);
+}
+.notice-warn {
+  border-color: var(--amber);
+  background: var(--amber-soft);
+}
+.notice-warn > .i {
+  color: var(--amber);
+}

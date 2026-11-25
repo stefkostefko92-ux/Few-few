@@ -8,6 +8,7 @@ import { page, kpi, badge, lineChart, barChart, hbars, siteUrl } from '../lib/si
 import { tipoEnte, postiLettoEnte, ricoveriEnte, CE_INDICATORS, SP_INDICATORS, CE_FORENSICS } from '../lib/dataset.js';
 import { ultimoCe, briciole, collezioneLd, FOR_LABEL, isDetailLine, isTopLevelSp } from '../lib/site-shared.js';
 import { appaltiBlock, contrattiBlock } from './appalti.js';
+import { keywordsPerPercorso } from '../lib/seo.js';
 
 /** @typedef {import('../lib/dataset.js').Ente} Ente */
 /** @typedef {import('../lib/dataset.js').Anagrafica} Anagrafica */
@@ -196,11 +197,12 @@ export function renderStruttura({ ente, struttureByCod, anagrafica, seg, forse, 
     ? `<div class="semrow" role="list" aria-label="Le cinque spie di questa struttura">
   ${spie
     .map(
-      (s) => `<span class="semitem" role="listitem" title="${esc(s.dettaglio)}"><span class="dot ${s.stato}"></span>${esc(s.label)}${s.stato === 'nd' ? ' <span class="small">(n.d.)</span>' : ''}</span>`
+      // .sr: състоянието на спията и за екранния четец (точката е само цвят + title)
+      (s) => `<span class="semitem" role="listitem" title="${esc(s.dettaglio)}"><span class="dot ${s.stato}"></span>${esc(s.label)}${s.stato === 'nd' ? ' <span class="small">(n.d.)</span>' : ''}<span class="sr">: ${esc(s.dettaglio)}</span></span>`
     )
     .join('\n  ')}
-  <a class="small" href="../pagella.html#legenda">Cosa significano?</a>
-  ${conFeed ? `<a class="small" href="../feed/${esc(ente.codice)}.xml">🔔 Segui (RSS)</a>` : ''}
+  <span role="listitem"><a class="small" href="../pagella.html#legenda">Cosa significano?</a></span>
+  ${conFeed ? `<span role="listitem"><a class="small" href="../feed/${esc(ente.codice)}.xml">🔔 Segui (RSS)</a></span>` : ''}
 </div>`
     : '';
 
@@ -480,6 +482,7 @@ ${spBlock}
     active: 'strutture.html',
     rel: '../',
     canonical: percorso,
+    keywords: keywordsPerPercorso(percorso, ente.denominazione),
     jsonld,
     body,
   });

@@ -1,5 +1,7 @@
 <% const pv = plan; %>
-<% if (pv.state === 'staff') { %><span class="chip chip-gold"><%- include('icon', { name: 'shield' }) %><%= t('plan.state.staff') %></span>
+<%# на блокиран акаунт планът не е „в сила“: сива значка без отметка, за да не спори с червената „Блокиран“ %>
+<% if (typeof banned !== 'undefined' && banned) { %><span class="chip"><%- include('icon', { name: 'minus' }) %><%= t('plan.name.' + pv.plan) %></span>
+<% } else if (pv.state === 'staff') { %><span class="chip chip-gold"><%- include('icon', { name: 'shield' }) %><%= t('plan.state.staff') %></span>
 <% } else if (pv.state === 'pending') { %><span class="chip chip-warn"><%- include('icon', { name: 'mail' }) %><%= t('plan.state.pending') %></span>
 <% } else if (pv.state === 'expired') { %><span class="chip chip-bad"><%- include('icon', { name: 'lock' }) %><%= t('plan.state.expired', { plan: t('plan.name.' + pv.plan) }) %></span>
 <% } else { %><span class="chip <%= pv.plan === 'LIFETIME' ? 'chip-gold' : 'chip-ok' %>"><%- include('icon', { name: 'check' }) %><%= t('plan.name.' + pv.plan) %></span><% } %>

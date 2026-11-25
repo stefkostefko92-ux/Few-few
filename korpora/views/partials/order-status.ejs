@@ -1,2 +1,3 @@
 <%# Значката за състоянието на поръчката: клас и икона. За екипа отказът от договора е предупреждение — следва връщане на сумата. %>
-<% const look = { OPEN: ['chip-gold', 'clock'], DONE: ['chip-ok', 'check'], WITHDRAWN: [warnWithdrawn ? 'chip-warn' : '', 'x'] }[order.status] || ['', 'x']; %><span class="chip <%= look[0] %>"><%- include('icon', { name: look[1] }) %><%= t('plan.status.' + order.status) %></span>
+<%# Заменената поръчка е отменена от новата, не от човека: свой етикет, за да не се бърка с отмяна или отказ. %>
+<% const superseded = order.status === 'CANCELLED' && order.supersededById; const look = superseded ? ['', 'layers'] : { OPEN: ['chip-gold', 'clock'], DONE: ['chip-ok', 'check'], WITHDRAWN: [warnWithdrawn ? 'chip-warn' : '', 'x'] }[order.status] || ['', 'x']; %><span class="chip <%= look[0] %>"><%- include('icon', { name: look[1] }) %><%= t(superseded ? 'plan.status.SUPERSEDED' : 'plan.status.' + order.status) %></span>

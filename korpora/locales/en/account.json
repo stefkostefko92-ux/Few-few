@@ -3,7 +3,7 @@
     "title": "Plan",
     "current": "Current plan",
     "endsOn": "until {date}",
-    "endedOn": "ended on {date}",
+    "endedOn": "on {date}",
     "expiredRule": "When the plan ends, your projects stay and can be downloaded. New projects and changes need an active plan.",
     "requestTitle": "Order a plan",
     "manualText": "Choose a term. Payment is by bank transfer: after you order, we send you an invoice with the payment details, and the plan is activated once the payment arrives. Premium does not renew by itself — it ends at the end of the term. Lifetime is a one-off payment and is valid for as long as Korpora is offered.",
@@ -17,7 +17,8 @@
       "option": "Option",
       "status": "Status",
       "price": "Price",
-      "actions": "Action"
+      "actions": "Action",
+      "order": "Order"
     },
     "months": {
       "one": "1 month",
@@ -36,7 +37,8 @@
       "DONE": "Activated",
       "REJECTED": "Rejected",
       "CANCELLED": "Cancelled",
-      "WITHDRAWN": "Withdrawn from contract"
+      "WITHDRAWN": "Withdrawn from contract",
+      "SUPERSEDED": "Replaced"
     },
     "name": {
       "TRIAL": "Trial",
@@ -79,9 +81,11 @@
       "short": "early start"
     },
     "accept": "By ordering, you accept the {terms} and the information on the {withdrawal}.",
+    "banRule": "If the account is blocked for a breach of the terms, what you paid for the plan — Premium or Lifetime — is not refunded ({blocking}).",
     "replacesOpen": "You have an order awaiting payment. A new order will replace it and the old one will be cancelled. If you have already paid for it, write to us at {contact} before ordering again.",
     "termsLink": "terms and conditions",
     "withdrawalLink": "right of withdrawal",
+    "blockingLink": "section “Blocking”",
     "orderName": "Premium for {term}",
     "withVatShort": "incl. VAT",
     "netShort": "excl. VAT",
@@ -103,12 +107,14 @@
       "orderNo": "order no. {id}",
       "email": "Confirmation goes to",
       "statementLabel": "The statement you are sending",
-      "effect": "If you have already paid, we will refund all payments received within {refundDays} days, using the same means of payment and at no cost to you. If the plan has already been activated, we return it to what it was before the order.",
-      "effectEarly": "If you have already paid, we will refund the payments received within {refundDays} days, using the same means of payment and at no cost to you — minus the part for the time the plan was active, because you asked for an early start. If the plan has already been activated, we return it to what it was before the order.",
+      "effect": "If you have already paid, we will refund all payments we received from you no later than {refundDays} days after we receive your withdrawal, using the same means of payment and at no cost to you. If the plan has already been activated, we return it to what it was before the order.",
+      "effectEarly": "If you have already paid, we will refund the payments we received from you no later than {refundDays} days after we receive your withdrawal, using the same means of payment and at no cost to you — minus the part for the time the plan was active, because you asked for an early start. If the plan has already been activated, we return it to what it was before the order.",
       "confirm": "Confirm withdrawal",
       "back": "Back, without withdrawing",
       "unavailable": "The withdrawal period for this order has ended or the order is already closed."
-    }
+    },
+    "cancelConfirm": "Cancel order no. {no}? A cancelled order is not paid for and cannot be restored.",
+    "supersededBy": "by order no. {no}"
   },
   "account": {
     "title": "Account",
@@ -147,7 +153,13 @@
     "changeEmailButton": "Send link",
     "delete": {
       "confirmMissing": "Tick the box to confirm you understand that deletion is permanent.",
-      "lastOwner": "This is the last owner. Before deleting this account, give the role to someone else."
+      "lastOwner": "This is the last owner. Before deleting this account, give the role to someone else: in the panel, on their account page (“Profile”), with your password and code."
+    },
+    "languageMail": "Your emails now come in {lang} — with “Save” they will come in the language chosen here.",
+    "languageName": {
+      "bg": "Bulgarian",
+      "en": "English",
+      "it": "Italian"
     }
   },
   "app": {
@@ -173,11 +185,12 @@
     "deleteConfirm": "Delete “{name}”? This cannot be undone.",
     "errors": {
       "conflict": "The project was changed in another window or on another device. Reload the page to see the latest version — the changes here are not saved.",
-      "name": "The name can be up to 80 characters, without the < and > signs.",
+      "name": "The name can be up to 80 characters on one line, without the < and > signs and invisible control characters.",
       "planExpired": "Your plan has ended. Projects can be downloaded, but new projects and changes need an active plan.",
       "spec": "The project cannot be saved: a value is outside the allowed range.",
       "tooMany": "You have reached the maximum number of projects. Delete old ones to create new ones.",
       "unverified": "Confirm your email to create and change projects."
-    }
+    },
+    "emptyLocked": "You have no projects yet."
   }
 }

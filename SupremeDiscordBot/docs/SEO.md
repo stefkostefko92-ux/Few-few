@@ -13,7 +13,7 @@ Target: maximum Google visibility across Europe.
 | Per-route canonical/title/description | `components/Seo.jsx` on every public page | 404 page emits `noindex` |
 | Localized FAQPage JSON-LD | `LandingLocalized.jsx` | Visible FAQ keeps content parity (Google requirement) |
 | Org/Software/FAQ/LocalBusiness JSON-LD | `index.html` `@graph` | Geo coordinates for Bobov Dol / Sofia |
-| og-image.png 1200×630 + PNG favicons | `public/` | Social scrapers don't render SVG |
+| og-image.jpg 1200×630 + PNG favicons | `public/` | Social scrapers don't render SVG |
 | robots.txt with AI-crawler policy | `public/robots.txt` | GPTBot/ClaudeBot/PerplexityBot allowed; CCBot/Bytespider blocked |
 | llms.txt (AEO) | `public/llms.txt` | Per llmstxt.org |
 | Performance (CWV) | `App.jsx` lazy routes, `vite.config.js` manualChunks | Landing chunk small; vendor cached |
@@ -48,7 +48,7 @@ claiming otherwise is selling snake oil.
 3. **Backlinks** (the strongest ranking factor — nothing in code substitutes for this):
    - Link from `carbonstealth.eu` to `supremebot.carbonstealth.eu` with descriptive anchor text ("Discord ticket bot", not "click here").
    - List the bot on **top.gg**, **discordbotlist.com**, **discords.com** — these are high-authority directories that rank for "discord bot" queries and pass referral traffic.
-   - The Discord server invite (`discord.gg/wpCRpy8B`) should mention the site URL in the server description.
+   - The support server (reached through `https://supremebot.carbonstealth.eu/support`; the invite behind it is set in Admin → System) should mention the site URL in the server description.
 4. **Validate structured data** after each deploy: <https://search.google.com/test/rich-results> on `/`, `/de`, `/fr`.
 5. **Core Web Vitals**: check <https://pagespeed.web.dev/> for `/` after deploy; target LCP < 2.5 s on mobile.
 6. **Keep `lastmod` honest** in `sitemap.xml` when landing content changes.
@@ -58,6 +58,6 @@ claiming otherwise is selling snake oil.
 ```
 curl -s https://supremebot.carbonstealth.eu/robots.txt | head
 curl -s https://supremebot.carbonstealth.eu/sitemap.xml | xmllint --noout -   # validates XML
-curl -sI https://supremebot.carbonstealth.eu/og-image.png                     # 200 + image/png
+curl -sI https://supremebot.carbonstealth.eu/og-image.jpg                     # 200 + image/jpeg
 curl -sI https://supremebot.carbonstealth.eu/de                               # 200 (SPA fallback)
 ```

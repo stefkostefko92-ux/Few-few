@@ -21,7 +21,7 @@ async function exportOf(b: Browser): Promise<{ data: Export; text: string }> {
   return { data: JSON.parse(reply.body) as Export, text: reply.body };
 }
 
-/** Must match EXPORT_MAX_LOGINS in services/account-self.ts. */
+/** Must match EXPORT_MAX_LOGINS in services/account-export.ts. */
 const EXPORT_MAX_LOGINS = 5000;
 
 test('an account with more sign-ins than the export holds gets the newest ones, and is told so', async () => {

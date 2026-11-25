@@ -1,21 +1,26 @@
 // Korpora editor: a saved project in the browser. Spec → model → BOM, drilling, nesting, drawings, CNC preview.
 // The server keeps the spec (save) and makes the downloads from the SAVED spec; the preview here is computed live.
 import { registerCatalog } from '../engine/catalog.js';
-import { buildModel, normalizeSpec, withType } from '../engine/model.js';
+import { buildModel, normalizeSpec } from '../engine/model.js';
 import { buildBom } from '../engine/bom.js';
 import { nest } from '../engine/nest.js';
 import { cncBlockers } from '../engine/cam.js';
 import { canonicalJson } from '../engine/util.js';
 import { $, $$, sha256, localDate } from './dom.js';
+import { lang } from './text.js';
 import {
   renderTypes,
   renderParams,
+  showType,
+  bindTypebox,
   renderHardwareOptions,
   writeForm,
-  bindForm,
   bindRailbox,
 } from './form.js';
-import { openPicker, bindPicker } from './pickers.js';
+import { bindRail } from './bind-rail.js';
+import { bindRoomItems, renderRoomItems } from './room-items.js';
+import { bindBuilder } from './build-panel.js';
+import { createSteps } from './steps.js';
 import { renderBom } from './render-bom.js';
 import { renderDrill } from './render-drill.js';
 import { renderNesting } from './render-nest.js';
@@ -25,7 +30,9 @@ import { bindPanels } from './bind-panels.js';
 import { renderCatalog, bindCatalog } from './render-catalog.js';
 import { createViewer } from './bind-view.js';
 import { bindFullscreens } from './fullscreen.js';
+import { bindMenus } from './menus.js';
 import { createSaver } from './saver.js';
+import { explainProblems } from './problems.js';
 import {
   loadCatalog,
   driftOf,
@@ -37,8 +44,8 @@ import {
   guardLeaving,
 } from './session.js';
 import { renderHeader } from './header.js';
+import { TABS, showTab, bindTabs, followHash } from './tabs.js';
 
-const TABS = ['view', 'bom', 'drill', 'nest', 'draw', 'cnc', 'cat'];
 const boot = JSON.parse($('#boot').textContent);
 const root = $('#main');
 const csrf = root.dataset.csrf;
@@ -60,10 +67,12 @@ const state = {
   savedAt: boot.updatedAt, // the version this editor opened: the server saves only over it
   saving: false,
   conflict: false,
+  problem: null, // why the server refused the last save, until a save goes through: 'session', 'plan'…
   blockers: [],
   drift: [], // hardware and decors of the saved project that have left the catalog, until it is saved
 };
 let viewer = null;
+let builder = null;
 let CATALOG = null;
 
 const meta = () => ({
@@ -74,7 +83,11 @@ const meta = () => ({
 });
 
 const RENDER = {
-  view: () => viewer?.setModel(state.model),
+  view: () => {
+    viewer?.setModel(state.model);
+    viewer?.pick.relight();
+  },
+  build: () => builder?.render(state.model, state.spec),
   bom: () => renderBom(state),
   drill: () => renderDrill(state, meta()),
   nest: () => renderNesting(state, text.fullscreen),
@@ -92,7 +105,7 @@ function renderTab(id) {
 /* ---------- saving ---------- */
 
 // A change still waiting for its recompute is applied first, so Ctrl+S right after typing saves the new value.
-const { isDirty, showState, save } = createSaver({
+const saver = createSaver({
   state,
   boot,
   csrf,
@@ -103,7 +116,11 @@ const { isDirty, showState, save } = createSaver({
     showDrift([]);
     void recompute();
   },
+  onProblem: (kind) => explain(kind),
 });
+const { isDirty, showState, save } = saver;
+// a refused save says why and offers the way out (a copy, a sign-in in a new tab, the plans)
+const explain = explainProblems({ state, saver, text });
 
 /* ---------- model ---------- */
 
@@ -117,20 +134,24 @@ async function recompute(writeFocused = false) {
   let bom;
   let blockers;
   try {
-    model = buildModel(spec);
+    model = buildModel(spec, { lang: lang() });
     // as on the server: the saved project drills and cuts for what it chose, not for the substitute on screen
     for (const reason of state.drift) model.warnings.push({ level: 'error', text: reason });
     nesting = nest(model);
     bom = buildBom(model);
     blockers = cncBlockers(model, nesting);
   } catch {
-    // a value the engine cannot build is undone, so it is never saved; a first load has nothing to fall back to
-    showError(text.engineFailed);
-    if (!state.model) lockForReadingOnce(text.engineFailed);
-    else {
-      state.spec = state.model.spec;
-      writeForm(form, state.spec, true);
+    // a first load has nothing to fall back to: the project opens for reading only (no value was changed)
+    if (!state.model) {
+      lockForReadingOnce(text.openFailed);
+      return;
     }
+    // a value the engine cannot build is undone, so it is never saved
+    showError(text.engineFailed);
+    steps.failed();
+    state.spec = state.model.spec;
+    writeForm(form, state.spec, true);
+    renderRoomItems(state.spec);
     return;
   }
   try {
@@ -139,7 +160,11 @@ async function recompute(writeFocused = false) {
     if (mine !== seq || state.spec !== spec) return;
     Object.assign(state, { spec: model.spec, model, hash, bom, nesting, blockers });
     writeForm(form, model.spec, writeFocused);
+    renderRoomItems(model.spec);
     renderHeader(state.model);
+    $('#personalize').hidden = readOnly || !steps.convertible(model.spec.type);
+    builder.update(model, model.spec);
+    steps.built();
     showDownloads(state.blockers.length > 0, text.cncBlockedLink);
     for (const t of TABS) if (t !== 'cat') state.dirty.add(t);
     renderTab(state.tab);
@@ -169,18 +194,14 @@ async function flushPending() {
   await recompute(writeFocused);
 }
 
+// the steps to undo: the constructor's edits, the type, „reset“, „Персонализирай“
+const steps = createSteps({ state, isReadOnly: () => readOnly, recompute, schedule });
+
 /* ---------- tabs ---------- */
 
 function selectTab(id, focus = false) {
   state.tab = id;
-  for (const t of $$('[role="tab"]')) {
-    const on = t.dataset.tab === id;
-    t.setAttribute('aria-selected', String(on));
-    t.tabIndex = on ? 0 : -1;
-    if (on && focus) t.focus();
-  }
-  for (const p of $$('[role="tabpanel"]')) p.hidden = p.id !== `panel-${id}`;
-  if (history.replaceState) history.replaceState(null, '', `#${id}`);
+  showTab(id, focus);
   if (id !== 'cnc') stopSim();
   renderTab(id);
   if (id === 'view') viewer?.resize();
@@ -189,59 +210,48 @@ function selectTab(id, focus = false) {
 function bindUi() {
   renderTypes($('#type-picker'));
   renderParams($('#param-fields'), state.spec.type);
+  showType(state.spec.type);
   renderHardwareOptions();
   bindRailbox($('.railbox', form));
-  bindForm(form, (key, value, commit) => {
-    if (readOnly) return;
-    if (key === 'type') {
-      state.spec = withType(state.spec, value);
-      renderParams($('#param-fields'), value);
-      void recompute(true);
-      return;
-    }
-    state.spec = { ...state.spec, [key]: value };
-    // a final change shows the value as the engine took it (limits, step), also in a field still focused (Enter)
-    if (commit) schedule(40, true);
-    else schedule(400);
+  bindTypebox($('.typebox', form));
+  bindRail({
+    form,
+    state,
+    isReadOnly: () => readOnly,
+    remember: steps.remember,
+    recompute,
+    schedule,
   });
-  for (const b of $$('[data-pick]')) {
-    b.addEventListener('click', () => {
-      if (readOnly) return;
-      const key = b.dataset.pick;
-      const mode = key === 'frontRal' ? 'ral' : key === 'handle' ? 'handle' : 'decor';
-      openPicker(mode, state.spec[key], (id) => {
-        state.spec = {
-          ...state.spec,
-          [key]: id,
-          ...(key === 'frontRal' ? { frontMaterial: 'ral' } : {}),
-        };
-        void recompute();
-      });
-    });
-  }
-  bindPicker();
-  $('#reset').addEventListener('click', () => {
-    if (readOnly) return;
-    state.spec = normalizeSpec({ type: state.spec.type });
-    void recompute(true);
+  bindRoomItems({
+    state,
+    isReadOnly: () => readOnly,
+    remember: steps.remember,
+    recompute,
+    schedule,
+  });
+  builder = bindBuilder({
+    panel: $('#panel-build'),
+    isReadOnly: () => readOnly,
+    steps,
+    onSelect: (sel) => viewer?.pick.light(sel),
+  });
+  $('#personalize').addEventListener('click', () => {
+    steps.personalize();
+    selectTab('build', true);
   });
 
-  for (const t of $$('[role="tab"]')) {
-    t.addEventListener('click', () => selectTab(t.dataset.tab));
-    t.addEventListener('keydown', (ev) => {
-      const i = TABS.indexOf(t.dataset.tab);
-      if (ev.key === 'ArrowRight') selectTab(TABS[(i + 1) % TABS.length], true);
-      else if (ev.key === 'ArrowLeft') selectTab(TABS[(i + TABS.length - 1) % TABS.length], true);
-      else return;
-      ev.preventDefault();
-    });
-  }
+  bindTabs(selectTab);
 
   bindPanels(state, meta);
   bindCatalog(CATALOG);
 
   // 3D, and full screen for it and the drawings
-  viewer = createViewer(text);
+  // a click on a free carcass's part in 3D selects its cell in the constructor
+  viewer = createViewer(text, (p) =>
+    builder.select({ column: p.column, from: p.cell, to: p.cell }),
+  );
+  for (const b of $$('[data-tab-go]'))
+    b.addEventListener('click', () => selectTab(b.dataset.tabGo, true));
   bindFullscreens(text);
 
   // saving and downloads
@@ -249,17 +259,25 @@ function bindUi() {
     $('#save').addEventListener('click', () => void save(true));
     $('#project-name').addEventListener('input', showState);
     document.addEventListener('keydown', (ev) => {
-      // S by its letter, or by its place when the layout puts no Latin letter there (Cyrillic „с“)
-      const s = ev.key.toLowerCase() === 's' || (ev.code === 'KeyS' && !/^[a-z]$/i.test(ev.key));
-      if ((ev.ctrlKey || ev.metaKey) && s) {
+      if (!(ev.ctrlKey || ev.metaKey)) return;
+      // a letter, or its place when the layout puts no Latin letter there (Cyrillic „с“, „з“)
+      const is = (k) =>
+        ev.key.toLowerCase() === k ||
+        (ev.code === `Key${k.toUpperCase()}` && !/^[a-z]$/i.test(ev.key));
+      if (is('s')) {
         ev.preventDefault();
         void save(true);
+      } else if ((is('z') || is('y')) && !ev.target.closest?.('input, textarea, select')) {
+        // a field keeps its own undo; elsewhere Ctrl+Z / Ctrl+Shift+Z (Ctrl+Y) step through the edits
+        ev.preventDefault();
+        steps.step(is('y') || ev.shiftKey ? 1 : -1);
       }
     });
     // a change still waiting for its recompute counts too
     guardLeaving(() => isDirty() || pending !== null || state.saving);
   }
-  bindDownloads({ save, onBlocked: () => selectTab('cnc', true) });
+  bindDownloads({ save, onBlocked: () => selectTab('cnc', true), text });
+  bindMenus($$('.ed-actions details'));
 }
 
 let locked = false;
@@ -267,7 +285,7 @@ function lockForReadingOnce(message) {
   if (locked) return;
   locked = true;
   readOnly = true;
-  lockForReading(message);
+  lockForReading(message, text.readOnlyState);
 }
 
 /* ---------- boot ---------- */
@@ -282,12 +300,8 @@ async function start() {
   if (!catalog.ok && !readOnly) lockForReadingOnce(text.catalogFailed);
   showDrift(state.drift, { title: text.driftTitle, text: text.driftText });
   writeForm(form, state.spec, true);
-  const tabOfHash = () => location.hash.replace('#', '');
-  selectTab(TABS.includes(tabOfHash()) ? tabOfHash() : 'view');
-  // a link or the address bar can change the tab later too (replaceState in selectTab fires no hashchange)
-  window.addEventListener('hashchange', () => {
-    if (TABS.includes(tabOfHash()) && tabOfHash() !== state.tab) selectTab(tabOfHash());
-  });
+  renderRoomItems(state.spec);
+  followHash(selectTab, () => state.tab, state.spec.type === 'custom' ? 'build' : 'view');
   await recompute(true);
   // what was just loaded counts as saved, even if this browser's catalog normalizes it slightly differently
   state.savedHash = state.hash;

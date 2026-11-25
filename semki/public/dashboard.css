@@ -1,0 +1,300 @@
+/* Страницата „Дашборд“: плочките, рафтовете със стъклениците (3D от public/js/dashboard.js),
+   прогнозата на Canvas и таблицата. Зарежда се само на тази страница. */
+
+.dash-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.dash-head h1,
+.dash-head p {
+  margin: 0;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.8rem 1rem;
+  min-width: 0;
+}
+
+.kpi-label {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.kpi-value {
+  font-size: clamp(1.3rem, 5.2vw, 1.75rem);
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.kpi-sub {
+  color: var(--muted);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+/* Цветът на вида — квадратче (заглавие, таблица) или чертичка (легенда). Цветовете са същите като
+   SEED_COLORS в src/domain/chart.ts. */
+.swatch {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sw, #898781);
+}
+
+.swatch.line {
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.swatch.dashed {
+  background: repeating-linear-gradient(90deg, var(--muted) 0 4px, transparent 4px 8px);
+}
+
+.sw-amnesia {
+  --sw: #3987e5;
+}
+.sw-ak {
+  --sw: #d95926;
+}
+.sw-ogkush {
+  --sw: #199e70;
+}
+.sw-purple {
+  --sw: #9085e9;
+}
+.sw-skunk {
+  --sw: #c98500;
+}
+.sw-other {
+  --sw: #898781;
+}
+
+/* ── Рафтовете ── */
+.shelves {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* 3D рисунката е <canvas> зад цялото съдържание на рафта; фонът отдолу е за времето, докато се рисува,
+   и за браузър без WebGL. */
+.shelf {
+  position: relative;
+  padding: 1rem 1.1rem 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #19201c 0%, #121815 100%);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.shelf-3d {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+  pointer-events: none;
+}
+
+.shelf-3d.is-ready {
+  opacity: 1;
+}
+
+.shelf > :not(.shelf-3d) {
+  position: relative;
+  z-index: 1;
+}
+
+.shelf-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.shelf-head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.25rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.shelf-head .swatch {
+  width: 12px;
+  height: 12px;
+}
+
+.shelf-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.4rem;
+  margin: 0;
+}
+
+.shelf-stats div {
+  display: flex;
+  flex-direction: column;
+}
+
+.shelf-stats dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.shelf-stats dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Всички стъкленици са с еднаква височина (--row-h), така редовете са през равни стъпки и 3D сцената
+   слага дъската на всеки ред на 203 px от горния му край (SLOT.floor в client/geometry.ts). */
+.shelf-row {
+  --row-h: 296px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin: 0 -1.1rem;
+  padding: 0 0.85rem;
+}
+
+.vial {
+  margin: 0;
+  width: 88px;
+  height: var(--row-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Мястото на стъкленицата: 64 × 210, дъното е на 203 px. В 3D е само котва (и подсказка при посочване). */
+.vial-slot {
+  position: relative;
+  width: 64px;
+  height: 210px;
+  flex: none;
+}
+
+.vial-fill {
+  display: none;
+}
+
+.vial figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  padding: 0.75rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.vial figcaption > span {
+  white-space: nowrap;
+}
+
+.vial-pct {
+  font-size: 0.95rem;
+}
+
+.vial-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--text);
+  font-size: 0.75rem;
+}
+
+.vial-status .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fab219;
+  box-shadow: 0 0 6px rgba(250, 178, 25, 0.7);
+}
+
+.vial-id {
+  font-size: 0.72rem;
+}
+
+/* Без WebGL: проста стъкленица от CSS, нивото идва от JS (CSSOM), дъската — линия под реда. */
+.no-3d .shelf-row {
+  background: linear-gradient(
+      180deg,
+      transparent 203px,
+      #56685b 203px,
+      #2c3830 208px,
+      #1a221d 215px,
+      transparent 215px
+    )
+    0 0 / 100% var(--row-h) repeat-y;
+}
+
+.no-3d .vial-slot::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 24px;
+  bottom: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-top: 0;
+  border-radius: 0 0 22px 22px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.no-3d .vial-fill {
+  display: block;
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: 8px;
+  max-height: 160px;
+  border-radius: 0 0 21px 21px;
+  background: var(--sw);
+}
+
+.no-3d .vial.is-expired .vial-fill {
+  display: none;
+}
+
+.shelf-empty {
+  margin-top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shelf-3d {
+    transition: none;
+  }
+}

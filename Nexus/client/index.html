@@ -10,7 +10,7 @@
     <!-- ====== Primary SEO ====== -->
     <title>Nexus Dominion — Free Browser MMORPG · Italia &amp; България</title>
     <meta name="description" content="Nexus Dominion is a free browser MMORPG with server-authoritative turn-based combat, 500 levels of monster roster, an ELO arena, a real-time auction house, and a five-tier guild system. Runs in the browser; no installer." />
-    <meta name="keywords" content="browser MMORPG, free MMORPG, no download MMORPG, fantasy RPG online, MMORPG Italia, MMORPG italiano, MMO gratis browser, ММОРПГ браузърна игра, MMORPG България, безплатна онлайн игра" />
+    <meta name="keywords" content="browser MMORPG, free MMORPG, no download MMORPG, fantasy RPG online, MMORPG Italia, MMORPG italiano, MMO gratis browser, ММОРПГ браузърна игра, MMORPG България, безплатна онлайн игра, Carbon Stealth" />
     <meta name="author" content="Nexus Dominion" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href="https://nexus.carbonstealth.eu/" />
@@ -93,10 +93,22 @@
         },
         {
           "@type": "Organization",
+          "@id": "https://nexus.carbonstealth.eu/#org",
           "name": "Nexus Dominion",
           "url": "https://nexus.carbonstealth.eu/",
           "logo": "https://nexus.carbonstealth.eu/favicon.svg",
-          "areaServed": ["IT", "BG", "EU"]
+          "email": "info@carbonstealth.eu",
+          "areaServed": ["IT", "BG", "EU"],
+          "parentOrganization": {
+            "@type": "Organization",
+            "@id": "https://carbonstealth.eu/#organization",
+            "name": "Carbon Stealth VCC",
+            "legalName": "Карбон Стелт ЕДПК",
+            "vatID": "BG208725180",
+            "taxID": "208725180",
+            "url": "https://carbonstealth.eu",
+            "address": { "@type": "PostalAddress", "streetAddress": "ul. Samuil 3", "postalCode": "2670", "addressLocality": "Bobov dol", "addressCountry": "BG" }
+          }
         },
         {
           "@type": "FAQPage",
@@ -167,6 +179,8 @@
       <p>Nexus Dominion is a free browser MMORPG with server-authoritative turn-based combat, four playable classes, 240+ items across twelve gear tiers, an ELO arena, a real-time auction house, a five-tier guild system with scaling raid bosses, and a 500-level roster spread across twenty-one scripted regions. Runs in any modern browser, no installer.</p>
       <p lang="it">Nexus Dominion è un MMORPG da browser con combattimenti a turni autoritativi sul server, quattro classi, dieci livelli di equipaggiamento, arena ELO, casa d'aste in tempo reale e sistema di gilde a cinque livelli. Gratuito, senza installazione, in qualsiasi browser moderno.</p>
       <p lang="bg">Nexus Dominion е браузърна ММОРПГ с пошагови битки, валидирани на сървъра, четири класа, десет нива екипировка, ELO арена, аукционна къща в реално време и гилдийна система на пет нива. Безплатна, без инсталация, във всеки модерен браузър.</p>
+      <!-- Кой стои зад играта и как се свързваш — същото като footer-а на Landing.tsx (доверие, tools/seo/doverie.md). -->
+      <p>Nexus Dominion by Carbon Stealth VCC — ul. Samuil 3, 2670 Bobov dol, Bulgaria. Contact: <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a> · <a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Service</a></p>
     </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

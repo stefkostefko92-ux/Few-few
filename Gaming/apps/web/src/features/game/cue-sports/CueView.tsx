@@ -1,14 +1,29 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { runShot, TABLE, type Ball, type CueState, type CueAction, type CueVariant } from "@aso/shared";
-import { useAuthStore } from "../../../lib/store";
+import {
+  runShot,
+  SOCKET_EVENTS,
+  TABLE,
+  type Ball,
+  type CueState,
+  type CueAction,
+  type CueVariant,
+} from "@aso/shared";
+import { getSocket } from "../../../lib/socket";
+import { useAuthStore, useMatchStore } from "../../../lib/store";
 import { playCue } from "../../../lib/sound";
 import { Button } from "../../../ui";
 import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { DecisionPrompt } from "../scene/DecisionPrompt";
 import { CueTableGL, webglSupported, type CueTableHandle } from "./CueTableGL";
 import type { CueScene } from "./glTable";
+import { SpinPad, type Spin } from "./SpinPad";
+import { animFrameAt, pocketForSlot, pocketHole, replayDecision, spaceShoots, type FocusTarget } from "./cueControls";
+import { cueE2E, type CueShotLog } from "./e2eHook";
+import { DecisionTable, type MiniBall } from "./DecisionTable";
+import { onEight as onEightOf, openDecision } from "./cueDecision";
 import "./cue-table.css";
 
 type RBall = { id: number; x: number; y: number };
@@ -20,8 +35,16 @@ type CueStateX = CueState & {
   pushDecision?: boolean;
   freeColour?: boolean;
   freeBall?: boolean;
+  /** 9-ball: поредни фалове по място (2 = предупреждение). */
+  fouls?: [number, number];
+  /** Snooker: „фал и пропуск“ при последния удар. */
+  miss?: boolean;
+  /** Snooker: след фал входящият избира — играе / нарушителят пак. */
+  foulChoice?: boolean;
+  /** Snooker: при пропуск — може да поиска топките да се върнат. */
+  missReplay?: unknown;
 };
-type CueActionX = (CueAction & { pushOut?: boolean }) | { type: "PASS" };
+type CueActionX = (CueAction & { pushOut?: boolean }) | { type: "PASS" } | { type: "REPLAY" };
 
 const POCKETS: [number, number][] = [
   [0, 0],
@@ -75,12 +98,23 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const [placing, setPlacing] = useState(false);
   const [placedCue, setPlacedCue] = useState<{ x: number; y: number } | null>(null);
   const [pushArmed, setPushArmed] = useState(false);
+  const [spin, setSpin] = useState<Spin>({ x: 0, y: 0 });
+  /** 8-ball: обявеният за осмицата джоб (индекс в POCKETS) или null. */
+  const [calledPocket, setCalledPocket] = useState<number | null>(null);
+  /** „Смени джоба“ — ново питане (нов promptKey), прозорецът излиза цял. */
+  const [callRound, setCallRound] = useState(0);
+  /** Решение „Играя аз“ (след push-out / фал на съперника) — ключът му. */
+  const [playOn, setPlayOn] = useState<string | null>(null);
 
   // Shot animation driven purely off state.shotNo (+ state.lastShot.before).
   const [frameBalls, setFrameBalls] = useState<RBall[] | null>(null);
   const [sinks, setSinks] = useState<{ key: string; x: number; y: number; color: string }[]>([]);
-  const seenShot = useRef(0);
+  /** Last shot number this view has caught up with; null = no state of this
+   *  match seen yet (0 is a real value: the break is still to come). */
+  const seenShot = useRef<number | null>(null);
   const animating = frameBalls !== null;
+  /** An aiming press/drag on the felt is in progress (see pressAt). */
+  const aimDrag = useRef(false);
 
   const nearestPocket = (x: number, y: number): [number, number] =>
     POCKETS.reduce((best, p) =>
@@ -91,39 +125,46 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   // (regrouped party rooms reuse the mount) — otherwise seenShot from the old
   // match suppresses every animation of the new one.
   useEffect(() => {
-    seenShot.current = 0;
+    seenShot.current = null;
     setFrameBalls(null);
     setPlacedCue(null);
     setPlacing(false);
     setPushArmed(false);
+    setSpin({ x: 0, y: 0 });
+    setCalledPocket(null);
   }, [m.matchId]);
 
-  useEffect(() => {
+  // Layout effect: the replay's first frame replaces the new resting layout
+  // BEFORE the browser paints — no one-frame flash of where the balls end up.
+  useLayoutEffect(() => {
     if (!state) return;
-    // Joining/resuming mid-match: adopt the current shot count silently instead
-    // of replaying a stale shot (shotNo 1 — a live break — still animates).
-    if (seenShot.current === 0 && state.shotNo > 1) {
-      seenShot.current = state.shotNo;
-      return;
-    }
-    if (!state.lastShot || state.shotNo <= seenShot.current) return;
+    // Joining/resuming mid-match adopts the shot count silently; a live shot
+    // replays. "Seen 0" used to mean "seen nothing" too, so two shots landing
+    // in one render (a busy main thread batches the socket updates) passed
+    // for a rejoin and neither was shown — see replayDecision.
+    const decision = replayDecision(seenShot.current, state.shotNo, !!state.lastShot);
+    if (decision === "adopt") seenShot.current = state.shotNo;
+    if (decision !== "animate" || !state.lastShot) return;
     seenShot.current = state.shotNo;
     const variant = state.variant;
-    const { before, angle: a, power: p } = state.lastShot;
-    const frames = runShot(before as Ball[], { angle: a, power: p }).frames;
+    const shotNo = state.shotNo;
+    // Същият вход като на сървъра (вкл. ефекта) → същата траектория.
+    const { before, angle: a, power: p, spinX, spinY } = state.lastShot;
+    const frames = runShot(before as Ball[], { angle: a, power: p, spinX, spinY }).frames;
+    const last = frames.length - 1;
     setPlacedCue(null);
     playCue("flip");
-    let i = 0;
+    const e2e = cueE2E();
+    const entry: CueShotLog | null = e2e
+      ? { shotNo, startedAt: Date.now(), endedAt: 0, frames: frames.length, final: frames[last]?.balls ?? [] }
+      : null;
+    if (e2e && entry) e2e.shots.push(entry);
+
+    // A ball that left the felt since the last DRAWN frame dropped into the
+    // nearest pocket (frames may be skipped — see animFrameAt).
     let prev: RBall[] = frames[0]?.balls ?? [];
-    const id = setInterval(() => {
-      const f = frames[i];
-      if (!f) {
-        clearInterval(id);
-        setFrameBalls(null); // hand back to authoritative state.balls
-        return;
-      }
-      // A ball that vanished this frame dropped into the nearest pocket — drop it.
-      const cur = new Set(f.balls.map((b) => b.id));
+    const sinkVanished = (next: RBall[], i: number) => {
+      const cur = new Set(next.map((b) => b.id));
       for (const pb of prev) {
         if (cur.has(pb.id)) continue;
         const [px, py] = nearestPocket(pb.x, pb.y);
@@ -132,29 +173,82 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
         if (useGL) {
           glRef.current?.addSink(px, py, color);
         } else {
-          const key = `${pb.id}-${state.shotNo}-${i}`;
+          const key = `${pb.id}-${shotNo}-${i}`;
           setSinks((s) => [...s, { key, x: px, y: py, color }]);
           window.setTimeout(() => setSinks((s) => s.filter((x) => x.key !== key)), 360);
         }
       }
-      prev = f.balls;
-      setFrameBalls(f.balls);
-      i += 1;
-    }, 1000 / 60);
-    return () => clearInterval(id);
+      prev = next;
+    };
+
+    // Real-time playback off the wall clock: it lasts exactly `lastShotMs`,
+    // the length the server paces the bot and the turn clock by.
+    const t0 = performance.now();
+    let shown = -1;
+    let raf = 0;
+    const tick = () => {
+      const i = animFrameAt(performance.now() - t0, frames.length);
+      if (i >= frames.length) {
+        sinkVanished(frames[last]?.balls ?? prev, last);
+        if (entry) entry.endedAt = Date.now();
+        setFrameBalls(null); // hand back to authoritative state.balls
+        return;
+      }
+      if (i !== shown) {
+        shown = i;
+        const f = frames[i]!;
+        sinkVanished(f.balls, i);
+        setFrameBalls(f.balls);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => cancelAnimationFrame(raf);
     // Keyed to shotNo (not the state object): re-broadcasts of the SAME shot
     // (resync / reclaim / reconnect) must not kill the running animation.
   }, [state?.shotNo]);
 
+  // In-flight guard: one action per server state. A double click on „Удар“
+  // (or a held Space) sent a second SHOOT before the answer came back — it was
+  // either rejected with an error toast or, after a pot, played as a second
+  // shot. Cleared by the next state or by the server's rejection.
+  const stateVersion = useMatchStore((s) => s.stateVersion);
+  const [sentFor, setSentFor] = useState(-1);
+  const pending = sentFor === stateVersion;
+  useEffect(() => {
+    const socket = getSocket();
+    const clear = () => setSentFor(-1);
+    socket.on(SOCKET_EVENTS.ERROR, clear);
+    return () => {
+      socket.off(SOCKET_EVENTS.ERROR, clear);
+    };
+  }, []);
+  const send = (action: CueActionX) => {
+    setSentFor(stateVersion);
+    m.send(action);
+  };
+
   const myTurn = !!state && state.phase === "PLAY" && state.turn === seat && !animating;
   const ballInHand = !!state && state.ballInHand && myTurn;
   const pushAvail = game === "NINEBALL" && !!state?.pushAvail;
-  const pushDecision = game === "NINEBALL" && !!state?.pushDecision;
+  const foulChoice = game === "SNOOKER" && !!state?.foulChoice;
+  const canReplay = foulChoice && !!state?.missReplay;
 
-  // A fresh shot / turn change drops any armed push-out declaration.
+  // A fresh shot / turn change drops any armed push-out declaration — and the
+  // cue-ball placement mode: left on across a turn change (e.g. the clock ran
+  // out mid-placement) it blocked aiming and every shot was then rejected.
   useEffect(() => {
     setPushArmed(false);
+    setPlacing(false);
+    setCalledPocket(null);
+    aimDrag.current = false;
   }, [state?.shotNo, state?.turn]);
+
+  // 8-ball: на осмицата ли съм (същото правило като в двигателя — групата ми е
+  // изчистена преди удара). Тогава преди удара трябва да обявя джоб.
+  const onEight = !!state && game === "EIGHTBALL" && onEightOf(state);
+  const mustCall = myTurn && onEight;
+  const canShoot = myTurn && !pending && !(mustCall && calledPocket === null);
 
   const liveBalls: RBall[] = animating
     ? (frameBalls ?? [])
@@ -165,6 +259,30 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const cuePos =
     placedCue ?? liveBalls.find((b) => b.id === 0) ?? { x: 0.5, y: TABLE.h / 2 };
 
+  // ── Решения: изскачат сами, когато са на ред (DecisionPrompt, cueDecision) ──
+  // Ключът носи мача и удара: ново положение = ново решение (показва се отново).
+  const atShot = `${m.matchId ?? "-"}-${state?.shotNo ?? 0}`;
+  const playKey = `play-${atShot}`;
+  const decision = state
+    ? openDecision(state, seat, {
+        live: phase === "playing",
+        animating,
+        called: calledPocket !== null,
+        pushArmed,
+        playedOn: playOn === playKey,
+      })
+    : null;
+  const miniBalls: MiniBall[] = liveBalls.map((b) => ({
+    id: b.id,
+    x: b.x,
+    y: b.y,
+    color: ballColor(b.id, game),
+    stripe: isStripe(b.id, game),
+  }));
+  const miniTable = (ring?: number, onPocket?: (pocket: number) => void) => (
+    <DecisionTable balls={miniBalls} cloth={cloth} rotated={useGL} ring={ring} onPocket={onPocket} />
+  );
+
   // Pointer → table coordinates.
   function toTable(e: React.PointerEvent): { x: number; y: number } | null {
     const svg = svgRef.current;
@@ -173,11 +291,22 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     return { x: ((e.clientX - r.left) / r.width) * TABLE.w, y: ((e.clientY - r.top) / r.height) * TABLE.h };
   }
 
+  /** 8-ball на осмицата: натискане върху ОТВОРА на джоб го обявява (pocketHole). */
+  const pocketNear = pocketHole;
+
   function aimAt(p: { x: number; y: number }) {
     if (!myTurn || placing) return;
     setAngle(Math.atan2(p.y - cuePos.y, p.x - cuePos.x));
   }
   function placeAt(p: { x: number; y: number }) {
+    // 8-ball на осмицата: клик върху отвора на джоб го обявява.
+    if (mustCall && !placing) {
+      const i = pocketNear(p);
+      if (i >= 0) {
+        setCalledPocket(i);
+        return;
+      }
+    }
     if (!myTurn || !placing) return;
     if (placementOk(p.x, p.y)) {
       setPlacedCue(p);
@@ -185,10 +314,31 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     }
   }
 
-  function onMove(e: React.PointerEvent) {
-    const p = toTable(e);
-    if (p) aimAt(p);
+  // Aiming = press (click / tap) or drag on the felt. It used to follow every
+  // hover move, so the path from the aim point to „Сила“ / „Удар“ (both below
+  // the table) re-aimed the shot toward wherever the cursor left the felt; a
+  // tap on a touch screen (no hover) could not aim at all. The pointer is
+  // captured for the drag, and a press that places the cue ball or calls a
+  // pocket is not an aim (both are decided on release).
+  function pressAt(p: { x: number; y: number }) {
+    if (!myTurn || placing) return;
+    if (mustCall && pocketNear(p) >= 0) return;
+    aimDrag.current = true;
+    aimAt(p);
   }
+  function dragAt(p: { x: number; y: number }) {
+    if (aimDrag.current) aimAt(p);
+  }
+  function releaseAt(p: { x: number; y: number }) {
+    if (aimDrag.current) {
+      aimDrag.current = false;
+      return;
+    }
+    placeAt(p);
+  }
+  const cancelAim = () => {
+    aimDrag.current = false;
+  };
 
   function placementOk(x: number, y: number): boolean {
     const r = TABLE.ballR;
@@ -201,20 +351,42 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     );
   }
 
-  function onClick(e: React.PointerEvent) {
-    const p = toTable(e);
-    if (p) placeAt(p);
+  // Snooker: първата свободна точка в „D“ (същият ред като в двигателя) — за
+  // удар от ръка, без играчът изрично да е поставил бялата.
+  function autoDSpot(): { x: number; y: number } | null {
+    const cands: [number, number][] = [[BAULK_X, TABLE.h / 2]];
+    for (let rr = TABLE.ballR; rr <= D_RADIUS - 1e-9; rr += TABLE.ballR / 2) {
+      for (let k = 0; k <= 16; k++) {
+        const a = Math.PI / 2 + (k / 16) * Math.PI;
+        cands.push([BAULK_X + rr * Math.cos(a), TABLE.h / 2 + rr * Math.sin(a)]);
+      }
+    }
+    const hit = cands.find(([x, y]) => placementOk(x, y));
+    return hit ? { x: hit[0], y: hit[1] } : null;
   }
 
   function shoot() {
-    if (!myTurn) return;
-    const action: CueAction & { pushOut?: boolean } = { type: "SHOOT", angle, power };
-    if (placedCue) {
-      action.cueX = placedCue.x;
-      action.cueY = placedCue.y;
+    if (!canShoot || !state) return;
+    // shotNo: the server rejects a shot meant for an older table (see CueAction).
+    const action: CueAction & { pushOut?: boolean } = { type: "SHOOT", angle, power, shotNo: state.shotNo };
+    // Ефектът пътува само когато не е в центъра (стар клиент = същото поведение).
+    if (spin.x !== 0 || spin.y !== 0) {
+      action.spinX = spin.x;
+      action.spinY = spin.y;
+    }
+    if (mustCall && calledPocket !== null) action.pocket = calledPocket;
+    // Snooker, бяла в ръка без поставяне: ако бялата не е на валидно място в
+    // „D“, ползваме автоматично първата свободна точка в „D“.
+    const cur = state?.balls.find((b) => b.id === 0 && !b.potted);
+    const place =
+      placedCue ??
+      (game === "SNOOKER" && ballInHand && !(cur && placementOk(cur.x, cur.y)) ? autoDSpot() : null);
+    if (place) {
+      action.cueX = place.x;
+      action.cueY = place.y;
     }
     if (pushArmed && pushAvail) action.pushOut = true;
-    m.send(action);
+    send(action);
   }
 
   // Shoot with the Space bar (mirrors the button). A ref keeps the handler
@@ -224,9 +396,10 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.code !== "Space" && e.key !== " ") return;
-      const el = e.target as HTMLElement | null;
-      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      // Text entry keeps Space; the focused power slider must not (spaceShoots).
+      if (!spaceShoots(e.target instanceof Element ? (e.target as Element & FocusTarget) : null)) return;
       e.preventDefault(); // no page scroll / focused-button double fire
+      if (e.repeat) return; // a held key is one shot, not a burst
       shootRef.current();
     }
     window.addEventListener("keydown", onKey);
@@ -245,6 +418,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
         balls: liveBalls,
         aim: myTurn && !placing ? { x0: cuePos.x, y0: cuePos.y, x1: gx, y1: gy } : null,
         ghost: ballInHand && placedCue ? placedCue : null,
+        called: onEight && calledPocket !== null ? { x: POCKETS[calledPocket]![0], y: POCKETS[calledPocket]![1] } : null,
       }
     : null;
 
@@ -294,7 +468,17 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     if (game === "NINEBALL" && state.phase === "PLAY") {
       const next = state.balls.filter((b) => !b.potted && b.id > 0).reduce((lo, b) => Math.min(lo, b.id), 10);
       if (next < 10) hintParts.push(`${t("cue.expectBall")} ${next}`);
+      // WPA: предупреждение за играча на два поредни фала.
+      const fouls = state.fouls ?? [0, 0];
+      if (fouls[seat === 1 ? 1 : 0] === 2) hintParts.push(t("cue.twoFouls"));
+      if (fouls[seat === 1 ? 0 : 1] === 2) hintParts.push(t("cue.twoFoulsOpp"));
     }
+    // Snooker: „фал и пропуск“ (изборът на входящия е в прозореца за решение).
+    if (game === "SNOOKER" && state.phase === "PLAY" && state.miss) hintParts.push(t("cue.miss"));
+    // 8-ball: на осмицата, джобът още не е обявен (прозорецът може да е свит).
+    if (mustCall && calledPocket === null) hintParts.push(t("cue.callPocketHint"));
+    // 9-ball: обявеният push-out.
+    if (myTurn && pushAvail && pushArmed) hintParts.push(t("cue.pushArmed"));
     if (msgText) hintParts.push(msgText);
   }
 
@@ -307,17 +491,37 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     <Scene title={title} phase={displayPhase} ready={!!state} seat={seat} result={displayResult}>
       {state ? (
         <div className="flex flex-col items-center gap-3">
-          <ScorePill label={oppName} value={scoreLine(seat === 0 ? 1 : 0)} />
+          <div data-testid="cue-opponent">
+            <ScorePill label={oppName} value={scoreLine(seat === 0 ? 1 : 0)} />
+          </div>
 
-          <div className="aso-cue">
+          {/* data-*: machine-readable table state for tooling/e2e (no visual effect). */}
+          <div
+            className={useGL ? "aso-cue aso-cue--gl" : "aso-cue"}
+            data-testid="cue-table"
+            data-variant={game}
+            data-renderer={useGL ? "gl" : "svg"}
+            data-shot={state.shotNo}
+            data-animating={animating}
+            data-ready={myTurn && !pending}
+            data-can-shoot={canShoot}
+            data-ball-in-hand={ballInHand}
+            data-placing={placing}
+            data-must-call={mustCall}
+            data-called={mustCall && calledPocket !== null ? calledPocket : ""}
+            data-push-armed={myTurn && pushAvail && pushArmed}
+            data-aim={angle}
+          >
             {useGL && glScene ? (
               <div className="aso-cue__rim">
                 <CueTableGL
                   ref={glRef}
                   scene={glScene}
                   locked={!myTurn}
-                  onMoveWorld={aimAt}
-                  onUpWorld={placeAt}
+                  onDownWorld={pressAt}
+                  onMoveWorld={dragAt}
+                  onUpWorld={releaseAt}
+                  onCancel={cancelAim}
                 />
               </div>
             ) : (
@@ -326,9 +530,25 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                 ref={svgRef}
                 className="aso-cue__svg"
                 viewBox={`0 0 ${TABLE.w} ${TABLE.h}`}
+                data-table="svg"
                 data-locked={myTurn ? undefined : "true"}
-                onPointerMove={onMove}
-                onPointerUp={onClick}
+                onPointerDown={(e) => {
+                  const p = toTable(e);
+                  if (!p) return;
+                  // Keep the drag (aiming) ours even when it leaves the felt.
+                  e.currentTarget.setPointerCapture?.(e.pointerId);
+                  pressAt(p);
+                }}
+                onPointerMove={(e) => {
+                  const p = toTable(e);
+                  if (p) dragAt(p);
+                }}
+                onPointerUp={(e) => {
+                  const p = toTable(e);
+                  if (p) releaseAt(p);
+                  else cancelAim();
+                }}
+                onPointerCancel={cancelAim}
               >
                 <defs>
                   <radialGradient id="cueCloth" cx="40%" cy="35%" r="80%">
@@ -361,6 +581,18 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                   <circle key={i} cx={px} cy={py} r={TABLE.pocketR} fill="#0a0a0a" opacity={0.92} />
                 ))}
 
+                {/* 8-ball: обявеният за осмицата джоб */}
+                {onEight && calledPocket !== null ? (
+                  <circle
+                    cx={POCKETS[calledPocket]![0]}
+                    cy={POCKETS[calledPocket]![1]}
+                    r={TABLE.pocketR * 1.45}
+                    fill="none"
+                    stroke="#f2cf7a"
+                    strokeWidth={0.012}
+                  />
+                ) : null}
+
                 {/* aim guide */}
                 {myTurn && !placing ? (
                   <line
@@ -380,7 +612,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                   const r = TABLE.ballR;
                   const stripe = isStripe(b.id, game);
                   return (
-                    <g key={b.id}>
+                    <g key={b.id} data-ball={b.id}>
                       {/* stripes match the GL texture: white ball + colour band */}
                       <circle
                         cx={b.x}
@@ -452,44 +684,135 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                 step={0.01}
                 value={power}
                 disabled={!myTurn}
+                data-control="power"
+                aria-label={t("cue.power")}
                 onChange={(e) => setPower(Number(e.target.value))}
               />
-              <Button onClick={shoot} disabled={!myTurn} title={t("cue.shootKey")}>
+              <Button onClick={shoot} disabled={!canShoot} title={t("cue.shootKey")} data-action="shoot">
                 {t("cue.shoot")} <kbd className="aso-kbd">Space</kbd>
               </Button>
-              {myTurn && pushAvail ? (
+              {/* Обявеният push-out се отменя тук (обявяването е в прозореца). */}
+              {myTurn && pushAvail && pushArmed ? (
                 <Button
                   variant="ghost"
-                  aria-pressed={pushArmed}
-                  className={pushArmed ? "!text-brass-100" : undefined}
-                  onClick={() => setPushArmed((v) => !v)}
+                  className="!text-brass-100"
+                  data-action="push-out-cancel"
+                  onClick={() => setPushArmed(false)}
                 >
-                  {t("cue.pushOut")}
-                </Button>
-              ) : null}
-              {myTurn && pushDecision ? (
-                <Button variant="ghost" onClick={() => m.send({ type: "PASS" })}>
-                  {t("cue.pushPass")}
+                  {t("cue.pushCancel")}
                 </Button>
               ) : null}
             </div>
 
-            <p className="aso-cue__hint">{hintParts.join(" · ")}</p>
+            <div className="aso-cue__extras">
+              <SpinPad value={spin} onChange={setSpin} disabled={!myTurn} />
+              {/* На осмицата: обявеният джоб и „Смени“ — самото обявяване
+                  е в прозореца. Мястото стои през целия ход (не мести ефекта). */}
+              {mustCall ? (
+                <div className="aso-cue__called" data-testid="cue-called">
+                  <span>
+                    {t("cue.calledPocket")}:{" "}
+                    <b>{calledPocket === null ? "—" : t(`cue.pockets.${pocketForSlot(calledPocket, useGL)}`)}</b>
+                  </span>
+                  <button
+                    type="button"
+                    data-action="change-pocket"
+                    onClick={() => {
+                      setCalledPocket(null);
+                      setCallRound((n) => n + 1);
+                    }}
+                  >
+                    {calledPocket === null ? t("cue.callPocketOpen") : t("cue.changePocket")}
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
+            <p className="aso-cue__hint" aria-live="polite" data-testid="cue-hint">
+              {hintParts.join(" · ")}
+            </p>
 
             {ballInHand && !placing ? (
               <div className="mt-2 text-center">
-                <Button variant="felt" onClick={() => setPlacing(true)}>
+                <Button variant="felt" data-action="place-cue" onClick={() => setPlacing(true)}>
                   {t("cue.placeCue")}
                 </Button>
               </div>
             ) : null}
           </div>
 
-          <ScorePill
-            label={user?.displayName ?? t("game.you")}
-            value={scoreLine(seat)}
-            highlight={myTurn}
-          />
+          <div data-testid="cue-me">
+            <ScorePill label={user?.displayName ?? t("game.you")} value={scoreLine(seat)} highlight={myTurn} />
+          </div>
+
+          {/* Решенията — горе, а не в средата: на телефон средата на екрана е
+              самата маса. Умалената маса в прозореца носи цялото положение. */}
+          <DecisionPrompt
+            open={decision === "call"}
+            promptKey={`call-${atShot}-${callRound}`}
+            title={t("cue.callTitle")}
+            hint={t("cue.callHint")}
+            placement="top"
+            testId="cue-call"
+          >
+            {miniTable(8, (pocket) => setCalledPocket(pocket))}
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={decision === "push"}
+            promptKey={`push-${atShot}`}
+            title={t("cue.pushTitle")}
+            hint={t("cue.pushHint")}
+            placement="top"
+            optional={{ label: t("cue.pushNo") }}
+            testId="cue-push"
+          >
+            {miniTable()}
+            <Button data-action="push-out" onClick={() => setPushArmed(true)}>
+              {t("cue.pushOut")}
+            </Button>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={decision === "pushReply"}
+            promptKey={`push-reply-${atShot}`}
+            title={t("cue.pushReplyTitle")}
+            hint={t("cue.pushReplyHint")}
+            placement="top"
+            testId="cue-push-reply"
+          >
+            {miniTable()}
+            <Button data-action="push-play" disabled={pending} onClick={() => setPlayOn(playKey)}>
+              {t("cue.playMyself")}
+            </Button>
+            <Button variant="ghost" disabled={pending} data-action="push-pass" onClick={() => send({ type: "PASS" })}>
+              {t("cue.pushPass")}
+            </Button>
+          </DecisionPrompt>
+
+          <DecisionPrompt
+            open={decision === "foul"}
+            promptKey={`foul-${atShot}`}
+            title={t("cue.foulChoiceTitle")}
+            hint={[msgText, state.freeBall ? t("cue.freeBall") : "", canReplay ? t("cue.foulChoiceMiss") : t("cue.foulChoice")]
+              .filter(Boolean)
+              .join(" · ")}
+            placement="top"
+            testId="cue-foul"
+          >
+            {miniTable()}
+            <Button data-action="foul-play" disabled={pending} onClick={() => setPlayOn(playKey)}>
+              {t("cue.playMyself")}
+            </Button>
+            <Button variant="ghost" disabled={pending} data-action="play-again" onClick={() => send({ type: "PASS" })}>
+              {t("cue.playAgain")}
+            </Button>
+            {canReplay ? (
+              <Button variant="ghost" disabled={pending} data-action="replay" onClick={() => send({ type: "REPLAY" })}>
+                {t("cue.replay")}
+              </Button>
+            ) : null}
+          </DecisionPrompt>
         </div>
       ) : null}
     </Scene>

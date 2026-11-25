@@ -18,6 +18,7 @@
 
 import { launchChromium } from "../lib/browser.mjs";
 import { finish } from "../lib/emit.mjs";
+import { isMain } from "../lib/is-main.mjs";
 
 // Есенциални бисквитки (не искат съгласие): сесия/CSRF/език/самото съгласие. `sessid` покрива
 // PHPSESSID/JSESSIONID — класически есенциални, които /session/ НЕ хваща (стар пропуск).
@@ -98,4 +99,4 @@ async function main() {
 
 // CLI guard — задължителен: тестът внася verdict(); валидация/exit на върха на модула би убила
 // тест-рънъра при import (класът, който удари два пъти в един ден: syntax-check, prelaunch-audit).
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+if (isMain(import.meta.url)) await main();

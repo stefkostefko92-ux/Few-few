@@ -1,0 +1,13 @@
+[Unit]
+# Месечно: базата IP → държава (DB-IP Lite, излиза в началото на месеца) — за
+# езика по държава. Свалянето е и при деплой, ако базата липсва.
+Description=Linketto — базата IP → държава (месечно, 3-то число 04:20)
+
+[Timer]
+OnCalendar=*-*-03 04:20:00
+Persistent=true
+RandomizedDelaySec=1800
+Unit=linketto-cron@geoip.service
+
+[Install]
+WantedBy=timers.target

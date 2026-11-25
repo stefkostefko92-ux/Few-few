@@ -3,6 +3,7 @@ import Image from "next/image";
 import PokanaStudio from "@/components/studios/PokanaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни покани и картички за печат";
@@ -65,6 +66,7 @@ export default function PokaniPage() {
         </p>
       </header>
       <PokanaStudio />
+      <ToolGuide current="/pokani" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/pokani" />
       <script

@@ -23,6 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { run } from './exec.js';
 import { plural } from './text.js';
+import { trashDir } from './fileops.js';
 
 // ЗАТВОРЕН списък. Нов ред тук е съзнателно решение, не конфигурация — иначе
 // това става „изтрий произволен път като root" с приятен интерфейс (същата
@@ -30,6 +31,28 @@ import { plural } from './text.js';
 const APT_ARCHIVES = '/var/cache/apt/archives';
 const LOG_DIR = '/var/log';
 const CRASH_DIR = '/var/crash';
+const COREDUMP_DIR = '/var/lib/systemd/coredump';
+const RESTORE_DIR = '/var/lib/vps-dashboard/restore';
+// Кешовете на пакетните мениджъри — пресвалят се при нужда. Последните два са
+// HOME на САМИЯ панел (install.sh слага HOME=state): всеки `npm ci` от деплоя
+// през панела трупа там и никой не ги гледа.
+export const CACHE_DIRS = [
+  '/root/.npm/_cacache',
+  '/root/.cache/pip',
+  '/root/.cache/yarn',
+  '/usr/local/share/.cache/yarn',
+  '/root/.local/share/pnpm/store',
+  '/root/.cache/go-build',
+  '/root/.cache/composer',
+  '/var/lib/vps-dashboard/.npm/_cacache',
+  '/var/lib/vps-dashboard/.cache',
+];
+// Копията, които редакторът на файлове пази преди всеки запис
+// (`<файл>.bak-<ISO време>`). Търсят се само в тези корени и само по ТОЧНИЯ
+// формат на името — чужд `.bak` (на човек, на друг инструмент) не съвпада.
+const EDITOR_BAK_ROOTS = ['/etc', '/opt', '/srv', '/var/www', '/root', '/var/backups/vps-dashboard'];
+const EDITOR_BAK_RX = /\.bak-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/;
+const EDITOR_BAK_KEEP_DAYS = 7;
 
 function bytesOf(text) {
   const n = Number(String(text || '').trim().split(/\s+/)[0]);
@@ -131,23 +154,110 @@ async function deployBackups(cfg) {
   };
 }
 
-// Стари releases. ПАЗИМ текущия и двата преди него — откатът е точно това.
+// Release-ите, които НЕ бива да се трият, каквато и възраст да имат: този, към който сочи `current`, и
+// всеки, от който контейнер (работещ или спрян) монтира файлове. Инцидент 11.10.2026: zabobovdol беше
+// вдигнат от release на 18.09, а той беше изтрит като „стар“ — при рестарт nginx (./nginx/*.conf) и
+// backup (./scripts) не намериха файловете си и сайтът върна 502. Връща null, ако Docker не отговаря:
+// тогава не можем да знаем кое е в употреба и не предлагаме нищо (fail closed). Същото пази
+// prune_releases в deploy/autodeploy.sh.
+// Паритет с prune_releases (преглед на PR #306): и целта на отката на всеки продукт
+// ($SHARED/*/last-good), и release с ЕДИНСТВЕНОТО копие на .env (няма го в $SHARED/<продукт>/.env).
+// Пътищата се сравняват след realpath — releases/ и монтираните файлове може да са през symlink.
+export const KEEP_RELEASES = 5; // колкото KEEP_RELEASES в deploy/autodeploy.sh
+export async function protectedReleases(relDir, currentLink, runFn = run, { sharedDir = '/opt/few-few/shared' } = {}) {
+  const names = new Set();
+  // realpath на най-дългия съществуващ родител: монтиран файл може вече да липсва, а пътят му пак
+  // минава през symlink (например /opt/few-few/current/…), който трябва да стигне до истинския release.
+  const real = async (p) => {
+    let head = p;
+    const tail = [];
+    while (head && head !== path.dirname(head)) {
+      try {
+        return path.join(await fs.promises.realpath(head), ...tail);
+      } catch {
+        tail.unshift(path.basename(head));
+        head = path.dirname(head);
+      }
+    }
+    return p;
+  };
+  const relReal = await real(relDir);
+  const nameOf = (p) => {
+    for (const root of [relReal, relDir]) {
+      const rel = path.relative(root, p);
+      if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) return rel.split(path.sep)[0];
+    }
+    return null;
+  };
+  try {
+    const live = nameOf(await fs.promises.realpath(currentLink));
+    if (live) names.add(live);
+  } catch {
+    /* няма current — нищо за пазене оттам */
+  }
+  // Целите на отката: първият ред на всеки $SHARED/<продукт>/last-good.
+  for (const prod of await fs.promises.readdir(sharedDir).catch(() => [])) {
+    const lg = await fs.promises.readFile(path.join(sharedDir, prod, 'last-good'), 'utf8').catch(() => '');
+    const target = lg.split('\n')[0].trim();
+    const n = target && nameOf(await real(target));
+    if (n) names.add(n);
+  }
+  // Единственото копие на .env: <release>/<обвивка>/<продукт>/.env без $SHARED/<продукт>/.env.
+  for (const rel of await fs.promises.readdir(relReal).catch(() => [])) {
+    for (const wrap of await fs.promises.readdir(path.join(relReal, rel)).catch(() => [])) {
+      for (const prod of await fs.promises.readdir(path.join(relReal, rel, wrap)).catch(() => [])) {
+        const hasEnv = await fs.promises.access(path.join(relReal, rel, wrap, prod, '.env')).then(() => true, () => false);
+        if (!hasEnv) continue;
+        const saved = await fs.promises.access(path.join(sharedDir, prod, '.env')).then(() => true, () => false);
+        if (!saved) names.add(rel);
+      }
+    }
+  }
+  const ps = await runFn('docker', ['ps', '-aq'], { timeout: 20000 });
+  if (!ps.ok) return null;
+  const ids = ps.stdout.split('\n').map((s) => s.trim()).filter(Boolean);
+  if (ids.length) {
+    const ins = await runFn('docker', ['inspect', '--format', '{{range .Mounts}}{{.Source}}{{"\\n"}}{{end}}', ...ids], {
+      timeout: 20000,
+    });
+    if (!ins.ok) return null;
+    for (const src of ins.stdout.split('\n')) {
+      const t = src.trim();
+      const n = t && (nameOf(await real(t)) || nameOf(t));
+      if (n) names.add(n);
+    }
+  }
+  return names;
+}
+
+// Кои release-и са за триене: по-старите от последните `keep`, без защитените.
+export function pickOldReleases(entries, keep, protectedSet) {
+  const sorted = entries.filter((d) => /^\d{8}-\d{6}$/.test(d)).sort();
+  return sorted.slice(0, Math.max(0, sorted.length - keep)).filter((d) => !protectedSet.has(d));
+}
+
+// Стари releases. ПАЗИМ последните KEEP_RELEASES, `current`, целите на отката, единствените копия на
+// .env и всичко, което контейнер монтира (виж protectedReleases).
 async function oldReleases(cfg) {
   const relDir = cfg?.paths?.releasesDir || '/opt/few-few/releases';
   let entries = [];
   try {
-    entries = (await fs.promises.readdir(relDir)).filter((d) => /^\d{8}-\d{6}$/.test(d)).sort();
+    entries = await fs.promises.readdir(relDir);
   } catch {
     return null;
   }
-  const KEEP = 3;
-  const old = entries.slice(0, Math.max(0, entries.length - KEEP));
+  const KEEP = KEEP_RELEASES;
+  const guard = await protectedReleases(relDir, cfg?.paths?.currentLink || '/opt/few-few/current', run, {
+    sharedDir: cfg?.paths?.sharedDir || '/opt/few-few/shared',
+  });
+  if (!guard) return null;
+  const old = pickOldReleases(entries, KEEP, guard);
   if (!old.length) return null;
   const bytes = (await Promise.all(old.map((d) => duBytes(path.join(relDir, d))))).reduce((a, b) => a + b, 0);
   return {
     id: 'old-releases',
     title: 'Стари releases',
-    why: `Разгърнати версии отпреди. Пазят се последните ${KEEP} (текущият + два за откат) — тези са по-стари от тях.`,
+    why: `Разгърнати версии отпреди. Пазят се последните ${KEEP} (като autodeploy.sh), release-ът на current, целта на отката на всеки продукт, release с единственото копие на .env и всеки, от който контейнер монтира файлове.`,
     bytes,
     count: old.length,
     safety: 'safe',
@@ -291,9 +401,190 @@ async function buildCache() {
   };
 }
 
+// Ядрото записва паметта на всеки сринал процес (systemd-coredump). Един срив
+// на голям процес е стотици MB; повтарящ се срив пълни диска тихо.
+async function coreDumps() {
+  if (!(await exists(COREDUMP_DIR))) return null;
+  const r = await run('find', [COREDUMP_DIR, '-maxdepth', '1', '-type', 'f', '-printf', '%s\n'], { timeout: 15000 });
+  if (!r.ok) return null;
+  const sizes = r.stdout.split('\n').filter(Boolean).map(Number).filter(Number.isFinite);
+  if (!sizes.length) return null;
+  return {
+    id: 'coredumps',
+    title: 'Дъмпове на паметта от сривове (coredump)',
+    why: 'Паметта на процес в момента на срива — за дебъгване със `coredumpctl`. След като причината е ясна, са само тежест.',
+    bytes: sizes.reduce((a, b) => a + b, 0),
+    count: sizes.length,
+    safety: 'careful',
+    sudo: false,
+    note: 'Ако точно сега търсиш защо нещо пада — виж първо `coredumpctl list`, после чисти.',
+  };
+}
+
+async function packageCaches() {
+  const found = [];
+  for (const d of CACHE_DIRS) if (await exists(d)) found.push(d);
+  if (!found.length) return null;
+  const sizes = await Promise.all(found.map(duBytes));
+  const keep = found.filter((_, i) => sizes[i] > 0);
+  const bytes = sizes.reduce((a, b) => a + b, 0);
+  if (bytes < 20 * 1024 * 1024) return null;
+  return {
+    id: 'pkg-caches',
+    title: 'Кешове на npm, pip, yarn, pnpm, go',
+    why: 'Свалени пакети, пазени „за всеки случай". Следващата инсталация ги сваля пак, ако потрябват — нищо инсталирано не се пипа.',
+    bytes,
+    count: keep.length,
+    safety: 'safe',
+    sudo: false,
+    paths: keep,
+  };
+}
+
+// Разопакованите дъмпове от „Преглед" в Бекъпи. Дъмпът (.gz) остава — това са
+// копия. И не само място: разопакована база (за medqr — чл. 9 GDPR) не бива да
+// лежи на диска по-дълго от нужното.
+async function restorePreviews() {
+  let entries = [];
+  try {
+    entries = await fs.promises.readdir(RESTORE_DIR);
+  } catch {
+    return null;
+  }
+  const files = [];
+  for (const e of entries) {
+    if (!/^[\w.-]+$/.test(e)) continue;
+    try {
+      const st = await fs.promises.lstat(path.join(RESTORE_DIR, e));
+      if (st.isFile()) files.push({ p: path.join(RESTORE_DIR, e), size: st.size });
+    } catch {
+      /* изчезнал междувременно */
+    }
+  }
+  if (!files.length) return null;
+  return {
+    id: 'restore-previews',
+    title: 'Разопаковани прегледи на бекъпи',
+    why: 'Копия на бази, разопаковани за „Преглед" преди възстановяване. Самите дъмпове остават непокътнати.',
+    bytes: files.reduce((s, f) => s + f.size, 0),
+    count: files.length,
+    safety: 'safe',
+    sudo: false,
+    note: 'Освен място — и поверителност: разопакована база не бива да стои на диска по-дълго от нужното.',
+    paths: files.map((f) => f.p),
+  };
+}
+
+// Копията от редактора, по-стари от седмица. По-новите остават — те са
+// отмяната на скорошна промяна.
+async function editorBackups() {
+  const roots = [];
+  for (const r of EDITOR_BAK_ROOTS) if (await exists(r)) roots.push(r);
+  if (!roots.length) return null;
+  const r = await run(
+    'find',
+    [...roots, '-xdev', '-maxdepth', '8', '-type', 'f', '-name', '*.bak-????-??-??T??-??-??-???Z', '-mtime', `+${EDITOR_BAK_KEEP_DAYS}`, '-printf', '%s\t%p\n'],
+    { timeout: 20000 }
+  );
+  const rows = r.stdout
+    .split('\n')
+    .map((l) => /^(\d+)\t(.+)$/.exec(l))
+    .filter(Boolean)
+    .map((m) => ({ size: Number(m[1]), p: m[2] }))
+    .filter((x) => isEditorBackup(x.p));
+  if (!rows.length) return null;
+  return {
+    id: 'editor-backups',
+    title: 'Стари копия от редактора (.bak-…)',
+    why: `Копия на файлове отпреди редакция през панела, по-стари от ${plural(EDITOR_BAK_KEEP_DAYS, 'ден', 'дни')}. По-новите остават — те са отмяната на скорошна промяна.`,
+    bytes: rows.reduce((s, x) => s + x.size, 0),
+    count: rows.length,
+    safety: 'safe',
+    sudo: false,
+    paths: rows.slice(0, 2000).map((x) => x.p),
+  };
+}
+
+// Изключените ревизии на snap: snapd пази предишните версии за откат, по
+// подразбиране 3 на пакет. Активната НЕ се пипа.
+export function parseSnapList(text) {
+  const out = [];
+  for (const line of String(text || '').split('\n').slice(1)) {
+    const cols = line.trim().split(/\s+/);
+    if (cols.length < 4 || !/\bdisabled\b/.test(cols.slice(5).join(' '))) continue;
+    const [name, , rev] = cols;
+    if (SNAP_NAME_RX.test(name) && /^\d{1,10}$/.test(rev)) out.push({ name, rev });
+  }
+  return out;
+}
+const SNAP_NAME_RX = /^[a-z0-9][a-z0-9-]{0,39}$/;
+
+async function oldSnaps() {
+  const r = await run('snap', ['list', '--all'], { timeout: 15000 });
+  if (!r.ok) return null;
+  const revs = parseSnapList(r.stdout);
+  if (!revs.length) return null;
+  let bytes = 0;
+  for (const s of revs) {
+    try {
+      bytes += (await fs.promises.stat(`/var/lib/snapd/snaps/${s.name}_${s.rev}.snap`)).size;
+    } catch {
+      /* без размер — пак се брои */
+    }
+  }
+  return {
+    id: 'old-snaps',
+    title: 'Стари ревизии на snap',
+    why: 'Предишни версии на snap пакети, пазени за откат. Активната версия на всеки пакет НЕ се пипа.',
+    bytes,
+    count: revs.length,
+    safety: 'safe',
+    sudo: false,
+    revs,
+  };
+}
+
+// Кошчето на файловия мениджър — изтритото там все пак заема място до изтичането.
+async function fileTrash(cfg) {
+  const dir = trashDir(cfg);
+  let ids = [];
+  try {
+    ids = (await fs.promises.readdir(dir)).filter((d) => /^[a-z0-9]{8,40}$/.test(d));
+  } catch {
+    return null;
+  }
+  if (!ids.length) return null;
+  const bytes = await duBytes(dir);
+  return {
+    id: 'file-trash',
+    title: 'Кошчето на файловия мениджър',
+    why: 'Изтритото от „Файлове" стои тук до изтичането си и заема място. Изпразването е окончателно.',
+    bytes,
+    count: ids.length,
+    safety: 'careful',
+    sudo: false,
+    note: 'След това „Върни" няма откъде да върне. Погледни първо кошчето в „Файлове".',
+  };
+}
+
+export function isEditorBackup(p) {
+  const s = String(p || '');
+  return (
+    // Пътят стига до `rm` като отделен аргумент (без shell), затова кирилица и
+    // интервал са безопасни; нов ред и \0 — не (чупят и разбора на find).
+    /^\/[^\0\n]+$/.test(s) &&
+    !s.split('/').includes('..') &&
+    EDITOR_BAK_RX.test(s) &&
+    EDITOR_BAK_ROOTS.some((r) => s.startsWith(r + '/'))
+  );
+}
+
 // ── Събирането ───────────────────────────────────────────────────────────────
 export async function reclaimable(cfg) {
-  const tasks = [aptCache(), rotatedLogs(), deployBackups(cfg), oldReleases(cfg), uploadedArchives(cfg), crashDumps(), danglingImages(), buildCache()];
+  const tasks = [
+    aptCache(), rotatedLogs(), deployBackups(cfg), oldReleases(cfg), uploadedArchives(cfg), crashDumps(), danglingImages(), buildCache(),
+    coreDumps(), packageCaches(), restorePreviews(), editorBackups(), oldSnaps(), fileTrash(cfg),
+  ];
   const settled = await Promise.allSettled(tasks);
   const items = settled
     .filter((r) => r.status === 'fulfilled' && r.value)
@@ -327,8 +618,59 @@ function assertSafePath(p) {
   return s;
 }
 
-export function reclaimSpec(id, item) {
+export function reclaimSpec(id, item, cfg) {
   switch (id) {
+    case 'coredumps':
+      return {
+        title: 'Трия дъмповете от сривове',
+        shell: `find ${COREDUMP_DIR} -mindepth 1 -maxdepth 1 -type f -print -delete | tail -30`,
+        exclusive: 'system',
+        timeoutMs: 5 * 60 * 1000,
+      };
+
+    case 'pkg-caches': {
+      // Само ТОЧНИТЕ пътища от затворения списък — нищо, дошло отвън.
+      const paths = (item?.paths || []).filter((p) => CACHE_DIRS.includes(p));
+      if (!paths.length) throw Object.assign(new Error('Няма какво да се чисти.'), { status: 400 });
+      return { title: 'Чистя кешовете на пакетните мениджъри', cmd: 'rm', args: ['-rf', '--', ...paths], exclusive: 'system', timeoutMs: 10 * 60 * 1000 };
+    }
+
+    case 'restore-previews': {
+      const paths = (item?.paths || []).filter((p) => /^\/var\/lib\/vps-dashboard\/restore\/[\w.-]+$/.test(p) && !p.includes('..'));
+      if (!paths.length) throw Object.assign(new Error('Няма какво да се чисти.'), { status: 400 });
+      return { title: 'Трия разопакованите прегледи', cmd: 'rm', args: ['-f', '--', ...paths], exclusive: 'system', timeoutMs: 5 * 60 * 1000 };
+    }
+
+    case 'editor-backups': {
+      const paths = (item?.paths || []).filter(isEditorBackup);
+      if (!paths.length) throw Object.assign(new Error('Няма какво да се чисти.'), { status: 400 });
+      // cmd + масив, не shell: пътят е произволен файл на машината.
+      return { title: 'Трия старите копия от редактора', cmd: 'rm', args: ['-f', '--', ...paths], exclusive: 'system', timeoutMs: 5 * 60 * 1000 };
+    }
+
+    case 'old-snaps': {
+      const revs = (item?.revs || []).filter((r) => SNAP_NAME_RX.test(r?.name) && /^\d{1,10}$/.test(String(r?.rev)));
+      if (!revs.length) throw Object.assign(new Error('Няма какво да се чисти.'), { status: 400 });
+      return {
+        title: 'Махам старите ревизии на snap',
+        // Имената и ревизиите са минали през шаблоните горе — само букви, цифри, тире.
+        shell: revs.map((r) => `snap remove ${r.name} --revision=${r.rev}`).join(' && ') + ' && echo "✔ Готово"',
+        exclusive: 'system',
+        timeoutMs: 15 * 60 * 1000,
+      };
+    }
+
+    case 'file-trash': {
+      const dir = trashDir(cfg);
+      if (!/^\/[\w.\/-]+-trash$/.test(dir)) throw Object.assign(new Error('Невалиден път на кошчето.'), { status: 400 });
+      return {
+        title: 'Изпразвам кошчето на файловия мениджър',
+        shell: `find ${dir} -mindepth 1 -maxdepth 1 -print -exec rm -rf -- {} + | tail -30`,
+        exclusive: 'system',
+        timeoutMs: 15 * 60 * 1000,
+      };
+    }
+
     case 'apt-cache':
       return {
         title: 'Чистя кеша на apt',

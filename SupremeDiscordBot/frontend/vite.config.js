@@ -45,6 +45,11 @@ export default defineConfig({
         target: "http://localhost:3000",
         changeOrigin: true,
       },
+      // Пренасочването към сървъра за поддръжка е на backend-а (routes/support.js).
+      "/support": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
     },
   },
 });

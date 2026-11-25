@@ -7,7 +7,7 @@ export const SITE_FAQ_I18N: Partial<Record<"en" | "it", SiteFaq[]>> = {
     {
       question: "What is АСО?",
       answer:
-        "АСО is a free browser portal for 21 classic real-time card, table and board games — Belote, Santase (Sixty-Six), Chess, Backgammon, pool, snooker and more — against friends and bots.",
+        "АСО is a browser portal for 21 classic real-time card, table and board games — Belote, Santase (Sixty-Six), Chess, Backgammon, pool, snooker and more — against friends and bots.",
     },
     {
       question: "Is it free?",
@@ -47,7 +47,7 @@ export const SITE_FAQ_I18N: Partial<Record<"en" | "it", SiteFaq[]>> = {
     {
       question: "Cos'è АСО?",
       answer:
-        "АСО è un portale browser gratuito con 21 giochi classici di carte, da tavolo e da tavoliere in tempo reale — Belote, Santase (Sixty-Six), Scacchi, Backgammon, biliardo, snooker e altro — contro amici e bot.",
+        "АСО è un portale browser con 21 giochi classici di carte, da tavolo e da tavoliere in tempo reale — Belote, Santase (Sixty-Six), Scacchi, Backgammon, biliardo, snooker e altro — contro amici e bot.",
     },
     {
       question: "È gratuito?",

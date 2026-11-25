@@ -1,66 +1,115 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { SiteHeader } from '@/components/SiteChrome';
+import { LxPage } from '@/components/landing/LxPage';
+import { AuthShell } from '@/components/AuthShell';
+import { Button } from '@/components/ui/Button';
+import { Callout } from '@/components/ui/Callout';
+import { Input, Label } from '@/components/ui/Field';
 import type { Locale } from '@/i18n/locales';
 import { loginAction } from '@/app/actions/auth';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'auth' });
+  // noindex (не Disallow в robots.txt) — ботът трябва да прочете страницата, за да го види;
+  // вариантите с ?ref=/?handle= се сгъват към чистия адрес.
+  return {
+    title: t('loginTitle'),
+    robots: { index: false, follow: true },
+    alternates: { canonical: `/${locale}/login` },
+  };
+}
 
 export default async function LoginPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; ok?: string }>;
 }) {
   const { locale } = await params;
-  const { error } = await searchParams;
+  const { error, ok } = await searchParams;
   const t = await getTranslations('auth');
 
   return (
     <>
-      <SiteHeader locale={locale as Locale} />
-      <main className="mx-auto max-w-sm px-6 py-16">
-        <h1 className="text-2xl font-bold">{t('loginTitle')}</h1>
+      <LxPage locale={locale as Locale} currentPath="/login">
+      <AuthShell
+        title={t('loginTitle')}
+        footer={
+          <Link
+            href={`/${locale}/register`}
+            className="focus-ring rounded-sm font-semibold text-accent-text underline-offset-4 hover:underline"
+          >
+            {t('noAccount')}
+          </Link>
+        }
+      >
+        {ok === 'signedout' && (
+          <Callout tone="success" className="mt-5">
+            {t('signedOut')}
+          </Callout>
+        )}
+        {ok === 'reset' && (
+          <Callout tone="success" className="mt-5">
+            {t('resetDone')}
+          </Callout>
+        )}
         {error && (
-          <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
-            {error === 'invalid' ? t('errorInvalid') : t('errorGeneric')}
-          </p>
+          <Callout tone="danger" className="mt-5">
+            {error === 'invalid'
+              ? t('errorInvalid')
+              : error === 'expired'
+                ? t('errorExpired')
+                : error === 'link'
+                  ? t('errorLink')
+                  : error === 'verify-login'
+                    ? t('errorVerifyLogin')
+                    : t('errorGeneric')}
+          </Callout>
         )}
         <form action={loginAction} className="mt-6 space-y-4">
           <input type="hidden" name="locale" value={locale} />
-          <label className="block text-sm font-medium">
-            {t('email')}
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="email">{t('email')}</Label>
+            <Input
+              id="email"
               type="email"
               name="email"
               required
               autoComplete="email"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
             />
-          </label>
-          <label className="block text-sm font-medium">
-            {t('password')}
-            <input
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between gap-3">
+              <Label htmlFor="password">{t('password')}</Label>
+              <Link
+                href={`/${locale}/forgot`}
+                className="focus-ring rounded-sm text-small font-medium text-accent-text underline-offset-4 hover:underline"
+              >
+                {t('forgotLink')}
+              </Link>
+            </div>
+            <Input
+              id="password"
               type="password"
               name="password"
               required
               minLength={8}
               autoComplete="current-password"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
             />
-          </label>
-          <button
-            type="submit"
-            className="w-full rounded-full bg-linketto-600 py-2.5 font-semibold text-white hover:bg-linketto-700"
-          >
+          </div>
+          <Button type="submit" size="lg" block className="!mt-6">
             {t('submitLogin')}
-          </button>
+          </Button>
         </form>
-        <p className="mt-4 text-sm text-slate-600">
-          <Link href={`/${locale}/register`} className="hover:underline">
-            {t('noAccount')}
-          </Link>
-        </p>
-      </main>
+      </AuthShell>
+      </LxPage>
     </>
   );
 }

@@ -3,6 +3,7 @@
 // whose drilling pattern comes from the manufacturer's documentation (engine/data/*.js: the documents in each
 // system's `sources`/`source`, the pages in the notes next to the values).
 import { clamp, r1 } from './util.js';
+import { translator } from './i18n.js';
 
 const systems = new Map(); // hinge drilling systems by id
 const hingeProducts = new Map();
@@ -50,9 +51,9 @@ export function handleModel(id) {
 }
 // The holes a handle gets, one rule for the drilling (fronts.js) and every label: a pair needs two holes AND their
 // spacing; anything else gets one hole in the middle.
-export function handleHoles(h) {
+export function handleHoles(h, t = translator('bg')) {
   const pair = h.holes === 2 && h.spacing > 0;
-  return { pair, label: pair ? `${h.spacing} mm` : '1 отвор' };
+  return { pair, label: pair ? `${h.spacing} mm` : t('lbl.oneHole') };
 }
 export function slideModel(id) {
   return slides.get(id) ?? slides.values().next().value ?? null;
@@ -89,8 +90,10 @@ export function hingeLimits(sys) {
 }
 
 // Solve the cup distance C and the mounting plate for a wanted overlay; when no plate brings C inside the
-// manufacturer's range, the closest is used and the real overlay is reported.
-export function solveOverlay(sys, variant, wanted) {
+// manufacturer's range, the closest is used and the real overlay is reported. C is measured from the finished edge, but
+// the door is cut before it is banded: among the plates that give the overlay exactly, the first whose C is at least
+// minC (the edge band plus the board the cup must keep to the cut edge) wins.
+export function solveOverlay(sys, variant, wanted, minC = 0) {
   const base = sys.overlay.base[variant];
   if (base === undefined) return null;
   const [cMin, cMax] = sys.cup.c;
@@ -98,8 +101,9 @@ export function solveOverlay(sys, variant, wanted) {
   for (const plate of sys.plate.plates) {
     const c = wanted - base + plate;
     const off = c < cMin ? cMin - c : c > cMax ? c - cMax : 0;
-    if (!best || off < best.off) best = { plate, c, off };
-    if (off === 0) break;
+    const short = c < minC - 1e-6;
+    if (!best || off < best.off || (off === 0 && best.short && !short)) best = { plate, c, off, short };
+    if (off === 0 && !short) break;
   }
   const c = clamp(best.c, cMin, cMax);
   return { c: r1(c), plate: best.plate, overlay: r1(c + base - best.plate), exact: best.off === 0 };

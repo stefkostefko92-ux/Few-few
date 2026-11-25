@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { audit } from '../audit.js';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { requireCapability, requireCsrf, requireLogin } from '../auth/guards.js';
-import { createAnthropicClient, generateDrafts } from '../content/generate.js';
+import { ContentGenerationError, generateDrafts } from '../content/generate.js';
+import { aiSetup, vertexDraftModel } from '../content/vertex.js';
 import { parsePlan } from '../content/plan.js';
 import { brandPostPerformance, performanceContext } from '../services/insights.js';
 import { enqueuePublish, removeScheduledJob } from '../queue/publish-queue.js';
@@ -131,7 +132,7 @@ postRouter.get('/admin/posts/new', requireCapability('posts:create'), async (_re
     post: null,
     ...(await formContext()),
     errors: [],
-    generation: config().ANTHROPIC_API_KEY ? true : false,
+    generation: aiSetup(config()).ready,
   });
 });
 
@@ -183,8 +184,8 @@ postRouter.post(
   requireCapability('posts:generate'),
   requireCsrf,
   async (req, res) => {
-    const cfg = config();
-    if (!cfg.ANTHROPIC_API_KEY) {
+    const ai = aiSetup(config());
+    if (!ai.ready) {
       setFlash(res, 'error', tr(res, 'flash.generationOff'));
       res.redirect('/admin/posts/new');
       return;
@@ -219,7 +220,7 @@ postRouter.post(
     try {
       // Планът и реалните Insights влизат в промпта и при ръчно генериране — същата школа.
       const performance = performanceContext(await brandPostPerformance(brand.id));
-      const drafts = await generateDrafts(createAnthropicClient(cfg.ANTHROPIC_API_KEY), {
+      const drafts = await generateDrafts(vertexDraftModel(ai, 'панел'), {
         brand: {
           name: brand.name,
           summary: brand.summary,
@@ -266,7 +267,13 @@ postRouter.post(
         res,
         'error',
         tr(res, 'flash.generationFailed', {
-          error: error instanceof Error ? error.message : '—',
+          // С ключ — преводът на езика на потребителя; иначе българското изречение.
+          error:
+            error instanceof ContentGenerationError && error.key
+              ? tr(res, error.key)
+              : error instanceof Error
+                ? error.message
+                : '—',
         }),
       );
       res.redirect('/admin/posts/new');

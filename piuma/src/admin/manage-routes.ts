@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { audit } from '../audit.js';
 import { config } from '../config.js';
+import { aiSetup } from '../content/vertex.js';
 import { prisma } from '../db.js';
 import { requireCapability, requireCsrf, requireLogin } from '../auth/guards.js';
 import { parsePlan } from '../content/plan.js';
@@ -84,7 +85,7 @@ manageRouter.get(
       accounts: latest,
       pendingDrafts,
       weekAlive,
-      generation: Boolean(config().ANTHROPIC_API_KEY),
+      generation: aiSetup(config()).ready,
     });
   },
 );

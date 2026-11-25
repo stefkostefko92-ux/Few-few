@@ -13,6 +13,7 @@
 // Не заменя живата проверка на официалните политики — допълва я.
 
 import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
+import { isAgentWorktrees } from "../lib/walk-skip.mjs";
 import { join, relative, basename, extname } from "node:path";
 import { emitJsonNow } from "../lib/emit.mjs";
 
@@ -30,7 +31,7 @@ const files = [];
   for (const e of ents) {
     if (e.name.startsWith(".") && e.name !== ".well-known") { if (SKIP_DIR.has(e.name)) continue; }
     const p = join(dir, e.name);
-    if (e.isDirectory()) { if (!SKIP_DIR.has(e.name)) walk(p); }
+    if (e.isDirectory()) { if (!SKIP_DIR.has(e.name) && !isAgentWorktrees(dir, e.name)) walk(p); }
     else if (TEXT_EXT.has(extname(e.name)) || basename(e.name) === "apple-app-site-association") files.push(p);
   }
 })(ROOT);

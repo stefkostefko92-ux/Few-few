@@ -1,0 +1,89 @@
+// Ловец — схемата. Регистрите за отказ, „не ме търсете“ и съгласията пазят само отпечатъци
+// (HMAC-SHA256 с LOVETS_PEPPER) — никога самия имейл или номер. CRM моделите идват във фаза 3.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Registry {
+  KZP
+  RPO
+}
+
+enum Channel {
+  email
+  phone
+  form
+  linkedin
+}
+
+model Owner {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  passwordHash   String
+  /// AES-256-GCM с TOTP_KEY
+  totpSecretEnc  String
+  totpLastStep   Int?
+  /// Вдига се при изход — всички издадени сесии стават невалидни.
+  sessionVersion Int      @default(0)
+  createdAt      DateTime @default(now())
+}
+
+/// Поединичен резултат от проверка в регистър за отказ.
+model RegistryResult {
+  id          String   @id @default(uuid())
+  registry    Registry
+  fingerprint String
+  listed      Boolean
+  checkedAt   DateTime
+  source      String
+  importedAt  DateTime @default(now())
+
+  @@index([registry, fingerprint, checkedAt])
+}
+
+/// Пълна снимка на регистъра на КЗП към дата: вписаните адреси и домейни.
+model RegistrySnapshot {
+  id       String                  @id @default(uuid())
+  registry Registry
+  takenAt  DateTime
+  source   String
+  entries  RegistrySnapshotEntry[]
+
+  @@index([registry, takenAt])
+}
+
+model RegistrySnapshotEntry {
+  snapshotId  String
+  fingerprint String
+  snapshot    RegistrySnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@id([snapshotId, fingerprint])
+  @@index([fingerprint])
+}
+
+/// „Не ме търсете“. Не се трие при изтриване на контакта (чл. 21(3) ОРЗД).
+model Suppression {
+  fingerprint String   @id
+  scope       String
+  reason      String
+  createdAt   DateTime @default(now())
+}
+
+model Consent {
+  id          String    @id @default(uuid())
+  fingerprint String
+  channel     Channel
+  givenAt     DateTime
+  withdrawnAt DateTime?
+  method      String
+  wording     String
+  createdAt   DateTime  @default(now())
+
+  @@index([fingerprint, channel])
+}
