@@ -191,8 +191,10 @@ test("чистенето на releases пази целта на отката, д
   const cfg = [
     "set -euo pipefail",
     `SRC="${srcs[6]}"`, `CURRENT_LINK="${L.current}"`, `KORPORA_LAST_GOOD="${L.lastGood}"`,
-    `RELEASES_DIR="${L.releases}"`, "KEEP_RELEASES=5",
-    fn("prune_releases"), "prune_releases",
+    `RELEASES_DIR="${L.releases}"`, "KEEP_RELEASES=5", `SHARED_DIR="${join(L.base, "shared")}"`,
+    // Монтираните пътища имат собствен тест (autodeploy-prune.test.mjs); тук — без контейнери.
+    "log(){ :; }; warn(){ :; }; release_mount_sources(){ :; }",
+    fn("rescue_release_env"), fn("prune_releases"), "prune_releases",
   ].join("\n");
   execFileSync("bash", ["-c", cfg], { encoding: "utf8" });
   assert.ok(existsSync(join(L.releases, "r1")), "r1 е целта на отката — остава");
