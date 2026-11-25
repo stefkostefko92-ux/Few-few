@@ -123,3 +123,14 @@ test("backup_sqlite: -wal/-shm като symlink НЕ прехвърля собс
     assert.equal(statSync(target).uid, 0, "целта на symlink-а остава на root");
   } finally { rmSync(base, { recursive: true, force: true }); }
 });
+
+// Преглед на PR #312 (Кодаджията — Medium): томът на работеща MongoDB се пропускаше като „жива база,
+// дъмпът е копието“, а дъмп за Mongo няма → данните липсваха от нощния бекъп при изход 0. А
+// mongod.service на хоста: /var/lib/mongodb не е в ROOTS → нито в архива, нито предупреждение.
+test("MongoDB: томът не се пропуска като „дъмпнат“, а хостовият mongod влиза в ROOTS", () => {
+  const src = readFileSync(script, "utf8");
+  const live = src.match(/case "\$\{CKIND\[\$c\]\}" in ([a-z|]+)\) if \[ "\$\{CRUN\[\$c\]\}" = true \]; then LIVE_DB_SRC/);
+  assert.ok(live, "редът с LIVE_DB_SRC съществува");
+  assert.doesNotMatch(live[1], /mongo/, "Mongo няма логически дъмп — суровият том трябва да влезе");
+  assert.match(src, /mongod\.service "\*\) ROOTS="\$ROOTS \/var\/lib\/mongodb"/, "хостовият mongod влиза в архива");
+});

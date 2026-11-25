@@ -201,7 +201,9 @@ if [ "$DOCKER" = 1 ]; then
       # (Docker създава празна папка на мястото му). Реален случай: release папка,
       # изтрита при чистенето, докато zabobovdol-nginx и -backup още вървят от нея.
       if [ "$mtype" = bind ] && [ "${CRUN[$c]}" = true ] && [ ! -e "$msrc" ]; then GONE_BINDS+=("$c|$msrc|$mdst"); fi
-      case "${CKIND[$c]}" in pg|my|mongo) if [ "${CRUN[$c]}" = true ]; then LIVE_DB_SRC[$msrc]=1; fi;; esac
+      # Само базите с логически дъмп (pg, my) пропускат суровия си том в горещ режим. Mongo няма дъмп
+      # тук — суровият ѝ том влиза винаги (преглед на PR #312: иначе данните ѝ липсваха изцяло).
+      case "${CKIND[$c]}" in pg|my) if [ "${CRUN[$c]}" = true ]; then LIVE_DB_SRC[$msrc]=1; fi;; esac
     done < <(docker inspect -f '{{range .Mounts}}{{.Type}}|{{.Name}}|{{.Source}}|{{.Destination}}{{println}}{{end}}' "$c")
   done < <(docker ps -a --format '{{.Names}}')
   while IFS= read -r v; do
@@ -239,6 +241,8 @@ HOST_DB_UNITS=()
 for u in postgresql.service mysql.service mariadb.service redis-server.service mongod.service; do
   if systemctl is-active --quiet "$u" 2>/dev/null; then HOST_DB_UNITS+=("$u"); fi
 done
+# mongod на хоста: дъмп няма, затова данните ѝ влизат сурово (FINAL я спира преди архива → консистентно).
+case " ${HOST_DB_UNITS[*]} " in *" mongod.service "*) ROOTS="$ROOTS /var/lib/mongodb";; esac
 STOP_APPC=(); STOP_DBC=()
 for c in "${CONTAINERS[@]}"; do
   [ "${CRUN[$c]}" = true ] || continue
@@ -316,7 +320,8 @@ for u in "${HOST_DB_UNITS[@]}"; do inv "$u · active (база на хоста)"
 # Всяко pm2 извикване вдига демона, ако не върви — а `pm2 save` върху празен демон
 # презаписва записания списък с празен. Затова само при жив демон.
 PM2_LIVE=0
-if command -v pm2 >/dev/null 2>&1 && pgrep -f 'PM2 v[0-9.]+: God Daemon' >/dev/null 2>&1; then PM2_LIVE=1; fi
+# -u 0: само демонът на root — PM2 на друг потребител не е наш и `pm2 save` като root би записал празен списък.
+if command -v pm2 >/dev/null 2>&1 && pgrep -u 0 -f 'PM2 v[0-9.]+: God Daemon' >/dev/null 2>&1; then PM2_LIVE=1; fi
 if [ "$PM2_LIVE" = 1 ]; then
   sect "PM2 (root)"
   pm2 ls --no-color 2>/dev/null >> "$INV" || true
@@ -582,7 +587,7 @@ for c in "${CONTAINERS[@]}"; do
     pg) dump_pg_container "$c";;
     my) dump_my_container "$c";;
     redis) save_redis_container "$c";;
-    mongo) warn "MongoDB $c: без логически дъмп — разчита се на суровия том (консистентен само във FINAL).";;
+    mongo) warn "MongoDB $c: без логически дъмп — суровият том е в архива (консистентен само във FINAL; в горещ режим — по възможност).";;
   esac
 done
 dump_pg_host
@@ -614,7 +619,12 @@ backup_sqlite(){
   if command -v python3 >/dev/null 2>&1; then
     python3 -I -c "$SQLITE_PY" "$f" "$dst" 2>"$ERR" || st=$?
   elif command -v sqlite3 >/dev/null 2>&1; then
-    sqlite3 -readonly "$f" ".backup '$dst'" 2>"$ERR" || st=$?
+    # Пътят влиза в dot-команда на sqlite3: кавичка или нов ред в чуждо име на файл би я разцепил
+    # (а `.shell` изпълнява команди като root) — такъв файл не се копира, а влиза сурово.
+    case "$dst" in
+      *"'"*|*$'\n'*) st=2; printf 'името съдържа кавичка или нов ред — пропуснато' > "$ERR" ;;
+      *) sqlite3 -readonly "$f" ".backup '$dst'" 2>"$ERR" || st=$? ;;
+    esac
   else
     st=127; printf 'няма python3 и sqlite3' > "$ERR"
   fi
