@@ -161,6 +161,7 @@ test('стари releases: Docker не отговаря → null (не пред�
   assert.equal(await protectedReleases('/opt/few-few/releases', '/nonexistent', async () => ({ ok: false, stdout: '' })), null);
   const halfway = async (cmd, args) => (args[0] === 'ps' ? { ok: true, stdout: 'abc\n' } : { ok: false, stdout: '' });
   assert.equal(await protectedReleases('/opt/few-few/releases', '/nonexistent', halfway), null);
+});
 
 // ── Новите категории (v1.17) ─────────────────────────────────────────────────
 import { execFileSync } from 'node:child_process';
