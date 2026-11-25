@@ -178,7 +178,6 @@ function UserMenu({ user, onLogout }) {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls="user-menu-list"
-        aria-label={t("nav.account")}
         className="flex items-center gap-2.5 h-10 pl-1 pr-2 rounded-lg hover:bg-cs-surface transition-colors"
       >
         <img
@@ -191,6 +190,11 @@ function UserMenu({ user, onLogout }) {
           <span className="block text-sm font-semibold text-cs-text truncate">{user?.username}</span>
           <span className="block text-xs text-cs-dim truncate">{t(`role.${user?.globalRole || "USER"}`)}</span>
         </span>
+        {/* Името на бутона идва от съдържанието: видимото име и роля (на широк екран)
+            плюс този скрит текст. С aria-label видимият текст не влизаше в името
+            (WCAG 2.5.3 „Label in Name“) — гласово управление не намираше бутона по
+            това, което човек вижда. На тесен екран името е само скритият текст. */}
+        <span className="sr-only">{t("nav.account")}</span>
         <ChevronDown className={`w-4 h-4 text-cs-dim transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
       {open && (

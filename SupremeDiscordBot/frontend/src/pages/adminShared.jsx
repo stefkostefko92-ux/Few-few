@@ -19,11 +19,11 @@ export function Pager({ page, limit, total, onPage }) {
     <nav className="flex items-center justify-between gap-3 mt-4 text-xs text-cs-muted" aria-label="Pagination">
       <span className="tabular-nums">Page {page} of {pages}, {total} total</span>
       <div className="flex gap-2">
-        <button type="button" className="cs-btn-ghost cs-btn-sm" disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page">
-          <ChevronLeft className="w-4 h-4" aria-hidden="true" /> Prev
+        <button type="button" className="cs-btn-ghost cs-btn-sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>
+          <ChevronLeft className="w-4 h-4" aria-hidden="true" /> Previous<span className="sr-only"> page</span>
         </button>
-        <button type="button" className="cs-btn-ghost cs-btn-sm" disabled={page >= pages} onClick={() => onPage(page + 1)} aria-label="Next page">
-          Next <ChevronRight className="w-4 h-4" aria-hidden="true" />
+        <button type="button" className="cs-btn-ghost cs-btn-sm" disabled={page >= pages} onClick={() => onPage(page + 1)}>
+          Next<span className="sr-only"> page</span> <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
     </nav>
