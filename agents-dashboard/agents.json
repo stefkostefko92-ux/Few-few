@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 773
+        "lessons": 775
       },
       "evolution": [
         {
@@ -2145,9 +2145,20 @@
           "date": "2026-11-25",
           "event": "v72.7 — учене",
           "detail": "Научи: В live-run worktree node --test върху единичен тестов файл иска одобрение, затова гейто…"
+        },
+        {
+          "version": "72.9.0",
+          "date": "2026-11-25",
+          "event": "v72.9 — учене",
+          "detail": "Научи: Чистенето на vpsdash в /api/reclaim/run смята списъка с пътища наново на сървъра (recla… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „Чистенето на vpsdash в /api/reclaim/run смята списъка с пътища наново на сървъра (recla…\" (+1 още)"
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
