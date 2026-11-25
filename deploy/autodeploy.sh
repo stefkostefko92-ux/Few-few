@@ -1628,6 +1628,7 @@ deploy_fakturist() {
     0)
       install -d -m 700 "$(dirname "$FAKTURIST_LAST_GOOD")"
       printf '%s\n' "$(readlink -f "$d")" > "$FAKTURIST_LAST_GOOD.tmp" && mv -f "$FAKTURIST_LAST_GOOD.tmp" "$FAKTURIST_LAST_GOOD"
+      fakturist_indexnow   # търсачките — само към работещ release
       ;;
     3) warn "fakturist: тази машина още не е настроена (няма .env) — пропускам, не е провал (fakturist/deploy/setup-env.sh)." ;;
     4)
@@ -1640,6 +1641,25 @@ deploy_fakturist() {
       ;;
     *) deploy_failed=1; warn "fakturist: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
   esac
+}
+
+# IndexNow след зелен деплой (правилото на репото; собственикът, 25.11.2026: „да праща към търсачките“) —
+# Bing, Yandex, Seznam, Naver, Yep с едно подаване; Google не участва (там — sitemap и Search Console).
+# Ключът е fakturist/public/indexnow-key.txt; приложението го сервира на /indexnow-key.txt и /<ключ>.txt,
+# адресите идват от sitemap.xml на живия сайт. Не е фатално: при провал минава при следващия деплой.
+# FAKTURIST_INDEXNOW=0 го спира (напр. деплой на тестов домейн, който не бива да се индексира).
+fakturist_indexnow() {
+  [ "${FAKTURIST_INDEXNOW:-1}" = "1" ] || return 0
+  local keyfile="$SRC/fakturist/public/indexnow-key.txt" key site
+  site="https://${FAKTURIST_DOMAIN:-fakturist.carbonstealth.eu}"
+  [ -f "$keyfile" ] || { warn "fakturist: няма public/indexnow-key.txt — пропускам IndexNow."; return 0; }
+  command -v node >/dev/null 2>&1 || { warn "fakturist: няма node на хоста — пропускам IndexNow."; return 0; }
+  key="$(tr -d '[:space:]' < "$keyfile")"
+  if ( cd "$SRC" && node tools/seo/indexnow.mjs "$site" --key-file "$keyfile" --key-location "$site/${key}.txt" ); then
+    ok "fakturist: IndexNow уведоми Bing/Yandex/Seznam/Naver/Yep."
+  else
+    warn "fakturist: IndexNow подаването пропадна — не е фатално, минава при следващия деплой."
+  fi
 }
 
 # Откат САМО на кода към последния release, който е отговорил (никога провалилият се). Без нов дъмп:

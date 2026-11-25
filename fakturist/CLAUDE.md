@@ -106,7 +106,8 @@ promo/           промо клипът за YouTube (`promo/README.md`): captu
   ползват; `planned` функции — никога (тест). Прозорецът (`src/news/popup.ts`) излиза на първата страница
   от приложението след обновяването — новините, записани след последното „Разбрах“ на човека
   (`User.newsReadAt`); `NewsEntry` пази кога всяка е излязла на сървъра (нова инсталация — денят ѝ).
-  Публично: `/kakvo-novo`, `/en/whats-new`, RSS `/kakvo-novo.xml`, `/en/whats-new.xml`; след деплой — IndexNow.
+  Публично: `/kakvo-novo`, `/en/whats-new`, RSS `/kakvo-novo.xml`, `/en/whats-new.xml`; IndexNow — сам след зелен деплой (`fakturist_indexnow` в
+  `deploy/autodeploy.sh`).
 - **Пари — само цели числа/BigInt** (`src/einvoice/decimal.ts`), никога float. Закръгляне half-up далеч от
   нулата, само на крайните суми.
 - **Доставчикът и номерът идват от сървъра**, никога от формата (`documents/issue.ts`).
