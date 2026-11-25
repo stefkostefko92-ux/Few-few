@@ -52,7 +52,7 @@ function run(L) {
     `RELEASES_DIR="${L.releases}"`, `CURRENT_LINK="${L.current}"`, `SHARED_DIR="${L.shared}"`,
     `SRC="${join(L.rel[5], "few-few")}"`, "KEEP_RELEASES=2", `KORPORA_LAST_GOOD="${join(L.base, "nope")}"`,
     `log(){ echo "LOG $*" >> "${L.log}"; }; ok(){ :; }; warn(){ echo "WARN $*" >> "${L.log}"; }`,
-    ...["release_mount_sources", "compose_workdirs", "rescue_release_env", "prune_releases"].map(fn),
+    ...["release_mount_sources", "rescue_release_env", "prune_releases"].map(fn),
     "prune_releases",
   ].join("\n");
   execFileSync("bash", ["-c", cfg], { encoding: "utf8" });
