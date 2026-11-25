@@ -970,3 +970,10 @@
 {"t":"start","ts":"2026-11-25T05:52:43.516Z","id":"ra382540b","flow":"авто","lead":"seo","auto":true}
 {"t":"handoff","ts":"2026-11-25T05:52:43.516Z","id":"ra382540b","from":"seo","to":"kodadjiyata","status":"има бележки","run":"784918d2"}
 {"t":"handoff","ts":"2026-11-25T05:53:24.766Z","id":"ra382540b","from":"dizayner","to":"kodadjiyata","status":"има бележки","run":"f6add1a4"}
+{"t":"handoff","ts":"2026-11-25T05:53:33.312Z","id":"ra382540b","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки","run":"31528ab1"}
+{"t":"handoff","ts":"2026-11-25T05:53:42.172Z","id":"ra382540b","from":"skorostnika","to":"kodadjiyata","status":"има бележки","run":"8408a75a"}
+{"t":"handoff","ts":"2026-11-25T05:54:43.000Z","id":"ra382540b","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"1bab4f8c"}
+{"t":"handoff","ts":"2026-11-25T05:54:57.088Z","id":"ra382540b","from":"pravniyat-razbirach","to":"друг","status":"има бележки","run":"ad099c76","toRaw":"vps-adzhiyata (lead)"}
+{"t":"handoff","ts":"2026-11-25T05:56:50.754Z","id":"ra382540b","from":"prodavacha","to":"kodadjiyata","status":"блокер","run":"a5f9d904"}
+{"t":"handoff","ts":"2026-11-25T05:59:49.469Z","id":"ra382540b","from":"ai-djiyata","to":"човек","status":"има бележки","run":"ddd87834"}
+{"t":"handoff","ts":"2026-11-25T06:01:35.164Z","id":"ra382540b","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"e1ed6ff8"}

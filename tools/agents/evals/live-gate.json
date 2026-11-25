@@ -1,10 +1,10 @@
 {
-  "date": "2026-11-24",
-  "ref": "529a02d1ed8fb50a8c535a2e79af896965c03755",
-  "cli": "2.1.331 (Claude Code)",
+  "date": "2026-11-25",
+  "ref": "014da8e4ab0798f133039aca72cec0927081aa72",
+  "cli": "2.1.332 (Claude Code)",
   "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
-  "costUsd": 8.93,
-  "criticalAt": "2026-11-24",
+  "costUsd": 10.92,
+  "criticalAt": "2026-11-25",
   "probe": [
     {
       "agent": "seo",
@@ -22,7 +22,7 @@
       "problems": []
     }
   ],
-  "inputsHash": "a8cf9f08e4a0d755fc00ee1cbabd2e75a358d3aecfb8e7745fb5ed34dfb42abe",
+  "inputsHash": "aa9faa0d6fc49998fc98c5227558a0aa60b2da28642e3b14f4cf135d155f87ff",
   "files": {
     ".claude/agents/3d-maniac.md": "bdec637b2b2ca2d29db8fdc0049e65598aaf2cf0bc4552f6a5c8718e75ed162d",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -91,7 +91,7 @@
     ".claude/skills/agent-doctrine/SKILL.md": "9e910f00f812006d9e59f6a40e77ca38835fdf8d19eab7be3219d0aaea8e3411",
     "tools/agents/handoff.mjs": "088afa443cf1c3a6325b28a80bc74426aba907a1d7c287d0add05497b29dcba3",
     "tools/agents/teams.mjs": "31fec0c4ecaa86a8778f7b1d7eb823c84aa3d8c8a9ebdf509a82d6904907abc7",
-    "tools/lib/memory-branch.mjs": "7c81bd029381e5f15d101a465a27ba275ea80fc8fcc029a25f45b9d89e6083ad",
+    "tools/lib/memory-branch.mjs": "cd029a35e4d1e5f4b76934bcfac30ca4498ff0050cff7088254c8a7a8ac4572e",
     "tools/lib/memory-retrieval.mjs": "5a7f76c209d3eaf570f1c1a59d2ed6b08e572f4b8778e3fde6b0bfe6841a6215",
     "agents-dashboard/agents.json#card": "f4c18ce794dd88328c6922ed2e9dfea483048e5f64e2fc315a7ee0bef21cc555"
   }
