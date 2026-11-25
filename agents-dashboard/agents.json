@@ -4146,7 +4146,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 259
+        "lessons": 260
       },
       "evolution": [
         {
@@ -4616,9 +4616,20 @@
           "date": "2026-11-25",
           "event": "v25.3 — учене",
           "detail": "Научи: PR с bump на next/nodemailer/eslint-config-next и само смяна на типов импорт в server-o…"
+        },
+        {
+          "version": "25.4.0",
+          "date": "2026-11-25",
+          "event": "v25.4 — учене",
+          "detail": "Научи: PR само с dependency bump и смяна на импорт (zod→zod/v3 в API маршрути, студия и lib) н…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „PR само с dependency bump и смяна на импорт (zod→zod/v3 в API маршрути, студия и lib) н…\""
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
