@@ -359,3 +359,14 @@ test("присвояване и външни команди без долна ч
   const src = `#!/usr/bin/env bash\nset -euo pipefail\nmy_var=1\ndeploy_failed=1\nnpm ci --omit=dev\ndocker compose up -d\n`;
   assert.equal(lintShell(src, "s.sh").some((x) => x.code === "undefined-function"), false);
 });
+
+// Фалшиви тревоги, видени при „всичко в main“ (25.11.2026): `pg_restore` е външна команда на
+// PostgreSQL (offsite-backup.sh), а `списък+=(…)` е добавяне към масив — нито едното не е функция.
+// Истински липсваща помощна функция до тях пак се лови.
+test("външни команди с долна черта (pg_restore …) и добавяне към масив (x+=) не се броят", () => {
+  const src = `#!/usr/bin/env bash\nset -euo pipefail\npg_restore -l f.dump\npg_dump -Fc db > x\npg_isready -q\nlg_any+=("a")\nx_indexnow\n`;
+  const f = lintShell(src, "s.sh").find((x) => x.code === "undefined-function");
+  assert.ok(f, "x_indexnow пак е липсваща функция");
+  assert.doesNotMatch(f.msg, /pg_restore|pg_dump|pg_isready|lg_any/);
+  assert.match(f.msg, /x_indexnow/);
+});
