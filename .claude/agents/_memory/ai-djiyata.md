@@ -7,6 +7,7 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-11-25:** prune_releases в deploy/autodeploy.sh пази освен изброените *_LAST_GOOD и целта на всеки файл $SHARED_DIR/*/last-good (първия ред през readlink -f), затова продукт, непознат за скрипта, е защитен само ако сам пише такъв файл _(преглед на промени по чистенето на releases или при нов продукт с откат извън autodeploy.sh; verified; .pr-review/311.diff:24-30,48-53 (deploy/autodeploy.sh prune_releases))_
 - **2026-11-25:** GENERIC_RULE в secret-scan хваща само стойност в кавички с поне 12 знака след secret/password/api_key и подобни, затова тестови фикстури от вида KEY=VALUE без кавички не го задействат _(преглед на тестове с фалшиви .env стойности или сглобяване на тестови тайни; verified; tools/security/secret-scan.mjs GENERIC_RULE)_
 - **2026-11-25:** GENERIC_RULE в tools/security/secret-scan.mjs иска кавичка веднага след ":" или "=" и поне 12 знака в нея, затова фикстура от вида KEY_PASSWORD=STARO без кавички не се флагва _(преглед на тестове или фикстури с фалшиви .env стойности; verified; tools/security/secret-scan.mjs GENERIC_RULE)_
 - **2026-11-25:** tools/seo/indexnow.mjs слага AbortSignal.timeout на всяко fetch (проба на ключа 10 s, sitemap 20 s, api.indexnow.org 20 s), затова извикване от autodeploy.sh не може да увисне деплоя; остава да се провери само дали провалът е обвит в if/|| срещу set -e _(преглед на нови *_indexnow функции в deploy/autodeploy.sh; verified; tools/seo/indexnow.mjs:74,90,153)_
