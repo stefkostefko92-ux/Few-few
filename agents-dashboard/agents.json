@@ -1256,7 +1256,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 745
+        "lessons": 747
       },
       "evolution": [
         {
@@ -2176,9 +2176,20 @@
           "date": "2026-11-25",
           "event": "v69.7 — учене",
           "detail": "Научи: Пакетите pdfkit 0.21.0, @noble/ciphers 2.4.0 и @noble/hashes 2.4.0 изискват node \">= 20…"
+        },
+        {
+          "version": "69.9.0",
+          "date": "2026-11-25",
+          "event": "v69.9 — учене",
+          "detail": "Научи: .pr-review/432.diff (piuma Vertex) е пълен — 29 diff заглавки при 30 файла в 432.stat (… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-25",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/432.diff (piuma Vertex) е пълен — 29 diff заглавки при 30 файла в 432.stat (…\" (+1 още)"
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
