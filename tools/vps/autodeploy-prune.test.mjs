@@ -145,3 +145,35 @@ test("СПАСЯВАНЕТО ПАДНЕ → release-ът НЕ се трие, с�
     assert.ok(!existsSync(L.rel[1]), "останалите стари releases се чистят нормално");
   } finally { rmSync(L.base, { recursive: true, force: true }); }
 });
+
+// PR #311 (ChatChat, 11.10.2026): продукт, разгърнат от свой клон, после деплой на друг продукт от main
+// (чийто autodeploy.sh не го познава) изтри папката, към която сочеше shared/chatchat/last-good.
+// Чистенето пази целта на ВСЕКИ $SHARED_DIR/*/last-good, не само на изброените продукти.
+test("last-good на продукт, когото скриптът не познава (chatchat), пази своя release", () => {
+  const L = layout();
+  try {
+    dockerStub(L, { mounts: [] });
+    mkdirSync(join(L.shared, "chatchat"), { recursive: true });
+    writeFileSync(join(L.shared, "chatchat", "last-good"), `${join(L.rel[1], "few-few")}\n`);
+    run(L);
+    assert.ok(existsSync(L.rel[1]), "целта на отката на chatchat остава");
+    for (const i of [0, 2, 3]) assert.ok(!existsSync(L.rel[i]), `${i}: стар и незащитен — изтрит`);
+    for (const i of [4, 5]) assert.ok(existsSync(L.rel[i]), `${i}: последните KEEP_RELEASES`);
+  } finally { rmSync(L.base, { recursive: true, force: true }); }
+});
+
+test("няколко продукта с last-good: всички цели остават; празен или счупен last-good не пречи", () => {
+  const L = layout();
+  try {
+    dockerStub(L, { mounts: [] });
+    for (const [p, i] of [["chatchat", 0], ["piuma", 2]]) {
+      mkdirSync(join(L.shared, p), { recursive: true });
+      writeFileSync(join(L.shared, p, "last-good"), `${join(L.rel[i], "few-few", p)}\n`);
+    }
+    mkdirSync(join(L.shared, "prazen"), { recursive: true });
+    writeFileSync(join(L.shared, "prazen", "last-good"), "");
+    run(L);
+    for (const i of [0, 2]) assert.ok(existsSync(L.rel[i]), `${i} е цел на откат`);
+    for (const i of [1, 3]) assert.ok(!existsSync(L.rel[i]), `${i}: незащитен — изтрит`);
+  } finally { rmSync(L.base, { recursive: true, force: true }); }
+});

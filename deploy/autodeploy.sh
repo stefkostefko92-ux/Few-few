@@ -2597,7 +2597,7 @@ rescue_release_env() {
 }
 
 prune_releases() {
-  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected mounts m
+  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected mounts m lg lg_any=""
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
@@ -2606,6 +2606,13 @@ prune_releases() {
   # Целта на отката на linketto: без нея деплоите на други продукти я изтриваха изпод отката.
   lg_lnk="$(readlink -f "$(cat "$LINKETTO_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   lg_semki="$(readlink -f "$(cat "$SEMKI_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  # Целта на отката на ВСЕКИ продукт със $SHARED_DIR/<продукт>/last-good — и на такъв, когото този
+  # autodeploy.sh не познава (ChatChat, 11.10.2026: разгърнат от свой клон, после деплой на друг
+  # продукт от main изтри папката, към която сочеха и откатът, и командите от DEPLOY.md).
+  for lg in "${SHARED_DIR:-/opt/few-few/shared}"/*/last-good; do
+    [ -f "$lg" ] || continue
+    lg_any="$lg_any$(readlink -f "$(head -n 1 "$lg" 2>/dev/null || true)" 2>/dev/null || true)"$'\n'
+  done
   if ! mounts="$(release_mount_sources)"; then
     warn "Docker не отговаря — не трия стари releases (не мога да видя кои монтират контейнерите)."
     return 0
@@ -2623,6 +2630,12 @@ prune_releases() {
         "$old_real"|"$old_real"/*) keep=1 ;;
       esac
     done
+    while IFS= read -r protected; do
+      [ -n "$protected" ] || continue
+      case "$protected" in
+        "$old_real"|"$old_real"/*) keep=1 ;;
+      esac
+    done <<< "$lg_any"
     while IFS= read -r m; do
       [ -n "$m" ] || continue
       case "$m" in
