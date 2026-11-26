@@ -28,6 +28,8 @@ COPY --from=build --chown=node:node /app/dist ./dist
 COPY --chown=node:node server/package.json ./
 COPY --chown=node:node server/prisma ./prisma
 COPY --chown=node:node server/admin-static ./admin-static
+# Шрифтът (IBM Plex Sans, OFL) и логото за PDF-ите на документите.
+COPY --chown=node:node server/assets ./assets
 # Генераторът на сайта (нула зависимости) и статичните активи, които той копира при всяко публикуване.
 COPY --chown=node:node build.mjs ./site/build.mjs
 COPY --chown=node:node src ./site/src

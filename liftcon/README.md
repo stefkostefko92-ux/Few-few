@@ -10,6 +10,10 @@ cd liftcon/server && npm ci && npm test       # приложението (фор
 
 Локален преглед на сайта: `npx http-server liftcon/public -p 4399`.
 
+**Документи** `https://liftcon.it/admin/documenti/` — relazioni di sopralluogo, controllo qualità, esame documentale и
+verbali от телефон или таблет, и без връзка; чеклист с готови фрази, снимки, PDF с номер. Спецификация:
+`docs/documenti-spec.md`.
+
 **Админ панел** `https://liftcon.it/admin` — първият администратор се създава при деплоя (имейл и парола се
 въвеждат в терминала); при първия вход се настройва 2FA (приложение за кодове). Спецификация: `docs/admin-spec.md`.
 

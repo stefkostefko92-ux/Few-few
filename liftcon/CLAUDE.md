@@ -18,6 +18,13 @@ Città metropolitana, Monza e Brianza и цяла Ломбардия. Публи
     „Pubblica“ пуска `build.mjs` с `LIFTCON_OVERRIDES` в `releases/<ts>` и сменя атомарно връзката `current`.
   - Имейлът (Brevo) се настройва и от панела: `/admin/impostazioni` (MASTER/ADMIN) — ключът шифрован (`brevo-v1`),
     показват се само последните 4 знака; проверка `GET /v3/account` + `/v3/senders`, тестово писмо; `.env` е резерва.
+  - **Документи** (`/admin/documenti/`, спецификация `docs/documenti-spec.md`): relazione di sopralluogo, controllo
+    qualità, esame documentale, verbale. Офлайн приложение (service worker + IndexedDB, `admin-static/documenti/`) →
+    JSON API `/admin/api/documenti` (версии, 409 при конфликт, 423 след издаване). Сглобяването е без AI и е общо за
+    браузъра и PDF-а (`src/documenti/condiviso/`); каталогът на огледа (14 секции, 89 точки, 181 фрази) е от
+    Асансьорчика, с наши думи — **без текст от нормите, без „conforme“**. Снимки: sharp (без EXIF/GPS) → `DATA_DIR`;
+    PDF: pdfkit + IBM Plex Sans WOFF (`server/assets/pdf/`, OFL). Номер `SOP|CQL|ESD|VRB-<година>-<NNN>`, ревизиите
+    пазят номера. CSP на `/admin` го слага приложението (`CSP_ADMIN`, с `blob:`); Nginx — `liftcon-headers-admin.conf`.
   - Данните минават през интерфейса `Store` (Prisma в продукция, паметта в тестовете).
   - Първият MASTER — при деплоя: `deploy.sh` пита за имейл и парола (stdin → `dist/cli/primo-admin.js`, само
     ако няма потребители; нищо в `.env`). Без `DATABASE_URL` сървърът работи само като форма → имейл.

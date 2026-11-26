@@ -3,6 +3,9 @@
 import { Router } from "express";
 import type { AdminDeps } from "./deps.js";
 import { richiedePermesso } from "../auth/guards.js";
+import { auth } from "../auth/sessione.js";
+import { registra } from "./deps.js";
+import { TIPI_DOCUMENTO, type TipoDocumento } from "../documenti/condiviso/tipi.js";
 import { ID } from "../documenti/schema.js";
 import { NOMI_TIPO } from "../documenti/condiviso/testi.js";
 
@@ -31,9 +34,21 @@ export function rotteDocumenti(d: AdminDeps): Router {
   const r = Router();
   r.use("/documenti", richiedePermesso("documenti.leggi"));
 
-  r.get("/documenti", (_req, res) => res.redirect(301, "/admin/documenti/"));
-  r.get("/documenti/", (_req, res) => {
+  // Само с наклонена черта накрая: обхватът на service worker-а е /admin/documenti/ (Express не различава двете).
+  r.get("/documenti", (req, res) => {
+    if (!req.originalUrl.split("?")[0]!.endsWith("/")) return res.redirect(301, "/admin/documenti/");
     res.set("cache-control", "no-cache").type("html").send(SHELL);
+  });
+
+  // От страницата на заявка: нов документ с възложителя и общината (D2), после — в приложението.
+  r.post("/documenti/da-richiesta/:richiestaId", richiedePermesso("documenti.modifica"), async (req, res) => {
+    const tipo = String(req.body?.tipo ?? "");
+    const rq = await d.store.richieste.perId(String(req.params.richiestaId));
+    if (!rq || !(TIPI_DOCUMENTO as readonly string[]).includes(tipo)) return res.status(400).send("Richiesta non valida.");
+    const u = auth(res)!.utente;
+    const id = await d.documenti.daRichiesta(u, tipo as TipoDocumento, rq);
+    await registra(d, req, u.id, "documento.creato", id, { daRichiesta: rq.id });
+    res.redirect(303, `/admin/documenti/#/d/${id}`);
   });
 
   r.get("/documenti/:id/foto/:fotoId", async (req, res) => {

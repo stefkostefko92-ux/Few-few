@@ -33,7 +33,7 @@ function copertina(doc: Pdf, d: DocumentoCompleto, c: Composto): void {
   if (d.emessoIl) riga(doc, "Data di emissione", dataIt(d.emessoIl.slice(0, 10)), x, W);
   riga(doc, "Committente", [i.committente.nome, i.committente.qualita].filter(Boolean).join(", "), x, W);
   riga(doc, "Condominio / immobile", i.committente.condominio, x, W);
-  riga(doc, "Impianto", [i.impianto.indirizzo, i.impianto.comune, i.impianto.provincia && `(${i.impianto.provincia})`].filter(Boolean).join(", "), x, W);
+  riga(doc, "Impianto", [i.impianto.indirizzo, [i.impianto.comune, i.impianto.provincia && `(${i.impianto.provincia})`].filter(Boolean).join(" ")].filter(Boolean).join(", "), x, W);
   riga(doc, "Matricola", i.impianto.matricola, x, W);
   riga(doc, "Autore", [d.autore.nome, d.autore.qualifica].filter(Boolean).join(", "), x, W);
   doc.moveDown(1);
@@ -52,12 +52,12 @@ function copertina(doc: Pdf, d: DocumentoCompleto, c: Composto): void {
 }
 
 function firma(doc: Pdf, d: DocumentoCompleto): void {
-  spazio(doc, 110);
-  doc.moveDown(1.5);
+  spazio(doc, 92);
+  doc.moveDown(0.8);
   const W = larghezzaUtile(doc);
   doc.font("Plex").fontSize(10).fillColor(COLORI.testo).text(`Redatto da: ${[d.autore.nome, d.autore.qualifica].filter(Boolean).join(", ") || "—"}`, MARGINE.left, doc.y, { width: W });
   doc.text(`Data: ${d.emessoIl ? dataIt(d.emessoIl.slice(0, 10)) : "—"}`, { width: W });
-  doc.moveDown(2);
+  doc.moveDown(1.6);
   const y = doc.y;
   doc.moveTo(MARGINE.left + W - 220, y).lineTo(MARGINE.left + W, y).lineWidth(0.6).strokeColor(COLORI.tenue).stroke();
   doc.font("Plex").fontSize(8.5).fillColor(COLORI.tenue).text("Firma", MARGINE.left + W - 220, y + 4, { width: 220, align: "center" });

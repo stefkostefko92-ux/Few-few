@@ -1,4 +1,6 @@
 // Панорама и заявките: списък с филтри, детайл, статус и бележки, изтриване (GDPR), CSV. Спецификация т. 9–12.
+import { NOMI_TIPO } from "../documenti/condiviso/testi.js";
+import type { TipoDocumento } from "../documenti/condiviso/tipi.js";
 import { Router } from "express";
 import type { AdminDeps } from "./deps.js";
 import { registra } from "./deps.js";
@@ -15,6 +17,9 @@ const stato = (v: unknown): StatoRichiesta | undefined => (STATI_RICHIESTA as re
 const etichettaServizio = (k: string) => (ETICHETTE_SERVIZIO as Record<string, string>)[k] ?? k;
 const etichettaRuolo = (k: string) => (ETICHETTE_RUOLO as Record<string, string>)[k] ?? k;
 const badge = (s: StatoRichiesta) => `<span class="badge badge-${s.toLowerCase()}">${ETICHETTE_STATO[s]}</span>`;
+
+/** Видът документ по услугата от формата (по подразбиране в „Crea documento“). */
+const tipoDaServizio = (s: string): TipoDocumento => (s === "controllo" ? "CONTROLLO_QUALITA" : s === "verifica" ? "ESAME_DOCUMENTALE" : s === "supporto" ? "VERBALE" : "SOPRALLUOGO");
 
 export function rotteRichieste(d: AdminDeps): Router {
   const r = Router();
@@ -104,6 +109,13 @@ ${pagine > 1 ? `<nav class="pagine" aria-label="Pagine">${pag > 1 ? `<a href="${
 <section class="scheda"><h2>Gestione</h2><form method="post" action="/admin/richieste/${x.id}">${csrf(a)}<label for="st">Stato</label><select id="st" name="stato">${STATI_RICHIESTA.map(
           (s) => `<option value="${s}"${s === x.stato ? " selected" : ""}>${ETICHETTE_STATO[s]}</option>`,
         ).join("")}</select><label for="note">Note interne</label><textarea id="note" name="note" rows="8" maxlength="5000">${esc(x.note)}</textarea><button class="btn" type="submit">Salva</button></form>
+${
+  puo(a.utente.ruolo, "documenti.modifica")
+    ? `<form method="post" action="/admin/documenti/da-richiesta/${x.id}" class="pericolo">${csrf(a)}<h2>Documento</h2><label for="tipo-doc">Crea un documento con i dati di questa richiesta</label><select id="tipo-doc" name="tipo">${Object.entries(NOMI_TIPO)
+        .map(([k, v]) => `<option value="${k}"${k === tipoDaServizio(x.servizio) ? " selected" : ""}>${esc(v)}</option>`)
+        .join("")}</select><button class="btn btn-sec" type="submit">Crea documento</button></form>`
+    : ""
+}
 ${
   puo(a.utente.ruolo, "richieste.elimina")
     ? `<form method="post" action="/admin/richieste/${x.id}/elimina" class="pericolo">${csrf(a)}<label class="spunta"><input type="checkbox" name="conferma" value="si" required> Confermo l'eliminazione definitiva (diritto alla cancellazione)</label><button class="btn btn-pericolo" type="submit">Elimina richiesta</button></form>`

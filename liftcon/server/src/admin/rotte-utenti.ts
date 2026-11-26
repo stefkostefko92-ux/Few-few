@@ -94,7 +94,7 @@ export function rotteUtenti(d: AdminDeps): Router {
   r.get("/profilo", (req, res) => {
     const a = auth(res)!;
     const u = a.utente;
-    const msg = req.query.primo ? avviso("info", "Primo accesso: imposti una password personale per continuare.") : req.query.ok ? avviso("ok", "Password aggiornata.") : req.query.errore ? avviso("errore", String(req.query.errore).slice(0, 200)) : "";
+    const msg = req.query.primo ? avviso("info", "Primo accesso: imposti una password personale per continuare.") : req.query.ok ? avviso("ok", req.query.ok === "firma" ? "Dati della firma aggiornati." : "Password aggiornata.") : req.query.errore ? avviso("errore", String(req.query.errore).slice(0, 200)) : "";
     res.send(
       pagina({
         titolo: "Profilo",
@@ -102,9 +102,21 @@ export function rotteUtenti(d: AdminDeps): Router {
         attivo: "/admin/profilo",
         corpo: `${msg}<form method="post" action="/admin/profilo/password" class="scheda stretta">${csrf(a)}<h2>Password</h2><input type="hidden" name="username" value="${esc(u.email)}" autocomplete="username"><label for="attuale">Password attuale</label><input id="attuale" name="attuale" type="password" autocomplete="current-password" required><label for="nuova">Nuova password (almeno 12 caratteri; meglio una frase)</label><input id="nuova" name="nuova" type="password" autocomplete="new-password" required minlength="12" maxlength="256"><label for="conferma">Ripeta la nuova password</label><input id="conferma" name="conferma" type="password" autocomplete="new-password" required><button class="btn" type="submit">Cambia password</button><p class="nota">Il cambio chiude tutte le altre sessioni.</p></form>
 ${u.cambiarePassword ? "" : `<form method="post" action="/admin/profilo/codici" class="scheda stretta">${csrf(a)}<h2>Codici di recupero</h2><p>Ne restano ${u.codiciRecupero.length}. Generarne di nuovi annulla quelli vecchi.</p><label for="codice">Codice dell'app (6 cifre)</label><input id="codice" name="codice" inputmode="numeric" autocomplete="one-time-code" required maxlength="8"><button class="btn btn-sec" type="submit">Genera nuovi codici</button></form>`}
+${u.cambiarePassword ? "" : `<form method="post" action="/admin/profilo/firma" class="scheda stretta">${csrf(a)}<h2>Firma dei documenti</h2><p class="nota">Nome e qualifica compaiono come autore nelle relazioni e nei verbali emessi.</p><label for="nome">Nome e cognome</label><input id="nome" name="nome" value="${esc(u.nome)}" required minlength="2" maxlength="100" autocomplete="name"><label for="qualifica">Qualifica</label><input id="qualifica" name="qualifica" value="${esc(u.qualifica)}" maxlength="120" placeholder="es. Ing., Per. Ind., Tecnico ascensorista"><button class="btn btn-sec" type="submit">Salva</button></form>`}
 <p class="nota">Ruolo: ${ETICHETTE_RUOLO[u.ruolo]} · Verifica in due passaggi attiva dal ${data(u.totpAttivaDal)}</p>`,
       }),
     );
+  });
+
+  r.post("/profilo/firma", async (req, res) => {
+    const a = auth(res)!;
+    const riga = (v: unknown, max: number) => String(v ?? "").replace(/[\u0000-\u001F\u007F]/g, " ").trim().slice(0, max);
+    const nome = riga(req.body?.nome, 100);
+    const qualifica = riga(req.body?.qualifica, 120);
+    if (nome.length < 2) return res.redirect(303, "/admin/profilo?errore=Nome+non+valido");
+    await d.store.utenti.aggiorna(a.utente.id, { nome, qualifica });
+    await registra(d, req, a.utente.id, "profilo.firma_aggiornata");
+    res.redirect(303, "/admin/profilo?ok=firma");
   });
 
   r.post("/profilo/password", async (req, res) => {

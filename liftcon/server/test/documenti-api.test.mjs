@@ -272,3 +272,25 @@ test("PDF на чернова: валиден, с воден знак; сеси�
     await s.close();
   }
 });
+
+test("обвивката на приложението: CSP с blob: за снимките, без лични данни и без CSRF токен; service worker с обхват", async () => {
+  const s = await setup();
+  try {
+    const { api } = await sessione(s, "OPERATORE");
+    const r = await api("/admin/documenti/");
+    assert.equal(r.status, 200);
+    const csp = r.headers.get("content-security-policy");
+    assert.match(csp, /img-src 'self' data: blob:/);
+    assert.match(csp, /script-src 'self';/);
+    const html = r.buf.toString();
+    assert.doesNotMatch(html, /_csrf|Utente OPERATORE/);
+    const sw = await fetch(`${s.base}/admin/documenti/sw.js`);
+    assert.equal(sw.status, 200);
+    assert.equal(sw.headers.get("service-worker-allowed"), "/admin/documenti/");
+    const lib = await fetch(`${s.base}/admin/static/lib/componi.js`);
+    assert.equal(lib.status, 200);
+    assert.equal((await fetch(`${s.base}/admin/static/lib/catalogo/index.js`)).status, 404, "каталогът не е публичен");
+  } finally {
+    await s.close();
+  }
+});

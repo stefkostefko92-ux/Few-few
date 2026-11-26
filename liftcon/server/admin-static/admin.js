@@ -26,6 +26,35 @@
       riga.nextElementSibling.after(riga);
     }
   });
+  // Изход: документите на устройството (офлайн приложението) се трият; ако има несинхронизирани — питаме.
+  document.querySelectorAll('form[action="/admin/logout"]').forEach((f) => {
+    f.addEventListener("submit", (e) => {
+      if (f.dataset.pulito || !("indexedDB" in window)) return;
+      e.preventDefault();
+      const fine = () => {
+        f.dataset.pulito = "1";
+        const del = indexedDB.deleteDatabase("liftcon-documenti");
+        const vai = () => ("caches" in window ? caches.keys().then((k) => Promise.all(k.filter((x) => x.startsWith("liftcon-doc-dati")).map((x) => caches.delete(x)))) : Promise.resolve()).finally(() => f.submit());
+        del.onsuccess = del.onerror = del.onblocked = vai;
+      };
+      const r = indexedDB.open("liftcon-documenti");
+      r.onerror = fine;
+      r.onsuccess = () => {
+        const db = r.result;
+        if (!db.objectStoreNames.contains("documenti")) return db.close(), fine();
+        const t = db.transaction(["documenti", "foto", "coda"], "readonly");
+        let n = 0;
+        t.objectStore("documenti").getAll().onsuccess = (ev) => (n += ev.target.result.filter((x) => x.sporco).length);
+        t.objectStore("foto").getAll().onsuccess = (ev) => (n += ev.target.result.filter((x) => !x.caricata).length);
+        t.objectStore("coda").count().onsuccess = (ev) => (n += ev.target.result);
+        t.oncomplete = () => {
+          db.close();
+          if (n && !confirm(`Ci sono ${n} modifiche ai documenti non ancora sincronizzate su questo dispositivo: uscendo andranno perse. Uscire comunque?`)) return;
+          fine();
+        };
+      };
+    });
+  });
   document.querySelectorAll("[data-max]").forEach((el) => {
     const out = document.createElement("p");
     out.className = "contatore";

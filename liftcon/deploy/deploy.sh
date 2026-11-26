@@ -25,6 +25,8 @@ ENV_FILE="$STATE/.env"
 WEB_ROOT="/var/www/$DOMAIN"
 NGINX_CONF="/etc/nginx/sites-available/$DOMAIN"
 SNIPPET="/etc/nginx/snippets/liftcon-headers.conf"
+SNIPPET_ADMIN="/etc/nginx/snippets/liftcon-headers-admin.conf"
+DATA_DIR="$STATE/data" # снимките и PDF-ите на документите (том на приложението)
 CERT="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP="$(dirname "$HERE")"
@@ -34,7 +36,7 @@ DB_VOLUME="liftcon_db-data" # томът на базата (проект „lift
 
 log() { printf '[liftcon] %s\n' "$*"; }
 die() { printf '[liftcon] ГРЕШКА: %s\n' "$*" >&2; exit 1; }
-compose() { LIFTCON_ENV_FILE="$ENV_FILE" LIFTCON_HTTP_PORT="$PORT" LIFTCON_SITE_DIR="$WEB_ROOT" docker compose --env-file "$ENV_FILE" -f "$APP/docker-compose.yml" -p liftcon "$@"; }
+compose() { LIFTCON_ENV_FILE="$ENV_FILE" LIFTCON_HTTP_PORT="$PORT" LIFTCON_SITE_DIR="$WEB_ROOT" LIFTCON_DATA_DIR="$DATA_DIR" docker compose --env-file "$ENV_FILE" -f "$APP/docker-compose.yml" -p liftcon "$@"; }
 need() { for c in "$@"; do command -v "$c" >/dev/null || die "липсва командата $c"; done; }
 
 # --- .env: стойност на ключ / запис на ключ (атомарно, права 600; стойностите не се показват никъде) ---
@@ -162,8 +164,10 @@ if ss -tlnH "sport = :$PORT" | grep -q .; then
   docker ps --format '{{.Names}} {{.Ports}}' | grep -q "^liftcon-api .*127.0.0.1:$PORT->" || die "порт $PORT е зает от друг процес"
 fi
 
-mkdir -p "$STATE/backup" "$WEB_ROOT/releases"
+mkdir -p "$STATE/backup" "$WEB_ROOT/releases" "$DATA_DIR"
 chmod 700 "$STATE"
+# Приложението (потребител node) пише снимките и PDF-ите; никой друг не ги чете.
+chown "$NODE_UID:$NODE_UID" "$DATA_DIR" && chmod 700 "$DATA_DIR"
 
 # 1. Бекъп на базата (преди миграциите) и запомняне на активната версия на сайта.
 if docker ps --format '{{.Names}}' | grep -q '^liftcon-db-1$'; then
@@ -171,6 +175,12 @@ if docker ps --format '{{.Names}}' | grep -q '^liftcon-db-1$'; then
   log "бекъп на базата: $STATE/backup/db-$TS.sql.gz"
 fi
 ls -1t "$STATE"/backup/db-*.sql.gz 2>/dev/null | tail -n +11 | xargs -r rm -f || true
+# Снимките и PDF-ите на документите: архив при всеки деплой (пазят се последните 3 — могат да са големи).
+if [[ -n "$(ls -A "$DATA_DIR" 2>/dev/null)" ]]; then
+  tar -czf "$STATE/backup/data-$TS.tar.gz" -C "$STATE" data
+  log "бекъп на документите: $STATE/backup/data-$TS.tar.gz"
+fi
+ls -1t "$STATE"/backup/data-*.tar.gz 2>/dev/null | tail -n +4 | xargs -r rm -f || true
 PREV_TARGET="$(readlink "$WEB_ROOT/current" 2>/dev/null || true)"
 
 rollback() {
@@ -180,6 +190,7 @@ rollback() {
   fi
   if [[ -f "$NGINX_CONF.prev" ]]; then mv -f "$NGINX_CONF.prev" "$NGINX_CONF"; fi
   if [[ -f "$SNIPPET.prev" ]]; then mv -f "$SNIPPET.prev" "$SNIPPET"; fi
+  if [[ -f "$SNIPPET_ADMIN.prev" ]]; then mv -f "$SNIPPET_ADMIN.prev" "$SNIPPET_ADMIN"; fi
   if docker image inspect liftcon-api:prev >/dev/null 2>&1; then
     docker tag liftcon-api:prev liftcon-api:latest
     compose up -d --no-build api || true
@@ -221,8 +232,10 @@ fi
 
 # 5. Пълният Nginx конфиг. Старите файлове се пазят като .prev: ако `nginx -t` падне, trap-ът ги връща.
 if [[ -f "$SNIPPET" ]]; then cp -a "$SNIPPET" "$SNIPPET.prev"; fi
+if [[ -f "$SNIPPET_ADMIN" ]]; then cp -a "$SNIPPET_ADMIN" "$SNIPPET_ADMIN.prev"; fi
 if [[ -f "$NGINX_CONF" ]]; then cp -a "$NGINX_CONF" "$NGINX_CONF.prev"; fi
 install -m 644 "$HERE/liftcon-headers.conf" "$SNIPPET"
+install -m 644 "$HERE/liftcon-headers-admin.conf" "$SNIPPET_ADMIN"
 sed -e "s/liftcon\.it/$DOMAIN/g" -e "s/127\.0\.0\.1:4370/127.0.0.1:$PORT/g" "$HERE/nginx.conf" >"$NGINX_CONF.new"
 mv "$NGINX_CONF.new" "$NGINX_CONF"
 ln -sf "$NGINX_CONF" "/etc/nginx/sites-enabled/$DOMAIN"
@@ -238,7 +251,7 @@ for _ in $(seq 1 20); do
 done
 if [[ "$ok" != 1 ]]; then trap - ERR; rollback; die "проверката на здравето не мина — върнато е предишното състояние"; fi
 trap - ERR
-rm -f "$NGINX_CONF.prev" "$SNIPPET.prev"
+rm -f "$NGINX_CONF.prev" "$SNIPPET.prev" "$SNIPPET_ADMIN.prev"
 # Старите версии на сайта: пазят се последните 5 (освен активната).
 active="$(readlink "$WEB_ROOT/current")"
 ls -1dt "$WEB_ROOT"/releases/* 2>/dev/null | grep -v "/${active#releases/}$" | tail -n +6 | xargs -r rm -rf || true

@@ -14,12 +14,35 @@ import { rotteDocumenti } from "./rotte-documenti.js";
 import { pagina } from "./html.js";
 import { auth } from "../auth/sessione.js";
 
+/** CSP на панела (Nginx не слага своя за /admin): като на сайта + blob: за снимките от устройството и worker. */
+export const CSP_ADMIN =
+  "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'";
+
 const STATIC = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "admin-static");
 // Общите модули за браузъра (сглобяване, текстове) — компилираните condiviso/*.js без каталога.
 const LIB = join(dirname(fileURLToPath(import.meta.url)), "..", "documenti", "condiviso");
 
 export function routerAdmin(d: AdminDeps): Router {
   const r = Router();
+  r.use((_req, res, next) => {
+    res.set("content-security-policy", CSP_ADMIN);
+    next();
+  });
+  // Качване (снимки): ако заявката се откаже рано (сесия, CSRF, права), тялото първо се изчита — иначе Node
+  // затваря връзката, докато Nginx още праща, и човекът получава 502 вместо 401/403 (Nginx го буферира целия).
+  r.use("/api/documenti", (req, res, next) => {
+    if (!Number(req.get("content-length") ?? 0)) return next();
+    const fine = res.end.bind(res) as (...a: unknown[]) => typeof res;
+    res.end = ((...args: unknown[]) => {
+      if (req.complete || req.readableEnded) return fine(...args);
+      let fatto = false;
+      const invia = () => (fatto ? undefined : ((fatto = true), fine(...args)));
+      req.once("end", invia).once("error", invia).resume();
+      setTimeout(invia, 10_000).unref();
+      return res;
+    }) as typeof res.end;
+    next();
+  });
   r.use("/static", express.static(STATIC, { maxAge: "1h", index: false, dotfiles: "deny" }));
   r.use("/static/lib", (req, res, next) => (/^\/[a-z-]+\.js$/.test(req.path) ? next() : res.status(404).end()), express.static(LIB, { maxAge: "1h", index: false, dotfiles: "deny" }));
   // Service worker-ът на документите: на пътя на обхвата си (/admin/documenti/), без вход — само статичен код.
