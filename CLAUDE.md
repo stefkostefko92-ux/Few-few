@@ -96,8 +96,8 @@ hooks, skills).
   video that is a product feature (e.g. Piuma's content engine).
 - **Never SVG — any product** (owner, 2026-11-04): drawings, charts, icons — never SVG. Illustrations → 3D
   (three.js, bundled, no CDN); charts → `<canvas>`; icons → raster. Shipped SVG stays until the owner asks.
-- **CI is not watched** (owner, 2026-11-02): jobs don't start; don't wait, re-run, fix or comment.
-  Proof = the product's local gate + `secret-scan`.
+- **CI unwatched while jobs don't start** (owner, 2026-11-02): no wait/re-run/fix/comment.
+  Proof = local gate (product or `tools/agents/gate.mjs`) + `secret-scan`.
 - **Deploy commands ⇒ merge into `main` first — mandatory, every project** (owner, 2026-11-15): unmerged
   work goes into `main` (gate green, `base.ref` checked), commands only from `main`. → skill `deploy`.
 - **Generic agents: hard cap 10 per session** (anything not in `.claude/agents/`; enforced by the
@@ -171,11 +171,6 @@ sudo REF=<клон|таг|SHA> PROJECTS="piuma" bash /opt/few-few/current/deploy
 
 Box without outbound network → upload the ZIP by hand and run its `autodeploy.sh`
 (fallback flow: `deploy/README.md`).
-
-```bash
-cd /root && unzip -o Few-few.zip >/dev/null
-sudo bash /root/few-few-*/deploy/autodeploy.sh   # idempotent, monorepo-aware
-```
 
 `autodeploy.sh` (ships in the archive) unpacks a timestamped release under
 `/opt/few-few/releases/` and deploys each configured project with a health-check and code

@@ -58,7 +58,9 @@ maxTurns: 80
 - Втвърдяване по подразбиране: SSH само с ключ, `ufw` (само 22/80/443), unattended-upgrades,
   fail2ban; приложенията слушат на localhost зад прокси.
 - **Изходящ SMTP (netcup):** firewall политиката „netcup Mail block“ (SCP → Firewall) спира SMTP
-  по подразбиране; документацията не изброява портовете — проверявай с реален опит, не по памет.
+  по подразбиране (изрично порт 25 — https://www.netcup.com/en/blog/webhosting/new-netcup-firewall);
+  останалите SMTP портове провери с реален опит, не по памет. Сървър отпреди 9.12.2025 — първо включи
+  firewall-а в SCP (https://helpcenter.netcup.com/en/wiki/server/firewall).
   rDNS/PTR е служебният `*.powersrv.de` — за собствена доставка на поща трябва свой hostname.
 - Не отслабвай нещата от кода (CSP, криптиране, sandbox на systemd).
 - Разрушителни операции (`down -v`, изтриване на томове, `rm -rf`) — само с изричен
