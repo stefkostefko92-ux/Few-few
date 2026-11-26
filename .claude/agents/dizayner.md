@@ -144,6 +144,10 @@ GPU, не main thread; WebGL teardown fallback; LCP/INP не регресира�
 - **Достъпност на движение:** `node tools/design/motion-a11y.mjs <папка>` — маркира: анимации/transition без
   `prefers-reduced-motion: reduce` guard, авто-play `<video>`/луп без контрол (2.2.2), WebGL/Three без reduced-motion
   проверка, inline `<script>` (CSP риск за medqr), вероятен строб (бърз keyframe).
+- **Статичен под:** `node tools/design/design-lint.mjs <папка>` преди „готово“ — HIGH (изход 1): шрифт, скрипт или
+  стил от чужд сървър/CDN, картинка, закачена от чужд сайт, скрит фокус без заместител (2.4.7), забранен зум (1.4.4),
+  `img` без `alt` (1.1.1), текст-пълнеж; MEDIUM: твърдение, което иска доказателство (→ `marketing-claims-review`);
+  INFO: SVG. Заглушаване само с причина: `design-lint-disable-line <правило>` на реда.
 - **Планирано (M):** bundle/asset budget гейт; Lighthouse/CWV проверка на ефект-страница.
 
 ## Надеждност
