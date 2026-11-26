@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parseDocsIndex, parseChangelog, parseEngineering, parseSkillsMarketplace, diffSnapshot, nextState, newer, clean, renderReport, STATE } from "./anthropic-watch.mjs";
+import { parseDocsIndex, parseChangelog, parseEngineering, parseSkillsMarketplace, diffSnapshot, nextState, newer, clean, renderReport, STATE, touchedContracts } from "./anthropic-watch.mjs";
 
 const DOCS = `# Claude Code Docs
 - [Overview](https://code.claude.com/docs/en/overview.md): Claude Code is…
@@ -211,4 +211,25 @@ test("платформата: бележките по дата и страниц
   assert.deepEqual(d.newPlatformNotes[0].relevant, ["Claude Opus 5 will be retired on Vertex AI."], "само редовете за Vertex/модели/цени");
   assert.equal(d.newPlatformDocs.length, 1);
   assert.match(renderReport({ newDocs: [], removedDocs: [], newVersions: [], newPosts: [], ...d }, []), /Платформата[\s\S]*2026-11-20[\s\S]*retired/);
+});
+
+// 26.11.2026 (AI-джията): голото „Code Mode“ хващаше 43 от 62 удара (2.1.329–2.1.332) — всеки бъгфикс на
+// експерименталния режим. Договорът е за ДВЕ неща: Code Mode тръгва някъде ново и как се разбира с куките
+// и deny правилата. Редовете са дословно от changelog-а.
+test("code-mode-repl-deny: хваща пускане и куки, не всеки бъгфикс на Code Mode", () => {
+  const id = "code-mode-repl-deny";
+  const hits = (l) => touchedContracts(l).includes(id);
+  for (const l of [
+    "Added Code Mode support in terminal sessions on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry and Claude Platform on AWS",
+    "Changed Code Mode so a PreToolUse hook that errors no longer refuses a script's tool call, as outside Code Mode; set `\"onFailure\": \"block\"` on a command, HTTP or MCP tool hook that must refuse",
+    "Changed Code Mode to also start when telemetry, nonessential traffic or feature flags are turned off; an administrator can keep it off in managed settings",
+    "Added support for turning on Code Mode while OpenTelemetry events and metrics are enabled; each tool call the code makes sends its events; tracing still keeps it off",
+    "Fixed mods that list only some tools silently turning Code Mode off; such a mod no longer keeps it off, so use managed settings for that",
+  ]) assert.ok(hits(l), l);
+  for (const l of [
+    "Fixed Code Mode sometimes waiting for minutes on a command that had already been stopped",
+    "Improved Code Mode: Claude is now told how to look at images and PDFs",
+    "Fixed a Code Mode script's `let x;` keeping the value that an earlier script gave `x`",
+    "Fixed the built-in chart tool failing when Claude called it in Code Mode",
+  ]) assert.ok(!hits(l), l);
 });
