@@ -14,6 +14,8 @@ ul.check li::before{content:"";position:absolute;left:6px;top:.28em;width:7px;he
 ul.dash li::before{content:"";position:absolute;left:4px;top:.78em;width:13px;height:2px;background:var(--acciaio)}
 ul.plain li::before{content:"";position:absolute;left:6px;top:.62em;width:7px;height:7px;background:var(--verde);border-radius:1px}
 .block{padding-block:clamp(56px,7.5vw,108px)}
+/* Две съседни секции с еднакъв фон (и героят пред секция без фон): отстоянието не се удвоява. */
+.block:not(.tint,.ledger)+.block:not(.tint,.ledger),.tint+.tint,.hero+.block:not(.tint,.ledger){padding-top:0}
 .block>.wrap>h2{max-width:32ch}
 .block-intro{max-width:64ch;color:var(--testo);margin:16px 0 0}
 .block>.wrap>h2+*:not(.block-intro),.block-intro+*{margin-top:clamp(28px,3.5vw,44px)}
