@@ -32,6 +32,8 @@ Città metropolitana, Monza e Brianza и цяла Ломбардия. Публи
   `deploy.sh` (`.env`: генерира липсващите тайни → бекъп на базата и сайта → базова версия от репото → Docker:
   db + api с `migrate deploy` → Nginx → health на `/`, `/health`, `/admin/login` → откат → първият
   администратор). Режими: `--solo-env`, `--admin`. Тест: `test/deploy.test.mjs`. Порт: `127.0.0.1:4370`.
+  На сървъра: `sudo PROJECTS="liftcon" bash /opt/few-few/current/deploy/fetch-deploy.sh` (`deploy_liftcon` в
+  `deploy/autodeploy.sh`) — пълната процедура, DNS и стъпките след деплоя: `DEPLOY.md`.
 - Реклами на другите продукти (Panev Ascensori, Rilievi Impianti): `src/content/promo.mjs`, етикет „Altri progetti“.
 - `art/` — 3D рендерите (three.js, bundled; правило „никога SVG“). `scripts/brand-assets.py` — растерните
   активи от `brand/liftcon-logo-originale.png`.

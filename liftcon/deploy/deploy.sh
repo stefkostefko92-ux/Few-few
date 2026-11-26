@@ -261,7 +261,10 @@ log "health 200: https://$DOMAIN/health, https://$DOMAIN/ и https://$DOMAIN/adm
 primo_admin
 
 # 8. IndexNow (Bing, Yandex, Seznam, Naver, Yep) — по желание: INDEXNOW=1.
-if [[ "${INDEXNOW:-0}" == "1" && -f "$APP/../tools/seo/indexnow.mjs" ]]; then
-  node "$APP/../tools/seo/indexnow.mjs" "https://$DOMAIN" || log "IndexNow не мина (сайтът е жив; пуснете го ръчно)"
+# Ключът се подава изрично (урокът на panev/fakturist: късата форма търси /indexnow-key.txt на живо).
+if [[ "${INDEXNOW:-0}" == "1" && -f "$APP/../tools/seo/indexnow.mjs" ]] && command -v node >/dev/null; then
+  KEY="$(tr -d '[:space:]' <"$APP/public/indexnow-key.txt")"
+  (cd "$APP/.." && node tools/seo/indexnow.mjs "https://$DOMAIN" --key-file "$APP/public/indexnow-key.txt" --key-location "https://$DOMAIN/$KEY.txt") \
+    || log "IndexNow не мина (сайтът е жив; ръчно: node tools/seo/indexnow.mjs https://$DOMAIN --key-file liftcon/public/indexnow-key.txt)"
 fi
 log "готово"
