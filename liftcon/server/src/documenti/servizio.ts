@@ -162,13 +162,15 @@ export function servizioDocumenti(o: { store: Store; archivio: Archivio; catalog
       }
     },
 
-    async eliminaFoto(docId: string, fotoId: string): Promise<"ok" | "non_trovato" | "emesso" | "occupato"> {
+    /** `annota` — редът в списъка на изтриванията, след проверките и преди изтриването; `false` → нищо не се трие. */
+    async eliminaFoto(docId: string, fotoId: string, annota?: () => Promise<boolean>): Promise<"ok" | "non_trovato" | "emesso" | "occupato" | "registro"> {
       if (occupato(docId)) return "occupato";
       fotoInCorso.set(docId, (fotoInCorso.get(docId) ?? 0) + 1); // като при качването: издаването чака
       try {
         const [doc, f] = await Promise.all([store.documenti.perId(docId), store.foto.perId(fotoId)]);
         if (!doc || !f || f.documentoId !== docId) return "non_trovato";
         if (doc.stato !== "BOZZA") return "emesso";
+        if (annota && !(await annota())) return "registro";
         await store.foto.elimina(fotoId);
         await archivio.eliminaFoto(docId, fotoId);
         return "ok";

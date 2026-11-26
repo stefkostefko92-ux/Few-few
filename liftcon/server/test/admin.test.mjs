@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import { setup, client, csrfDa, creaUtente, codice, entra, ORIGIN } from "./helpers.mjs";
 import { pulizia } from "../dist/manutenzione.js";
 import pino from "pino";
+import { readFileSync, rmSync } from "node:fs";
+import { join } from "node:path";
 
 const avanza = (clock, ms) => (clock.t += ms);
 
@@ -192,6 +194,30 @@ test("заявки: CSV без CSV injection; изтриване с потвър
     const ev = await s.store.eventi.ultimi(50, 0);
     assert.ok(ev.some((e) => e.azione === "richiesta.eliminata"));
     assert.ok(ev.every((e) => !JSON.stringify(e).includes("v@example.com")), "регистърът е без лични данни");
+  } finally {
+    await s.close();
+  }
+});
+
+test("заявка: изтриването първо записва ред в списъка на изтриванията; без списък → 503 и заявката остава (L6-B)", async () => {
+  const s = await setup();
+  try {
+    const nuova = () => s.store.richieste.crea({ nome: "Anna Verdi", email: "anna@example.com", telefono: "", ruolo: "altro", comune: "Rho", servizio: "altro", messaggio: "x".repeat(20), eliminareDopo: new Date(s.clock.t + 1e9) });
+    const [r1, r2] = [await nuova(), await nuova()];
+    const cred = await creaUtente(s.store, { sig: s.sig });
+    const c = client(s.base);
+    await entra(c, s.clock, { email: cred.u.email, ...cred });
+    const det = await c.req(`/admin/richieste/${r1.id}`);
+    const elimina = (id) => c.req(`/admin/richieste/${id}/elimina`, { method: "POST", form: { _csrf: csrfDa(det.text), conferma: "si" } });
+    assert.equal((await elimina(r1.id)).status, 303);
+    assert.equal(await s.store.richieste.perId(r1.id), null);
+    const testo = readFileSync(join(s.elimDir, "eliminazioni.jsonl"), "utf8");
+    assert.deepEqual(JSON.parse(testo), { tipo: "richiesta", id: r1.id, il: new Date(s.clock.t).toISOString() });
+    assert.doesNotMatch(testo, /anna|Verdi/i, "без лични данни");
+    rmSync(s.elimDir, { recursive: true, force: true });
+    const r = await elimina(r2.id);
+    assert.equal(r.status, 503);
+    assert.ok(await s.store.richieste.perId(r2.id), "без ред в списъка нищо не се трие");
   } finally {
     await s.close();
   }

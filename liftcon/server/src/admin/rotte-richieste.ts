@@ -3,7 +3,7 @@ import { NOMI_TIPO } from "../documenti/condiviso/testi.js";
 import type { TipoDocumento } from "../documenti/condiviso/tipi.js";
 import { Router } from "express";
 import type { AdminDeps } from "./deps.js";
-import { registra } from "./deps.js";
+import { annotaEliminazione, registra } from "./deps.js";
 import { pagina, avviso, csrf, esc, data } from "./html.js";
 import { auth } from "../auth/sessione.js";
 import { richiedePermesso } from "../auth/guards.js";
@@ -141,6 +141,10 @@ ${
     const a = auth(res)!;
     const id = String(req.params.id);
     if (req.body?.conferma !== "si") return res.redirect(303, `/admin/richieste/${id}`);
+    if (!(await annotaEliminazione(d, { tipo: "richiesta", id }))) {
+      const corpo = `${avviso("errore", "Eliminazione non riuscita: il registro delle cancellazioni non è disponibile. Nessun dato è stato eliminato; riprovi più tardi.")}<p><a href="/admin/richieste/${esc(id)}">Torna alla richiesta</a></p>`;
+      return res.status(503).send(pagina({ titolo: "Eliminazione non riuscita", auth: a, attivo: "richieste", corpo }));
+    }
     await d.store.richieste.elimina(id);
     await registra(d, req, a.utente.id, "richiesta.eliminata", id);
     res.redirect(303, "/admin/richieste");

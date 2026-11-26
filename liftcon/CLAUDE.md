@@ -29,9 +29,14 @@ Città metropolitana, Monza e Brianza и цяла Ломбардия. Публи
   - Първият MASTER — при деплоя: `deploy.sh` пита за имейл и парола (stdin → `dist/cli/primo-admin.js`, само
     ако няма потребители; нищо в `.env`). Без `DATABASE_URL` сървърът работи само като форма → имейл.
 - `deploy/` — `nginx.conf` (root `/var/www/liftcon.it/current`, `/admin` → приложението) + `liftcon-headers.conf`,
-  `deploy.sh` (`.env`: генерира липсващите тайни → бекъп на базата и сайта → базова версия от репото → Docker:
-  db + api с `migrate deploy` → Nginx → health на `/`, `/health`, `/admin/login` → откат → първият
-  администратор). Режими: `--solo-env`, `--admin`. Тест: `test/deploy.test.mjs`. Порт: `127.0.0.1:4370`.
+  `deploy.sh` (`.env`: генерира липсващите тайни → бекъп (`backup.sh --deploy`) → базова версия от репото → Docker:
+  db + api с `migrate deploy` → Nginx → health на `/`, `/health`, `/admin/login` → откат → дневният бекъп
+  (`systemd/liftcon-backup.timer`) → първият администратор). Режими: `--solo-env`, `--admin`. Тестове:
+  `test/deploy.test.mjs`, `test/backup.test.mjs`. Порт: `127.0.0.1:4370`.
+  - Бекъпи (L6-B): дъмп + моментна снимка с твърди връзки, **най-много 30 дни** (обещано в privacy). Списъкът на
+    изтриванията (`$STATE/eliminazioni` → `/srv/eliminazioni`, `src/eliminazioni.ts`) е извън бекъпите: пише се
+    преди всяко изтриване на документ или заявка (иначе 503) и се прилага пак при всеки старт (fail closed).
+  - Регистър (L4-B): редакцията на черновата — `documento.modificato`, най-много веднъж на час за човек и документ.
   На сървъра: `sudo PROJECTS="liftcon" bash /opt/few-few/current/deploy/fetch-deploy.sh` (`deploy_liftcon` в
   `deploy/autodeploy.sh`) — пълната процедура, DNS и стъпките след деплоя: `DEPLOY.md`.
 - Реклами на другите продукти (Panev Ascensori, Rilievi Impianti): `src/content/promo.mjs`, етикет „Altri progetti“.

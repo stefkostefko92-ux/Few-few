@@ -4,10 +4,11 @@
 #   sudo bash liftcon/deploy/deploy.sh --solo-env                    # само .env (генерира липсващите тайни)
 #   sudo bash liftcon/deploy/deploy.sh --admin                       # само първият администратор на панела
 # Идемпотентен: .env (тайните се генерират, ако липсват; съществуващите не се пипат) → бекъп на базата и на
-# сайта → базова версия на сайта от репото → база + приложение (Docker; приложението прилага миграциите и
-# публикува сайта с промените от панела) → Nginx → проверки → първият администратор (пита за имейл и парола,
-# само ако панелът няма потребители). При провал всичко се връща: сайтът (връзката current), Nginx конфигът
-# и образът на приложението. Тайните са в $STATE/.env (mode 600), не в архива.
+# файловете на документите (deploy/backup.sh --deploy) → базова версия на сайта от репото → база + приложение
+# (Docker; приложението прилага миграциите, списъка на изтриванията и публикува сайта с промените от панела) →
+# Nginx → проверки → дневният бекъп (liftcon-backup.timer, срок 30 дни) → първият администратор (пита за имейл
+# и парола, само ако панелът няма потребители). При провал всичко се връща: сайтът (връзката current), Nginx
+# конфигът и образът на приложението. Тайните са в $STATE/.env (mode 600), не в архива.
 set -euo pipefail
 
 MODE="deploy"
@@ -27,6 +28,10 @@ NGINX_CONF="/etc/nginx/sites-available/$DOMAIN"
 SNIPPET="/etc/nginx/snippets/liftcon-headers.conf"
 SNIPPET_ADMIN="/etc/nginx/snippets/liftcon-headers-admin.conf"
 DATA_DIR="$STATE/data" # снимките и PDF-ите на документите (том на приложението)
+ELIM_DIR="$STATE/eliminazioni" # списъкът на изтриванията — извън бекъпите (docs/documenti-spec.md D16а)
+LOCK="${LIFTCON_LOCK:-/run/lock/liftcon-deploy.lock}" # общата ключалка с deploy/backup.sh
+SYSTEMD_DIR="${LIFTCON_SYSTEMD_DIR:-/etc/systemd/system}"
+BACKUP_BIN="/usr/local/sbin/liftcon-backup"
 CERT="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP="$(dirname "$HERE")"
@@ -36,7 +41,7 @@ DB_VOLUME="liftcon_db-data" # томът на базата (проект „lift
 
 log() { printf '[liftcon] %s\n' "$*"; }
 die() { printf '[liftcon] ГРЕШКА: %s\n' "$*" >&2; exit 1; }
-compose() { LIFTCON_ENV_FILE="$ENV_FILE" LIFTCON_HTTP_PORT="$PORT" LIFTCON_SITE_DIR="$WEB_ROOT" LIFTCON_DATA_DIR="$DATA_DIR" docker compose --env-file "$ENV_FILE" -f "$APP/docker-compose.yml" -p liftcon "$@"; }
+compose() { LIFTCON_ENV_FILE="$ENV_FILE" LIFTCON_HTTP_PORT="$PORT" LIFTCON_SITE_DIR="$WEB_ROOT" LIFTCON_DATA_DIR="$DATA_DIR" LIFTCON_ELIMINAZIONI_DIR="$ELIM_DIR" docker compose --env-file "$ENV_FILE" -f "$APP/docker-compose.yml" -p liftcon "$@"; }
 need() { for c in "$@"; do command -v "$c" >/dev/null || die "липсва командата $c"; done; }
 
 # --- .env: стойност на ключ / запис на ключ (атомарно, права 600; стойностите не се показват никъде) ---
@@ -84,6 +89,16 @@ ENV
   if [[ -z "$(valore_env JWT_SECRET)" ]]; then imposta_env JWT_SECRET "$(openssl rand -hex 48)"; nuovi+=(JWT_SECRET); fi
   if ((${#nuovi[@]})); then log "генерирани: ${nuovi[*]} — запазете копие на $ENV_FILE на сигурно място (password manager)"; fi
   return 0
+}
+
+# Дневният бекъп: копие на backup.sh на постоянно място + таймер на systemd (идемпотентно — презаписва се).
+installa_backup() {
+  command -v systemctl >/dev/null || { log "ВНИМАНИЕ: няма systemd — дневният бекъп не е сложен"; return 0; }
+  install -m 700 "$HERE/backup.sh" "$BACKUP_BIN" || return 1
+  install -m 644 "$HERE/systemd/liftcon-backup.service" "$SYSTEMD_DIR/liftcon-backup.service" || return 1
+  install -m 644 "$HERE/systemd/liftcon-backup.timer" "$SYSTEMD_DIR/liftcon-backup.timer" || return 1
+  systemctl daemon-reload && systemctl enable --now liftcon-backup.timer >/dev/null || return 1
+  log "дневният бекъп е включен (liftcon-backup.timer, 04:10 UTC; бекъпите се пазят най-много 30 дни)"
 }
 
 # Първият администратор (MASTER) — само ако панелът няма потребители. Пита в терминала за имейл и парола
@@ -154,9 +169,12 @@ if [[ "$MODE" == admin ]]; then
   exit 0
 fi
 
-need nginx docker curl certbot ss tar gzip openssl
+need nginx docker curl certbot ss gzip openssl flock
 [[ -f "$APP/public/index.html" ]] || die "няма $APP/public/index.html — грешен архив?"
 docker info >/dev/null 2>&1 || die "Docker не работи"
+# Един деплой наведнъж и никога посред дневния бекъп (backup.sh чака същата ключалка).
+exec 9>"$LOCK"
+flock -w 600 9 || die "друг деплой или бекъп още тече ($LOCK)"
 assicura_env
 
 # Портът: свободен или вече държан от нашия контейнер.
@@ -164,23 +182,13 @@ if ss -tlnH "sport = :$PORT" | grep -q .; then
   docker ps --format '{{.Names}} {{.Ports}}' | grep -q "^liftcon-api .*127.0.0.1:$PORT->" || die "порт $PORT е зает от друг процес"
 fi
 
-mkdir -p "$STATE/backup" "$WEB_ROOT/releases" "$DATA_DIR"
+mkdir -p "$STATE/backup" "$WEB_ROOT/releases" "$DATA_DIR" "$ELIM_DIR"
 chmod 700 "$STATE"
-# Приложението (потребител node) пише снимките и PDF-ите; никой друг не ги чете.
-chown "$NODE_UID:$NODE_UID" "$DATA_DIR" && chmod 700 "$DATA_DIR"
+# Приложението (потребител node) пише снимките, PDF-ите и списъка на изтриванията; никой друг не ги чете.
+chown "$NODE_UID:$NODE_UID" "$DATA_DIR" "$ELIM_DIR" && chmod 700 "$DATA_DIR" "$ELIM_DIR"
 
-# 1. Бекъп на базата (преди миграциите) и запомняне на активната версия на сайта.
-if docker ps --format '{{.Names}}' | grep -q '^liftcon-db-1$'; then
-  compose exec -T db pg_dump -U liftcon -d liftcon --no-owner | gzip >"$STATE/backup/db-$TS.sql.gz"
-  log "бекъп на базата: $STATE/backup/db-$TS.sql.gz"
-fi
-ls -1t "$STATE"/backup/db-*.sql.gz 2>/dev/null | tail -n +11 | xargs -r rm -f || true
-# Снимките и PDF-ите на документите: архив при всеки деплой (пазят се последните 3 — могат да са големи).
-if [[ -n "$(ls -A "$DATA_DIR" 2>/dev/null)" ]]; then
-  tar -czf "$STATE/backup/data-$TS.tar.gz" -C "$STATE" data
-  log "бекъп на документите: $STATE/backup/data-$TS.tar.gz"
-fi
-ls -1t "$STATE"/backup/data-*.tar.gz 2>/dev/null | tail -n +4 | xargs -r rm -f || true
+# 1. Бекъп (преди миграциите): дъмп на базата + моментна снимка на файловете; изтеклите (над 30 дни) се трият.
+bash "$HERE/backup.sh" --deploy || die "бекъпът преди деплоя не мина — нищо не е сменено"
 PREV_TARGET="$(readlink "$WEB_ROOT/current" 2>/dev/null || true)"
 
 rollback() {
@@ -256,6 +264,7 @@ rm -f "$NGINX_CONF.prev" "$SNIPPET.prev" "$SNIPPET_ADMIN.prev"
 active="$(readlink "$WEB_ROOT/current")"
 ls -1dt "$WEB_ROOT"/releases/* 2>/dev/null | grep -v "/${active#releases/}$" | tail -n +6 | xargs -r rm -rf || true
 log "health 200: https://$DOMAIN/health, https://$DOMAIN/ и https://$DOMAIN/admin/login (активна версия: $active)"
+installa_backup || log "ВНИМАНИЕ: дневният бекъп НЕ е включен — бекъп има само при деплой. Проверка: systemctl status liftcon-backup.timer"
 
 # 7. Първият администратор (само ако панелът няма потребители).
 primo_admin

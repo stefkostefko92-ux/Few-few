@@ -18,6 +18,7 @@ import { gestoreEmail } from "../dist/email/configurazione.js";
 import { servizioDocumenti } from "../dist/documenti/servizio.js";
 import { archivio } from "../dist/documenti/archivio.js";
 import { CATALOGO } from "../dist/documenti/condiviso/catalogo/index.js";
+import { registroEliminazioni } from "../dist/eliminazioni.js";
 
 /** Двойник на Brevo: записва заявките, отговаря според `risposte` (по път). Нищо не излиза навън. */
 export function brevoFinto(risposte = {}) {
@@ -46,11 +47,12 @@ export function defaults() {
 
 export async function setup({ siteSrc = SITE_SRC, brevo = brevoFinto(), mailerDaPannello = false } = {}) {
   const clock = { t: Date.UTC(2026, 10, 26, 10, 0, 0) };
-  const store = memoryStore();
+  const store = memoryStore({ now: () => clock.t });
   const logger = pino({ level: "silent" });
   const sig = sigillo(SEAL);
   const siteDir = mkdtempSync(join(tmpdir(), "liftcon-site-"));
   const dataDir = mkdtempSync(join(tmpdir(), "liftcon-data-"));
+  const elimDir = mkdtempSync(join(tmpdir(), "liftcon-elim-"));
   const cat = catalogo(store, defaults());
   const admin = {
     store,
@@ -65,13 +67,14 @@ export async function setup({ siteSrc = SITE_SRC, brevo = brevoFinto(), mailerDa
     siteDir,
     email: gestoreEmail({ store, sigillo: sig, env: { nomeMittente: "LiftCon" }, fetch: brevo.fetch }),
     documenti: servizioDocumenti({ store, archivio: archivio(dataDir), catalogo: CATALOGO, now: () => clock.t }),
+    eliminazioni: registroEliminazioni(elimDir, () => clock.t),
   };
   const sent = [];
   const mailer = mailerDaPannello ? admin.email.mailer() : { async send(m) { sent.push(m); } };
   const app = createApp({ mailer, logger, allowedOrigin: ORIGIN, store, admin, baseUrl: ORIGIN, now: () => clock.t, limiter: fixedWindowLimiter(1000, 60_000) });
   const server = await new Promise((r) => { const s = app.listen(0, "127.0.0.1", () => r(s)); });
   const base = `http://127.0.0.1:${server.address().port}`;
-  return { store, sig, clock, base, sent, siteDir, dataDir, admin, brevo, close: () => new Promise((r) => server.close(r)) };
+  return { store, sig, clock, base, sent, siteDir, dataDir, elimDir, admin, brevo, close: () => new Promise((r) => server.close(r)) };
 }
 
 /** Клиент с бисквитки (един браузър). */
