@@ -87,8 +87,9 @@ sudo PROJECTS="liftcon" bash /opt/few-few/current/deploy/fetch-deploy.sh
 
 Връща базата и файловете към момента на бекъпа. Изтритото след бекъпа (документи, снимки, заявки) се трие пак
 при старта по списъка на изтриванията — в лога: `eliminazioni_riapplicate`. Базата се сменя в **една транзакция**
-(`-1`): цялата схема се маха и се зарежда от дъмпа, а сесиите се трият. При грешка не се сменя нищо — нито
-базата, нито файловете (`&&`). Миграциите
+(`-1`): цялата схема се маха и се зарежда от дъмпа, а сесиите се трият. Веригата `&&` спира на първата
+грешка: повреден дъмп (`gunzip -t`) — приложението не се спира; грешка в базата — нищо не се сменя, нито
+базата, нито файловете. Миграциите
 след бекъпа `migrate deploy` прилага сам при старта. Командите са минати на тестов стек (26.11.2026). Пример —
 последният бекъп; за друг сменете `T` с време от `ls "$B"`:
 
@@ -96,8 +97,8 @@ sudo PROJECTS="liftcon" bash /opt/few-few/current/deploy/fetch-deploy.sh
 B=/opt/few-few/shared/liftcon/backup
 ls -1 "$B"
 T="$(ls -1 "$B" | sed -n 's/^db-\(.*\)\.sql\.gz$/\1/p' | tail -n 1)"; echo "$T"
-docker stop liftcon-api
-{ echo 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'; gunzip -c "$B/db-$T.sql.gz"; echo 'DELETE FROM public."Sessione";'; } \
+gunzip -t "$B/db-$T.sql.gz" && docker stop liftcon-api \
+  && { echo 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'; gunzip -c "$B/db-$T.sql.gz"; echo 'DELETE FROM public."Sessione";'; } \
   | docker exec -i liftcon-db-1 psql -q -1 -U liftcon -d liftcon -v ON_ERROR_STOP=1 \
   && if [ -d "$B/data-$T" ]; then cd /opt/few-few/shared/liftcon && mv data "data.prima-$T" && cp -a "$B/data-$T" data; fi
 docker start liftcon-api
