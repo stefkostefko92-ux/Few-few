@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 799
+        "lessons": 800
       },
       "evolution": [
         {
@@ -2175,9 +2175,20 @@
           "date": "2026-11-26",
           "event": "v75.3 — учене",
           "detail": "Научи: В live-run worktree без одобрение не тръгват нито `node tools/agents/rubric.mjs`, нито …"
+        },
+        {
+          "version": "75.4.0",
+          "date": "2026-11-26",
+          "event": "v75.4 — учене",
+          "detail": "Научи: Маскиране на коментари с /\\/\\*[\\s\\S]*?\\*\\//g върху HTML/JSX без прескачане на низове из…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-26",
+          "type": "learning",
+          "summary": "Научи: „Маскиране на коментари с /\\/\\*[\\s\\S]*?\\*\\//g върху HTML/JSX без прескачане на низове из…\""
+        },
         {
           "date": "2026-11-26",
           "type": "learning",
