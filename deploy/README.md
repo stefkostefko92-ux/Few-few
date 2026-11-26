@@ -145,8 +145,9 @@ ZIP отпреди месец.
   `/var/www/liftcon.it/current`) + приложение в Docker Compose (db + api на `127.0.0.1:4370`, проект `liftcon`):
   формата, `/admin` (2FA) и документите (PWA, офлайн). Стъпките са в `liftcon/deploy/deploy.sh`: генерира
   липсващите тайни в `/opt/few-few/shared/liftcon/.env` (600; при съществуваща база без `POSTGRES_PASSWORD`/`SEAL_KEY`
-  спира), бекъп на базата и на снимките, `migrate deploy`, certbot, Nginx (+ `liftcon-headers-admin.conf`), проби на
-  `/`, `/health`, `/admin/login` с откат, първият администратор (пита в терминала), IndexNow. Още не е в `PROJECTS`
+  спира), бекъп на базата и на файловете (`liftcon/deploy/backup.sh`; и всеки ден — `liftcon-backup.timer`, срок
+  30 дни), `migrate deploy`, certbot, Nginx (+ `liftcon-headers-admin.conf`), проби на `/`, `/health`, `/admin/login`
+  с откат, първият администратор (пита в терминала), IndexNow. Още не е в `PROJECTS`
   по подразбиране — първото пускане е `PROJECTS="liftcon"`, след DNS. → `liftcon/DEPLOY.md`.
 - **linketto** (Linketto — „link in bio“): Docker Compose (db + app на `127.0.0.1:<HTTP_PORT>`, по подразбиране 4350 — 4340 е на rilievi; проект
   `linketto`). Тайните, дъмповете и качените снимки са в `/opt/few-few/shared/linketto/` (`.env` 600 —

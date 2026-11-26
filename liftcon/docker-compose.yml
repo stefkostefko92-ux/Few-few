@@ -54,12 +54,15 @@ services:
       DATABASE_URL: postgresql://liftcon:${POSTGRES_PASSWORD}@db:5432/liftcon?schema=public
       SITE_DIR: /srv/site
       DATA_DIR: /srv/data
+      ELIMINAZIONI_DIR: /srv/eliminazioni
     ports:
       - "127.0.0.1:${LIFTCON_HTTP_PORT:-4370}:4370"
     volumes:
       - ${LIFTCON_SITE_DIR:-/var/www/liftcon.it}:/srv/site
-      # Снимките и издадените PDF на документите (лични данни — само на сървъра, в бекъпа на deploy.sh).
+      # Снимките и издадените PDF на документите (лични данни — само на сървъра, в бекъпа на deploy/backup.sh).
       - ${LIFTCON_DATA_DIR:-/opt/few-few/shared/liftcon/data}:/srv/data
+      # Списъкът на изтриванията — НЕ е в бекъпа; при старт се прилага пак (docs/documenti-spec.md D16а).
+      - ${LIFTCON_ELIMINAZIONI_DIR:-/opt/few-few/shared/liftcon/eliminazioni}:/srv/eliminazioni
     read_only: true
     tmpfs:
       - /tmp:size=256m

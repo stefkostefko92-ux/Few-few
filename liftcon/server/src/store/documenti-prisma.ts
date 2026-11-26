@@ -45,6 +45,7 @@ export function documentiPrisma(db: PrismaClient): StoreDocumenti {
         await db.$transaction([db.documento.deleteMany({ where: { id } }), db.documentoEliminato.upsert({ where: { id }, create: { id }, update: {} })]);
       },
       eliminato: async (id) => (await db.documentoEliminato.count({ where: { id } })) > 0,
+      contaEliminati: () => db.documentoEliminato.count(),
       figli: (id) => db.documento.findMany({ where: { revisioneDi: id }, select: SINTESI }),
       tutti: () => db.documento.findMany({ select: SINTESI, orderBy: { aggiornatoIl: "desc" }, take: 10_000 }),
       async prossimoNumero(prefisso, anno) {
