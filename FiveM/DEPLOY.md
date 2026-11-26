@@ -112,7 +112,9 @@ cd /root && unzip -o Few-few.zip >/dev/null
 sudo PROJECTS="fivem" bash /root/few-few-*/deploy/autodeploy.sh
 ```
 
-Веднага след това **попълни `RESEND_API_KEY`** и пусни пак — без него
+Веднага след това **попълни `BREVO_API_KEY`** (Brevo → SMTP & API → API keys) и пусни пак. Без него
+autodeploy **не обновява** FiveM: имейлите минават само през Brevo, а нов код без ключ би спрял тихо
+писмата по DSA — без него
 уведомленията по чл. 16 и чл. 17 DSA не тръгват.
 
 **Панелът НЕ пуска вход, докато TLS не е издаден — и това не е дефект.**
@@ -140,7 +142,7 @@ bash scripts/deploy.sh
 | `POSTGRES_PASSWORD`, `DATABASE_URL` | да | базата. В Compose хостът е **`db`**, не `localhost`: `postgresql://fivem:<POSTGRES_PASSWORD>@db:5432/fivem`. Стойностите се пишат **без кавички** |
 | `PUBLIC_BASE_URL` | да | canonical, hreflang, OG. **Трябва да е `https://…`** — иначе сесийната бисквитка на панела пада до слабата форма |
 | `ADMIN_PASSWORD_HASH` | да | панелът. `npm run admin:hash -- "дълга парола"`; паролата не се пази никъде |
-| `RESEND_API_KEY` | **да, на живо** | без него уведомленията по чл. 16 и чл. 17 DSA не тръгват. Липсата се логва, но обещанието остава неизпълнено |
+| `BREVO_API_KEY` | **да, на живо** | без него уведомленията по чл. 16 и чл. 17 DSA не тръгват. Липсата се логва, но обещанието остава неизпълнено |
 | `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` | по избор | откриване на стриймъри (dev.twitch.tv, безплатно) |
 | `KICK_CLIENT_ID`, `KICK_CLIENT_SECRET` | по избор | същото. Публичният списък на Kick е зад Cloudflare (403) — ключ няма как да се избегне |
 | `KICK_LANGUAGE`, `KICK_CATEGORY_ID` | по избор | заковават недокументирани стойности. Не намира ли Kick никого: `docker compose exec -T cron npx tsx scripts/kick-doctor.ts` |
@@ -275,12 +277,29 @@ docker compose exec -T cron npx tsx scripts/dedupe-servers.ts --apply    # бе�
    показваното име в `EMAIL_FROM`, пресъздава `web` и `cron`, и чак тогава прави стария
    адрес пренасочване. Спре ли по пътя, старият адрес работи както досега. Може да се
    пусне отново.
-4. **Подателят на имейлите.** Потвърди `thraex.carbonstealth.eu` в Resend (DKIM и SPF записи), после:
+4. **Подателят на имейлите.** Потвърди `thraex.carbonstealth.eu` в Brevo (Senders, Domains & Dedicated IPs → Domains: DKIM, DMARC и Brevo code записите), после:
    ```bash
    sudo bash /opt/few-few/current/FiveM/deploy/move-domain.sh --mail
    ```
 5. **Search Console:** нов ресурс за `thraex.carbonstealth.eu`, „Промяна на адреса“ от стария и нов
    `sitemap.xml`.
+
+## Преход Resend → Brevo (еднократно, 25.11.2026)
+
+Имейлите на всички продукти минават през Brevo (Sendinblue SAS, ЕС). Редът пази писмата по DSA
+без прекъсване:
+
+1. Brevo → SMTP & API → API keys: нов ключ → `BREVO_API_KEY=` в `/opt/few-few/shared/fivem/.env`.
+   `RESEND_API_KEY` **остава** засега — старият release още праща през него.
+2. Brevo → Senders, Domains & Dedicated IPs → Domains: потвърди `thraex.carbonstealth.eu`
+   (DKIM, DMARC и Brevo code записите в DNS).
+3. В настройките на транзакционните писма в Brevo изключи проследяването на отваряния и кликове, където
+   акаунтът го позволява. Политиката **не** обещава липса на проследяване — ако някога го обещае, първо
+   провери, че е изключено.
+4. Деплой (`PROJECTS="fivem"`). Без ключ от т. 1 autodeploy отказва да обнови FiveM.
+5. Пусни пробен сигнал от сайта и провери, че потвърждението пристига.
+6. Едва тогава: махни `RESEND_API_KEY` от `.env`, отмени ключа в Resend и поискай изтриване на
+   данните там (чл. 28, ал. 3, б. „ж“ ОРЗД).
 
 Вписаните в панела трябва да влязат наново: бисквитката `__Host-` важи само за един адрес.
 
