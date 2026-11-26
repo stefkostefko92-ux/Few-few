@@ -26,7 +26,13 @@ const SITE_URL    = process.env.SITE_URL    || 'https://eternaltouch.it';
 // Setting SMTP_TLS_SERVERNAME to a name that IS in the presented certificate
 // lets us keep full certificate validation (rejectUnauthorized stays on) while
 // connecting to SMTP_HOST. Prefer this over disabling validation.
-const SMTP_TLS_SERVERNAME = process.env.SMTP_TLS_SERVERNAME || '';
+// Brevo's certificate matches its own host: a leftover Register.it servername would
+// make TLS fail silently, so it is ignored for Brevo (review of PR #492).
+const IS_BREVO = /^smtp-relay\.brevo\.com$/i.test(SMTP_HOST);
+if (IS_BREVO && process.env.SMTP_TLS_SERVERNAME) {
+  console.warn('[email] SMTP_TLS_SERVERNAME is ignored for Brevo — remove it from .env.');
+}
+const SMTP_TLS_SERVERNAME = IS_BREVO ? '' : process.env.SMTP_TLS_SERVERNAME || '';
 
 // --- Transporter (lazy singleton) -----------------------------------
 let _transporter = null;
@@ -206,45 +212,6 @@ const CONFIRM_COPY = {
   }
 };
 
-function customerConfirmationHtml({ name, message, language }) {
-  const c = CONFIRM_COPY[language] || CONFIRM_COPY.en;
-  const greet = (GREETING[language] || GREETING.en)(esc(name));
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(c.title)}</title></head>
-<body style="margin:0;padding:0;background:${COLOR.cream2};font-family:Georgia,serif;color:${COLOR.ink};">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${COLOR.cream2};padding:32px 16px;">
-<tr><td align="center">
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:${COLOR.cream};border:1px solid ${COLOR.line};">
-    <tr><td align="center" style="padding:40px 40px 8px 40px;">
-      <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${COLOR.gold};">${esc(c.eyebrow)}</div>
-    </td></tr>
-    <tr><td align="center" style="padding:8px 40px 24px 40px;">
-      <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:400;margin:0;color:${COLOR.ink};line-height:1.2;">${esc(c.title)}</h1>
-    </td></tr>
-    <tr><td style="padding:8px 40px 24px 40px;">
-      <p style="font-family:Georgia,serif;font-size:16px;line-height:1.7;color:${COLOR.ink};margin:0 0 16px 0;">${greet}</p>
-      <p style="font-family:Georgia,serif;font-size:16px;line-height:1.7;color:${COLOR.ink};margin:0 0 14px 0;">${esc(c.body1)}</p>
-      <p style="font-family:Georgia,serif;font-size:16px;line-height:1.7;color:${COLOR.ink};margin:0;">${esc(c.body2)}</p>
-    </td></tr>
-    <tr><td style="padding:8px 40px 24px 40px;">
-      <div style="background:${COLOR.cream2};border-left:3px solid ${COLOR.gold};padding:18px 22px;">
-        <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${COLOR.muted};margin-bottom:10px;">${esc(c.yourMsgLabel)}</div>
-        <div style="font-family:Georgia,serif;font-size:14px;line-height:1.7;color:${COLOR.ink};white-space:pre-wrap;">${esc(message)}</div>
-      </div>
-    </td></tr>
-    <tr><td style="padding:24px 40px 32px 40px;border-top:1px solid ${COLOR.line};">
-      <p style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:${COLOR.ink};margin:0 0 6px 0;">${esc(c.signoff)}</p>
-      <p style="font-family:Georgia,serif;font-size:16px;color:${COLOR.ink};margin:0 0 16px 0;letter-spacing:0.3px;"><strong style="color:${COLOR.goldDark};font-weight:600;">${esc(c.team)}</strong></p>
-      <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:${COLOR.muted};margin:0 0 4px 0;line-height:1.6;">${esc(c.location)}</p>
-      <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:${COLOR.muted};margin:0;line-height:1.6;">${esc(c.phones)}</p>
-    </td></tr>
-    <tr><td align="center" style="padding:16px 40px 24px 40px;background:${COLOR.cream2};">
-      <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:${COLOR.muted};margin:0;line-height:1.5;">${esc(c.footerNote)}</p>
-    </td></tr>
-  </table>
-</td></tr></table>
-</body></html>`;
-}
-
 function customerConfirmationText({ name, message, language }) {
   const c = CONFIRM_COPY[language] || CONFIRM_COPY.en;
   const greet = (GREETING[language] || GREETING.en)(name);
@@ -298,8 +265,9 @@ export async function sendContactNotifications(payload) {
       from: SMTP_FROM,
       to: `${name} <${email}>`,
       subject: confirmCopy.subject,
-      text: customerConfirmationText({ name, message, language: lang }),
-      html: customerConfirmationHtml({ name, message, language: lang })
+      // Само текст: писмо до клиента без HTML не носи пиксел за отваряне (Brevo го слага в HTML) —
+      // проследяване на клиента без съгласие би било проблем по чл. 5(3) ePrivacy (преглед на PR #492).
+      text: customerConfirmationText({ name, message, language: lang })
     })
   ]);
 

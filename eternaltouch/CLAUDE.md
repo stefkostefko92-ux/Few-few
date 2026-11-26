@@ -22,7 +22,7 @@ npm run prisma:seed             # само seed (admin + колекции + съ
 Node ≥20. Задължителни env (виж `.env.example`, режим 600, **никога** в git/архив):
 `DATABASE_URL`, `JWT_SECRET`/`COOKIE_SECRET`/`SESSION_SECRET` (≥32 знака — приложението
 **отказва да стартира** без тях), `ADMIN_EMAIL`, `ADMIN_PASSWORD` (seed-ва админа —
-без вграден дефолт), `SITE_URL`, и `SMTP_*` (Brevo, `smtp-relay.brevo.com`; кутията `info@` остава в Register.it само за получаване; без тях съобщенията се
+без вграден дефолт), `SITE_URL`, и `SMTP_*` (Brevo, `smtp-relay.brevo.com`; кутията `info@` остава в Register.it — получаване и ръчни отговори; без тях съобщенията се
 пазят в БД, но имейл не тръгва).
 
 ## Layout

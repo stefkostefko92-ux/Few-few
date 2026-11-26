@@ -32,6 +32,12 @@ test("smtp_is_brevo: само SMTP_HOST=smtp-relay.brevo.com (и с кавичк
       ["SMTP_HOST=smtp-relay.brevo.com.evil.example\n", 1],
       ["#SMTP_HOST=smtp-relay.brevo.com\n", 1],
       ["SMTP_HOST=\n", 1],
+      // Последният ред печели (както при env_file): стар хост по-долу отменя Brevo и обратно.
+      ["SMTP_HOST=smtp-relay.brevo.com\nSMTP_HOST=authsmtp.register.it\n", 1],
+      ["SMTP_HOST=authsmtp.register.it\nSMTP_HOST=smtp-relay.brevo.com\n", 0],
+      // Остатък от Register.it: servername чупи TLS към Brevo — не е готово.
+      ["SMTP_HOST=smtp-relay.brevo.com\nSMTP_TLS_SERVERNAME=smtp.webnode.com\n", 1],
+      ["SMTP_HOST=smtp-relay.brevo.com\nSMTP_TLS_SERVERNAME=\n", 0],
     ];
     for (const [body, want] of cases) {
       const f = join(dir, ".env");
@@ -49,7 +55,14 @@ test("deploy_eternaltouch: без Brevo в .env не се обновява (пр
   const guard = body.indexOf("smtp_is_brevo");
   assert.ok(guard > 0, "проверката е в deploy_eternaltouch");
   assert.ok(body.indexOf("bash deploy.sh") > guard, "deploy.sh е след проверката");
-  assert.match(body.slice(guard, guard + 700), /deploy_failed=1; return/);
+  assert.match(body.slice(guard, guard + 700), /skip_project eternaltouch [^\n]*; return/, "пропуск, не провал на целия пробег");
   assert.match(body, /^SMTP_HOST=smtp-relay\.brevo\.com$/m, "първият .env сочи Brevo");
   assert.doesNotMatch(body, /authsmtp\.register\.it/, "без стария доставчик в шаблона");
+});
+
+test("пропуснатите продукти се виждат в края на пробега и не местят провала върху другите", () => {
+  assert.match(fn("skip_project"), /SKIPPED\+=/);
+  assert.match(script, /^SKIPPED=\(\)$/m, "списъкът се нулира в началото");
+  const tail = script.slice(script.lastIndexOf("\nprune_releases\n"));
+  assert.match(tail, /SKIPPED\[@\]/, "резюмето в края изрежда пропуснатите");
 });

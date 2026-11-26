@@ -322,6 +322,14 @@ fi
 ok "Източник за деплой: $SRC"
 
 deploy_failed=0
+# Продукти, пропуснати нарочно (условие за обновяване не е изпълнено — работи предишният код). Не
+# провалят пробега: иначе `current` и чистенето спират за ВСИЧКИ продукти (преглед на PR #492).
+SKIPPED=()
+skip_project() {
+  local p=$1; shift
+  SKIPPED+=("$p — $*")
+  warn "$p НЕ е обновен: $*"
+}
 
 # Пренася .env (тайните) на Compose продукт в новия release и го пази на стабилен
 # път. Преди се четеше САМО от `current` — а деплой само на друг продукт (напр.
@@ -1341,7 +1349,10 @@ supreme_install_backup_timer() {
 # поверителност, а обновен без сменен .env би пращал през стария доставчик — неверен текст.
 smtp_is_brevo() {
   [ -r "$1" ] || return 1
-  grep -qiE "^SMTP_HOST=[\"']?smtp-relay\.brevo\.com[\"']?[[:space:]]*$" "$1" 2>/dev/null
+  # Последният ред печели (както при env_file на compose).
+  grep -E '^SMTP_HOST=' "$1" 2>/dev/null | tail -n 1 | grep -qiE "^SMTP_HOST=[\"']?smtp-relay\.brevo\.com[\"']?[[:space:]]*$" || return 1
+  # Остатък от Register.it: SMTP_TLS_SERVERNAME чупи TLS към Brevo тихо (преглед на PR #492).
+  ! grep -E '^SMTP_TLS_SERVERNAME=' "$1" 2>/dev/null | tail -n 1 | grep -qE "^SMTP_TLS_SERVERNAME=[\"']?[^\"'[:space:]]"
 }
 
 deploy_eternaltouch() {
@@ -1386,8 +1397,7 @@ EOF
   chmod 600 "$d/.env" 2>/dev/null || true
   carry_env eternaltouch "$d"   # новогенерираният .env → стабилния път
   if ! smtp_is_brevo "$d/.env"; then
-    warn "eternaltouch НЕ е обновен: SMTP_HOST в .env не е smtp-relay.brevo.com. Смени SMTP_HOST, SMTP_USER и SMTP_PASS с данните от Brevo (SMTP & API → SMTP), потвърди домейна eternaltouch.it в Brevo и пусни пак."
-    deploy_failed=1; return
+    skip_project eternaltouch "SMTP в .env не е Brevo (SMTP_HOST=smtp-relay.brevo.com, без SMTP_TLS_SERVERNAME). Смени SMTP_HOST, SMTP_USER и SMTP_PASS с данните от Brevo (SMTP & API → SMTP), махни SMTP_TLS_SERVERNAME, потвърди eternaltouch.it в Brevo и пусни пак."; return
   fi
   ( cd "$d" && bash deploy.sh ) \
     || { warn "eternaltouch: deploy.sh се провали — продължавам с останалите."; deploy_failed=1; return; }
@@ -2226,8 +2236,7 @@ EOF
   # BREVO_API_KEY FiveM НЕ се обновява — върви предишният release, който още праща писма, а политиката
   # му още назовава стария доставчик. Пръв деплой: .env току-що е създаден — попълни ключа и пусни пак.
   if ! fivem_has_brevo_key "$FIVEM_STATE_DIR/.env"; then
-    warn "FiveM НЕ е обновен: няма BREVO_API_KEY в $FIVEM_STATE_DIR/.env. Добави ключа (Brevo → SMTP & API → API keys), потвърди подателя в Brevo и пусни пак. RESEND_API_KEY махни едва след като новият release праща писма."
-    deploy_failed=1; return
+    skip_project fivem "няма BREVO_API_KEY в $FIVEM_STATE_DIR/.env. Добави ключа (Brevo → SMTP & API → API keys), потвърди подателя в Brevo и пусни пак. RESEND_API_KEY махни едва след като новият release праща писма."; return
   fi
   # `-T`: без него, ако `$d/.env` вече е ДИРЕКТОРИЯ, връзката се създава ВЪТРЕ
   # в нея (`.env/.env`) и приложението тръгва без тайни, без грешка.
@@ -2716,6 +2725,10 @@ prune_releases() {
 }
 prune_releases
 
+if [ "${#SKIPPED[@]}" -gt 0 ]; then
+  warn "Пропуснати (не са обновени — работи предишният им код):"
+  for x in "${SKIPPED[@]}"; do warn "  · $x"; done
+fi
 if [ "$deploy_failed" = "0" ]; then
   ok "Деплой готов ($TS). Проекти: $PROJECTS"
 else
