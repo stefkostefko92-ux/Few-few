@@ -165,6 +165,7 @@ HEALTHCHECK_VERIFY_URL=https://…   # по избор: отделен адре�
 KEEP_DAILY=7
 KEEP_WEEKLY=4
 KEEP_MONTHLY=6
+MAX_AGE_HOURS=48                   # verify пада, ако последната ПЪЛНА снимка е по-стара
 ```
 Скриптът и `migrate-backup.sh` трябва да са в ЕДНА папка; единиците (`systemd/`) ги викат от
 `/usr/local/sbin`:
@@ -180,8 +181,10 @@ systemctl daemon-reload && systemctl enable --now offsite-backup.timer offsite-v
 SQLite, не (тя няма контролни суми) — гниенето в самото хранилище хваща `restic check`.
 Тестван (`offsite-backup.test.mjs`: init → backup → verify, повредена снимка, пинговете).
 
-Частичен бекъп (някой дъмп не мина) влиза с таг `partial`, без `forget` — пълните снимки не
-изпадат от ротацията, докато една база пада незабелязано. `DUMP_DIR` се трие и подменя всяка нощ
+Частичен бекъп (някой дъмп не мина) влиза с таг `partial` и се ротира отделно (последните 3) —
+пълните (`nightly`) снимки не изпадат от ротацията, докато една база пада незабелязано, а `verify`
+пада, щом последната пълна е по-стара от `MAX_AGE_HOURS`. При провал Uptime Kuma получава
+`status=down`, healthchecks.io — `/fail`; адресът с токена минава през stdin на curl, не през argv. `DUMP_DIR` се трие и подменя всяка нощ
 само ако носи маркера `.migrate-backup-dumps` (или стария формат `paths.txt` + `inventory.txt`):
 чужда папка спира скрипта, преди да е пипнато каквото и да е.
 

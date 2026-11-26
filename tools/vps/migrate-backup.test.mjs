@@ -260,3 +260,10 @@ test("dumps не пипа PM2; ключалка; обвивка с Restart= се
   assert.match(src, /flock -n 8/, "собствена ключалка");
   assert.match(src, /Restart=\(always\|on-\)/, "обвивка с автоматичен рестарт се проверява");
 });
+
+// Шести преглед на PR #312 (Кодаджията, ниска): FIFO с име x.db блокира `head -c 15` като root до 8-часовия
+// таван на услугата — нощ без бекъп. Четенето на подписа е с timeout.
+test("подписът на SQLite се чете с timeout (FIFO не блокира бекъпа)", () => {
+  const src = readFileSync(script, "utf8");
+  assert.match(src, /\[ "\$\(timeout 10 head -c 15 -- "\$f" 2>\/dev\/null\)" = "SQLite format 3" \]/);
+});

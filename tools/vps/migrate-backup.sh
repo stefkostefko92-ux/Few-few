@@ -698,7 +698,8 @@ DUMPS_SEEN="${DUMP_TO:-/var/backups/offsite-dumps}"
 # точния /var/lib/docker — иначе SQLite в Docker том (scuolabulgara, Uptime Kuma) влизаше само сурово.
 for r in $ROOTS $EXTRA_PATHS /var/lib "${INC_VOLS[@]}" "${EXTRA_BINDS[@]}"; do if [ -d "$r" ]; then SQL_DIRS+=("$r"); fi; done
 while IFS= read -r -d '' f; do
-  [ "$(head -c 15 "$f" 2>/dev/null)" = "SQLite format 3" ] || continue
+  # timeout: FIFO с име x.db иначе блокира четенето като root до тавана на услугата (преглед на PR #312).
+  [ "$(timeout 10 head -c 15 -- "$f" 2>/dev/null)" = "SQLite format 3" ] || continue
   backup_sqlite "$f"
 done < <(find "${SQL_DIRS[@]}" -xdev \( -path /var/lib/docker -o -path /var/lib/containerd -o -path /var/lib/postgresql \
            -o -path /var/lib/mysql -o -path /var/lib/snapd -o -path /var/lib/apt -o -path /var/lib/dpkg \

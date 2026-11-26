@@ -67,7 +67,7 @@ load_env(){
     [ "$k" != "$line" ] || die "$ENV_FILE, ред $n: очаква се КЛЮЧ=стойност."
     case "$v" in \"*\") v="${v:1:${#v}-2}";; \'*\') v="${v:1:${#v}-2}";; esac
     case "$k" in
-      HEALTHCHECK_URL|HEALTHCHECK_VERIFY_URL|KEEP_DAILY|KEEP_WEEKLY|KEEP_MONTHLY|VERIFY_READ) printf -v "$k" '%s' "$v";;
+      HEALTHCHECK_URL|HEALTHCHECK_VERIFY_URL|KEEP_DAILY|KEEP_WEEKLY|KEEP_MONTHLY|VERIFY_READ|MAX_AGE_HOURS) printf -v "$k" '%s' "$v";;
       # Променливите на restic и на хранилищата му (S3, B2, Azure, GCS, Swift).
       RESTIC_*|AWS_*|B2_*|AZURE_*|GOOGLE_*|OS_*)
         [[ "$k" =~ ^[A-Z0-9_]+$ ]] || die "$ENV_FILE, ред $n: невалиден ключ."
@@ -85,7 +85,9 @@ private_file "$RESTIC_PASSWORD_FILE"
 command -v restic >/dev/null 2>&1 || die "Липсва restic: apt-get install -y restic"
 KEEP_DAILY="${KEEP_DAILY:-7}"; KEEP_WEEKLY="${KEEP_WEEKLY:-4}"; KEEP_MONTHLY="${KEEP_MONTHLY:-6}"
 VERIFY_READ="${VERIFY_READ:-5%}"
-for k in KEEP_DAILY KEEP_WEEKLY KEEP_MONTHLY; do
+# verify пада, ако последната ПЪЛНА (nightly) снимка е по-стара — частичните не я подменят.
+MAX_AGE_HOURS="${MAX_AGE_HOURS:-48}"
+for k in KEEP_DAILY KEEP_WEEKLY KEEP_MONTHLY MAX_AGE_HOURS; do
   [[ "${!k}" =~ ^[0-9]+$ ]] || die "$k в $ENV_FILE трябва да е цяло число."
 done
 # Кешът е извън архивираните пътища, а под systemd HOME може да липсва изобщо.
@@ -94,13 +96,21 @@ HOST="$(hostname -s 2>/dev/null || hostname)"
 TMP=""
 
 # Мъртвецът-ключ: наблюдателят вдига тревога при ЛИПСА на пинг, тоест и когато
-# сървърът е мъртъв. `/fail` се вмъква ПРЕДИ заявката — иначе push адрес с
-# `?status=up` остава „up“ и провалът се записва като успех.
+# сървърът е мъртъв. При провал: Uptime Kuma (`?status=up`) получава `status=down` — път
+# `…/fail` там няма; healthchecks.io получава `/fail` ПРЕДИ заявката.
+# Адресът (с токена) минава през stdin на curl (-K -), не през argv — argv се вижда в ps.
 ping_hc(){
   local u=$1
   [ -n "$u" ] || return 0
-  if [ "${2:-}" = fail ]; then case "$u" in *\?*) u="${u%%\?*}/fail?${u#*\?}";; *) u="$u/fail";; esac; fi
-  curl -fsS -m 10 --retry 3 -o /dev/null "$u" || warn "Пингът към наблюдателя не мина."
+  if [ "${2:-}" = fail ]; then
+    case "$u" in
+      *status=up*) u="${u/status=up/status=down}";;
+      *\?*) u="${u%%\?*}/fail?${u#*\?}";;
+      *) u="$u/fail";;
+    esac
+  fi
+  u="${u//\\/\\\\}"; u="${u//\"/\\\"}"
+  printf 'url = "%s"\n' "$u" | curl -fsS -m 10 --retry 3 -o /dev/null -K - || warn "Пингът към наблюдателя не мина."
 }
 # $? се чете ПЪРВО: всяка команда преди това (и rm) би го нулирала и провалът
 # щеше да се пингне като успех.
@@ -154,7 +164,13 @@ cmd_backup(){
     3) warn "Снимката е готова, но някои файлове не се прочетоха (restic код 3)." ;;
     *) die "restic backup спря с код $brc." ;;
   esac
-  [ "$rc" -eq 0 ] || { warn "Частичен бекъп — forget/prune се пропуска, за да не изпаднат пълните снимки."; exit 2; }
+  if [ "$rc" -ne 0 ]; then
+    # Частичните се ротират отделно (последните 3), пълните не се пипат (преглед на PR #312).
+    restic forget --host "$HOST" --tag partial --keep-last 3 --prune --quiet || warn "forget на partial не мина."
+    warn "Частичен бекъп — ротацията на пълните (nightly) снимки се пропуска, за да не изпаднат."
+    exit 2
+  fi
+  restic forget --host "$HOST" --tag partial --keep-last 3 --quiet || warn "forget на partial не мина."
   inf "Ротация: ${KEEP_DAILY} дневни · ${KEEP_WEEKLY} седмични · ${KEEP_MONTHLY} месечни…"
   restic forget --host "$HOST" --tag nightly --keep-daily "$KEEP_DAILY" --keep-weekly "$KEEP_WEEKLY" \
     --keep-monthly "$KEEP_MONTHLY" --prune --quiet
@@ -177,6 +193,15 @@ cmd_verify(){
   need="$(du -sk "$DUMP_DIR" 2>/dev/null | cut -f1 || true)"; need=$(( ${need:-0} * 2 ))
   free="$(df -Pk "$VERIFY_TMP" | awk 'NR==2{print $4}' || true)"
   [ "${free:-0}" -ge "$need" ] || die "Свободни ${free:-0} KB в $VERIFY_TMP при нужни ~$need KB за пробното възстановяване — VERIFY_TMP=<друг диск>."
+  # Седмици частични бекъпи иначе минават „зелено“ върху стара пълна снимка (преглед на PR #312).
+  local t e newest=0 age
+  while IFS= read -r t; do
+    e="$(date -d "$t" +%s 2>/dev/null || echo 0)"
+    if [ "$e" -gt "$newest" ]; then newest=$e; fi
+  done < <(restic snapshots --host "$HOST" --tag nightly --latest 1 --json | grep -o '"time":"[^"]*"' | cut -d'"' -f4)
+  [ "$newest" -gt 0 ] || die "Няма пълна (nightly) снимка за $HOST."
+  age=$(( ($(date +%s) - newest) / 3600 ))
+  [ "$age" -le "$MAX_AGE_HOURS" ] || die "Последната пълна снимка е отпреди $age ч (над $MAX_AGE_HOURS ч) — нощният бекъп не минава цял; виж partial снимките и журнала."
   TMP="$(mktemp -d "$VERIFY_TMP/offsite-verify.XXXXXX")"
   inf "Пробно възстановяване на дъмповете от последната снимка…"
   restic restore latest --host "$HOST" --tag nightly --target "$TMP" --include "$DUMP_DIR" >/dev/null

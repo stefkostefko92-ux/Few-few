@@ -180,7 +180,8 @@ test("init → backup → verify в пясъчник; повредена сни�
     r = await run(["backup"], { ...env, MIGRATE: failMig });
     assert.equal(r.status, 1, r.out);
 
-    assert.deepEqual(hits, ["/b?status=up", "/b?status=up", "/v?status=up&msg=OK", "/v/fail?status=up&msg=OK", "/b/fail?status=up"]);
+    // Kuma няма път …/fail: при провал `status=up` става `status=down` (шести преглед на PR #312).
+    assert.deepEqual(hits, ["/b?status=up", "/b?status=up", "/v?status=up&msg=OK", "/v?status=down&msg=OK", "/b?status=down"]);
   } finally {
     srv.close();
     rmSync(s.t, { recursive: true, force: true });
@@ -194,5 +195,40 @@ test("частичен бекъп: таг partial и без forget", () => {
   const off = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "offsite-backup.sh"), "utf8");
   assert.match(off, /TAG=partial/, "частичната снимка има свой таг");
   assert.match(off, /--tag "\$TAG"/, "restic backup ползва тага");
-  assert.match(off, /\[ "\$rc" -eq 0 \] \|\| \{ warn "[^"]*forget/, "forget се пропуска при частичен бекъп");
+  const partial = off.match(/if \[ "\$rc" -ne 0 \]; then\n([\s\S]*?)\n  fi\n/)?.[1] || "";
+  assert.match(partial, /exit 2/, "частичният бекъп излиза с 2");
+  assert.doesNotMatch(partial, /--tag nightly/, "пълните снимки не се ротират при частичен бекъп");
+  assert.ok(off.indexOf('if [ "$rc" -ne 0 ]; then') < off.indexOf("--tag nightly --keep-daily"), "проверката е преди ротацията на nightly");
+});
+
+// Шести преглед на PR #312 (Кодаджията + VPS-аджията, средна · Сигурно): partial снимките не се ротираха
+// (трупат се вечно), а verify гледа само последната nightly — без проверка на възрастта седмици частични
+// бекъпи минаваха „зелено“ върху стара пълна снимка.
+test("partial се ротира; verify пада, ако последната пълна снимка е стара", () => {
+  const off = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "offsite-backup.sh"), "utf8");
+  assert.match(off, /restic forget --host "\$HOST" --tag partial --keep-last 3/, "partial: пазят се последните 3");
+  assert.match(off, /MAX_AGE_HOURS/, "праг за възрастта");
+  assert.match(off, /HEALTHCHECK_URL\|HEALTHCHECK_VERIFY_URL\|KEEP_DAILY\|KEEP_WEEKLY\|KEEP_MONTHLY\|VERIFY_READ\|MAX_AGE_HOURS\)/, "четим от конфига");
+  assert.match(off, /restic snapshots --host "\$HOST" --tag nightly --latest 1 --json/, "възрастта е на последната ПЪЛНА снимка");
+});
+
+// Шести преглед (ниски): токенът на наблюдателя не стои в argv на curl (виждат го всички през ps);
+// за Uptime Kuma провалът е status=down, наставката /fail остава за healthchecks.io.
+test("ping_hc: адресът през stdin; Kuma получава status=down, healthchecks — /fail", () => {
+  const off = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "offsite-backup.sh"), "utf8");
+  const body = off.match(/^ping_hc\(\)\{\n[\s\S]*?^\}\n/m)?.[0];
+  assert.ok(body, "ping_hc() е в скрипта");
+  const call = (u, kind) => spawnSync("bash", ["-c", `set -euo pipefail
+warn(){ echo "W $*" >&2; }
+curl(){ local a; for a in "$@"; do case "$a" in http*) echo "ARGV $a";; esac; done; cat; }
+${body}
+ping_hc "$U" ${kind}`], { encoding: "utf8", env: { PATH: process.env.PATH, U: u } });
+  let r = call("https://kuma.example.eu/api/push/TOKEN?status=up&msg=OK", "fail");
+  assert.equal(r.status, 0, r.stderr);
+  assert.doesNotMatch(r.stdout, /ARGV/, "адресът не е в argv");
+  assert.match(r.stdout, /url = "https:\/\/kuma\.example\.eu\/api\/push\/TOKEN\?status=down&msg=OK"/);
+  r = call("https://hc-ping.com/uuid", "fail");
+  assert.match(r.stdout, /url = "https:\/\/hc-ping\.com\/uuid\/fail"/);
+  r = call("https://kuma.example.eu/api/push/TOKEN?status=up&msg=OK", "");
+  assert.match(r.stdout, /status=up&msg=OK"/, "успехът е непроменен");
 });
