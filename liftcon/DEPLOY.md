@@ -62,7 +62,7 @@ sudo PROJECTS="liftcon" bash /opt/few-few/current/deploy/fetch-deploy.sh
 - **Срок: най-много 30 дни.** По-старите се трият при всяко пускане, и когато бекъпът не мине. Така
   изтритото (и по GDPR) изчезва от бекъпите най-късно за 30 дни — това е обещано в privacy политиката.
 - Списъкът на изтриванията `/opt/few-few/shared/liftcon/eliminazioni/` (вид, id, час — без лични данни)
-  **не е в бекъпа и не се трие**.
+  **не е в бекъпа и не се трие**. Не го пипайте: без него приложението не тръгва (виж „Ако нещо се обърка“).
 - Проверка: `systemctl list-timers liftcon-backup.timer` · `journalctl -u liftcon-backup` ·
   `cat /opt/few-few/shared/liftcon/backup/LAST_OK` · ръчен бекъп: `sudo /usr/local/sbin/liftcon-backup`.
 - Бекъпите са на същия сървър: при загуба на диска не помагат. Копие извън сървъра — по ваше решение.
@@ -75,26 +75,36 @@ sudo PROJECTS="liftcon" bash /opt/few-few/current/deploy/fetch-deploy.sh
 - Приложението не тръгва и в лога има `EACCES` или `ENOENT` за `/srv/eliminazioni`: папката
   `/opt/few-few/shared/liftcon/eliminazioni` трябва да е на потребител 1000 с права 700 (`deploy.sh` я прави
   така). Без нея приложението нарочно не тръгва, иначе изтрито би се върнало.
+- Приложението не тръгва с „списъкът eliminazioni.jsonl липсва, а базата помни … изтривания“: файлът е изгубен
+  (изтрит, нов сървър). Върнете го от копието и `docker restart liftcon-api`. Ако е изгубен окончателно и
+  приемате, че изтритото след последния бекъп може да се върне, създайте го празен:
+  `sudo install -m 600 -o 1000 -g 1000 /dev/null /opt/few-few/shared/liftcon/eliminazioni/eliminazioni.jsonl`,
+  после `docker restart liftcon-api`. При преместване на сървъра копирайте папката `eliminazioni/` заедно с `.env`.
 - Certbot не издава сертификат → DNS-ът още не сочи сървъра (`getent hosts liftcon.it`); временният HTTP
   конфиг се маха сам; пуснете деплоя пак, когато DNS-ът се разпространи.
 
 ## Възстановяване от бекъп (само с човек, след преглед)
 
-Връща базата и файловете към момента на бекъпа. Изтритото след бекъпа (документи, заявки) се трие пак при
-старта на приложението по списъка на изтриванията — в лога: `eliminazioni_riapplicate`. Командите са минати
-на тестов стек (26.11.2026). Пример — последният бекъп; за друг сменете `T` с време от `ls "$B"`:
+Връща базата и файловете към момента на бекъпа. Изтритото след бекъпа (документи, снимки, заявки) се трие пак
+при старта по списъка на изтриванията — в лога: `eliminazioni_riapplicate`. Базата се сменя в **една транзакция**
+(`-1`): цялата схема се маха и се зарежда от дъмпа, а сесиите се трият. При грешка не се сменя нищо — нито
+базата, нито файловете (`&&`). Миграциите
+след бекъпа `migrate deploy` прилага сам при старта. Командите са минати на тестов стек (26.11.2026). Пример —
+последният бекъп; за друг сменете `T` с време от `ls "$B"`:
 
 ```bash
 B=/opt/few-few/shared/liftcon/backup
 ls -1 "$B"
 T="$(ls -1 "$B" | sed -n 's/^db-\(.*\)\.sql\.gz$/\1/p' | tail -n 1)"; echo "$T"
 docker stop liftcon-api
-gunzip -c "$B/db-$T.sql.gz" | docker exec -i liftcon-db-1 psql -q -U liftcon -d liftcon -v ON_ERROR_STOP=1
-cd /opt/few-few/shared/liftcon && mv data "data.prima-$T" && cp -a "$B/data-$T" data
+{ echo 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'; gunzip -c "$B/db-$T.sql.gz"; echo 'DELETE FROM public."Sessione";'; } \
+  | docker exec -i liftcon-db-1 psql -q -1 -U liftcon -d liftcon -v ON_ERROR_STOP=1 \
+  && if [ -d "$B/data-$T" ]; then cd /opt/few-few/shared/liftcon && mv data "data.prima-$T" && cp -a "$B/data-$T" data; fi
 docker start liftcon-api
 docker logs liftcon-api 2>&1 | grep eliminazioni_riapplicate
 ```
 
-Дъмпът е от същата версия на приложението, ако между бекъпа и сега не е имало деплой с миграция; иначе след
-възстановяването пуснете деплоя пак. Ако `data-$T` липсва (нямало е файлове), пропуснете реда с `cp -a`. След
-проверка изтрийте `data.prima-<време>` — то е копие с лични данни извън 30-дневния срок.
+След това:
+- Всички влизат наново (сесиите са изтрити). Сесиите, затворени след бекъпа, не се връщат.
+- Потребителите, ролите и 2FA са както в момента на бекъпа. Прегледайте **Utenti** (напр. отнет достъп след бекъпа).
+- Проверете и изтрийте `data.prima-<време>`: то е копие с лични данни извън 30-дневния срок.

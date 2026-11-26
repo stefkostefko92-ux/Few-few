@@ -7,8 +7,8 @@
 # 2. Файловете на документите (снимки, PDF): моментна снимка с ТВЪРДИ ВРЪЗКИ в $STATE/backup/data-<време>/ —
 #    без допълнително място, защото приложението никога не пише върху съществуващ файл (нов файл → rename).
 # 3. Срок: всичко в $STATE/backup, по-старо от LIFTCON_BACKUP_GIORNI (30; най-много 30) по времето в името, се
-#    трие — при всяко пускане, и когато 1. или 2. не са минали. С дневното пускане изтритото (документ, снимка,
-#    заявка) изчезва от бекъпите най-късно 30 дни след изтриването.
+#    трие при всеки изход — и когато 1. или 2. не са минали или ключалката е заета (trap EXIT). С дневното пускане
+#    изтритото (документ, снимка, заявка) изчезва от бекъпите най-късно 30 дни след изтриването.
 # Списъкът на изтриванията ($STATE/eliminazioni) НЕ влиза в бекъпа: след възстановяване приложението го прилага
 # пак при старт. Възстановяване — само с човек: DEPLOY.md.
 # Изход: 0 — бекъпът е записан; 1 — провал (какво — на stderr); 2 — грешна употреба или настройка.
@@ -28,6 +28,7 @@ DATA_DIR="$STATE/data"
 GIORNI="${LIFTCON_BACKUP_GIORNI:-30}"
 DB="${LIFTCON_DB_CONTAINER:-liftcon-db-1}"
 LOCK="${LIFTCON_LOCK:-/run/lock/liftcon-deploy.lock}"
+LOCK_WAIT="${LIFTCON_LOCK_WAIT:-3600}"
 
 log() { printf '[liftcon-backup] %s\n' "$*"; }
 err() { printf '[liftcon-backup] ГРЕШКА: %s\n' "$*" >&2; }
@@ -38,15 +39,37 @@ if ((10#$GIORNI < 1 || 10#$GIORNI > 30)); then
   exit 2
 fi
 
+case "$LOCK_WAIT" in '' | *[!0-9]*) err "LIFTCON_LOCK_WAIT трябва да е цяло число секунди (тук: $LOCK_WAIT)"; exit 2 ;; esac
+
 install -d -m 700 "$DIR"
+ORA="$(date -u +%s)"
+TS="$(date -u -d "@$ORA" +%Y%m%dT%H%M%SZ)"
+# 3. Срокът — по времето в името (не по mtime: cp -a пази времената на папките). Пази се всичко от последните
+#    GIORNI−1 денонощия преди този пуск; с дневното пускане нищо не остава повече от GIORNI дни. Безопасно и без
+#    ключалката: трие само изтекли имена, а недовършеният бекъп (.partial) е от този момент.
+limite="$(date -u -d "@$((ORA - (10#$GIORNI - 1) * 86400))" +%Y%m%dT%H%M%SZ)"
+pota() {
+  local p nome stamp
+  for p in "$DIR"/db-*.sql.gz "$DIR"/data-*; do
+    [[ -e "$p" ]] || continue
+    nome="${p##*/}"
+    stamp="${nome#*-}"
+    stamp="${stamp%%.*}"
+    [[ "$stamp" =~ ^[0-9]{8}T[0-9]{6}Z$ ]] || continue
+    if [[ "$stamp" < "$limite" ]]; then
+      rm -rf -- "$p"
+      log "изтекъл (над $GIORNI дни): $nome"
+    fi
+  done
+}
+trap 'pota || true' EXIT
+
 # Един бекъп наведнъж и никога посред деплой (същата ключалка като deploy.sh, който вече я държи при --deploy).
 if [[ "$MODE" == daily ]]; then
   exec 9>"$LOCK"
-  flock -w 3600 9 || { err "деплой или друг бекъп още тече ($LOCK)"; exit 1; }
+  flock -w "$LOCK_WAIT" 9 || { err "деплой или друг бекъп още тече ($LOCK) — само изтеклите бекъпи се трият"; exit 1; }
 fi
 
-ORA="$(date -u +%s)"
-TS="$(date -u -d "@$ORA" +%Y%m%dT%H%M%SZ)"
 rc=0
 
 # Остатък от прекъснат пуск — недовършен бекъп не е бекъп.
@@ -81,21 +104,6 @@ if [[ -d "$DATA_DIR" && -n "$(ls -A "$DATA_DIR" 2>/dev/null)" ]]; then
     rc=1
   fi
 fi
-
-# 3. Срокът — по времето в името (не по mtime: cp -a пази времената на папките). Пази се всичко от последните
-#    GIORNI−1 денонощия преди този пуск; с дневното пускане нищо не остава повече от GIORNI дни.
-limite="$(date -u -d "@$((ORA - (10#$GIORNI - 1) * 86400))" +%Y%m%dT%H%M%SZ)"
-for p in "$DIR"/db-*.sql.gz "$DIR"/data-*; do
-  [[ -e "$p" ]] || continue
-  nome="${p##*/}"
-  stamp="${nome#*-}"
-  stamp="${stamp%%.*}"
-  [[ "$stamp" =~ ^[0-9]{8}T[0-9]{6}Z$ ]] || continue
-  if [[ "$stamp" < "$limite" ]]; then
-    rm -rf -- "$p"
-    log "изтекъл (над $GIORNI дни): $nome"
-  fi
-done
 
 if ((rc == 0)); then date -u +%FT%TZ >"$DIR/LAST_OK"; fi
 exit "$rc"

@@ -115,6 +115,7 @@ export function prismaStore(db: PrismaClient = new PrismaClient()): Store & { cl
       async registra(e) {
         await db.evento.create({ data: { ...e, dettagli: e.dettagli ? json(e.dettagli) : Prisma.JsonNull } });
       },
+      conta: (azioni) => db.evento.count({ where: { azione: { in: azioni } } }),
       recente: async (f) =>
         (await db.evento.findFirst({ where: { utenteId: f.utenteId, azione: f.azione, oggetto: f.oggetto, creatoIl: { gte: f.dal } }, select: { id: true } })) !== null,
       ultimi: async (limite, offset) => (await db.evento.findMany({ orderBy: { creatoIl: "desc" }, take: limite, skip: offset })) as Evento[],

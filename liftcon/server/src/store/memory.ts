@@ -192,6 +192,9 @@ export function memoryStore({ now = () => Date.now() }: { now?: () => number } =
       async registra(e) {
         eventi.push({ id: id(), creatoIl: new Date(now()), ...e });
       },
+      async conta(azioni) {
+        return eventi.filter((e) => azioni.includes(e.azione)).length;
+      },
       async recente(f) {
         return eventi.some((e) => e.utenteId === f.utenteId && e.azione === f.azione && e.oggetto === f.oggetto && e.creatoIl >= f.dal);
       },

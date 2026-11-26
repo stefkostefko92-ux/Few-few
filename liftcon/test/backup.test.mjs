@@ -2,7 +2,7 @@
 // от срока (30 дни) се трие и когато бекъпът не мине; списъкът на изтриванията не се пипа. Docker е двойник.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import { tmpdir } from "node:os";
@@ -79,6 +79,26 @@ test("дъмпът не мина → изход 1, без половин фай�
   assert.equal(existsSync(join(a.b, "LAST_OK")), false);
 });
 
+test("ключалката е заета (деплой) → изход 1, но изтеклите пак се трият; без нов бекъп", async () => {
+  const a = ambiente();
+  const lock = join(dirname(a.state), "lock");
+  // Държи ключалката, както deploy.sh по време на деплой.
+  const holder = spawn("flock", [lock, "sleep", "10"], { stdio: "ignore" });
+  try {
+    for (let i = 0; i < 50 && !existsSync(lock); i++) await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 100));
+    const r = a.run([], { LIFTCON_LOCK_WAIT: "1" });
+    assert.equal(r.status, 1, r.stderr);
+    assert.match(r.stderr, /още тече/);
+    for (const n of a.vecchi) assert.equal(existsSync(join(a.b, n)), false, `изтекъл: ${n}`);
+    for (const n of a.recenti) assert.ok(existsSync(join(a.b, n)), `в срока: ${n}`);
+    // Без ключалката недовършеното (може да е на деплоя, който я държи) не се пипа; нов бекъп няма.
+    assert.deepEqual(nuovi(a, "db-"), [readdirSync(a.b).find((n) => n.endsWith(".partial"))]);
+  } finally {
+    holder.kill();
+  }
+});
+
 test("дневен без работеща база → изход 1; при деплой (първи) — само снимката на файловете, изход 0", () => {
   assert.equal(ambiente({ db: false }).run().status, 1);
   const a = ambiente({ db: false });
@@ -113,6 +133,8 @@ test("deploy.sh: бекъп преди деплоя през backup.sh, обща
   assert.doesNotMatch(deploy, /tail -n \+(4|11)/, "без ротация по брой — само по срок");
   const service = readFileSync(join(DEPLOY, "systemd", "liftcon-backup.service"), "utf8");
   assert.match(service, /^ExecStart=\/usr\/local\/sbin\/liftcon-backup$/m);
+  assert.match(service, /^Wants=docker\.service$/m, "и без Docker срокът се прилага");
+  assert.doesNotMatch(service, /^Requires=/m);
   assert.match(readFileSync(join(DEPLOY, "systemd", "liftcon-backup.timer"), "utf8"), /^OnCalendar=\*-\*-\* 04:10:00 UTC$/m);
   const compose = readFileSync(join(DEPLOY, "..", "docker-compose.yml"), "utf8");
   assert.match(compose, /ELIMINAZIONI_DIR: \/srv\/eliminazioni/);

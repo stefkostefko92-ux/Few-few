@@ -10,7 +10,7 @@ import type { Catalogo } from "../content/catalogo.js";
 import type { Pubblicatore } from "../content/pubblica.js";
 import type { GestoreEmail } from "../email/configurazione.js";
 import type { ServizioDocumenti } from "../documenti/servizio.js";
-import type { RegistroEliminazioni, TipoEliminazione } from "../eliminazioni.js";
+import type { Eliminazione, RegistroEliminazioni } from "../eliminazioni.js";
 
 export interface AdminDeps {
   store: Store;
@@ -63,12 +63,12 @@ export async function registraAlPiuOgni(
 }
 
 /** Ред в списъка на изтриванията ПРЕДИ изтриването (D16а). `false` → изтриването се отказва (503). */
-export async function annotaEliminazione(d: AdminDeps, tipo: TipoEliminazione, id: string): Promise<boolean> {
+export async function annotaEliminazione(d: AdminDeps, e: Eliminazione): Promise<boolean> {
   try {
-    await d.eliminazioni.annota(tipo, id);
+    await d.eliminazioni.annota(e);
     return true;
   } catch (err) {
-    d.logger.error({ event: "eliminazioni", tipo, esito: "errore", err: err instanceof Error ? err.message : "?" });
+    d.logger.error({ event: "eliminazioni", tipo: e.tipo, esito: "errore", err: err instanceof Error ? err.message : "?" });
     return false;
   }
 }

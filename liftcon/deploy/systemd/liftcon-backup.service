@@ -3,7 +3,8 @@
 # Състояние: systemctl list-timers liftcon-backup.timer · journalctl -u liftcon-backup
 [Unit]
 Description=LiftCon — daily backup (database + document files, kept at most 30 days)
-Requires=docker.service
+# Wants, не Requires: и без Docker скриптът тръгва и трие изтеклите бекъпи (срокът от 30 дни важи винаги).
+Wants=docker.service
 After=docker.service
 
 [Service]

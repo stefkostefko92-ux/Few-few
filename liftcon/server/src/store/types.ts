@@ -147,6 +147,8 @@ export interface Store extends StoreDocumenti {
     registra(e: Omit<Evento, "id" | "creatoIl">): Promise<void>;
     /** Има ли събитие `azione` за човека и обекта от `dal` насам (за събития „най-много веднъж на час“). */
     recente(f: { utenteId: string; azione: string; oggetto: string; dal: Date }): Promise<boolean>;
+    /** Брой събития с някое от действията. */
+    conta(azioni: string[]): Promise<number>;
     ultimi(limite: number, offset: number): Promise<Evento[]>;
     eliminaPrimaDi(data: Date): Promise<number>;
   };

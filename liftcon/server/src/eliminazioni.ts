@@ -1,7 +1,7 @@
 // Списъкът на изтриванията — извън бекъпите (docs/documenti-spec.md D16а, решение L6-B). Ред JSON на изтриване:
-// вид, id, час — без лични данни. Записва се ПРЕДИ изтриването; при всеки старт се прилага пак, за да не върне
-// възстановен бекъп изтрит документ или заявка.
-import { access, appendFile, readFile } from "node:fs/promises";
+// вид, id (и документът на снимката), час — без лични данни. Записва се ПРЕДИ изтриването; при всеки старт се
+// прилага пак, за да не върне възстановен бекъп изтрит документ, снимка или заявка.
+import { access, open, readFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
@@ -11,28 +11,45 @@ import type { Archivio } from "./documenti/archivio.js";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ID_RICHIESTA = /^[A-Za-z0-9_-]{1,64}$/;
 
+const Il = z.string().max(40);
 const Voce = z.discriminatedUnion("tipo", [
-  z.object({ tipo: z.literal("documento"), id: z.string().regex(UUID), il: z.string().max(40) }).strict(),
-  z.object({ tipo: z.literal("richiesta"), id: z.string().regex(ID_RICHIESTA), il: z.string().max(40) }).strict(),
+  z.object({ tipo: z.literal("documento"), id: z.string().regex(UUID), il: Il }).strict(),
+  z.object({ tipo: z.literal("foto"), id: z.string().regex(UUID), doc: z.string().regex(UUID), il: Il }).strict(),
+  z.object({ tipo: z.literal("richiesta"), id: z.string().regex(ID_RICHIESTA), il: Il }).strict(),
 ]);
 export type VoceEliminazione = z.infer<typeof Voce>;
-export type TipoEliminazione = VoceEliminazione["tipo"];
+/** Какво се изтрива (без часа — него слага списъкът). */
+export type Eliminazione = { tipo: "documento" | "richiesta"; id: string } | { tipo: "foto"; id: string; doc: string };
+export type EsitoRiapplica = { documenti: number; richieste: number; foto: number; scartate: number };
+
+/** Събитията в регистъра, които доказват, че е имало изтривания (за изгубен списък при старт). */
+const AZIONI_ELIMINAZIONE = ["documento.eliminato", "richiesta.eliminata", "foto.eliminata"];
 
 export interface RegistroEliminazioni {
-  /** Добавя ред; хвърля, ако id-то е невалидно или файлът не може да се запише (тогава изтриването спира). */
-  annota(tipo: TipoEliminazione, id: string): Promise<void>;
+  /** Добавя ред, записан на диска (fsync); хвърля при невалиден id или неуспешен запис (тогава изтриването спира). */
+  annota(e: Eliminazione): Promise<void>;
   /** Валидните редове и броят на прескочените (невалидни). Липсващ файл = празен списък. */
   leggi(): Promise<{ voci: VoceEliminazione[]; scartate: number }>;
   /** Папката съществува и може да се чете и пише — иначе приложението не тръгва (fail closed). */
   verifica(): Promise<void>;
+  esiste(): Promise<boolean>;
+  /** Празен файл (600), ако липсва; съществуващ не се пипа. */
+  crea(): Promise<void>;
 }
 
 export function registroEliminazioni(dir: string, now: () => number = Date.now): RegistroEliminazioni {
   const file = join(dir, "eliminazioni.jsonl");
   return {
-    async annota(tipo, id) {
-      const voce = Voce.parse({ tipo, id, il: new Date(now()).toISOString() });
-      await appendFile(file, `${JSON.stringify(voce)}\n`, { mode: 0o600 });
+    async annota(e) {
+      const voce = Voce.parse({ ...e, il: new Date(now()).toISOString() });
+      // Нов ред и преди записа: прекъснат предишен запис (диск пълен, срив) не слепва този ред с него.
+      const fh = await open(file, "a", 0o600);
+      try {
+        await fh.write(`\n${JSON.stringify(voce)}\n`);
+        await fh.sync();
+      } finally {
+        await fh.close();
+      }
     },
     async leggi() {
       let testo: string;
@@ -55,6 +72,17 @@ export function registroEliminazioni(dir: string, now: () => number = Date.now):
     async verifica() {
       await access(dir, constants.R_OK | constants.W_OK);
     },
+    async esiste() {
+      try {
+        await access(file);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    async crea() {
+      await (await open(file, "a", 0o600)).close();
+    },
   };
 }
 
@@ -71,11 +99,12 @@ function analizza(riga: string): unknown {
  * прескача; файловете на документа се трият и когато редът му липсва в базата (по-стар дъмп, по-нова снимка
  * на файловете), а надгробният запис остава, за да не го създаде устройство отново.
  */
-export async function riapplicaEliminazioni(d: { store: Store; archivio: Archivio; registro: RegistroEliminazioni }): Promise<{ documenti: number; richieste: number; scartate: number }> {
+export async function riapplicaEliminazioni(d: DipendenzeEliminazioni): Promise<EsitoRiapplica> {
   const { voci, scartate } = await d.registro.leggi();
   const viste = new Set<string>();
   let documenti = 0;
   let richieste = 0;
+  let foto = 0;
   for (const v of voci) {
     const chiave = `${v.tipo}:${v.id}`;
     if (viste.has(chiave)) continue;
@@ -85,10 +114,38 @@ export async function riapplicaEliminazioni(d: { store: Store; archivio: Archivi
       if (presente || !(await d.store.documenti.eliminato(v.id))) await d.store.documenti.elimina(v.id);
       await d.archivio.eliminaDocumento(v.id);
       if (presente) documenti++;
+    } else if (v.tipo === "foto") {
+      const f = await d.store.foto.perId(v.id);
+      if (f && f.documentoId === v.doc) {
+        await d.store.foto.elimina(v.id);
+        foto++;
+      }
+      await d.archivio.eliminaFoto(v.doc, v.id);
     } else if (await d.store.richieste.perId(v.id)) {
       await d.store.richieste.elimina(v.id);
       richieste++;
     }
   }
-  return { documenti, richieste, scartate };
+  return { documenti, richieste, foto, scartate };
+}
+
+type DipendenzeEliminazioni = { store: Store; archivio: Archivio; registro: RegistroEliminazioni };
+
+/**
+ * При старт, преди приложението да приема заявки: папката (R/W) → файлът → повторното прилагане. Липсващ файл при
+ * база, която помни изтривания (надгробни записи, събития), значи изгубен списък — тогава НЕ тръгваме: изтритото
+ * след последния бекъп би се върнало тихо. Без следи (първи старт) файлът се създава празен.
+ */
+export async function avviaEliminazioni(d: DipendenzeEliminazioni): Promise<EsitoRiapplica> {
+  await d.registro.verifica();
+  if (!(await d.registro.esiste())) {
+    const tracce = (await d.store.documenti.contaEliminati()) + (await d.store.eventi.conta(AZIONI_ELIMINAZIONE));
+    if (tracce > 0) {
+      throw new Error(
+        `списъкът eliminazioni.jsonl липсва, а базата помни изтривания (${tracce}) — приложението не тръгва, за да не върне изтрито. Върнете файла от копието; ако е изгубен и приемате риска — liftcon/DEPLOY.md, „Ако нещо се обърка“.`,
+      );
+    }
+    await d.registro.crea();
+  }
+  return riapplicaEliminazioni(d);
 }

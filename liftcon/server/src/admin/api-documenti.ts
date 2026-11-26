@@ -164,10 +164,12 @@ export function apiDocumenti(d: AdminDeps): Router {
     const id = idValido(req.params.id);
     const fotoId = idValido(req.params.fotoId);
     if (!id || !fotoId) return res.status(400).json({ errore: "non_valido" });
-    const e = await d.documenti.eliminaFoto(id, fotoId);
+    // Редът в списъка — след проверките (само снимка, която наистина ще се изтрие), преди изтриването (D16а).
+    const e = await d.documenti.eliminaFoto(id, fotoId, () => annotaEliminazione(d, { tipo: "foto", id: fotoId, doc: id }));
     if (e === "non_trovato") return res.status(404).json({ errore: e });
     if (e === "emesso") return res.status(423).json({ errore: e });
     if (e === "occupato") return res.status(409).json({ errore: e });
+    if (e === "registro") return res.status(503).json({ errore: "registro_eliminazioni" });
     await registra(d, req, a(res).utente.id, "foto.eliminata", id, { foto: fotoId });
     res.status(204).end();
   });
@@ -211,7 +213,7 @@ export function apiDocumenti(d: AdminDeps): Router {
     // Чернова: авторът или RESPONSABILE+; издаден: DIREZIONE+ (спецификация D15).
     const consentito = doc.stato === "EMESSO" ? puo(u.ruolo, "documenti.elimina") : doc.autoreId === u.id || livello(u.ruolo) <= livello("RESPONSABILE");
     if (!consentito) return res.status(403).json({ errore: "permesso" });
-    if (!(await annotaEliminazione(d, "documento", doc.id))) return res.status(503).json({ errore: "registro_eliminazioni" });
+    if (!(await annotaEliminazione(d, { tipo: "documento", id: doc.id }))) return res.status(503).json({ errore: "registro_eliminazioni" });
     await d.documenti.elimina(doc.id);
     await registra(d, req, u.id, "documento.eliminato", doc.id, { stato: doc.stato, numero: doc.numero });
     res.status(204).end();

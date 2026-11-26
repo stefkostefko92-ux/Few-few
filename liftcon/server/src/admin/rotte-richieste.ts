@@ -141,7 +141,7 @@ ${
     const a = auth(res)!;
     const id = String(req.params.id);
     if (req.body?.conferma !== "si") return res.redirect(303, `/admin/richieste/${id}`);
-    if (!(await annotaEliminazione(d, "richiesta", id))) {
+    if (!(await annotaEliminazione(d, { tipo: "richiesta", id }))) {
       const corpo = `${avviso("errore", "Eliminazione non riuscita: il registro delle cancellazioni non è disponibile. Nessun dato è stato eliminato; riprovi più tardi.")}<p><a href="/admin/richieste/${esc(id)}">Torna alla richiesta</a></p>`;
       return res.status(503).send(pagina({ titolo: "Eliminazione non riuscita", auth: a, attivo: "richieste", corpo }));
     }

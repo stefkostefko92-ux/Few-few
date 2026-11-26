@@ -276,12 +276,24 @@ test("изтриване: първо ред в списъка на изтрив�
     await t.api(`/admin/api/documenti/${id}`, { method: "PUT", json: sopralluogo(id) });
     assert.equal((await t.api(`/admin/api/documenti/${id}`, { method: "DELETE" })).status, 204);
     const file = join(s.elimDir, "eliminazioni.jsonl");
-    const righe = readFileSync(file, "utf8").trim().split("\n").map((l) => JSON.parse(l));
-    assert.deepEqual(righe, [{ tipo: "documento", id, il: "2026-11-26T10:00:00.000Z" }]);
+    const righe = () => readFileSync(file, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l));
+    assert.deepEqual(righe(), [{ tipo: "documento", id, il: "2026-11-26T10:00:00.000Z" }]);
     assert.equal((statSync(file).mode & 0o777).toString(8), "600");
+    // Снимка от чернова: ред с документа ѝ; от издаден документ (423) или непозната (404) — без ред.
     const id2 = randomUUID();
     await t.api(`/admin/api/documenti/${id2}`, { method: "PUT", json: sopralluogo(id2) });
+    const fotoId = randomUUID();
+    const foto = await t.api(`/admin/api/documenti/${id2}/foto/${fotoId}?ordine=1`, { method: "POST", body: await jpegConExif(), type: "image/jpeg" });
+    assert.equal(foto.status, 201);
+    assert.equal((await t.api(`/admin/api/documenti/${id2}/foto/${randomUUID()}`, { method: "DELETE" })).status, 404);
+    assert.equal((await t.api(`/admin/api/documenti/${id2}/foto/${fotoId}`, { method: "DELETE" })).status, 204);
+    assert.deepEqual(righe()[1], { tipo: "foto", id: fotoId, doc: id2, il: "2026-11-26T10:00:00.000Z" });
+    assert.equal(righe().length, 2);
+    const fotoBis = randomUUID();
+    await t.api(`/admin/api/documenti/${id2}/foto/${fotoBis}?ordine=2`, { method: "POST", body: await jpegConExif(), type: "image/jpeg" });
     rmSync(s.elimDir, { recursive: true, force: true });
+    assert.equal((await t.api(`/admin/api/documenti/${id2}/foto/${fotoBis}`, { method: "DELETE" })).status, 503);
+    assert.ok(await s.store.foto.perId(fotoBis), "без ред в списъка снимката остава");
     const r = await t.api(`/admin/api/documenti/${id2}`, { method: "DELETE" });
     assert.equal(r.status, 503);
     assert.equal((await t.api(`/admin/api/documenti/${id2}`)).status, 200, "без ред в списъка нищо не се трие");
