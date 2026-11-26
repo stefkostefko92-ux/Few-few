@@ -2172,6 +2172,11 @@
       "activity": [
         {
           "date": "2026-11-26",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „restic forget по подразбиране групира снимките по host,paths, затова при сменящ се спис…\""
+        },
+        {
+          "date": "2026-11-26",
           "type": "learning",
           "summary": "Научи: „keywordRe в anthropic-watch прави съвпадение без значение от регистъра и с граница само…\""
         },
