@@ -1,0 +1,107 @@
+// Italiano — Le istruzioni di montaggio in video: la pagina indice e una pagina per ogni video. I passi sono quelli
+// scritti nei video (3d/video/texts.py e 3d/video/guida/texts.py), parola per parola; i minuti e le durate sono in
+// ../../videos.mjs. Il video si carica da YouTube solo dopo il clic: l’avviso accanto al pulsante è quello concordato
+// con la revisione legale (26.11.2026) e rimanda al paragrafo #video dell’informativa.
+
+export default {
+  videoSlugs: {
+    howto: 'istruzioni-montaggio.html',
+    vidDoors: 'montaggio-staffe-porte-di-piano.html',
+    vidGuides: 'montaggio-guide-contrappeso.html',
+  },
+  videoMeta: {
+    howto: {
+      title: 'Istruzioni di montaggio staffe per ascensori | Panev',
+      description: 'Video di montaggio delle staffe Panev: porte di piano (A + B) in 11 passi e guide del contrappeso (SU + SG) in 9 passi, con i passi scritti.',
+      keywords: ['istruzioni montaggio staffe ascensore', 'video montaggio staffe ascensore', 'montaggio staffe porte di piano', 'montaggio guide contrappeso', 'staffe per ascensori', 'Panev Ascensori', 'Carbon Stealth'],
+    },
+    vidDoors: {
+      title: 'Montaggio staffe porte di piano: video in 11 passi | Panev',
+      description: 'Video del montaggio delle staffe per porte di piano A 45 175 2 + B 45 320: tasselli, soglia in bolla, serraggio e taglio a filo soglia, in 11 passi.',
+      keywords: ['montaggio staffe porte di piano', 'video montaggio staffa porta di piano', 'staffa porta automatica ascensore', 'A 45 175 2', 'B 45 320', 'soglia porta di piano', 'Panev Ascensori', 'Carbon Stealth'],
+    },
+    vidGuides: {
+      title: 'Montaggio guide del contrappeso con SU e SG: video | Panev',
+      description: 'Video del montaggio del supporto SU 220 160 con la staffa SG 80 150 per le guide del contrappeso: filo a piombo, graffe N1 e serraggio, in 9 passi.',
+      keywords: ['montaggio guide contrappeso', 'video montaggio guide contrappeso', 'staffe guide contrappeso', 'SU 220 160', 'SG 80 150', 'graffe N1', 'Panev Ascensori', 'Carbon Stealth'],
+    },
+  },
+  videos: {
+    shared: {
+      crumbsLabel: 'Percorso',
+      play: 'Guarda il video',
+      notice: 'Video ospitato su YouTube. Con il clic su “Guarda il video” il lettore viene caricato da Google (youtube-nocookie.com), che riceve il tuo indirizzo IP e può salvare dati sul tuo dispositivo; possibile trattamento negli USA.',
+      privacyLink: 'Informativa',
+      openYoutube: 'Apri su YouTube',
+      duration: 'Durata',
+      steps: (n) => `${n} passi`,
+      sides: 'Versioni SX e DX',
+      language: 'Testi in italiano, senza parlato',
+      watch: 'Guarda il video',
+      stepsTitle: 'Il montaggio passo per passo',
+      stepsLead: 'Il minuto accanto a ogni passo apre quel punto del video.',
+      seekLabel: (n, at) => `Passo ${n}: guarda dal minuto ${at}`,
+      productsTitle: 'I prodotti nel video',
+      catalogPage: (n) => `Catalogo PDF · pag. ${String(n).padStart(2, '0')}`,
+      hubLink: 'Tutte le istruzioni di montaggio',
+      sectionTitle: 'Istruzioni di montaggio in video',
+      sectionLead: 'Il montaggio completo in cantiere, passo per passo: guarda il video e trova i passi scritti nella pagina.',
+    },
+    howto: {
+      crumb: 'Istruzioni di montaggio',
+      nav: 'Istruzioni',
+      kicker: 'Video · montaggio in cantiere',
+      h1: 'Istruzioni di montaggio delle staffe Panev',
+      lead: 'Due video mostrano il montaggio completo in cantiere: le staffe per porte di piano A + B in 11 passi e il supporto SU con la staffa SG per le guide del contrappeso in 9 passi. In ogni pagina trovi i passi scritti, con il minuto in cui iniziano nel video.',
+      listTitle: 'Scegli il video',
+      aboutTitle: 'Come sono fatti i video',
+      about: [
+        'I video non hanno parlato: ogni passo è scritto nel video, in italiano, e ripetuto nella pagina sotto il video. Le staffe compaiono nelle versioni SX e DX, come in cantiere.',
+        'Sono una sintesi per installatori qualificati: fanno fede i disegni di montaggio del catalogo tecnico e il progetto dell’impianto.',
+        'I video si caricano da YouTube solo quando li avvii: fino al clic la pagina non contatta Google.',
+      ],
+    },
+    vidDoors: {
+      crumb: 'Porte di piano',
+      card: 'Staffe per porte di piano',
+      kicker: 'Video di montaggio · A 45 175 2 + B 45 320',
+      h1: 'Montaggio delle staffe per porte di piano: video in 11 passi',
+      lead: 'Le staffe per porte di piano si montano in 11 passi: si assemblano piastra A e staffa B, si posizionano in base alla distanza dalla soglia di cabina (25–32 mm), si fissano con i tasselli, si mette in bolla la soglia, si serra tutto e si tagliano le piastre A a filo soglia. Il video mostra A 45 175 2 + B 45 320, nelle versioni SX e DX.',
+      posterAlt: 'Montaggio della staffa per porta di piano: taglio della piastra A a filo soglia, fotogramma del video',
+      legend: 'I numeri tra parentesi indicano le parti della staffa: (13) giunto, (14) bloccaggio, (17) asole di fissaggio, (18) fori di collegamento.',
+      steps: [
+        { title: 'Assemblaggio A + B', body: 'Assembla la piastra A e la staffa B con i bulloni del giunto (13) e del bloccaggio (14), senza serrare.' },
+        { title: 'Posizionamento delle staffe', body: 'Il tecnico 1 tiene a sinistra una staffa assemblata, il tecnico 2 l’altra a destra.' },
+        { title: 'Misura dalla soglia di cabina', body: 'Misura la distanza della soglia di piano dalla soglia di cabina (25–32 mm) e posiziona le staffe di conseguenza.' },
+        { title: 'Tracciatura, foratura e tasselli', body: 'Segna i punti di foratura nelle asole (17), fora, inserisci i tasselli e metti in bolla ogni staffa B.' },
+        { title: 'Serraggio dei tasselli', body: 'Serra i dadi dei tasselli.' },
+        { title: 'Posa della soglia', body: 'Appoggia la soglia, con o senza portale, sulle piastre A.' },
+        { title: 'Serraggio leggero', body: 'Fissa la soglia ai fori di collegamento (18) senza serrare a fondo.' },
+        { title: 'Soglia in bolla', body: 'Metti in bolla la soglia in lunghezza.' },
+        { title: 'Piastre A in bolla e serraggio', body: 'Ruota le piastre A attorno al giunto (13) fino a metterle in bolla, poi serra tutto: giunto (13), bloccaggio (14) e soglia.' },
+        { title: 'Terza staffa', body: 'Monta la terza staffa al centro della soglia. Se forando trovi un ferro d’armatura, lascia A\u00a0DX e sostituisci B\u00a0DX con B\u00a0SX: i fori si spostano di 65\u00a0mm. Poi segna, fora, tassella e serra tutto.' },
+        { title: 'Taglio delle piastre A', body: 'Segna ogni piastra A con il pennarello a filo soglia, arretra la soglia, taglia sul segno con la smerigliatrice angolare e riporta la soglia a filo.' },
+      ],
+    },
+    vidGuides: {
+      crumb: 'Guide del contrappeso',
+      card: 'Guide del contrappeso: supporto SU + staffa SG',
+      kicker: 'Video di montaggio · SU 220 160 + SG 80 150',
+      h1: 'Montaggio delle guide del contrappeso con SU e SG: video in 9 passi',
+      lead: 'Il supporto SU 220 160 con la staffa SG 80 150 si monta in 9 passi: fili a piombo, tracciatura, foratura, supporto SU fissato con due tasselli M10, staffa SG con serraggio leggero, guida a piombo a 5 mm dal filo, SG portata al piede della guida, graffe N1, verifica e serraggio. Versioni SX e DX, corsa di estensione 45–155 mm.',
+      posterAlt: 'Montaggio della guida del contrappeso: serraggio della graffa N1 sulla staffa SG con la chiave a cricchetto, fotogramma del video',
+      legend: '',
+      steps: [
+        { title: 'Fili a piombo', body: 'Cala dall’alto un filo a piombo per ogni guida: passerà a 5\u00a0mm dalla testa.' },
+        { title: 'Tracciatura', body: 'Appoggia il supporto SU al muro, in bolla e in linea con il filo, e segna i fori nelle asole.' },
+        { title: 'Foratura', body: 'Fora i punti segnati con il trapano tassellatore, punta da 10\u00a0mm.' },
+        { title: 'Fissaggio dei supporti SU', body: 'Fissa ogni supporto SU con due tasselli M10 e rondella maggiorata, poi serra i dadi.' },
+        { title: 'Staffa SG sul supporto', body: 'Sopra: bullone M10 con rondella maggiorata. Sotto: rondella maggiorata, rondella elastica spezzata (grower) e dado. Serra leggermente: la SG deve ancora scorrere.' },
+        { title: 'Guida a piombo', body: 'Cala la guida davanti alla SG e mettila a piombo: 5\u00a0mm tra la testa e il filo.' },
+        { title: 'SG in avanti', body: 'Fai scorrere la SG di 20\u00a0mm fino al piede della guida.' },
+        { title: 'Graffe N1', body: 'Monta due graffe N1 sulla guida, senza serrare. Dietro la flangia della SG: rondella maggiorata, grower e dado.' },
+        { title: 'Verifica e serraggio', body: 'Controlla la verticalità con la livella, poi serra tutto: i bulloni della SG e i dadi delle graffe.' },
+      ],
+    },
+  },
+};

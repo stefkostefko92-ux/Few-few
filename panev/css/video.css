@@ -1,0 +1,102 @@
+/* Видеата за монтаж (templates/videos.mjs): рамката 16:9 с нашата снимка и бутона, известието под нея, стъпките с
+   минутите и картите към видеата (хъбът, началната страница, страниците на семействата). Само каталожната палитра;
+   картите не подскачат при посочване; без SVG (бутонът „пусни“ е CSS триъгълник). */
+
+.yt { margin: 0; }
+.yt-frame {
+  position: relative; aspect-ratio: 16 / 9;
+  border-radius: var(--radius); overflow: hidden;
+  background: var(--navy-deep); box-shadow: var(--shadow);
+}
+.yt-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
+.yt-poster { display: block; position: relative; height: 100%; color: #fff; text-decoration: none; }
+.vposter, .vposter img { display: block; width: 100%; height: 100%; }
+.vposter img { object-fit: cover; }
+/* Лека сянка отдолу, за да се чете времето върху светъл кадър. */
+.yt-poster::after, .vcard-media::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to top, rgba(16, 29, 73, .45), rgba(16, 29, 73, 0) 38%);
+}
+.yt-play {
+  position: absolute; left: 50%; top: 50%; z-index: 1; transform: translate(-50%, -50%);
+  display: inline-flex; align-items: center; gap: .7rem;
+  padding: .95rem 1.6rem; border-radius: 999px;
+  background: var(--navy); color: #fff; font-weight: 700; white-space: nowrap;
+  box-shadow: 0 12px 30px rgba(22, 40, 98, .35);
+  transition: background var(--dur);
+}
+.yt-play::before {
+  content: ''; border-style: solid; border-width: .45rem 0 .45rem .75rem;
+  border-color: transparent transparent transparent currentColor;
+}
+.yt-poster:hover .yt-play, .yt-poster:focus-visible .yt-play { background: var(--navy-3); }
+.yt-dur {
+  position: absolute; right: .75rem; bottom: .7rem; z-index: 1;
+  padding: .2rem .55rem; border-radius: 6px;
+  background: rgba(16, 29, 73, .86); color: #fff;
+  font-size: .82rem; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.yt-notice { margin: .85rem 0 0; color: var(--muted); font-size: .86rem; line-height: 1.5; max-width: 62rem; }
+.is-playing .yt-notice { opacity: .8; }
+
+.vwatch { padding-top: 2.5rem; }
+.vlead { margin: 1.6rem 0 0; max-width: 62rem; }
+
+/* Стъпките: минутата отляво (линк към този момент), заглавието и изречението вдясно. */
+.vsteps { list-style: none; margin: 1.2rem 0 0; padding: 0; }
+.vstep {
+  display: grid; grid-template-columns: 4.6rem 1fr; gap: 1rem; align-items: start;
+  padding: 1rem 0; border-top: 1px solid var(--line);
+}
+.vstep:last-child { border-bottom: 1px solid var(--line); }
+.vstep h3 { font-size: 1.05rem; margin: .1rem 0 .3rem; }
+.vstep p { margin: 0; }
+.vstep-time {
+  display: inline-block; text-align: center;
+  padding: .3rem .5rem; border: 1px solid var(--line); border-radius: 999px;
+  background: #fff; color: var(--navy); font-weight: 700; font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+.vstep-time:hover { border-color: var(--navy-2); color: var(--navy-3); }
+
+/* Картите към видеата. */
+.vcards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin-top: 1.2rem; }
+.vcard { margin: 0; }
+.vcard-link {
+  display: flex; flex-direction: column; height: 100%;
+  border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+  background: #fff; box-shadow: var(--shadow); color: inherit; text-decoration: none;
+  transition: border-color var(--dur);
+}
+.vcard-link:hover { border-color: var(--navy-2); color: inherit; }
+.vcard-media { position: relative; display: block; aspect-ratio: 16 / 9; background: var(--navy-deep); }
+.vcard-play {
+  position: absolute; left: 50%; top: 50%; z-index: 1; transform: translate(-50%, -50%);
+  width: 4rem; height: 4rem; border-radius: 50%;
+  background: var(--navy); box-shadow: 0 10px 26px rgba(22, 40, 98, .35);
+  transition: background var(--dur);
+}
+.vcard-play::before {
+  content: ''; position: absolute; left: 54%; top: 50%; transform: translate(-50%, -50%);
+  border-style: solid; border-width: .6rem 0 .6rem 1rem; border-color: transparent transparent transparent #fff;
+}
+.vcard-link:hover .vcard-play, .vcard-link:focus-visible .vcard-play { background: var(--navy-3); }
+.vcard-body { display: flex; flex-direction: column; gap: .4rem; padding: 1.1rem 1.25rem 1.3rem; flex: 1; }
+.vcard-title { margin: 0; font-size: 1.2rem; }
+.vcard-meta { color: var(--muted); font-size: .9rem; }
+.vcard-cta { margin-top: auto; padding-top: .4rem; font-weight: 700; color: var(--navy-2); }
+.vcard-link:hover .vcard-cta { text-decoration: underline; }
+
+/* Една карта (страницата на семейство): снимката вляво, текстът вдясно. */
+.vcards-one { grid-template-columns: minmax(0, 1fr); max-width: 60rem; }
+.vcards-one .vcard-link { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+.vcards-one .vcard-body { justify-content: center; padding: 1.4rem 1.6rem; }
+
+@media (max-width: 760px) {
+  .vcards, .vcards-one .vcard-link { grid-template-columns: minmax(0, 1fr); }
+  .vstep { grid-template-columns: 4.2rem 1fr; gap: .75rem; }
+  .yt-play { padding: .8rem 1.25rem; font-size: .95rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .yt-play, .vcard-link, .vcard-play { transition: none; }
+}

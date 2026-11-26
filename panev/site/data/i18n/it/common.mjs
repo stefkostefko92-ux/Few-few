@@ -77,7 +77,7 @@ export default {
         'privacy Panev Ascensori',
         'informativa GDPR',
         'trattamento dati personali',
-        'sito senza cookie',
+        'nessun cookie di profilazione',
         'titolare del trattamento',
         'Carbon Stealth',
       ],
@@ -107,6 +107,7 @@ export default {
       ],
     },
   },
+  navShort: {},  // по-кратки надписи в лентата: тук пълните се събират (виж bg/common.mjs)
   nav: {
     home: 'Home',
     products: 'Prodotti e listino',

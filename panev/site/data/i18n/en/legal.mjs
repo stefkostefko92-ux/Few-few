@@ -15,8 +15,9 @@ export default {
         p: 'We only process the data you voluntarily send us through the contact form or by email (name, company, email, phone, message content), solely to answer your enquiry, handle orders and quotes and fulfil contractual, accounting and tax obligations. We also record the IP address and the date/time of submission for abuse prevention and form security (Art. 6(1)(f) GDPR — legitimate interest). Legal basis: pre-contractual measures and contract performance (Art. 6(1)(b) GDPR) and legal obligations (Art. 6(1)(c) GDPR). Providing your data is optional, but necessary to receive a reply. After submitting you receive an automatic confirmation email. No automated decision-making or profiling takes place. The order list is stored only in your browser (localStorage), is not transmitted until you send the enquiry yourself, and is deleted with “Clear the list”.',
       },
       {
-        h: 'Cookies and tracking',
-        p: 'This website uses no profiling cookies and no third-party tracking or analytics tools, so no consent banner is shown. Strictly necessary technical cookies, if any, do not require consent.',
+        id: 'video',
+        h: 'Cookies, local storage and videos',
+        p: 'This website uses no profiling cookies and no analytics or tracking tools. No third-party content is loaded when a page opens: videos are shown as an image hosted on our server. Only if you click “Watch the video” is the YouTube player loaded from youtube-nocookie.com (privacy-enhanced mode). From that moment your browser sends Google your IP address, technical browser and device data and the page address, and YouTube may store or read information on your device (for example in the browser’s local storage) to display and play the video, check its availability, prevent fraud and abuse and customise the player. Legal basis: your consent, given by the click (Art. 6(1)(a) GDPR and Art. 122 of Italian Legislative Decree 196/2003). Consent applies only to the video you open and is not remembered; refusing has no consequences and you can open the video directly on YouTube. You may withdraw it at any time by not starting further videos and clearing site data in your browser settings; withdrawal does not affect processing already carried out. For the collection and transmission of this data only, Panev Ascensori SAS and Google Ireland Limited jointly determine the purposes and means; for any further processing Google acts as an independent controller under its own policy: https://policies.google.com/privacy. Data may be processed by Google LLC in the United States, which participates in the EU-U.S. Data Privacy Framework (adequacy decision (EU) 2023/1795): https://policies.google.com/privacy/frameworks. Strictly necessary technical cookies, if any, do not require consent.',
       },
       {
         h: 'Retention',
@@ -24,7 +25,7 @@ export default {
       },
       {
         h: 'Recipients',
-        p: 'Data is neither sold nor transferred to third parties. It is accessible only to authorised staff and to the technical providers hosting the website and email (servers in the European Union), appointed as processors where required.',
+        p: 'Data is neither sold nor transferred to third parties. It is accessible only to authorised staff and to the technical providers hosting the website and email (servers in the European Union), appointed as processors where required. Only if you choose to start a video is the data described in “Cookies, local storage and videos” received by Google (see above).',
       },
       {
         h: 'Rights of the data subject',

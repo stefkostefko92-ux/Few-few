@@ -114,7 +114,9 @@ function securityHeaders(req, res, next) {
     "font-src 'self'",
     "img-src 'self' data: https: blob:",
     "connect-src 'self'" + (stripeOn ? ' https://api.stripe.com' : ''),
-    "frame-src 'self'" + (stripeOn ? ' https://js.stripe.com https://hooks.stripe.com' : ''), // 'self': 3D изгледът на началната страница
+    // 'self': 3D изгледът на началната страница; youtube-nocookie.com: видеата за монтаж — iframe-ът се създава
+    // чак при клик (js/video.js, правният преглед 26.11.2026), никой друг адрес на Google.
+    "frame-src 'self' https://www.youtube-nocookie.com" + (stripeOn ? ' https://js.stripe.com https://hooks.stripe.com' : ''),
     "object-src 'self'",   // каталожният PDF се вгражда с <object>
     "base-uri 'self'",
     "form-action 'self'",

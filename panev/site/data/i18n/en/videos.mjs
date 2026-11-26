@@ -1,0 +1,107 @@
+// English — Installation instructions on video: the index page and one page per video. The videos are in Italian (no
+// speech, Italian captions); these are the same steps in English (source: 3d/video/texts.py and
+// 3d/video/guida/texts.py). Minutes and durations are in ../../videos.mjs. YouTube loads only after the click; the
+// notice next to the button is the one agreed in the legal review (26.11.2026).
+
+export default {
+  videoSlugs: {
+    howto: 'installation-instructions.html',
+    vidDoors: 'landing-door-bracket-installation.html',
+    vidGuides: 'counterweight-guide-bracket-installation.html',
+  },
+  videoMeta: {
+    howto: {
+      title: 'Lift bracket installation instructions: videos | Panev',
+      description: 'Installation videos for Panev brackets: landing doors (A + B) in 11 steps and counterweight guide rails (SU + SG) in 9 steps, with written steps.',
+      keywords: ['lift bracket installation', 'elevator bracket installation video', 'landing door bracket installation', 'counterweight guide rail installation', 'lift brackets', 'Panev Ascensori', 'Carbon Stealth'],
+    },
+    vidDoors: {
+      title: 'Landing door bracket installation: 11-step video | Panev',
+      description: 'Installation video of the A 45 175 2 + B 45 320 landing door brackets: anchors, levelling the sill, tightening and trimming flush, in 11 steps.',
+      keywords: ['landing door bracket installation', 'lift landing door sill bracket', 'automatic door bracket installation', 'A 45 175 2', 'B 45 320', 'landing sill', 'Panev Ascensori', 'Carbon Stealth'],
+    },
+    vidGuides: {
+      title: 'Counterweight guide rail installation with SU + SG | Panev',
+      description: 'Installation video of the SU 220 160 support with the SG 80 150 bracket for counterweight guide rails: plumb line, N1 clips and tightening, in 9 steps.',
+      keywords: ['counterweight guide rail installation', 'counterweight rail bracket', 'guide rail bracket installation video', 'SU 220 160', 'SG 80 150', 'N1 rail clips', 'Panev Ascensori', 'Carbon Stealth'],
+    },
+  },
+  videos: {
+    shared: {
+      crumbsLabel: 'Breadcrumb',
+      play: 'Watch the video',
+      notice: 'Video hosted on YouTube. Clicking “Watch the video” loads the player from Google (youtube-nocookie.com), which receives your IP address and may store data on your device; data may be processed in the USA.',
+      privacyLink: 'Privacy notice',
+      openYoutube: 'Open on YouTube',
+      duration: 'Duration',
+      steps: (n) => `${n} steps`,
+      sides: 'Left-hand (SX) and right-hand (DX) versions',
+      language: 'Italian captions, no speech',
+      watch: 'Watch the video',
+      stepsTitle: 'Installation step by step',
+      stepsLead: 'The time next to each step opens the video at that point.',
+      seekLabel: (n, at) => `Step ${n}: watch from ${at}`,
+      productsTitle: 'Products in the video',
+      catalogPage: (n) => `PDF catalogue · p. ${String(n).padStart(2, '0')}`,
+      hubLink: 'All installation instructions',
+      sectionTitle: 'Installation instructions on video',
+      sectionLead: 'The complete installation on site, step by step: watch the video and read the steps on the page.',
+    },
+    howto: {
+      crumb: 'Installation instructions',
+      nav: 'Installation',
+      kicker: 'Video · on-site installation',
+      h1: 'Installation instructions for Panev brackets',
+      lead: 'Two videos show the complete installation on site: the A + B landing door brackets in 11 steps, and the SU support with the SG bracket for counterweight guide rails in 9 steps. Each page lists the steps in writing, with the time each one starts in the video.',
+      listTitle: 'Choose a video',
+      aboutTitle: 'About the videos',
+      about: [
+        'The videos have no speech: each step is written in the video, in Italian, and repeated on the page below the video. The brackets appear in their left-hand (SX) and right-hand (DX) versions, as on site.',
+        'They are a summary for qualified installers: the installation drawings in the technical catalogue and the design of the installation take precedence.',
+        'The videos load from YouTube only when you start them: until you click, the page does not contact Google.',
+      ],
+    },
+    vidDoors: {
+      crumb: 'Landing doors',
+      card: 'Landing door brackets',
+      kicker: 'Installation video · A 45 175 2 + B 45 320',
+      h1: 'Landing door bracket installation: video in 11 steps',
+      lead: 'Landing door brackets are installed in 11 steps: assemble plate A and bracket B, position them according to the distance from the car sill (25–32 mm), fix them with anchors, level the sill, tighten everything and trim the A plates flush with the sill. The video shows A 45 175 2 + B 45 320, in left-hand (SX) and right-hand (DX) versions.',
+      posterAlt: 'Landing door bracket installation: trimming plate A flush with the sill, frame from the video',
+      legend: 'The numbers in brackets refer to the bracket parts: (13) joint, (14) clamping element, (17) fixing slots, (18) connection holes.',
+      steps: [
+        { title: 'Assembling A + B', body: 'Assemble plate A and bracket B with the bolts of the joint (13) and the clamping element (14), without tightening.' },
+        { title: 'Positioning the brackets', body: 'Installer 1 holds one assembled bracket on the left, installer 2 the other on the right.' },
+        { title: 'Measuring from the car sill', body: 'Measure the distance between the landing sill and the car sill (25–32 mm) and position the brackets accordingly.' },
+        { title: 'Marking, drilling and anchors', body: 'Mark the drilling points through the slots (17), drill, insert the anchors and level each bracket B.' },
+        { title: 'Tightening the anchors', body: 'Tighten the anchor nuts.' },
+        { title: 'Placing the sill', body: 'Rest the sill, with or without the door frame, on the A plates.' },
+        { title: 'Light tightening', body: 'Fix the sill to the connection holes (18) without fully tightening.' },
+        { title: 'Levelling the sill', body: 'Level the sill along its length.' },
+        { title: 'Levelling plates A and tightening', body: 'Rotate the A plates around the joint (13) until they are level, then tighten everything: joint (13), clamping element (14) and sill.' },
+        { title: 'Third bracket', body: 'Install the third bracket in the middle of the sill. If you hit rebar while drilling, keep A\u00a0DX and replace B\u00a0DX with B\u00a0SX: the holes move by 65\u00a0mm. Then mark, drill, anchor and tighten everything.' },
+        { title: 'Trimming the A plates', body: 'Using a marker, mark each A plate flush with the sill, move the sill back, cut along the mark with an angle grinder and bring the sill back flush.' },
+      ],
+    },
+    vidGuides: {
+      crumb: 'Counterweight guide rails',
+      card: 'Counterweight guide rails: SU support + SG bracket',
+      kicker: 'Installation video · SU 220 160 + SG 80 150',
+      h1: 'Counterweight guide rail installation with SU and SG: video in 9 steps',
+      lead: 'The SU 220 160 support with the SG 80 150 bracket is installed in 9 steps: plumb lines, marking, drilling, SU support fixed with two M10 anchors, SG bracket lightly tightened, rail plumbed 5 mm from the line, SG moved up to the rail foot, N1 clips, check and final tightening. SX and DX versions, extension range 45–155 mm.',
+      posterAlt: 'Counterweight guide rail installation: tightening an N1 clip on the SG bracket with a ratchet, frame from the video',
+      legend: '',
+      steps: [
+        { title: 'Plumb lines', body: 'Drop a plumb line from the top for each rail: it will hang 5\u00a0mm from the rail head.' },
+        { title: 'Marking', body: 'Hold the SU support against the wall, level and in line with the plumb line, and mark the holes through the slots.' },
+        { title: 'Drilling', body: 'Drill the marked points with a hammer drill and a 10\u00a0mm bit.' },
+        { title: 'Fixing the SU supports', body: 'Fix each SU support with two M10 anchors and large washers, then tighten the nuts.' },
+        { title: 'SG bracket on the support', body: 'On top: M10 bolt with a large washer. Underneath: large washer, split lock washer and nut. Tighten lightly: the SG must still slide.' },
+        { title: 'Plumbing the rail', body: 'Lower the rail in front of the SG and plumb it: 5\u00a0mm between the rail head and the line.' },
+        { title: 'SG forward', body: 'Slide the SG 20\u00a0mm up to the rail foot.' },
+        { title: 'N1 clips', body: 'Fit two N1 clips on the rail, without tightening. Behind the SG flange: large washer, lock washer and nut.' },
+        { title: 'Check and tightening', body: 'Check with the spirit level that it is vertical, then tighten everything: the SG bolts and the clip nuts.' },
+      ],
+    },
+  },
+};

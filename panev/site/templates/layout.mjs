@@ -3,6 +3,9 @@
 
 import { COMPANY, PATENT, CATALOG_PDF } from '../data/products.mjs';
 import { logoPicture, versioned } from './asset.mjs';
+import { jsonLd } from './ld.mjs';
+
+export { jsonLd };
 
 export const ORIGIN = 'https://panevascensori.it';
 
@@ -40,97 +43,18 @@ export function hreflangLinks(locales, pageKey) {
   return links.join('\n');
 }
 
-function organizationLd(t) {
-  return {
-    '@type': 'Organization',
-    '@id': `${ORIGIN}/#organization`,
-    name: COMPANY.name,
-    legalName: COMPANY.name,
-    url: `${ORIGIN}/`,
-    logo: { '@type': 'ImageObject', url: `${ORIGIN}/img/panev-logo.png`, width: 640, height: 130 },
-    image: `${ORIGIN}${versioned('img/og-panev.jpg')}`,
-    areaServed: ['IT', 'EU'],
-    // Седалището е адресът; производството е в Cornaredo (без пощенски код — не е в данните).
-    location: {
-      '@type': 'Place',
-      name: t.contactsPage.rows.operative,
-      address: { '@type': 'PostalAddress', streetAddress: 'Via Milano 7', addressLocality: 'Cornaredo', addressRegion: 'MI', addressCountry: 'IT' },
-    },
-    email: COMPANY.email,
-    telephone: COMPANY.phone,
-    vatID: COMPANY.vat,
-    taxID: COMPANY.vat.replace(/^IT/, ''),
-    identifier: { '@type': 'PropertyValue', propertyID: 'REA', value: COMPANY.rea },
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: 'Via Madonna del Salvatore 6',
-      postalCode: '20010',
-      addressLocality: 'Vittuone',
-      addressRegion: 'MI',
-      addressCountry: 'IT',
-    },
-    contactPoint: {
-      '@type': 'ContactPoint',
-      contactType: 'sales',
-      email: COMPANY.email,
-      telephone: COMPANY.phone,
-      availableLanguage: ['it', 'en', 'bg'],
-    },
-    knowsAbout: [
-      'staffe per ascensori', 'staffe porte di piano', 'guide del contrappeso',
-      'lift brackets', 'landing door brackets', 'counterweight guide rails',
-      'планки за асансьори', 'планки за етажни врати', 'водачи на противотежестта',
-      'brevetto Modello di Utilità UIBM 202023000002112',
-    ],
-  };
-}
 
 // Името на страница в пътеката (видима и в JSON-LD): изрично, не от заглавието, което се сменя за SEO.
 export function crumbName(t, pageKey) {
   const named = { home: t.nav.home, products: t.nav.products, catalog: t.nav.catalog, contacts: t.nav.contacts,
     viewer3d: t.nav.viewer3d, privacy: t.meta.privacy.title.split('—')[0].trim(), terms: t.termsPage.title };
-  return named[pageKey] ?? (t.families[pageKey] ?? t.guides[pageKey]).crumb;
+  return named[pageKey] ?? (t.families[pageKey] ?? t.guides[pageKey] ?? t.videos[pageKey]).crumb;
 }
 
-// parents: ключовете на страниците между началната и тази (страница на семейство → ['products']).
-export function jsonLd(t, pageKey, extra = [], parents = []) {
-  const url = `${ORIGIN}${pagePath(t, pageKey)}`;
-  const trail = ['home', ...parents, pageKey];
-  const breadcrumb = pageKey === 'home' ? [] : [{
-    '@type': 'BreadcrumbList',
-    '@id': `${url}#breadcrumb`,
-    itemListElement: trail.map((key, i) => ({ '@type': 'ListItem', position: i + 1, name: crumbName(t, key), item: `${ORIGIN}${pagePath(t, key)}` })),
-  }];
-  const graph = [
-    organizationLd(t),
-    ...breadcrumb,
-    {
-      '@type': 'WebSite',
-      '@id': `${ORIGIN}/#website`,
-      url: `${ORIGIN}/`,
-      name: COMPANY.name,
-      inLanguage: ['it', 'en', 'bg'],
-      publisher: { '@id': `${ORIGIN}/#organization` },
-    },
-    {
-      '@type': 'WebPage',
-      '@id': `${url}#webpage`,
-      url,
-      name: t.meta[pageKey].title,
-      description: t.meta[pageKey].description,
-      inLanguage: t.htmlLang,
-      isPartOf: { '@id': `${ORIGIN}/#website` },
-      about: { '@id': `${ORIGIN}/#organization` },
-      ...(breadcrumb.length ? { breadcrumb: { '@id': `${url}#breadcrumb` } } : {}),
-    },
-    ...extra,
-  ];
-  return `<script type="application/ld+json">${jsonEmbed({ '@context': 'https://schema.org', '@graph': graph })}</script>`;
-}
 
 // styles/htmlAttrs/viewport: 3D страниците (viewer.mjs) идват със собствен стил и данни.
 export function head(t, locales, pageKey, {
-  ldExtra = [], ogImage = versioned('img/og-panev.jpg'), htmlAttrs = '', parents = [],
+  ldExtra = [], ogImage = versioned('img/og-panev.jpg'), htmlAttrs = '', parents = [], webpage = {},
   viewport = 'width=device-width, initial-scale=1', styles = `<link rel="stylesheet" href="${versioned('css/site.css')}">`,
 } = {}) {
   const m = t.meta[pageKey];
@@ -169,7 +93,7 @@ ${locales.filter((lt) => lt.lang !== t.lang).map((lt) => `  <meta property="og:l
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preload" href="/fonts/Inter-var-${t.lang === 'bg' ? 'cyrillic' : 'latin'}.woff2" as="font" type="font/woff2" crossorigin>
   ${styles}
-  ${jsonLd(t, pageKey, ldExtra, parents)}
+  ${jsonLd(t, pageKey, ldExtra, parents, webpage)}
 </head>`;
 }
 
@@ -179,9 +103,12 @@ export function header(t, locales, pageKey, activeKey) {
     ['products', t.nav.products],
     ['catalog', t.nav.catalog],
     ['viewer3d', t.nav.viewer3d],
+    ['howto', t.videos.howto.nav],
     ['contacts', t.nav.contacts],
+  // navShort: по-кратки надписи само в лентата, където менюто иначе не се събира (българският — с „Монтаж“);
+  // пътеките и футърът пазят пълните.
   ].map(([key, label]) =>
-    `<a href="${pagePath(t, key)}"${key === activeKey ? ' aria-current="page"' : ''}>${esc(label)}</a>`
+    `<a href="${pagePath(t, key)}"${key === activeKey ? ' aria-current="page"' : ''}>${esc(t.navShort?.[key] ?? label)}</a>`
   ).join('\n        ');
 
   const langs = locales.map((lt) =>
@@ -238,10 +165,12 @@ export function orderDrawer(t) {
 export function footer(t, locales, pageKey) {
   const f = t.footer;
   const year = 2026;
-  // Към страниците по семейства (по една за всяко търсене), монтажа върху неравни зидарии, листата и каталога.
+  // Към страниците по семейства (по една за всяко търсене), монтажа върху неравни зидарии, инструкциите за монтаж
+  // във видео, листата и каталога.
   const prodLinks = ['famDoors', 'famGuides', 'famSg', 'famSpecial']
     .map((key, i) => `<li><a href="${pagePath(t, key)}">${esc(f.productLinks[i])}</a></li>`).join('')
     + `<li><a href="${pagePath(t, 'walls')}">${esc(t.guides.walls.crumb)}</a></li>`
+    + `<li><a href="${pagePath(t, 'howto')}">${esc(t.videos.howto.crumb)}</a></li>`
     + `<li><a href="${pagePath(t, 'products')}">${esc(t.nav.products)}</a></li>`;
 
   return `</main>
