@@ -404,6 +404,23 @@
       ]
     },
     {
+      "id": "skill-inline-shell-hooks",
+      "claim": "Inline командите на умение (!`…` в commit-pr, quality-gate, verify) минават само през permissions — PreToolUse куките (guard-*) не тичат за тях; кука за тях е само PreSkillShellCommand (≥2.1.332, по-стар CLI ги пуска без нея). Умения от MCP сървъри не пускат ! команди.",
+      "source": "https://code.claude.com/docs/en/hooks.md#preskillshellcommand + https://code.claude.com/docs/en/skills.md + changelog 2.1.332",
+      "keywords": [
+        "PreSkillShellCommand",
+        "inline shell",
+        "injected command",
+        "disableSkillShellExecution"
+      ],
+      "relies": [
+        ".claude/settings.json",
+        ".claude/skills/commit-pr/SKILL.md",
+        ".claude/skills/quality-gate/SKILL.md",
+        ".claude/skills/verify/SKILL.md"
+      ]
+    },
+    {
       "id": "builtin-haiku-agent",
       "claim": "Вграденият субагент claude-code-guide тича на Haiku; правилото на собственика е „никога Haiku“, затова е забранен с permissions.deny \"Agent(claude-code-guide)\". Нов вграден агент на Haiku → добави го в deny. Фоновите задачи на харнеса (заглавия, обобщения за напредъка на подагентите от 2.1.328, /goal) и псевдонимът `haiku` вървят на ANTHROPIC_DEFAULT_HAIKU_MODEL — в settings.json env той сочи Sonnet 5.5; смяна към Haiku през /model спира PreModelSwitch куката guard-model.",
       "source": "https://code.claude.com/docs/en/sub-agents.md (Built-in subagents; Disable specific subagents) + usage.jsonl id e53fa044df (24.09.2026) + https://code.claude.com/docs/en/env-vars.md (ANTHROPIC_DEFAULT_HAIKU_MODEL) + changelog 2.1.328",
@@ -471,7 +488,26 @@
       "claim": "Code Mode (експериментален) тича само в интерактивен терминал; самият JS стига до куките с matcher REPL (tool_input.code), а `REPL` в permissions.deny не дава на Code Mode да тръгне — затова е забранен, докато пазачите не съдят REPL.",
       "source": "https://code.claude.com/docs/en/code-mode.md",
       "keywords": [
-        "Code Mode",
+        [
+          "Code Mode",
+          "hook"
+        ],
+        [
+          "Code Mode",
+          "deny"
+        ],
+        [
+          "Code Mode",
+          "support"
+        ],
+        [
+          "Code Mode",
+          "also start"
+        ],
+        [
+          "Code Mode",
+          "turning"
+        ],
         "CLAUDE_CODE_EXPERIMENTAL_CODE_MODE",
         "REPL tool",
         [
