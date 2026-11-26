@@ -132,7 +132,8 @@ export function lintText(raw, file, opts = {}) {
   // или ако файлът има :focus-visible правило, което наистина рисува фокус.
   // + глобалните от другите CSS файлове на продукта (lintPath): каскадата е обща за сайта.
   const fvBases = new Set([...focusVisibleBases(text), ...(opts.globalFv || [])]);
-  each(/outline\s*:\s*["']?(?:none|0)\b/i, (m) => {
+  // `0` само самостоятелно: `outline: 0.2rem solid` рисува фокус.
+  each(/outline\s*:\s*["']?(?:none\b|0(?![.\d\w-]))/i, (m) => {
     const start = text.lastIndexOf("}", m.index) + 1;
     const end = text.indexOf("}", m.index);
     const block = text.slice(start, end === -1 ? undefined : end);
@@ -141,19 +142,13 @@ export function lintText(raw, file, opts = {}) {
     const decl = brace === -1 ? block : block.slice(brace + 1);
     if (/:focus:not\(:focus-visible\)/.test(sel)) return;
     if (/:focus(?:-within)?\b/.test(sel) && CSS_ALT.test(decl)) return;
-    // Освобождава :focus-visible правило за СЪЩИЯ селектор (`.btn:focus` ↔ `.btn:focus-visible`). Ресет БЕЗ
-    // :focus (`.login-input{outline:none}`) се покрива и от глобално правило по елемент (`input:focus-visible`,
-    // `*`, `[tabindex]`) — то е с по-висока специфичност. `main` е цел на skip link — фокусът му е програмен.
+    // Освобождава САМО :focus-visible правило за същия селектор (`.btn` / `.btn:focus` ↔ `.btn:focus-visible`):
+    // то е с по-висока специфичност и бие ресета при всякакъв ред. Глобални и елементни правила (`*`, голо
+    // `:focus-visible`, `input:focus-visible`) не стигат — статичната проверка не знае реда, специфичността
+    // спрямо класа и кои елементи носят класа (четвърти преглед на PR #494). Нарочно → disable-line с причина.
+    // `main` е цел на skip link — фокусът му е програмен.
     const pieces = sel.split(",").map((x) => normSel(x.replace(/:focus(?:-within)?(?!-)/g, ""))).filter(Boolean);
     if (pieces.length && pieces.every((x) => fvBases.has(x) || x === "main")) return;
-    if (!/:focus/.test(sel)) {
-      // Универсален :focus-visible (`*`, голо `:focus-visible`, `[tabindex]`) покрива всеки ресет; елементен
-      // (`input:focus-visible`) — само ресет на същия елемент (`input.search`), не на произволен клас.
-      if (["", "*", "[tabindex]"].some((b) => fvBases.has(b))) return;
-      const elOf = (piece) => (piece.match(/(?:^|[\s>+~])([a-z][a-z0-9]*)(?=[.#[:]|$)/g) || []).pop()?.trim().replace(/^[>+~]/, "");
-      const resetPieces = sel.split(",").map(normSel).filter(Boolean);
-      if (resetPieces.length && resetPieces.every((x) => { const el = elOf(x); return el && fvBases.has(el); })) return;
-    }
     add("focus-hidden", m.index, m[0]);
   });
   // Tailwind `outline-none` — съди се по собствения клас-низ, не по файла.
@@ -204,19 +199,26 @@ function walk(p, acc = []) {
   return acc;
 }
 
-/** Находките за папка или файл, с относителен път. */
+/** Находките за папка или файл, с относителен път, + прескочените файлове (казват се, не изчезват тихо). */
 export function lintPath(root) {
-  const findings = [];
+  const findings = [], skipped = [];
   const files = walk(root);
-  const read = (f) => { try { const t = readFileSync(f, "utf8"); return t.length > 2_000_000 ? null : t; } catch { return null; } };
+  const rel = (f) => relative(process.cwd(), f) || f;
+  const read = (f, note = true) => {
+    let t;
+    try { t = readFileSync(f, "utf8"); } catch (e) { if (note) skipped.push({ file: rel(f), why: `не се чете (${e.code || "грешка"})`, error: true }); return null; }
+    if (t.length > 2_000_000) { if (note) skipped.push({ file: rel(f), why: "над 2 MB — минифициран бъндъл, не изходен текст" }); return null; }
+    return t;
+  };
   // Първо минаване: :focus-visible правилата от всички CSS файлове (базов файл често рисува фокуса глобално).
   const globalFv = new Set();
-  for (const f of files) if (/\.s?css$/i.test(f)) { const t = read(f); if (t) for (const b of focusVisibleBases(maskComments(t, extname(f).toLowerCase()))) globalFv.add(b); }
+  for (const f of files) if (/\.s?css$/i.test(f)) { const t = read(f, false); if (t) for (const b of focusVisibleBases(maskComments(t, extname(f).toLowerCase()))) globalFv.add(b); }
   for (const f of files) {
-    const text = read(f); // над 2 MB — минифициран бъндъл, не изходен текст
+    const text = read(f);
     if (text === null) continue;
-    for (const x of lintText(text, f, { globalFv })) findings.push({ file: relative(process.cwd(), f) || f, ...x });
+    for (const x of lintText(text, f, { globalFv })) findings.push({ file: rel(f), ...x });
   }
+  findings.skipped = skipped;
   return findings;
 }
 
@@ -227,12 +229,16 @@ function main(argv) {
   // Грешен път не бива да изглежда като „0 находки“ (fail-closed).
   if (!existsSync(root)) { console.error(`design-lint: няма такъв път: ${root}`); return 2; }
   const findings = lintPath(root);
+  const skipped = findings.skipped || [];
   const high = findings.filter((f) => f.sev === "HIGH").length;
-  if (json) { console.log(JSON.stringify({ root, high, findings }, null, 2)); return high ? 1 : 0; }
+  // Нечетим файл = непроверен файл → изход 2 (fail-closed), не тихо „чисто“.
+  const code = skipped.some((x) => x.error) ? 2 : high ? 1 : 0;
+  if (json) { console.log(JSON.stringify({ root, high, findings: [...findings], skipped }, null, 2)); return code; }
   for (const f of findings) console.log(`${f.sev.padEnd(6)} ${f.file}:${f.line}:${f.col}  ${f.rule} — ${f.why}\n         ${f.snippet}`);
   const by = (s) => findings.filter((f) => f.sev === s).length;
-  console.log(`design-lint: ${findings.length} находки (HIGH ${high} · MEDIUM ${by("MEDIUM")} · INFO ${by("INFO")}) в ${root}`);
-  return high ? 1 : 0;
+  for (const x of skipped) console.log(`SKIP   ${x.file} — ${x.why}`);
+  console.log(`design-lint: ${findings.length} находки (HIGH ${high} · MEDIUM ${by("MEDIUM")} · INFO ${by("INFO")}) в ${root}${skipped.length ? ` · прескочени: ${skipped.length}` : ""}`);
+  return code;
 }
 
 // exitCode, не process.exit(): голям --json към пайп иначе се реже (stdout е асинхронен).

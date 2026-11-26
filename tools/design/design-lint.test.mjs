@@ -203,30 +203,51 @@ test("Tailwind: само focus-visible:ring/outline/border/shadow е замес�
 
 // Базова линия след повторния преглед: глобалното `input:focus-visible{outline:3px}` побеждава класовия
 // ресет `.login-input{outline:none}` по специфичност — не е находка; `.x:focus{outline:none}` обаче го бие.
-test("глобално :focus-visible по елемент покрива ресет без :focus, но не и :focus правило с клас", () => {
+// Четвърти преглед на PR #494 (Кодаджията): статичната проверка не може да реши каскадата (специфичност,
+// ред, кои елементи носят класа). Затова ресетът се освобождава САМО от :focus-visible за същия селектор —
+// той е с по-висока специфичност и бие ресета при всякакъв ред. Всичко друго е находка; ако е нарочно —
+// `design-lint-disable-line focus-hidden` с причина.
+test("ресет се освобождава само от :focus-visible за същия селектор; глобални и елементни правила не стигат", () => {
   const fv = "a:focus-visible,\ninput:focus-visible,\n[tabindex]:focus-visible { outline: 3px solid gold; outline-offset: 2px; }";
-  assert.deepEqual(ids(`.login-input{outline:none}\n${fv}`, "a.css"), []);
-  assert.deepEqual(ids(`.login-input:focus{outline:none}\n${fv}`, "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(`.login-input{outline:none}\n${fv}`, "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(".login-input{outline:none}\n.login-input:focus-visible{outline:3px solid gold}", "a.css"), []);
+  assert.deepEqual(ids("a:focus-visible{outline:2px solid}\n.card-input{outline:none}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids("input:focus-visible{outline:2px solid}\ninput.search{outline:none}", "a.css"), ["focus-hidden"], "редът решава — не се гадае");
+  assert.deepEqual(ids("[tabindex]:focus-visible{outline:2px solid}\n.card-input{outline:none}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(":focus-visible{outline:2px solid}\n.card-input{outline:none}", "a.css"), ["focus-hidden"], "(0,1,0) като клас — по-късният ресет печели");
   assert.deepEqual(ids(".skip:focus{top:0}\nmain:focus{outline:none}", "a.css"), [], "main — цел на skip link, фокусът е програмен");
+  assert.deepEqual(ids(".x{outline:none} /* design-lint-disable-line focus-hidden — фокусът е на родителя */", "a.css"), []);
 });
 
-test("глобалното :focus-visible от друг CSS файл на продукта важи (каскадата е обща)", () => {
+test(":focus-visible за същия селектор от друг CSS файл на продукта важи", () => {
   const t = mkdtempSync(join(tmpdir(), "dl-"));
   try {
-    writeFileSync(join(t, "base.css"), "a:focus-visible, button:focus-visible { outline: 3px solid #036; }");
-    writeFileSync(join(t, "nav.css"), "a.nav-link { outline: none; }\n.menu button:focus { outline: none; }");
+    writeFileSync(join(t, "base.css"), ".nav-link:focus-visible, button:focus-visible { outline: 3px solid #036; }");
+    writeFileSync(join(t, "nav.css"), ".nav-link { outline: none; }\n.menu button:focus { outline: none; }");
     const r = spawnSync(process.execPath, [join(here, "design-lint.mjs"), t, "--json"], { encoding: "utf8" });
     const j = JSON.parse(r.stdout);
-    assert.deepEqual(j.findings.map((f) => `${f.rule}:${f.line}`), ["focus-hidden:2"], "ресетът се покрива, :focus правилото с клас — не");
+    assert.deepEqual(j.findings.map((f) => `${f.rule}:${f.line}`), ["focus-hidden:2"]);
   } finally { rmSync(t, { recursive: true, force: true }); }
 });
 
-// Трети преглед на PR #494 (Кодаджията).
-test("елементен :focus-visible освобождава само ресета на същия елемент; универсален (*, [tabindex]) — всеки", () => {
-  assert.deepEqual(ids("a:focus-visible{outline:2px solid}\n.card-input{outline:none}", "a.css"), ["focus-hidden"]);
-  assert.deepEqual(ids("input:focus-visible{outline:2px solid}\ninput.search{outline:none}", "a.css"), []);
-  assert.deepEqual(ids("[tabindex]:focus-visible{outline:2px solid}\n.card-input{outline:none}", "a.css"), []);
-  assert.deepEqual(ids(":focus-visible{outline:2px solid}\n.card-input{outline:none}", "a.css"), []);
+test("outline: 0.2rem не е скрит фокус", () => {
+  assert.deepEqual(ids("a:focus-visible{outline:0.125rem solid #036}", "a.css"), []);
+  assert.deepEqual(ids("a{outline:0.2rem solid #036}", "a.css"), []);
+  assert.deepEqual(ids("a{outline:0}", "a.css"), ["focus-hidden"]);
+});
+
+test("прескочен файл (над 2 MB) се брои и се казва; нечетим — изход 2", () => {
+  const t = mkdtempSync(join(tmpdir(), "dl-"));
+  try {
+    writeFileSync(join(t, "big.html"), "<p>x</p>".repeat(300000));
+    writeFileSync(join(t, "ok.html"), "<p>ok</p>");
+    const r = spawnSync(process.execPath, [join(here, "design-lint.mjs"), t, "--json"], { encoding: "utf8" });
+    const j = JSON.parse(r.stdout);
+    assert.equal(j.skipped.length, 1);
+    assert.match(j.skipped[0].why, /2 MB/);
+    const r2 = spawnSync(process.execPath, [join(here, "design-lint.mjs"), t], { encoding: "utf8" });
+    assert.match(r2.stdout, /прескочени: 1/);
+  } finally { rmSync(t, { recursive: true, force: true }); }
 });
 
 test("Tailwind focus:ring-0 / border-0 / shadow-none не са заместител", () => {
