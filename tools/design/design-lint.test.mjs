@@ -5,7 +5,7 @@
 // и `alt=""` за декоративна картинка НЕ са находки.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
@@ -260,4 +260,40 @@ test("Tailwind focus:ring-0 / border-0 / shadow-none не са заместит�
 test("вложен блок (@media, SCSS) се чете по вътрешната скоба; style={{outline:\"none\"}} се хваща", () => {
   assert.deepEqual(ids("@media (min-width:1px){.a:focus{outline:none;box-shadow:0 0 0 3px #036}}", "a.css"), []);
   assert.deepEqual(ids('<input style={{ outline: "none" }} />', "a.tsx"), ["focus-hidden"]);
+});
+
+// Пети преглед на PR #494 (Кодаджията).
+test("border-radius (и border-collapse/-style) не е заместител на фокуса и не прави :focus-visible „рисуващо“", () => {
+  assert.deepEqual(ids(".btn:focus{outline:none;border-radius:4px}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(".btn:focus{outline:none;border-collapse:collapse}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(".btn{outline:none}.btn:focus-visible{border-radius:4px}", "a.css"), ["focus-hidden"]);
+  // видимите страни и цвят/дебелина остават заместител
+  assert.deepEqual(ids(".btn:focus{outline:none;border-bottom-color:#036}", "a.css"), []);
+  assert.deepEqual(ids(".btn:focus{outline:none;border-inline-start-width:3px}", "a.css"), []);
+  assert.deepEqual(ids(".btn{outline:none}.btn:focus-visible{border:2px solid #036}", "a.css"), []);
+});
+
+test("@media обвивка около ресета не крие селектора от :focus-visible базата", () => {
+  assert.deepEqual(ids("@media (hover){.btn{outline:none}}.btn:focus-visible{outline:2px solid #036}", "a.css"), []);
+  assert.deepEqual(ids("@media (hover){.btn{outline:none}}.other:focus-visible{outline:2px solid #036}", "a.css"), ["focus-hidden"]);
+});
+
+test("Tailwind в cn()/clsx(): заместителят в съседен аргумент се вижда", () => {
+  assert.deepEqual(ids('<button className={cn("outline-none", "focus-visible:ring-2")} />', "a.tsx"), []);
+  assert.deepEqual(ids('<button className={clsx("rounded outline-none", active && "bg-x", "focus-visible:outline-2")} />', "a.tsx"), []);
+  assert.deepEqual(ids('const b = cva("outline-none px-2", { variants: { v: { a: "focus-visible:ring-2" } } });', "a.tsx"), []);
+  assert.deepEqual(ids('<button className={cn("outline-none", "bg-x")} />', "a.tsx"), ["focus-hidden"]);
+});
+
+test("нечетим път вътре в дървото (цикъл от връзки) се казва и дава изход 2", () => {
+  const t = mkdtempSync(join(tmpdir(), "dl-"));
+  try {
+    writeFileSync(join(t, "ok.html"), "<p>ok</p>");
+    symlinkSync(join(t, "b.html"), join(t, "a.html"));
+    symlinkSync(join(t, "a.html"), join(t, "b.html"));
+    const r = spawnSync(process.execPath, [join(here, "design-lint.mjs"), t, "--json"], { encoding: "utf8" });
+    assert.equal(r.status, 2, r.stdout + r.stderr);
+    const j = JSON.parse(r.stdout);
+    assert.ok(j.skipped.some((x) => x.error && /ELOOP/.test(x.why)), JSON.stringify(j.skipped));
+  } finally { rmSync(t, { recursive: true, force: true }); }
 });

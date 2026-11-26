@@ -74,10 +74,12 @@ export function maskComments(text, ext) {
 // Видим заместител на outline в същия CSS блок или в същия клас-низ (Tailwind); или контейнер, на който
 // фокусът се дава от кода (tabIndex -1, role=dialog) — той не е в реда на Tab.
 // Заместителят важи само в :focus блок и само с видима стойност (border:none, transparent — не).
-const CSS_ALT = /(?:^|[;{\s])(?:box-shadow|border(?:-[a-z]+)?(?:-color)?|background(?:-color)?|text-decoration(?:-line)?)\s*:\s*(?!none\b|0\s*[;}]|0$|transparent\b|inherit\b|initial\b|unset\b)[^;}]+/i;
+// `border-*` — само страните и цвят/дебелина: border-radius/-collapse/-spacing не рисуват (пети преглед на PR #494).
+const BORDER_DRAWS = "border(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?(?:-(?:color|width))?";
+const CSS_ALT = new RegExp(String.raw`(?:^|[;{\s])(?:box-shadow|${BORDER_DRAWS}|background(?:-color)?|text-decoration(?:-line)?)\s*:\s*(?!none\b|0\s*[;}]|0$|transparent\b|inherit\b|initial\b|unset\b)[^;}]+`, "i");
 // Правило :focus-visible, което наистина рисува фокус (outline/box-shadow/border с видима стойност).
 // (outline-offset/outline-color сами не рисуват нищо.)
-const DRAWS = /(?:^|[;{\s])(?:outline|outline-style|box-shadow|border(?:-[a-z]+)?(?:-color)?)\s*:\s*(?!none\b|0\s*[;}]|0$|transparent\b)[^;}]+/i;
+const DRAWS = new RegExp(String.raw`(?:^|[;{\s])(?:outline|outline-style|box-shadow|${BORDER_DRAWS})\s*:\s*(?!none\b|0\s*[;}]|0$|transparent\b)[^;}]+`, "i");
 const normSel = (x) => x.replace(/\s+/g, " ").trim();
 /** Базовите селектори, за които има :focus-visible правило, което рисува фокус (`a:focus-visible` → `a`). */
 function focusVisibleBases(text) {
@@ -97,6 +99,27 @@ function focusVisibleBases(text) {
 // `ring-0`, `border-0`, `shadow-none`, `outline-none` не рисуват нищо.
 const TW_ALT = /\b(?:focus|focus-visible|focus-within):(?:ring-(?!0\b|inset\b|transparent\b)|ring\b(?!-)|border-(?!0\b|none\b|transparent\b)|border\b(?!-)|shadow-(?!none\b)|shadow\b(?!-)|underline\b|outline-(?!none\b|0\b))/;
 const PROG_FOCUS = /tabIndex=\{?-1\}?|tabindex=["']-1["']|role=["'](?:dialog|alertdialog|region|log)["']/i;
+
+const CLASS_CALL = /(?:\b(?:cn|clsx|classnames|classNames|cva|twMerge|tv)\s*\(|\b(?:className|class)\s*=\s*\{)/g;
+/** Целият израз cn(…)/className={…}, който съдържа позиция `at`, или null. Скобите се броят (без низовете). */
+function classExpr(text, at) {
+  let best = null;
+  const from = Math.max(0, at - 2000);
+  CLASS_CALL.lastIndex = from;
+  for (let m; (m = CLASS_CALL.exec(text)) && m.index < at;) {
+    const open = m.index + m[0].length - 1, pair = text[open] === "(" ? ")" : "}";
+    let depth = 0, q = null, end = -1;
+    for (let i = open; i < text.length && i < open + 4000; i++) {
+      const ch = text[i];
+      if (q) { if (ch === q && text[i - 1] !== "\\") q = null; continue; }
+      if (ch === '"' || ch === "'" || ch === "`") q = ch;
+      else if (ch === text[open]) depth++;
+      else if (ch === pair && --depth === 0) { end = i; break; }
+    }
+    if (end > at) best = text.slice(open, end + 1); // най-вътрешният, който я съдържа
+  }
+  return best;
+}
 
 /** Всички находки в един текст. `file` решава типа (css/markup) по разширението. */
 export function lintText(raw, file, opts = {}) {
@@ -138,7 +161,7 @@ export function lintText(raw, file, opts = {}) {
     const end = text.indexOf("}", m.index);
     const block = text.slice(start, end === -1 ? undefined : end);
     const brace = block.lastIndexOf("{"); // вътрешната скоба — @media/SCSS обвивката е отвън
-    const sel = brace === -1 ? "" : block.slice(0, brace);
+    const sel = brace === -1 ? "" : block.slice(block.lastIndexOf("{", brace - 1) + 1, brace); // без `@media (…){`
     const decl = brace === -1 ? block : block.slice(brace + 1);
     if (/:focus:not\(:focus-visible\)/.test(sel)) return;
     if (/:focus(?:-within)?\b/.test(sel) && CSS_ALT.test(decl)) return;
@@ -151,10 +174,11 @@ export function lintText(raw, file, opts = {}) {
     if (pieces.length && pieces.every((x) => fvBases.has(x) || x === "main")) return;
     add("focus-hidden", m.index, m[0]);
   });
-  // Tailwind `outline-none` — съди се по собствения клас-низ, не по файла.
+  // Tailwind `outline-none` — съди се по собствения клас-низ, не по файла. Ако низът е аргумент на
+  // cn()/clsx()/cva()/twMerge() или в className={…}, съди се целият израз (shadcn шаблонът).
   if (MARKUP_EXT.has(ext)) each(/\boutline-none\b/, (m) => {
     const q1 = Math.max(text.lastIndexOf('"', m.index), text.lastIndexOf("'", m.index), text.lastIndexOf("`", m.index));
-    const cls = text.slice(q1, text.indexOf(text[q1] || '"', m.index));
+    const cls = classExpr(text, m.index) ?? text.slice(q1, text.indexOf(text[q1] || '"', m.index));
     const tag = text.slice(text.lastIndexOf("<", m.index), m.index + 400);
     if (TW_ALT.test(cls) || PROG_FOCUS.test(tag.slice(0, tag.indexOf(">") + 1 || undefined))) return;
     add("focus-hidden", m.index, m[0]);
@@ -182,18 +206,20 @@ export function lintText(raw, file, opts = {}) {
   return out.sort((a, b) => a.line - b.line || a.col - b.col);
 }
 
-function walk(p, acc = []) {
-  let st; try { st = statSync(p); } catch { return acc; }
+// Нечетим път се записва в `skipped` (ENOENT — висяща връзка — без грешка; всичко друго → изход 2).
+const unreadable = (skipped, p, e) => skipped && skipped.push({ file: relative(process.cwd(), p) || p, why: `не се чете (${e.code || "грешка"})`, error: e.code !== "ENOENT" });
+function walk(p, acc = [], skipped = null) {
+  let st; try { st = statSync(p); } catch (e) { unreadable(skipped, p, e); return acc; }
   const scan = (n) => (TEXT_EXT.has(extname(n).toLowerCase()) || CODE_EXT.has(extname(n).toLowerCase())) && !isTestFile(n);
   if (st.isFile()) { if (scan(basename(p))) acc.push(p); return acc; }
   if (!st.isDirectory()) return acc;
-  let names = []; try { names = readdirSync(p).sort(); } catch { return acc; }
+  let names = []; try { names = readdirSync(p).sort(); } catch (e) { unreadable(skipped, p, e); return acc; }
   for (const n of names) {
     if (SKIP_DIRS.has(n) || isTestFile(n)) continue;
     if (n === "worktrees" && basename(p) === ".claude") continue;
     const q = join(p, n);
-    let s; try { s = statSync(q); } catch { continue; }
-    if (s.isDirectory()) walk(q, acc);
+    let s; try { s = statSync(q); } catch (e) { unreadable(skipped, q, e); continue; }
+    if (s.isDirectory()) walk(q, acc, skipped);
     else if (scan(n)) acc.push(q);
   }
   return acc;
@@ -202,7 +228,7 @@ function walk(p, acc = []) {
 /** Находките за папка или файл, с относителен път, + прескочените файлове (казват се, не изчезват тихо). */
 export function lintPath(root) {
   const findings = [], skipped = [];
-  const files = walk(root);
+  const files = walk(root, [], skipped);
   const rel = (f) => relative(process.cwd(), f) || f;
   const read = (f, note = true) => {
     let t;
