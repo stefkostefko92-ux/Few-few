@@ -280,7 +280,8 @@ ZIP отпреди месец.
   (конфиг + тайни + услуга) → `vpsdash/`.
 - **IndexNow след здрав релийз** (Bing, Yandex, Seznam, Naver, Yep; Google не участва) — подава се
   сам за zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora и rilievi (двата само
-  при променен sitemap, от собствения си `deploy.sh`), fivem и panev. Само след минала здравна проба — без adblock, който подава след
+  при променен sitemap, от собствения си `deploy.sh`), fivem, panev, linketto, fakturist и liftcon (от собствения си
+  `deploy.sh`, `LIFTCON_INDEXNOW=0` го спира). Само след минала здравна проба — без adblock, който подава след
   качването на файловете, дори когато публичната му проба още не минава. Никъде не е условие за
   успеха: провал на подаването е предупреждение, деплоят остава успешен. `tools/seo/indexnow.mjs`
   излиза с 0 само когато всички адреси от sitemap-а са подадени; непрочетен sitemap е провал, не
