@@ -53,7 +53,7 @@ function run(L, body) {
     'ZBD_SITE="https://zabobovdol.carbonstealth.eu"', 'ZBD_INDEXNOW=1', 'FORCE_SEED=0', 'deploy_failed=0',
     'log(){ :; }; ok(){ :; }; warn(){ echo "WARN $*" >> "' + L.log + '"; }',
     `health(){ echo "health $1 | $3" >> "${L.log}"; return ${L.healthRc}; }`,
-    ...["zbd_env_source", "zbd_has_data", "zbd_persist_env", "zbd_health_url", "zbd_rollback", "zbd_ping_indexnow", "deploy_zabobovdol"].map(fn),
+    ...["zbd_env_source", "zbd_has_data", "zbd_persist_env", "zbd_health_url", "zbd_running_dir", "zbd_rollback", "zbd_ping_indexnow", "deploy_zabobovdol"].map(fn),
     body,
   ].join("\n");
   execFileSync("bash", ["-c", cfg], { encoding: "utf8" });
@@ -156,5 +156,49 @@ test("провалена сонда → откат: предишният код 
     assert.ok(log.includes(`docker compose up -d --build @ ${join(prev, "zabobovdol")}`), log);
     assert.doesNotMatch(log, /indexnow/);
     assert.match(log, /failed=1/);
+  } finally { rmSync(L.base, { recursive: true, force: true }); }
+});
+
+// Живо, 23.10.2026: current сочеше release, в който zabobovdol не е разгръщан (деплой само на друг
+// продукт) — откатът търсеше кода там, нямаше .env и compose спираше на интерполацията.
+test("откат: предишният код е там, където РЕАЛНО върви app (етикет на compose), не в current", () => {
+  const L = layout({ healthRc: 1 });
+  try {
+    seedPrev(L, null); // current: release без zabobovdol/.env
+    mkdirSync(join(L.shared, "zabobovdol"), { recursive: true });
+    writeFileSync(join(L.shared, "zabobovdol", ".env"), "POSTGRES_PASSWORD=HOME\n");
+    const running = join(L.releases, "running", "few-few", "zabobovdol");
+    mkdirSync(running, { recursive: true });
+    writeFileSync(join(running, "docker-compose.yml"), "services: {}\n");
+    writeFileSync(join(running, ".env"), "POSTGRES_PASSWORD=RUN\n");
+    writeFileSync(join(L.bin, "docker"), `#!/bin/sh\n[ "$1" = compose ] && [ "$2" = version ] && exit 0\n[ "$1" = ps ] && { echo "${running}"; exit 0; }\necho "docker $* @ $(pwd)" >> "${L.log}"\n`, { mode: 0o755 });
+    const log = run(L, 'deploy_zabobovdol; echo "failed=$deploy_failed" >> "' + L.log + '"');
+    assert.ok(log.includes(`docker compose up -d --build @ ${running}`), log);
+    assert.equal(readFileSync(join(running, ".env"), "utf8"), "POSTGRES_PASSWORD=RUN\n", "собственият .env не се пипа");
+    assert.match(log, /failed=1/);
+  } finally { rmSync(L.base, { recursive: true, force: true }); }
+});
+
+test("откат: предишният код няма .env → копира се от стабилния дом (600), иначе compose не тръгва", () => {
+  const L = layout({ healthRc: 1 });
+  try {
+    const prev = seedPrev(L, null);
+    mkdirSync(join(L.shared, "zabobovdol"), { recursive: true });
+    writeFileSync(join(L.shared, "zabobovdol", ".env"), "POSTGRES_PASSWORD=HOME\n");
+    const log = run(L, "deploy_zabobovdol");
+    const env = join(prev, "zabobovdol", ".env");
+    assert.equal(readFileSync(env, "utf8"), "POSTGRES_PASSWORD=HOME\n");
+    assert.equal((statSync(env).mode & 0o777).toString(8), "600");
+    assert.ok(log.includes(`docker compose up -d --build @ ${join(prev, "zabobovdol")}`), log);
+  } finally { rmSync(L.base, { recursive: true, force: true }); }
+});
+
+test("откат: нито предишният код, нито домът имат .env → отказ без compose", () => {
+  const L = layout();
+  try {
+    const prev = seedPrev(L, null);
+    const log = run(L, `zbd_rollback "${join(prev, "zabobovdol")}" || echo "rc=$?" >> "${L.log}"`);
+    assert.match(log, /rc=1/);
+    assert.doesNotMatch(log, /docker compose up/);
   } finally { rmSync(L.base, { recursive: true, force: true }); }
 });
