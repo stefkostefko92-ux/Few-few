@@ -2,19 +2,19 @@
 
 import { esc, join, checkList } from "../lib/html.mjs";
 import { section, steps, faqList, ctaBand, ledger, serviceRows, picture, reportMock } from "../blocks.mjs";
-import { faqPage, howTo } from "../lib/schema.mjs";
+import { faqPage } from "../lib/schema.mjs";
 import { R } from "../routes.mjs";
 import { PROVINCE } from "../config.mjs";
 import { dataIt } from "./guida.mjs";
 
 export const HERO_ALT =
-  "Pianerottolo di un condominio milanese con le porte in acciaio dell'ascensore socchiuse, luce calda dalla cabina e indicatore di piano verde";
+  "Atrio elegante di un condominio milanese con porte d'ascensore in acciaio inox satinato leggermente aperte, luce calda dalla cabina, parete in travertino e pavimento in terrazzo";
 
 export const PROCESSO = [
   ["Richiesta", "Ci descrive l'impianto, la situazione e i documenti disponibili, per telefono o con il modulo."],
   ["Lettera d'incarico", "Oggetto, impianto, attività incluse ed escluse, tempi, trasferte e compenso, per iscritto prima di iniziare."],
   ["Esame e sopralluogo", "Documenti esaminati e, se previsto, sopralluogo coordinato con il manutentore, nei limiti di accessibilità e sicurezza."],
-  ["Relazione", "Relazione firmata con fotografie, anomalie osservate, punti da chiarire e raccomandazioni."],
+  ["Relazione", "Relazione scritta con il nome dell'autore, fotografie, anomalie osservate, punti da chiarire e raccomandazioni."],
 ];
 
 const DOMANDE = [
@@ -57,7 +57,7 @@ export const FAQ_HOME = [
   },
   {
     q: "Che cosa ricevo alla fine dell'incarico?",
-    a: "Una relazione firmata in PDF, con fotografie numerate, documenti esaminati, anomalie osservate, punti da chiarire e raccomandazioni.",
+    a: "Una relazione scritta in PDF, con il nome dell'autore, fotografie numerate, documenti esaminati, anomalie osservate, punti da chiarire e raccomandazioni.",
   },
   {
     q: "Come si richiede un sopralluogo?",
@@ -94,7 +94,7 @@ export function homePage(ctx) {
   const zone = `<div class="zone-home">
 <div class="zone-main">
 <p class="answer">Milano, la Città metropolitana, Monza e Brianza e tutte le province lombarde.</p>
-<ul class="zone-links"><li><a href="${R.milano}">Milano</a></li><li><a href="${R.provMilano}">Provincia di Milano</a></li><li><a href="${R.monza}">Monza e Brianza</a></li><li><a href="${R.lombardia}">Tutta la Lombardia</a></li></ul>
+<ul class="zone-links"><li><a href="${R.milano}">Milano</a></li><li><a href="${R.provMilano}">Provincia di Milano</a></li><li><a href="${R.lombardia}#monza-brianza">Monza e Brianza</a></li><li><a href="${R.lombardia}">Tutta la Lombardia</a></li></ul>
 </div>
 <ul class="province">${join(PROVINCE, (p) => `<li>${esc(p)}</li>`)}</ul>
 </div>`;
@@ -113,7 +113,7 @@ export function homePage(ctx) {
 <h1 id="hero-t">Consulenza tecnica per ascensori a Milano e in Lombardia</h1>
 <p class="lead">Sopralluoghi descrittivi, controllo qualità dei lavori, analisi dei preventivi e preparazione documentale alla verifica straordinaria. Per amministratori di condominio, proprietari e gestori immobiliari che vogliono decidere, e pagare, sapendo che cosa succede sull'impianto.</p>
 <div class="hero-actions"><a class="btn btn-primary" href="${R.contatti}">Richieda un sopralluogo</a><a class="btn btn-ghost" href="${R.servizi}">Scopra i servizi</a></div>
-${checkList(["Relazione scritta e firmata", "Fotografie con l'ubicazione di ogni osservazione", "Lettera d'incarico con attività incluse ed escluse"], "check hero-proof")}
+${checkList(["Relazione scritta, con autore e limiti dell'incarico", "Fotografie con l'ubicazione di ogni osservazione", "Lettera d'incarico con attività incluse ed escluse"], "check hero-proof")}
 </div>
 <div class="hero-media">${hero}<p class="floor" aria-hidden="true"><span class="floor-arrow">▲</span><span>Milano e Lombardia</span></p></div>
 </div>
@@ -142,16 +142,17 @@ ${checkList(["Relazione scritta e firmata", "Fotografie con l'ubicazione di ogni
 
   return {
     path: R.home,
-    title: "Consulenza tecnica ascensori Milano e Lombardia | LiftCon",
+    title: "Consulenza tecnica ascensori in condominio | LiftCon",
     ogTitle: "LiftCon, consulenza tecnica ascensori a Milano e in Lombardia",
     description:
       "LiftCon: consulenza tecnica per ascensori a Milano e in Lombardia. Sopralluoghi, controllo dei lavori, preventivi e relazioni per amministratori e privati.",
     keywords: [
       "consulenza tecnica ascensori",
-      "consulenza ascensori Milano",
+      "ascensore condominio",
+      "lavori ascensore condominio",
+      "manutenzione ascensore condominio",
+      "ammodernamento ascensore",
       "consulente ascensori Lombardia",
-      "controllo lavori ascensore",
-      "sopralluogo ascensore condominio",
       "LiftCon",
       "Carbon Stealth",
     ],
@@ -161,7 +162,7 @@ ${checkList(["Relazione scritta e firmata", "Fotografie con l'ubicazione di ogni
       ? `<link rel="preload" as="image" type="image/avif" imagesrcset="${avifSet}" imagesizes="(min-width: 1100px) 52vw, 100vw" fetchpriority="high">`
       : "",
     body,
-    schema: (page) => [faqPage(page, FAQ_HOME), howTo(page, "Come funziona un incarico LiftCon", PROCESSO)],
+    schema: (page) => [faqPage(page, FAQ_HOME)],
     priority: 1.0,
     changefreq: "weekly",
   };

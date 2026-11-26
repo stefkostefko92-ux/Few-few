@@ -43,7 +43,11 @@ test("всяка страница: lang, един H1, заглавие ≤60, о
     assert.ok(title.length > 10 && title.length <= 60, `${p.path}: заглавие ${title.length} знака — „${title}“`);
     const desc = decode(meta(p.html, "description") ?? "");
     assert.ok(desc.length >= 70 && desc.length <= 160, `${p.path}: описание ${desc.length} знака`);
-    if (p.path === "/404.html") continue;
+    if (noindex(p)) {
+      // noindex + canonical е противоречив сигнал (404 се сервира за всеки липсващ адрес).
+      assert.doesNotMatch(p.html, /rel="canonical"|hreflang=/, `${p.path}: canonical/hreflang на noindex страница`);
+      continue;
+    }
     assert.ok(p.html.includes(`<link rel="canonical" href="${SITE.url}${p.path}">`), `${p.path}: canonical`);
     assert.ok(p.html.includes(`hreflang="it-IT"`) && p.html.includes(`hreflang="x-default"`), `${p.path}: hreflang`);
   }

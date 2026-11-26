@@ -7,8 +7,9 @@ import { faqPage, howTo, ID } from "../lib/schema.mjs";
 import { R, guida } from "../routes.mjs";
 import { G_PERIODICA, G_STRAORDINARIA, G_MANUTENZIONE, G_LIBRETTO } from "../content/guide-a.mjs";
 import { G_PREVENTIVI, G_ESERCIZIO, G_FINELAVORI, G_SPESE } from "../content/guide-b.mjs";
+import { G_AMMODERNAMENTO } from "../content/guide-c.mjs";
 
-export const GUIDE = [G_PERIODICA, G_STRAORDINARIA, G_MANUTENZIONE, G_PREVENTIVI, G_FINELAVORI, G_LIBRETTO, G_ESERCIZIO, G_SPESE].map((g) => ({
+export const GUIDE = [G_PERIODICA, G_MANUTENZIONE, G_AMMODERNAMENTO, G_SPESE, G_STRAORDINARIA, G_PREVENTIVI, G_LIBRETTO, G_ESERCIZIO, G_FINELAVORI].map((g) => ({
   ...g,
   path: guida(g.slug),
   published: g.published ?? SITE.updated,
@@ -19,6 +20,28 @@ const MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "lug
 export function dataIt(iso) {
   const [y, m, d] = iso.split("-").map(Number);
   return `${d} ${MESI[m - 1]} ${y}`;
+}
+
+// Ръководства, свързани по тема (вътрешни връзки guide → guide с описателен анкор).
+const COLLEGATE = {
+  "verifica-periodica-ascensore": ["verifica-straordinaria-ascensore", "libretto-ascensore-targa-cabina", "manutenzione-ascensore-obblighi"],
+  "verifica-straordinaria-ascensore": ["verifica-periodica-ascensore", "ammodernamento-ascensore-condominio", "fine-lavori-ascensore-cosa-controllare"],
+  "manutenzione-ascensore-obblighi": ["verifica-periodica-ascensore", "confrontare-preventivi-ascensore", "libretto-ascensore-targa-cabina"],
+  "ammodernamento-ascensore-condominio": ["confrontare-preventivi-ascensore", "spese-ascensore-condominio-ripartizione", "fine-lavori-ascensore-cosa-controllare"],
+  "spese-ascensore-condominio-ripartizione": ["ammodernamento-ascensore-condominio", "confrontare-preventivi-ascensore", "manutenzione-ascensore-obblighi"],
+  "confrontare-preventivi-ascensore": ["ammodernamento-ascensore-condominio", "fine-lavori-ascensore-cosa-controllare", "spese-ascensore-condominio-ripartizione"],
+  "libretto-ascensore-targa-cabina": ["messa-in-esercizio-matricola-ascensore", "verifica-periodica-ascensore", "manutenzione-ascensore-obblighi"],
+  "messa-in-esercizio-matricola-ascensore": ["libretto-ascensore-targa-cabina", "verifica-straordinaria-ascensore", "ammodernamento-ascensore-condominio"],
+  "fine-lavori-ascensore-cosa-controllare": ["ammodernamento-ascensore-condominio", "verifica-straordinaria-ascensore", "confrontare-preventivi-ascensore"],
+};
+
+function guideCollegate(g) {
+  const list = (COLLEGATE[g.slug] ?? []).map((s) => GUIDE.find((x) => x.slug === s)).filter(Boolean);
+  if (!list.length) return "";
+  return `<section class="art-sec" id="collegate" aria-labelledby="collegate-t"><h2 id="collegate-t">Guide collegate</h2><ul>${join(
+    list,
+    (x) => `<li><a href="${x.path}">${esc(x.h1)}</a></li>`,
+  )}</ul></section>`;
 }
 
 function words(g) {
@@ -53,7 +76,7 @@ export function guidaPage(g, ctx) {
     pageHead({ h1: g.h1, lead: g.lead, kicker: meta }),
     `<div class="wrap article-grid"><article class="article">${sezioni}${passi}${
       g.faq ? `<section class="art-sec" id="domande" aria-labelledby="domande-t"><h2 id="domande-t">Domande frequenti</h2>${faqList(g.faq)}</section>` : ""
-    }${fonti}${author}</article><div class="article-side">${toc}</div></div>`,
+    }${guideCollegate(g)}${fonti}${author}</article><div class="article-side">${toc}</div></div>`,
     related(g.correlati.map((k) => ctx.byKey[k]), "Servizi utili"),
     ctaBand(),
   ].join("\n");
@@ -110,7 +133,7 @@ export function guideHub() {
     path: R.guide,
     title: "Guide su ascensori e condominio | LiftCon",
     description: "Guide pratiche su verifiche, manutenzione, libretto, preventivi e spese dell'ascensore in condominio, con i riferimenti al DPR 162/1999 e al Codice civile.",
-    keywords: ["guide ascensore condominio", "verifica ascensore", "manutenzione ascensore", "DPR 162/1999", "spese ascensore condominio", "Carbon Stealth"],
+    keywords: ["ascensore condominio", "verifica periodica ascensore", "manutenzione ascensore condominio", "libretto ascensore", "spese ascensore condominio", "Carbon Stealth"],
     breadcrumbs: [{ name: "Guide", path: R.guide }],
     pageType: "CollectionPage",
     body: [

@@ -77,7 +77,8 @@
   if (form) {
     const status = form.querySelector("[data-status]");
     const t = form.querySelector("[data-t]");
-    if (t) t.value = String(Date.now());
+    // Изминалото време от зареждането (не часовникът на устройството, който може да избързва).
+    let started = performance.now();
     const wanted = new URLSearchParams(location.search).get("servizio");
     const sel = form.querySelector("#f-servizio");
     if (wanted && sel && [...sel.options].some((o) => o.value === wanted)) sel.value = wanted;
@@ -97,6 +98,7 @@
         invalid[0].focus();
         return;
       }
+      if (t) t.value = String(Math.round(performance.now() - started));
       const btn = form.querySelector("button[type=submit]");
       btn.disabled = true;
       say("Invio in corso…", "");
@@ -109,7 +111,7 @@
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.ok) {
           form.reset();
-          if (t) t.value = String(Date.now());
+          started = performance.now();
           say("Richiesta inviata. Le risponderemo all'indirizzo email indicato.", "ok");
         } else if (res.status === 429) {
           say("Troppe richieste in poco tempo. Riprovi tra qualche minuto o ci chiami.", "err");

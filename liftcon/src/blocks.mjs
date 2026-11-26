@@ -36,6 +36,16 @@ ${aside}
 </header>`;
 }
 
+/** Карта до заглавието: кратко резюме + действие (страници без собствен „Che cosa riceve“). */
+export function quickAside(title, items) {
+  return `<aside class="facts" aria-label="${esc(title)}">
+<p class="facts-head">${esc(title)}</p>
+${checkList(items)}
+<a class="btn btn-primary" href="${R.contatti}">Richieda un sopralluogo</a>
+<a class="facts-phone" href="${CONTACT.phoneHref}">Oppure chiami il ${esc(CONTACT.phone)}</a>
+</aside>`;
+}
+
 export function section(id, title, inner, { cls = "", intro = "" } = {}) {
   return `<section class="block ${cls}" id="${id}" aria-labelledby="${id}-t">
 <div class="wrap">
@@ -127,7 +137,7 @@ export function reportMock(ctx) {
     widths: [600, 900, 1200],
     w: 600,
     h: 450,
-    alt: "Pulsantiera di piano in acciaio accanto alle porte dell'ascensore, fotografata durante un sopralluogo",
+    alt: "Primo piano della pulsantiera di piano in acciaio inox accanto allo stipite della porta, con due pulsanti rotondi e anello luminoso verde su quello superiore",
     sizes: "(min-width: 1100px) 260px, 60vw",
     cls: "report-photo",
   });
@@ -145,7 +155,7 @@ export function reportMock(ctx) {
 <div class="report-top"><img src="/assets/brand/logo-header.webp" width="103" height="24" alt="" loading="lazy" decoding="async"><span>Relazione descrittiva di sopralluogo</span></div>
 <ol class="report-toc">${join(rows, (r) => `<li><span>${esc(r)}</span><i aria-hidden="true"></i></li>`)}</ol>
 <div class="report-fig">${photo}<span class="report-cap">Foto 1: ubicazione indicata nel testo</span></div>
-<div class="report-sign"><span>Firma dell'autore</span><i aria-hidden="true"></i></div>
+<div class="report-sign"><span>Autore</span><i aria-hidden="true"></i></div>
 </div>
 <figcaption>Ogni relazione segue la stessa struttura: chi la legge sa sempre su che cosa si basa.</figcaption>
 </figure>`;

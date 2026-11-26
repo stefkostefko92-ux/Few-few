@@ -8,17 +8,10 @@ export const SUPPORTO = {
   gruppo: "supporto",
   nome: "Supporto tecnico al committente",
   menu: "Riunioni, assemblee, registro delle criticità e archivio tecnico.",
-  title: "Supporto tecnico ascensori per condomini | LiftCon",
+  title: "Supporto tecnico ascensore per condomini | LiftCon",
   description:
     "Supporto tecnico al committente per l'ascensore: incontri con il manutentore, assemblee condominiali, registro delle criticità e archivio documentale.",
-  keywords: [
-    "supporto tecnico ascensore condominio",
-    "assistenza amministratore ascensore",
-    "registro criticità ascensore",
-    "documentazione tecnica ascensore",
-    "consulente ascensori Milano",
-    "Carbon Stealth",
-  ],
+  keywords: ["amministratore condominio ascensore", "assemblea condominio ascensore", "manutenzione straordinaria ascensore condominio", "lavori straordinari ascensore condominio", "fermo ascensore condominiale", "Carbon Stealth"],
   h1: "Supporto tecnico al committente e in assemblea",
   lead:
     "Le decisioni sull'ascensore si prendono tra amministratore, condomini, manutentore e imprese. Le seguiamo al fianco del committente: prepariamo gli incontri, verbalizziamo i punti discussi e teniamo in ordine segnalazioni, documenti e questioni aperte.",
@@ -71,14 +64,7 @@ export const VERIFICA = {
   title: "Preparazione verifica straordinaria ascensore | LiftCon",
   description:
     "Preparazione documentale alla verifica straordinaria dell'ascensore: documenti, prescrizioni dei verbali, evidenze dei lavori e punti da chiarire.",
-  keywords: [
-    "verifica straordinaria ascensore",
-    "preparazione verifica ascensore",
-    "prescrizioni verbale ascensore",
-    "DPR 162/1999 verifica straordinaria",
-    "documenti ascensore condominio",
-    "Carbon Stealth",
-  ],
+  keywords: ["verifica straordinaria ascensore", "preparazione verifica straordinaria ascensore", "verbale verifica periodica ascensore", "prescrizioni verbale ascensore", "fermo ascensore condominiale", "Carbon Stealth"],
   h1: "Preparazione documentale alla verifica straordinaria",
   lead:
     "Prima della verifica straordinaria ordiniamo i documenti dell'impianto, controlliamo che le prescrizioni dei verbali precedenti abbiano una risposta documentata e prepariamo i punti da chiarire con il manutentore e con l'organismo incaricato. La verifica resta di competenza dei soggetti previsti dal DPR 162/1999.",
@@ -134,18 +120,11 @@ export const RELAZIONI = {
   path: R.relazioni,
   gruppo: "documenti",
   nome: "Relazioni e report fotografici",
-  menu: "Relazioni firmate: che cosa è stato visto, documentato e chiarito.",
+  menu: "Relazioni scritte: che cosa è stato visto, documentato e chiarito.",
   title: "Relazioni tecniche e report ascensore | LiftCon",
   description:
     "Relazioni di sopralluogo, report fotografici, verbali di riunione e rapporti di controllo per ascensori in condominio, a Milano e in Lombardia.",
-  keywords: [
-    "relazione tecnica ascensore",
-    "report fotografico ascensore",
-    "verbale riunione manutentore ascensore",
-    "rapporto controllo lavori ascensore",
-    "consulenza ascensori Lombardia",
-    "Carbon Stealth",
-  ],
+  keywords: ["relazione tecnica ascensore", "report fotografico ascensore", "ricostruzione libretto ascensore", "documenti ascensore condominio", "esame documentale ascensore", "Carbon Stealth"],
   h1: "Relazioni tecniche e report fotografici",
   lead:
     "Ogni incarico si chiude con un documento scritto: che cosa è stato esaminato, che cosa si è osservato, quali documenti sono arrivati e quali mancano, quali punti restano da chiarire. È il documento che l'amministratore allega agli atti e porta in assemblea.",
@@ -172,9 +151,10 @@ export const RELAZIONI = {
     ["Osservazioni", "Fotografie, ubicazione e descrizione, separando osservato, dichiarato e documentato."],
     ["Conclusioni", "Anomalie, punti da chiarire e raccomandazioni, con la firma dell'autore."],
   ],
-  consegne: ["Documento in PDF firmato dall'autore", "Fotografie numerate e richiamate nel testo", "Elenco dei documenti ricevuti e di quelli mancanti"],
+  consegne: ["Documento in PDF con nome dell'autore", "Fotografie numerate e richiamate nel testo", "Elenco dei documenti ricevuti e di quelli mancanti"],
   limiti: [
-    "La relazione firmata identifica l'autore e documenta le attività effettivamente svolte.",
+    "La relazione identifica l'autore e documenta le attività effettivamente svolte.",
+    "LiftCon non è un organismo notificato né un organismo di ispezione: la relazione non è un verbale di verifica.",
     "Non diventa per questo una certificazione di conformità, un collaudo o una verifica ufficiale.",
   ],
   faq: [
@@ -188,7 +168,7 @@ export const RELAZIONI = {
     },
     {
       q: "In che formato ricevo la relazione?",
-      a: "In PDF firmato, con le fotografie numerate e richiamate nel testo. Formato e tempi di consegna sono indicati nella lettera d'incarico.",
+      a: "In PDF, con il nome dell'autore, le fotografie numerate e richiamate nel testo. Formato e tempi di consegna sono indicati nella lettera d'incarico.",
     },
   ],
   correlati: ["sopralluogo", "controllo", "verifica"],

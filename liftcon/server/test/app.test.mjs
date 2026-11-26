@@ -3,7 +3,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import pino from "pino";
 import { createApp } from "../dist/app.js";
-import { fixedWindowLimiter } from "../dist/rate-limit.js";
+import { fixedWindowLimiter, clientKey } from "../dist/rate-limit.js";
+import { riga } from "../dist/richiesta.js";
 import { loadConfig } from "../dist/config.js";
 
 const ORIGIN = "https://liftcom.it";
@@ -36,7 +37,7 @@ const valida = (over = {}) => ({
   messaggio: "Ammodernamento concluso, vorremmo un controllo prima del saldo.",
   privacy: "si",
   sito_web: "",
-  t: String(NOW - 60_000),
+  t: "45000",
   ...over,
 });
 
@@ -119,7 +120,7 @@ test("попълнен капан (sito_web) → „успех“ за бота,
 test("изпратено под 3 s след зареждане → не тръгва", async () => {
   const s = await setup();
   try {
-    const res = await postJson(s.base, valida({ t: String(NOW - 500) }));
+    const res = await postJson(s.base, valida({ t: "500" }));
     assert.equal(res.status, 200);
     assert.equal(s.sent.length, 0);
   } finally {
@@ -181,12 +182,17 @@ test("управляващи символи в текста → 400", async () =
   }
 });
 
-test("темата на писмото е един ред (без CR/LF от потребителя)", async () => {
-  const s = await setup();
+test("темата на писмото е един ред: riga() маха CR/LF/TAB и реже до 120 знака", () => {
+  assert.equal(riga("Milano\r\nBcc: x@example.com"), "Milano Bcc: x@example.com");
+  assert.equal(riga("a".repeat(200)).length, 120);
+});
+
+test("зад Nginx лимитът е по X-Forwarded-For на клиента, не общ за всички", async () => {
+  const s = await setup({ limiter: fixedWindowLimiter(5, 60_000) });
   try {
-    await postJson(s.base, valida({ comune: "Milano\r\nBcc: x@example.com" }));
-    assert.equal(s.sent.length, 1);
-    assert.doesNotMatch(s.sent[0].subject, /[\r\n]/);
+    for (let i = 0; i < 5; i++) assert.equal((await postJson(s.base, valida(), { "x-forwarded-for": "198.51.100.1" })).status, 200);
+    assert.equal((await postJson(s.base, valida(), { "x-forwarded-for": "198.51.100.1" })).status, 429);
+    assert.equal((await postJson(s.base, valida(), { "x-forwarded-for": "198.51.100.2" })).status, 200);
   } finally {
     await s.close();
   }
@@ -213,4 +219,40 @@ test("лимитерът не расте безкрайно: при пълен �
 
 test("конфигурация без ключ за Brevo → грешка при старт", () => {
   assert.throws(() => loadConfig({ MAIL_FROM: "a@example.com", MAIL_TO: "b@example.com" }), /BREVO_API_KEY/);
+});
+
+test("изминалото време не зависи от часовника на клиента: 2 минути попълване → писмото тръгва", async () => {
+  const s = await setup();
+  try {
+    const res = await postJson(s.base, valida({ t: String(2 * 60_000) }));
+    assert.equal(res.status, 200);
+    assert.equal(s.sent.length, 1);
+  } finally {
+    await s.close();
+  }
+});
+
+test("нов ред в името или общината → 400 (не подправя редовете на писмото)", async () => {
+  const s = await setup();
+  try {
+    assert.equal((await postJson(s.base, valida({ nome: "Mario\nEmail: altro@example.com" }))).status, 400);
+    assert.equal((await postJson(s.base, valida({ comune: "Milano\r\nX" }))).status, 400);
+    assert.equal(s.sent.length, 0);
+  } finally {
+    await s.close();
+  }
+});
+
+test("ключ на лимита: IPv4 цял, IPv4-mapped като IPv4, IPv6 по /64", () => {
+  assert.equal(clientKey("203.0.113.7"), "203.0.113.7");
+  assert.equal(clientKey("::ffff:203.0.113.7"), "203.0.113.7");
+  assert.equal(clientKey("2001:db8:aa:bb:1:2:3:4"), "2001:0db8:00aa:00bb::/64");
+  assert.equal(clientKey("2001:db8:aa:bb::5"), "2001:0db8:00aa:00bb::/64");
+  assert.equal(clientKey("2001:db8::1"), "2001:0db8:0000:0000::/64");
+  assert.equal(clientKey(undefined), "sconosciuto");
+});
+
+test("ALLOWED_ORIGIN с наклонена черта накрая се нормализира до произхода", () => {
+  const cfg = loadConfig({ BREVO_API_KEY: "x".repeat(32), MAIL_FROM: "a@example.com", MAIL_TO: "b@example.com", ALLOWED_ORIGIN: "https://liftcom.it/" });
+  assert.equal(cfg.ALLOWED_ORIGIN, "https://liftcom.it");
 });

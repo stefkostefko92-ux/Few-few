@@ -2,7 +2,6 @@
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /contatti/grazie/
 
 # Assistenti e motori AI: i contenuti sono liberamente citabili con link alla fonte.
 User-agent: OAI-SearchBot

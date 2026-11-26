@@ -34,12 +34,11 @@ export function header({ path, servizi, gruppi, guide }) {
   )}</div><div class="mega-foot"><a class="mega-all" href="${R.servizi}">Tutti i servizi</a><p>Non eseguiamo verifiche ufficiali né certificazioni: <a href="${
     R.metodo
   }">ecco che cosa facciamo e che cosa no</a>.</p></div>`;
-  const perChi = panelLink(R.amministratori, "Amministratori di condominio", "Preventivi, lavori, assemblee e verifiche.", path) +
+  const perChi = panelLink(R.amministratori, "Amministratori di condominio", "Preventivi, lavori, assemblee e preparazione alle verifiche.", path) +
     panelLink(R.proprietari, "Proprietari e privati", "Un quadro chiaro prima di decidere e di pagare.", path);
   const zone = panelLink(R.milano, "Milano", "Tutti i nove Municipi.", path) +
     panelLink(R.provMilano, "Provincia di Milano", "Comuni della Città metropolitana.", path) +
-    panelLink(R.monza, "Monza e Brianza", "Monza e i comuni della provincia.", path) +
-    panelLink(R.lombardia, "Tutta la Lombardia", "Le dodici province della regione.", path);
+    panelLink(R.lombardia, "Tutta la Lombardia", "Le dodici province, Monza e Brianza compresa.", path);
   const risorse = join(guide.slice(0, 4), (g) => panelLink(g.path, g.menu, "", path)) +
     `<div class="panel-sep"></div>` +
     panelLink(R.guide, "Tutte le guide", "", path) +
@@ -105,10 +104,9 @@ ${col("Per chi e dove", [
     [R.proprietari, "Proprietari e privati"],
     [R.milano, "Milano"],
     [R.provMilano, "Provincia di Milano"],
-    [R.monza, "Monza e Brianza"],
     [R.lombardia, "Lombardia"],
   ])}
-${col("Risorse", [...guide.slice(0, 4).map((g) => [g.path, g.menu]), [R.guide, "Tutte le guide"], [R.glossario, "Glossario"], [R.faq, "Domande frequenti"]])}
+${col("Guide", [...guide.map((g) => [g.path, g.menu]), [R.glossario, "Glossario"], [R.faq, "Domande frequenti"]])}
 ${col("LiftCon", [
     [R.metodo, "Il metodo"],
     [R.chiSiamo, "Chi siamo"],

@@ -38,21 +38,21 @@ export function privacyPage() {
 <p>${titolare}. Contatto per la privacy: <a href="mailto:${CONTACT.email}">${esc(CONTACT.email)}</a>.</p>
 <h2>Quali dati trattiamo e perché</h2>
 <h3>Richieste di contatto</h3>
-<p>Se ci scrive con il modulo, per email o ci chiama, trattiamo i dati che ci fornisce (nome, email, telefono, ruolo, comune dell'impianto, testo del messaggio) per rispondere alla richiesta e preparare una proposta d'incarico. Base giuridica: misure precontrattuali adottate su sua richiesta (art. 6, par. 1, lett. b GDPR). Senza questi dati non possiamo rispondere.</p>
-<p>Il modulo non salva i dati in una banca dati del sito: il server li inoltra per email alla nostra casella e non ne conserva copia.</p>
+<p>Se ci scrive con il modulo, per email o ci chiama, trattiamo i dati che ci fornisce (nome, email, telefono, ruolo, comune dell'impianto, testo del messaggio) per rispondere alla richiesta e preparare una proposta d'incarico. Base giuridica: misure precontrattuali adottate su sua richiesta (art. 6, par. 1, lett. b GDPR). Se ci scrive per conto di un condominio, di un'azienda o di un altro cliente, trattiamo i suoi dati di contatto sulla base del nostro legittimo interesse a rispondere (art. 6, par. 1, lett. f GDPR). Senza questi dati non possiamo rispondere.</p>
+<p>Il server del sito non salva i dati in una banca dati: li inoltra tramite Brevo alla nostra casella di posta elettronica, dove la richiesta è conservata per i tempi indicati sotto.</p>
 <h3>Dati tecnici di navigazione</h3>
 <p>Il server registra nei propri log indirizzo IP, data e ora, pagina richiesta e tipo di browser, per garantire la sicurezza del sito e prevenire abusi. Base giuridica: legittimo interesse alla sicurezza del servizio (art. 6, par. 1, lett. f GDPR).</p>
 <h3>Mappa OpenStreetMap</h3>
-<p>Nella pagina Contatti la mappa si carica solo se lei preme «Mostri la mappa». In quel momento il suo browser si collega ai server di OpenStreetMap Foundation (Regno Unito, paese con decisione di adeguatezza della Commissione europea), che ricevono il suo indirizzo IP. Base giuridica: la sua scelta di caricare la mappa (art. 6, par. 1, lett. a GDPR).</p>
+<p>Nella pagina Contatti la mappa si carica solo se lei preme «Mostri la mappa». In quel momento il suo browser si collega ai server di OpenStreetMap Foundation (Regno Unito, paese con decisione di adeguatezza della Commissione europea), che ricevono il suo indirizzo IP. Base giuridica: la sua scelta di caricare la mappa (art. 6, par. 1, lett. a GDPR). Può revocare il consenso in qualsiasi momento: ricaricando la pagina la mappa non si carica più finché non preme di nuovo il pulsante; la revoca non incide sul caricamento già avvenuto.</p>
 <h2>Che cosa non facciamo</h2>
 <p>Questo sito non usa cookie, strumenti di analisi del traffico, pubblicità o profilazione, e non prende decisioni automatizzate sulle persone.</p>
 <h2>Per quanto tempo conserviamo i dati</h2>
-<ul><li>Richieste che non portano a un incarico: cancellate entro 6 mesi dall'ultimo contatto.</li><li>Richieste che portano a un incarico: per la durata del rapporto e per i tempi previsti dalla normativa fiscale e contabile.</li><li>Log del server: di norma 14 giorni, con cancellazione automatica.</li></ul>
+<ul><li>Richieste che non portano a un incarico: cancellate entro 6 mesi dall'ultimo contatto.</li><li>Richieste che portano a un incarico: per la durata del rapporto e poi per i tempi previsti dagli obblighi contabili e fiscali (art. 6, par. 1, lett. c GDPR).</li><li>Log del server: di norma 14 giorni, con cancellazione automatica.</li></ul>
 <h2>Chi tratta i dati per nostro conto</h2>
-<ul><li>netcup GmbH (Germania): hosting del sito e del server.</li><li>Sendinblue SAS, marchio Brevo (Francia): invio delle email generate dal modulo di contatto.</li></ul>
-<p>Sono responsabili del trattamento ai sensi dell'articolo 28 GDPR. I dati restano nell'Unione europea, salvo il caso della mappa descritto sopra.</p>
+<ul><li>netcup GmbH (Germania): hosting del sito e del server.</li><li>Sendinblue SAS, marchio Brevo (Francia): invio delle email generate dal modulo di contatto.</li><li>Il fornitore della nostra posta elettronica aziendale: conservazione delle email ricevute.</li></ul>
+<p>Sono responsabili del trattamento ai sensi dell'articolo 28 GDPR. Se un fornitore tratta dati fuori dall'Unione europea, il trasferimento avviene sulla base di una decisione di adeguatezza o di clausole contrattuali tipo (articoli 45 e 46 GDPR); su richiesta indichiamo quali.</p>
 <h2>I suoi diritti</h2>
-<p>Può chiedere accesso, rettifica, cancellazione, limitazione, portabilità dei dati e opporsi al trattamento basato sul legittimo interesse (articoli 15–22 GDPR), scrivendo a <a href="mailto:${CONTACT.email}">${esc(
+<p>Può chiedere accesso, rettifica, cancellazione, limitazione, portabilità dei dati e opporsi al trattamento basato sul legittimo interesse e revocare il consenso dato per la mappa (articoli 7 e 15–22 GDPR), scrivendo a <a href="mailto:${CONTACT.email}">${esc(
       CONTACT.email,
     )}</a>. Rispondiamo entro un mese.</p>
 <p>Ha diritto di proporre reclamo al Garante per la protezione dei dati personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">garanteprivacy.it</a>) o all'autorità di controllo bulgara, la Commissione per la protezione dei dati personali (<a href="https://www.cpdp.bg" target="_blank" rel="noopener">cpdp.bg</a>).</p>
@@ -98,13 +98,13 @@ export function noteLegaliPage() {
 <div><dt>Responsabile dei contenuti</dt><dd>${esc(COMPANY.responsabile)}</dd></div>
 </dl>
 <h2>Natura del servizio</h2>
-<p>LiftCon offre consulenza tecnica e reportistica: sopralluoghi descrittivi, controllo dei lavori, esame documentale, analisi dei preventivi e supporto al committente. Non esegue verifiche periodiche o straordinarie ai sensi del DPR 162/1999, non rilascia verbali ufficiali, certificazioni di conformità, dichiarazioni ai sensi del DM 37/2008, progetti o perizie giudiziarie.</p>
+<p>LiftCon offre consulenza tecnica e reportistica: sopralluoghi descrittivi, controllo dei lavori, esame documentale, analisi dei preventivi e supporto al committente. Non è un organismo notificato né un organismo di ispezione: non esegue verifiche periodiche o straordinarie ai sensi del DPR 162/1999, non rilascia verbali ufficiali, certificazioni di conformità, dichiarazioni ai sensi del DM 37/2008, progetti o perizie giudiziarie, e non dirige né collauda lavori.</p>
 <h2>Contenuti del sito</h2>
 <p>Le guide riassumono norme e regolamenti a scopo informativo e indicano la data dell'ultimo controllo; fanno fede i testi ufficiali pubblicati su Normattiva e in Gazzetta Ufficiale. I contenuti non costituiscono parere legale.</p>
-<h2>Foro competente</h2>
-<p>Per le controversie con clienti professionali è competente il foro di Kyustendil (Bulgaria). Se lei è un consumatore, resta competente il giudice del luogo in cui risiede (Reg. (UE) 1215/2012, art. 18; Codice del consumo, art. 66-bis).</p>
-<h2>Marchi e caratteri</h2>
-<p>Il marchio e il logo LiftCon appartengono al titolare del servizio. I caratteri tipografici Saira e IBM Plex Sans sono distribuiti con licenza SIL Open Font License 1.1.</p>`,
+<h2>Foro competente e legge applicabile</h2>
+<p>Foro competente e legge applicabile di ogni incarico sono indicati nella lettera d'incarico. Se lei è un consumatore (e, secondo la giurisprudenza italiana, può esserlo anche il condominio) può agire davanti al giudice del luogo in cui risiede o ha domicilio, e noi possiamo agire nei suoi confronti solo davanti a quel giudice (Reg. (UE) 1215/2012, artt. 17–18; Codice del consumo, artt. 33, comma 2, lett. u, e 66-bis). Restano salve le tutele inderogabili della legge italiana (Reg. (CE) 593/2008, art. 6).</p>
+<h2>Caratteri tipografici</h2>
+<p>I caratteri tipografici Saira e IBM Plex Sans sono distribuiti con licenza SIL Open Font License 1.1.</p>`,
     ["note legali LiftCon", "Carbon Stealth VCC", "dati societari LiftCon", "consulenza ascensori LiftCon", "partita IVA Carbon Stealth", "Carbon Stealth"],
   );
 }

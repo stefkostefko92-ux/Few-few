@@ -34,10 +34,10 @@ export function contattiPage(ctx) {
 <div class="field"><label for="f-comune">Comune dell'impianto</label><input id="f-comune" name="comune" type="text" autocomplete="address-level2" required maxlength="100"></div>
 </div>
 <div class="field"><label for="f-servizio">Servizio</label><select id="f-servizio" name="servizio" required>${opt(servizi, "Selezioni")}</select></div>
-<div class="field"><label for="f-msg">La situazione</label><textarea id="f-msg" name="messaggio" rows="6" required minlength="10" maxlength="3000" aria-describedby="f-msg-h"></textarea><p class="hint" id="f-msg-h">Tipo di impianto, che cosa è successo, quali documenti ha (libretto, verbali, preventivi). Non inserisca dati di altre persone.</p></div>
+<div class="field"><label for="f-msg">La situazione</label><textarea id="f-msg" name="messaggio" rows="6" required minlength="10" maxlength="3000" aria-describedby="f-msg-h"></textarea><p class="hint" id="f-msg-h">Tipo di impianto, che cosa è successo, quali documenti ha (libretto, verbali, preventivi). Non inserisca dati di altre persone né informazioni sulla salute.</p></div>
 <div class="hp" aria-hidden="true"><label for="f-web">Lasciare vuoto</label><input id="f-web" name="sito_web" type="text" tabindex="-1" autocomplete="off"></div>
 <input type="hidden" name="t" value="" data-t>
-<div class="field field-check"><input id="f-privacy" name="privacy" type="checkbox" value="si" required><label for="f-privacy">Ho letto l'<a href="${R.privacy}">informativa privacy</a>: i dati servono solo a rispondere a questa richiesta.</label></div>
+<div class="field field-check"><input id="f-privacy" name="privacy" type="checkbox" value="si" required><label for="f-privacy">Ho letto l'<a href="${R.privacy}">informativa privacy</a> sul trattamento dei dati di questa richiesta.</label></div>
 <button class="btn btn-primary" type="submit">Invii la richiesta</button>
 <p class="form-status" role="status" aria-live="polite" data-status></p>
 </form>`;
@@ -69,7 +69,7 @@ export function contattiPage(ctx) {
     path: R.contatti,
     title: "Contatti e richiesta di sopralluogo | LiftCon",
     description: `Richieda un sopralluogo o una consulenza tecnica sull'ascensore a Milano e in Lombardia: telefono ${CONTACT.phone}, email o modulo online.`,
-    keywords: ["contatti consulenza ascensori", "richiesta sopralluogo ascensore", "consulente ascensori Milano telefono", "preventivo consulenza ascensore", "LiftCon contatti", "Carbon Stealth"],
+    keywords: ["richiesta sopralluogo ascensore", "consulente ascensori Milano", "consulenza tecnica ascensori contatti", "preventivo consulenza ascensore", "LiftCon", "Carbon Stealth"],
     breadcrumbs: [{ name: "Contatti", path: R.contatti }],
     pageType: "ContactPage",
     body: [

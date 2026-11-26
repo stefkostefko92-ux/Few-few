@@ -4,7 +4,7 @@ import express, { type Request, type Response, type NextFunction } from "express
 import type { Logger } from "pino";
 import { Richiesta, sembraBot, riga, ETICHETTE_SERVIZIO, ETICHETTE_RUOLO, type RichiestaValida } from "./richiesta.js";
 import type { Mailer } from "./mailer.js";
-import { fixedWindowLimiter, type Limiter } from "./rate-limit.js";
+import { fixedWindowLimiter, clientKey, type Limiter } from "./rate-limit.js";
 
 export interface AppDeps {
   mailer: Mailer;
@@ -54,8 +54,10 @@ export function createApp(deps: AppDeps): express.Express {
   const phone = deps.phone ?? "+39 379 296 9699";
   const app = express();
   app.disable("x-powered-by");
-  // Пред приложението стои само Nginx на същата машина.
-  app.set("trust proxy", "loopback");
+  // Пред приложението стои само Nginx на същата машина. В Docker (bridge) връзката идва от шлюза на
+  // мрежата (172.x/10.x), затова се вярва и на uniquelocal; Nginx ПРЕЗАПИСВА X-Forwarded-For с $remote_addr,
+  // така че клиентът не може да подправи адреса си.
+  app.set("trust proxy", "loopback, uniquelocal");
 
   app.get("/health", (_req, res) => {
     res.set("cache-control", "no-store").json({ status: "ok" });
@@ -70,7 +72,7 @@ export function createApp(deps: AppDeps): express.Express {
         res.status(403).json({ ok: false, message: "Origine non consentita." });
         return;
       }
-      if (!limiter.hit(req.ip ?? "sconosciuto", now())) {
+      if (!limiter.hit(clientKey(req.ip), now())) {
         deps.logger.warn({ event: "richiesta", esito: "limite" });
         if (vuoleJson(req)) res.status(429).json({ ok: false, message: "Troppe richieste: riprovi più tardi." });
         else paginaErrore(res, 429, `Troppe richieste in poco tempo. Riprovi più tardi o chiami il ${phone}.`);
@@ -91,7 +93,7 @@ export function createApp(deps: AppDeps): express.Express {
       }
       const r = parsed.data;
       const ok = () => (vuoleJson(req) ? res.json({ ok: true }) : res.redirect(303, "/contatti/grazie/"));
-      if (sembraBot(r, now())) {
+      if (sembraBot(r)) {
         // На бота отговаряме „успех“, за да не учи кое го издава; писмо не тръгва.
         deps.logger.info({ event: "richiesta", esito: "scartata_bot" });
         ok();
@@ -122,7 +124,7 @@ export function createApp(deps: AppDeps): express.Express {
   app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
     const status = typeof err === "object" && err !== null && "status" in err && typeof err.status === "number" ? err.status : 500;
     deps.logger.warn({ event: "errore_http", status });
-    const message = status === 413 ? "Messaggio troppo lungo." : status < 500 ? MSG_DATI : "Errore interno.";
+    const message = status === 413 ? "Richiesta troppo grande: accorci il messaggio." : status < 500 ? MSG_DATI : "Errore interno.";
     if (vuoleJson(req)) res.status(status).json({ ok: false, message });
     else paginaErrore(res, status, message);
   });

@@ -6,7 +6,10 @@ const Env = z.object({
   HOST: z.string().default("127.0.0.1"),
   PORT: z.coerce.number().int().min(1).max(65535).default(4370),
   // Произходът на сайта: заявки с чужд Origin се отказват (формата е само на нашия домейн).
-  ALLOWED_ORIGIN: z.url().default("https://liftcom.it"),
+  ALLOWED_ORIGIN: z
+    .url()
+    .default("https://liftcom.it")
+    .transform((u) => new URL(u).origin),
   BREVO_API_KEY: z.string().min(20),
   MAIL_FROM: z.email(),
   MAIL_FROM_NAME: z.string().min(1).max(60).default("LiftCon"),

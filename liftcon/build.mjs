@@ -18,7 +18,7 @@ import { servizioPage } from "./src/pages/servizio.mjs";
 import { GUIDE, guidaPage, guideHub } from "./src/pages/guida.mjs";
 import { homePage } from "./src/pages/home.mjs";
 import { amministratoriPage, proprietariPage } from "./src/pages/pubblico.mjs";
-import { milanoPage, provinciaMilanoPage, monzaPage, lombardiaPage } from "./src/pages/zone.mjs";
+import { milanoPage, provinciaMilanoPage, lombardiaPage } from "./src/pages/zone.mjs";
 import { serviziHub, metodoPage, chiSiamoPage } from "./src/pages/info.mjs";
 import { contattiPage, grazieePage } from "./src/pages/contatti.mjs";
 import { faqHub, glossarioPage } from "./src/pages/risorse.mjs";
@@ -92,7 +92,6 @@ function main() {
     lombardiaPage(ctx),
     milanoPage(ctx),
     provinciaMilanoPage(ctx),
-    monzaPage(ctx),
     guideHub(ctx),
     ...GUIDE.map((g) => guidaPage(g, ctx)),
     glossarioPage(ctx),

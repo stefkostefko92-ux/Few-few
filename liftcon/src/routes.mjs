@@ -15,7 +15,6 @@ export const R = Object.freeze({
   lombardia: "/consulenza-ascensori-lombardia/",
   milano: "/consulenza-ascensori-milano/",
   provMilano: "/consulenza-ascensori-provincia-milano/",
-  monza: "/consulenza-ascensori-monza-brianza/",
   guide: "/guide/",
   glossario: "/glossario/",
   faq: "/domande-frequenti/",

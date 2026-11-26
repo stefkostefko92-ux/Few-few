@@ -10,7 +10,7 @@ export const BY_KEY = Object.fromEntries(SERVIZI.map((s) => [s.key, s]));
 export const GRUPPI = [
   {
     key: "consulenza",
-    nome: "Consulenza tecnica indipendente",
+    nome: "Consulenza tecnica per il committente",
     testo: "Sopralluoghi descrittivi e controllo dei lavori per sapere com'è l'impianto e che cosa è stato fatto.",
   },
   {
@@ -36,7 +36,7 @@ export const FACCIAMO = [
   "Controllo qualità dei lavori rispetto a preventivo, ordine o capitolato",
   "Confronto dei preventivi e capitolati descrittivi per i fornitori",
   "Esame documentale e preparazione alla verifica straordinaria",
-  "Relazioni firmate e report fotografici",
+  "Relazioni scritte e report fotografici",
   "Supporto al committente negli incontri e in assemblea",
 ];
 
@@ -46,6 +46,7 @@ export const NON_FACCIAMO = [
   "Certificazioni di sicurezza o di conformità dell'ascensore",
   "Progettazione, calcoli o asseverazioni riservati a professionisti abilitati",
   "Perizie giudiziarie",
+  "Direzione dei lavori o collaudi",
   "Dichiarazioni di conformità ai sensi del DM 37/2008",
   "Prove o manovre sull'impianto: le esegue il manutentore",
 ];

@@ -13,8 +13,11 @@ const testo = (min: number, max: number) =>
     // Без управляващи символи (освен нов ред и табулация в съобщението).
     .refine((s) => !/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(s), "caratteri non validi");
 
+/** Едноредов текст (име, община): нов ред би подправил редовете в тялото на писмото. */
+const riga1 = (min: number, max: number) => testo(min, max).refine((s) => !/[\r\n\t]/.test(s), "una sola riga");
+
 export const Richiesta = z.object({
-  nome: testo(2, 100),
+  nome: riga1(2, 100),
   email: z.string().trim().max(200).pipe(z.email()),
   telefono: z
     .string()
@@ -24,7 +27,7 @@ export const Richiesta = z.object({
     .optional()
     .default(""),
   ruolo: z.enum(RUOLI),
-  comune: testo(2, 100),
+  comune: riga1(2, 100),
   servizio: z.enum(SERVIZI),
   messaggio: testo(10, 3000),
   privacy: z.union([z.literal("si"), z.literal(true), z.literal("true"), z.literal("on")]),
@@ -51,13 +54,17 @@ export const ETICHETTE_RUOLO: Record<(typeof RUOLI)[number], string> = {
   altro: "Altro",
 };
 
-/** Капан за ботове: попълнено скрито поле или формуляр, изпратен под 3 s след зареждане. */
-export function sembraBot(r: RichiestaValida, now: number): boolean {
+/**
+ * Капан за ботове: попълнено скрито поле или формуляр, изпратен под 3 s след зареждане.
+ * `t` е ИЗМИНАЛОТО време в ms, мерено от браузъра (performance.now) — не абсолютен час: часовникът на
+ * клиента може да избързва и така истинска заявка би се изхвърлила тихо. Без JS полето е празно → не се гледа.
+ */
+export function sembraBot(r: RichiestaValida): boolean {
   if (r.sito_web.trim() !== "") return true;
   if (r.t === undefined || r.t === "") return false;
   const t = Number(r.t);
-  if (!Number.isFinite(t)) return true;
-  return now - t < 3000;
+  if (!Number.isFinite(t) || t < 0) return true;
+  return t < 3000;
 }
 
 /** Една линия, без CR/LF — за темата на писмото. */

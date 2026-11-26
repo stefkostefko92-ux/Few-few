@@ -1,4 +1,4 @@
-// Услуги от т. 1 на каталога („Consulenza tecnica indipendente“): оглед и контрол на работите.
+// Услуги от т. 1 на каталога (там: „Consulenza tecnica indipendente“; на сайта — „per il committente“, виж правния одит): оглед и контрол на работите.
 // Всяко твърдение остава в рамките на т. 1–4; ограниченията са от т. 8 (не сме verifica ufficiale).
 
 import { R } from "../routes.mjs";
@@ -9,17 +9,10 @@ export const SOPRALLUOGO = {
   gruppo: "consulenza",
   nome: "Sopralluogo tecnico",
   menu: "Condizioni osservabili dell'impianto, descritte e fotografate.",
-  title: "Sopralluogo tecnico ascensore a Milano | LiftCon",
+  title: "Sopralluogo tecnico ascensore in condominio | LiftCon",
   description:
     "Sopralluogo tecnico descrittivo dell'ascensore a Milano e in Lombardia: cabina, porte, accessi, vano e locali tecnici, con relazione e report fotografico.",
-  keywords: [
-    "sopralluogo tecnico ascensore",
-    "sopralluogo ascensore Milano",
-    "stato ascensore condominio",
-    "relazione di sopralluogo ascensore",
-    "consulenza ascensori Lombardia",
-    "Carbon Stealth",
-  ],
+  keywords: ["sopralluogo tecnico ascensore", "stato ascensore condominio", "relazione tecnica ascensore condominio", "ascensore condominio", "consulenza tecnica ascensori", "Carbon Stealth"],
   h1: "Sopralluogo tecnico dell'ascensore",
   lead:
     "Il sopralluogo tecnico descrittivo registra in modo ordinato le condizioni osservabili dell'impianto — cabina, porte, accessi, vano e locali tecnici — e le consegna in una relazione con fotografie. Serve a sapere com'è davvero l'ascensore prima di decidere un preventivo, un intervento o un confronto con il manutentore.",
@@ -72,24 +65,17 @@ export const CONTROLLO = {
   gruppo: "consulenza",
   nome: "Controllo qualità dei lavori",
   menu: "Lavori richiesti, dichiarati e osservati: il confronto punto per punto.",
-  title: "Controllo qualità lavori ascensore | LiftCon",
+  title: "Controllo lavori ascensore in condominio | LiftCon",
   description:
     "Controllo qualità dei lavori sull'ascensore: sostituzioni, avanzamento, fine lavori e correzioni, confrontati con preventivo, ordine e documenti.",
-  keywords: [
-    "controllo qualità lavori ascensore",
-    "controllo fine lavori ascensore",
-    "verifica sostituzione componenti ascensore",
-    "ammodernamento ascensore condominio",
-    "consulenza tecnica ascensori Milano",
-    "Carbon Stealth",
-  ],
+  keywords: ["controllo lavori ascensore", "lavori ascensore condominio", "ammodernamento ascensore condominio", "sostituzione ascensore condominio", "fine lavori ascensore", "Carbon Stealth"],
   h1: "Controllo qualità dei lavori sull'ascensore",
   lead:
     "Quando il condominio paga una riparazione, una sostituzione o un ammodernamento, deve poter sapere che cosa è stato fatto. Il controllo qualità confronta ciò che era stato richiesto e preventivato con ciò che è stato dichiarato, documentato e osservato sull'impianto.",
   perChi: [
     "Amministratori che devono autorizzare il saldo di un intervento approvato in assemblea.",
     "Committenti che seguono un ammodernamento lungo, con più fasi e più fornitori.",
-    "Proprietari che vogliono un riscontro indipendente sui componenti dichiarati come sostituiti.",
+    "Proprietari che vogliono un riscontro scritto, dalla parte del committente, sui componenti dichiarati come sostituiti.",
   ],
   comprende: [
     ["Controllo qualità delle lavorazioni", "Riscontro delle lavorazioni visibili rispetto a preventivo, ordine o capitolato."],
@@ -139,17 +125,10 @@ export const PREVENTIVI = {
   gruppo: "supporto",
   nome: "Analisi dei preventivi",
   menu: "Offerte rese confrontabili, voce per voce, prima dell'assemblea.",
-  title: "Analisi preventivi ascensore condominio | LiftCon",
+  title: "Analisi preventivi ascensore condominiale | LiftCon",
   description:
     "Analisi e confronto dei preventivi per manutenzione, riparazione e ammodernamento dell'ascensore, con richieste di offerta e capitolati descrittivi.",
-  keywords: [
-    "confronto preventivi ascensore",
-    "preventivo ammodernamento ascensore",
-    "capitolato ascensore condominio",
-    "costi manutenzione ascensore",
-    "consulenza ascensori amministratori",
-    "Carbon Stealth",
-  ],
+  keywords: ["preventivo ascensore condominio", "preventivi ascensore condominiale", "costo ammodernamento ascensore", "costo sostituzione ascensore condominio", "contratto manutenzione ascensore", "Carbon Stealth"],
   h1: "Analisi e confronto dei preventivi per l'ascensore",
   lead:
     "Tre preventivi per lo stesso intervento raramente descrivono lo stesso lavoro. Li rendiamo confrontabili — stesse voci, stesse quantità, stesse esclusioni — così l'assemblea decide su basi omogenee e l'amministratore può spiegare la scelta.",

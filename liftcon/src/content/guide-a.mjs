@@ -12,7 +12,7 @@ export const G_PERIODICA = {
   title: "Verifica periodica dell'ascensore: ogni 2 anni | LiftCon",
   description:
     "Ogni quanto va fatta la verifica periodica dell'ascensore, chi deve chiederla, chi può eseguirla e che cosa succede dopo il verbale (DPR 162/1999, art. 13).",
-  keywords: ["verifica periodica ascensore", "verifica biennale ascensore", "DPR 162/1999 art. 13", "ATS Milano ascensori", "organismo notificato ascensore", "Carbon Stealth"],
+  keywords: ["verifica periodica ascensore", "verifica periodica ascensore ogni quanti anni", "verifica biennale ascensore", "verbale verifica periodica ascensore", "verifica periodica ascensore DPR 162/99", "Carbon Stealth"],
   h1: "Verifica periodica dell'ascensore: ogni quanto e chi la esegue",
   lead:
     "L'ascensore va sottoposto a verifica periodica ogni due anni. Lo prevede l'articolo 13 del DPR 162/1999, che mette l'obbligo a carico del proprietario dello stabile o del suo legale rappresentante; la verifica la eseguono ingegneri dei soggetti abilitati indicati dallo stesso articolo.",
@@ -65,7 +65,7 @@ export const G_STRAORDINARIA = {
   title: "Verifica straordinaria ascensore: quando serve | LiftCon",
   description:
     "I tre casi in cui serve la verifica straordinaria dell'ascensore (art. 14 DPR 162/1999): esito negativo, incidente, modifiche costruttive; chi la fa e chi paga.",
-  keywords: ["verifica straordinaria ascensore", "modifiche costruttive ascensore", "fermo impianto ascensore", "DPR 162/1999 art. 14", "verbale negativo ascensore", "Carbon Stealth"],
+  keywords: ["verifica straordinaria ascensore", "costo verifica straordinaria ascensore", "modifiche costruttive ascensore", "fermo ascensore condominiale", "verbale negativo ascensore", "Carbon Stealth"],
   h1: "Verifica straordinaria dell'ascensore: quando serve e come prepararsi",
   lead:
     "La verifica straordinaria dell'ascensore serve in tre casi previsti dall'articolo 14 del DPR 162/1999: dopo una verifica periodica con esito negativo, dopo un incidente di notevole importanza e dopo una modifica costruttiva dell'impianto. Le spese sono a carico del proprietario dello stabile.",
@@ -112,10 +112,10 @@ export const G_STRAORDINARIA = {
 export const G_MANUTENZIONE = {
   slug: "manutenzione-ascensore-obblighi",
   menu: "Manutenzione e obblighi",
-  title: "Manutenzione ascensore: obblighi e controlli | LiftCon",
+  title: "Manutenzione ascensore in condominio: obblighi | LiftCon",
   description:
     "A chi affidare la manutenzione dell'ascensore, che cosa controlla il manutentore ogni sei mesi e quali obblighi ha il proprietario (DPR 162/1999, art. 15).",
-  keywords: ["manutenzione ascensore obblighi", "manutentore ascensore", "controlli semestrali ascensore", "contratto manutenzione ascensore", "DPR 162/1999 art. 15", "Carbon Stealth"],
+  keywords: ["manutenzione ascensore condominio", "manutenzione ascensore ogni quanto", "obbligo manutenzione ascensore condominio", "manutenzione ascensore a chi spetta", "contratto manutenzione ascensore", "Carbon Stealth"],
   h1: "Manutenzione dell'ascensore: obblighi del proprietario e del manutentore",
   lead:
     "Il proprietario deve affidare la manutenzione dell'ascensore a una persona con certificato di abilitazione o a una ditta specializzata (art. 15 del DPR 162/1999). Almeno ogni sei mesi il manutentore controlla i dispositivi di sicurezza, le funi e le catene, l'isolamento e la messa a terra, e annota gli esiti sul libretto.",
@@ -161,11 +161,11 @@ export const G_MANUTENZIONE = {
 export const G_LIBRETTO = {
   slug: "libretto-ascensore-targa-cabina",
   menu: "Libretto e targa in cabina",
-  title: "Libretto dell'ascensore e targa in cabina | LiftCon",
+  title: "Libretto ascensore: contenuto, targa e smarrimento | LiftCon",
   description:
     "Che cosa contiene il libretto dell'ascensore, quando va reso disponibile e quali dati deve riportare la targa esposta in cabina (DPR 162/1999, art. 16).",
-  keywords: ["libretto ascensore", "targa cabina ascensore", "matricola ascensore", "documenti ascensore condominio", "DPR 162/1999 art. 16", "Carbon Stealth"],
-  h1: "Il libretto dell'ascensore e la targa in cabina",
+  keywords: ["libretto ascensore", "libretto ascensore smarrito", "ricostruzione libretto ascensore", "duplicato libretto ascensore", "targa cabina ascensore", "Carbon Stealth"],
+  h1: "Il libretto dell'ascensore: contenuto, targa in cabina e smarrimento",
   lead:
     "Il libretto dell'impianto raccoglie i verbali delle verifiche periodiche e straordinarie, gli esiti delle visite di manutenzione, la copia della dichiarazione di conformità e le comunicazioni con il Comune, compresa quella della matricola (art. 16 del DPR 162/1999). In cabina devono essere esposte le avvertenze d'uso e una targa con i dati essenziali dell'impianto.",
   sezioni: [
@@ -182,8 +182,11 @@ export const G_LIBRETTO = {
       html: `<p class="answer">La targa indica chi esegue le verifiche periodiche, l'installatore o il fabbricante con il numero di fabbricazione, il numero di matricola, la portata in chilogrammi e, se del caso, il numero massimo di persone.</p><p>Accanto alla targa vanno esposte le avvertenze per l'uso dell'ascensore.</p>`,
     },
     {
-      h2: "Il libretto è incompleto: che cosa fare?",
-      html: `<p class="answer">Ricostruire il quadro documento per documento, chiedendo le copie a chi le ha emesse.</p><ul><li>Verbali: al soggetto che ha eseguito le verifiche.</li><li>Esiti di manutenzione e rapportini: al manutentore.</li><li>Comunicazioni e matricola: all'ufficio comunale competente.</li></ul><p>Un ${A(R.relazioni, "esame documentale")} restituisce l'elenco dei documenti ricevuti e di quelli mancanti, utile prima di una verifica o di un cambio di manutentore.</p>`,
+      h2: "Libretto dell'ascensore smarrito o incompleto: come ricostruirlo?",
+      html: `<p class="answer">Si ricostruisce documento per documento, chiedendo le copie a chi le ha emesse.</p><ul><li>Verbali: al soggetto che ha eseguito le verifiche.</li><li>Esiti di manutenzione e rapportini: al manutentore.</li><li>Comunicazioni e matricola: all'ufficio comunale competente.</li></ul><p>Conviene farlo prima della verifica periodica, perché il libretto va messo a disposizione del verificatore. Un ${A(
+        R.relazioni,
+        "esame documentale",
+      )} restituisce l'elenco dei documenti ricevuti e di quelli mancanti, utile anche prima di un cambio di manutentore.</p>`,
     },
   ],
   faq: [

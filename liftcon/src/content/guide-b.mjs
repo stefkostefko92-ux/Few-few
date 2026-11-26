@@ -11,7 +11,7 @@ export const G_PREVENTIVI = {
   title: "Come confrontare i preventivi per l'ascensore | LiftCon",
   description:
     "Come rendere confrontabili i preventivi per manutenzione, riparazione o ammodernamento dell'ascensore: oggetto, voci, esclusioni, tempi, garanzie e pagamenti.",
-  keywords: ["confrontare preventivi ascensore", "preventivo ascensore condominio", "ammodernamento ascensore costi", "capitolato ascensore", "assemblea condominio ascensore", "Carbon Stealth"],
+  keywords: ["preventivi ascensore condominiale", "preventivo ascensore condominio", "confrontare preventivi ascensore", "costo sostituzione ascensore condominio", "capitolato ascensore", "Carbon Stealth"],
   h1: "Come confrontare i preventivi per l'ascensore del condominio",
   lead:
     "Per confrontare i preventivi dell'ascensore bisogna prima renderli omogenei: stesso oggetto, stesse voci, stesse esclusioni. Solo dopo ha senso guardare il prezzo. Questi sono i passaggi, nell'ordine in cui conviene farli.",
@@ -38,7 +38,7 @@ export const G_PREVENTIVI = {
     },
     {
       h2: "Che cosa decide l'assemblea?",
-      html: `<p class="answer">Le opere di manutenzione straordinaria sono approvate dall'assemblea, che deve costituire un fondo speciale di importo pari a quello dei lavori (art. 1135 del Codice civile).</p><p>L'amministratore può ordinare lavori straordinari solo se urgenti, riferendone alla prima assemblea. Un ${A(
+      html: `<p class="answer">Le opere di manutenzione straordinaria sono approvate dall'assemblea, che deve costituire un fondo speciale di importo pari a quello dei lavori, o ai singoli pagamenti se il contratto prevede stati di avanzamento (art. 1135 del Codice civile).</p><p>L'amministratore può ordinare lavori straordinari solo se urgenti, riferendone alla prima assemblea. Un ${A(
         R.preventivi,
         "prospetto comparativo",
       )} chiaro rende la discussione più rapida e la decisione più facile da motivare.</p>`,
@@ -65,10 +65,10 @@ export const G_PREVENTIVI = {
 export const G_ESERCIZIO = {
   slug: "messa-in-esercizio-matricola-ascensore",
   menu: "Messa in esercizio e matricola",
-  title: "Messa in esercizio dell'ascensore e matricola | LiftCon",
+  title: "Messa in esercizio ascensore e matricola | LiftCon",
   description:
     "Entro quanto comunicare al Comune la messa in esercizio dell'ascensore, che cosa contiene la comunicazione e quando arriva la matricola (DPR 162/1999, art. 12).",
-  keywords: ["messa in esercizio ascensore", "matricola ascensore Comune", "comunicazione Comune ascensore", "DPR 162/1999 art. 12", "nuovo ascensore condominio", "Carbon Stealth"],
+  keywords: ["messa in esercizio ascensore", "matricola ascensore", "matricola ascensore Comune", "comunicazione messa in esercizio ascensore", "richiesta matricola ascensore", "Carbon Stealth"],
   h1: "Messa in esercizio dell'ascensore e numero di matricola",
   lead:
     "Per mettere in esercizio un ascensore, il proprietario o il suo legale rappresentante deve comunicarlo al Comune entro 60 giorni dalla data della dichiarazione di conformità; entro 30 giorni il Comune assegna il numero di matricola (art. 12 del DPR 162/1999, come modificato dal DPR 23/2017).",
@@ -111,7 +111,7 @@ export const G_FINELAVORI = {
   title: "Fine lavori ascensore: cosa controllare | LiftCon",
   description:
     "Che cosa controllare a fine lavori sull'ascensore prima del saldo: lavori ordinati e dichiarati, componenti sostituiti, documenti consegnati e anomalie.",
-  keywords: ["fine lavori ascensore", "saldo lavori ascensore", "controllo lavori ascensore", "dichiarazione di conformità ascensore", "documenti fine lavori ascensore", "Carbon Stealth"],
+  keywords: ["fine lavori ascensore", "lavori ascensore condominio", "dichiarazione di conformità ascensore", "saldo lavori ascensore", "controllo lavori ascensore", "Carbon Stealth"],
   h1: "Fine lavori sull'ascensore: che cosa controllare prima del saldo",
   lead:
     "Prima di pagare il saldo di un intervento sull'ascensore conviene confrontare tre cose: ciò che era stato ordinato, ciò che l'impresa dichiara di aver fatto e ciò che si osserva sull'impianto, insieme ai documenti consegnati.",
@@ -164,12 +164,12 @@ export const G_FINELAVORI = {
 
 export const G_SPESE = {
   slug: "spese-ascensore-condominio-ripartizione",
-  menu: "Spese dell'ascensore in condominio",
-  title: "Spese ascensore in condominio: come si dividono | LiftCon",
+  menu: "Ripartizione delle spese",
+  title: "Ripartizione spese ascensore in condominio | LiftCon",
   description:
     "Come si ripartiscono le spese di manutenzione e sostituzione dell'ascensore in condominio (art. 1124 c.c.) e chi decide i lavori straordinari (art. 1135 c.c.).",
-  keywords: ["spese ascensore condominio", "ripartizione spese ascensore", "art. 1124 codice civile", "millesimi ascensore", "lavori straordinari ascensore assemblea", "Carbon Stealth"],
-  h1: "Spese dell'ascensore in condominio: come si ripartiscono",
+  keywords: ["ripartizione spese ascensore", "spese ascensore condominio", "ripartizione spese ascensore codice civile", "ripartizione spese ascensore per piano", "sostituzione ascensore condominio chi paga", "Carbon Stealth"],
+  h1: "Ripartizione delle spese dell'ascensore in condominio",
   lead:
     "Le spese di manutenzione e sostituzione dell'ascensore sono a carico dei proprietari delle unità a cui l'impianto serve e si dividono per metà in base al valore delle unità, cioè i millesimi, e per metà in proporzione all'altezza di ciascun piano dal suolo (art. 1124 del Codice civile).",
   sezioni: [
@@ -183,7 +183,7 @@ export const G_SPESE = {
     },
     {
       h2: "Chi decide i lavori straordinari sull'ascensore?",
-      html: `<p class="answer">L'assemblea, che deve anche costituire un fondo speciale pari all'importo dei lavori (art. 1135, comma 1, n. 4).</p><p>L'amministratore può ordinare lavori di manutenzione straordinaria solo se urgenti, e deve riferirne alla prima assemblea. Spetta a lui anche compiere gli atti conservativi sulle parti comuni (art. 1130).</p>`,
+      html: `<p class="answer">L'assemblea, che deve anche costituire un fondo speciale pari all'importo dei lavori (art. 1135, comma 1, n. 4); se il contratto prevede pagamenti per stati di avanzamento, il fondo può essere costituito in relazione ai singoli pagamenti.</p><p>L'amministratore può ordinare lavori di manutenzione straordinaria solo se urgenti, e deve riferirne alla prima assemblea. Spetta a lui anche compiere gli atti conservativi sulle parti comuni (art. 1130).</p>`,
     },
     {
       h2: "Dove serve il supporto di un tecnico?",
@@ -200,7 +200,7 @@ export const G_SPESE = {
     },
     {
       q: "L'amministratore può ordinare lavori sull'ascensore senza l'assemblea?",
-      a: "Solo lavori straordinari urgenti, riferendone alla prima assemblea (art. 1135 del Codice civile).",
+      a: "Sì per la manutenzione ordinaria e gli atti conservativi, che rientrano nelle sue attribuzioni (art. 1130). I lavori di manutenzione straordinaria li decide l'assemblea; l'amministratore può ordinarli da solo solo se urgenti, riferendone nella prima assemblea (art. 1135 del Codice civile).",
     },
     {
       q: "Questa guida vale come parere legale?",

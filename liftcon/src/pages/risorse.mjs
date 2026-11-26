@@ -22,7 +22,7 @@ export function faqHub(ctx) {
     title: "Domande frequenti sugli ascensori | LiftCon",
     description:
       "Risposte brevi su consulenza tecnica, sopralluoghi, controllo dei lavori, preventivi, verifiche periodiche e straordinarie degli ascensori in condominio.",
-    keywords: ["domande frequenti ascensore", "FAQ ascensore condominio", "verifica ascensore domande", "consulenza ascensori FAQ", "manutenzione ascensore domande", "Carbon Stealth"],
+    keywords: ["ascensore condominio domande", "verifica periodica ascensore ogni quanti anni", "manutenzione ascensore ogni quanto", "ascensore condominio chi paga", "consulenza tecnica ascensori", "Carbon Stealth"],
     breadcrumbs: [{ name: "Domande frequenti", path: R.faq }],
     body: [
       pageHead({
@@ -42,7 +42,7 @@ export function faqHub(ctx) {
 }
 
 const TERMINI = [
-  ["Amministratore di condominio", "Rappresenta il condominio e, tra l'altro, compie gli atti conservativi sulle parti comuni, compreso l'ascensore (art. 1130 del Codice civile)."],
+  ["Amministratore di condominio", "Rappresenta il condominio (art. 1131 del Codice civile) e, tra l'altro, compie gli atti conservativi sulle parti comuni, compreso l'ascensore (art. 1130)."],
   ["Capitolato descrittivo", "Documento che descrive in modo uniforme il lavoro richiesto ai fornitori, così le offerte arrivano confrontabili. Non è un progetto."],
   ["Certificato di abilitazione", "Titolo rilasciato dal Prefetto dopo una prova teorico-pratica, richiesto per la manutenzione degli ascensori (art. 15 del DPR 162/1999)."],
   ["Dichiarazione di conformità", "Documento rilasciato dall'impresa installatrice abilitata a fine lavori, nei casi previsti dal DM 37/2008 (art. 7)."],
@@ -75,7 +75,7 @@ export function glossarioPage() {
     path: R.glossario,
     title: "Glossario degli ascensori in condominio | LiftCon",
     description: "Glossario dei termini tecnici e normativi sugli ascensori: libretto, matricola, verifica periodica e straordinaria, modifiche costruttive, manutentore.",
-    keywords: ["glossario ascensori", "libretto ascensore significato", "matricola ascensore", "modifiche costruttive ascensore", "verifica straordinaria significato", "Carbon Stealth"],
+    keywords: ["glossario ascensori", "matricola ascensore", "libretto ascensore", "modifiche costruttive ascensore", "verifica straordinaria ascensore", "Carbon Stealth"],
     breadcrumbs: [{ name: "Glossario", path: R.glossario }],
     body: [
       pageHead({
@@ -96,6 +96,7 @@ export function glossarioPage() {
         inLanguage: "it-IT",
         hasDefinedTerm: TERMINI.map(([t, d]) => ({
           "@type": "DefinedTerm",
+          inDefinedTermSet: { "@id": `${abs(SITE.url, page.path)}#glossario` },
           name: t,
           description: d,
           url: `${abs(SITE.url, page.path)}#${slug(t)}`,

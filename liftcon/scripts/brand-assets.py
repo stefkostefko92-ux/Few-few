@@ -9,7 +9,7 @@ JSON-LD. Бялото става прозрачно с „color to alpha“, з�
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "brand" / "liftcon-logo-originale.png"
@@ -18,7 +18,10 @@ OUT = ROOT / "public" / "assets" / "brand"
 # Кутиите са измерени върху оригинала 1774×887 (профил по редове/колони на небелите пиксели).
 EMBLEM = (66, 227, 520, 674)  # емблемата с асансьора и документа
 WORDMARK = (566, 276, 1726, 516)  # „LIFTCON“
-FULL = (66, 227, 1726, 674)  # цялото лого с подзаглавието и девиза
+FULL = (66, 227, 1726, 674)  # цялото лого с подзаглавието
+# Редът с девиза „VERIFICA | CONTROLLO | CONFORMITÀ“ се маха от версиите за сайта: т. 8 на каталога и правният
+# одит (Codice del consumo art. 21) — „verifica/conformità“ се чете като официална проверка. Оригиналът е непокътнат.
+TAGLINE = (566, 596, 1726, 652)
 
 
 def white_to_alpha(img: Image.Image) -> Image.Image:
@@ -54,6 +57,7 @@ def save_pair(img: Image.Image, name: str) -> None:
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     src = Image.open(SRC).convert("RGB")
+    ImageDraw.Draw(src).rectangle(TAGLINE, fill=(255, 255, 255))
     emblem = white_to_alpha(src.crop(EMBLEM))
     word = white_to_alpha(src.crop(WORDMARK))
     full = white_to_alpha(src.crop(FULL))

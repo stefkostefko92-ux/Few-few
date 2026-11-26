@@ -17,7 +17,7 @@ export function amministratoriPage(ctx) {
   const faq = [
     {
       q: "Perché un amministratore dovrebbe affidarsi a un consulente tecnico per l'ascensore?",
-      a: "Per avere un riferimento scritto e indipendente su preventivi, lavori e documenti, da portare in assemblea e da conservare agli atti, senza dover entrare da solo nel merito tecnico.",
+      a: "Per avere un riferimento scritto, dalla parte del committente, su preventivi, lavori e documenti, da portare in assemblea e da conservare agli atti, senza dover entrare da solo nel merito tecnico.",
     },
     {
       q: "Chi ha l'obbligo di far eseguire la verifica periodica in condominio?",
@@ -76,8 +76,8 @@ export function amministratoriPage(ctx) {
     path: R.amministratori,
     title: "Consulenza ascensori per amministratori | LiftCon",
     description:
-      "Consulenza tecnica ascensori per amministratori di condominio a Milano e in Lombardia: preventivi, controllo lavori, assemblee, documenti e verifiche.",
-    keywords: ["consulenza ascensori amministratori di condominio", "amministratore condominio ascensore", "assemblea condominio ascensore", "consulente ascensori Milano", "lavori ascensore condominio", "Carbon Stealth"],
+      "Consulenza tecnica ascensori per amministratori di condominio in Lombardia: preventivi, controllo lavori, assemblee e preparazione alle verifiche.",
+    keywords: ["amministratore condominio ascensore", "ascensore condominio", "lavori straordinari ascensore condominio", "manutenzione ascensore condominio", "consulente tecnico amministratore condominio", "Carbon Stealth"],
     breadcrumbs: [{ name: "Amministratori di condominio", path: R.amministratori }],
     body,
     schema: (page) => [faqPage(page, faq)],
@@ -127,7 +127,7 @@ export function proprietariPage(ctx) {
           "Ci descrive l'impianto e la situazione, per telefono o con il modulo di contatto.",
           "Le inviamo una lettera d'incarico con oggetto, attività incluse ed escluse, tempi e compenso.",
           "Svolgiamo l'esame dei documenti e, se previsto, il sopralluogo coordinato con il manutentore.",
-          "Riceve una relazione scritta e firmata, con fotografie e punti da chiarire.",
+          "Riceve una relazione scritta, con il nome dell'autore, fotografie e punti da chiarire.",
         ],
         "plain",
       ),
@@ -142,7 +142,7 @@ export function proprietariPage(ctx) {
     title: "Consulenza ascensori per proprietari e privati | LiftCon",
     description:
       "Consulenza tecnica ascensori per proprietari e privati in Lombardia: sopralluogo, esame dei documenti, preventivi e controllo dei lavori prima di pagare.",
-    keywords: ["consulenza ascensore privati", "proprietario ascensore obblighi", "acquisto casa ascensore controlli", "preventivo ascensore privato", "consulente ascensori Lombardia", "Carbon Stealth"],
+    keywords: ["ascensore privato", "manutenzione ascensore privato", "obblighi proprietario ascensore", "acquisto casa con ascensore", "preventivo ascensore privato", "Carbon Stealth"],
     breadcrumbs: [{ name: "Proprietari e privati", path: R.proprietari }],
     body,
     schema: (page) => [faqPage(page, faq)],

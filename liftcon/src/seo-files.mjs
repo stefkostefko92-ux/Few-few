@@ -24,8 +24,9 @@ const AI_BOTS = [
 ];
 
 const IMAGES = {
-  [R.home]: [["/img/render/hero-1600.jpg", "Ascensore in un condominio milanese, consulenza tecnica LiftCon"]],
-  [R.chiSiamo]: [["/img/render/dettaglio-1200.jpg", "Pulsantiera di piano dell'ascensore"]],
+  [R.home]: [["/img/render/hero-1600.jpg", "Atrio di un condominio milanese con ascensore in acciaio inox"]],
+  [R.chiSiamo]: [["/img/render/dettaglio-1200.jpg", "Pulsantiera di piano dell'ascensore in acciaio inox"]],
+  [R.relazioni]: [["/img/render/dettaglio-1200.jpg", "Pulsantiera di piano dell'ascensore in acciaio inox"]],
 };
 
 export function sitemapXml(pages) {
@@ -55,7 +56,6 @@ export function robotsTxt() {
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /contatti/grazie/
 
 # Assistenti e motori AI: i contenuti sono liberamente citabili con link alla fonte.
 ${AI_BOTS.map((b) => `User-agent: ${b}\nAllow: /\nDisallow: /api/`).join("\n\n")}
@@ -85,8 +85,7 @@ ${line("Proprietari e privati", R.proprietari, "edifici di proprietà, acquisto 
 ## Zone servite
 ${line("Milano", R.milano, "tutti i nove Municipi")}
 ${line("Provincia di Milano", R.provMilano, "comuni della Città metropolitana di Milano")}
-${line("Monza e Brianza", R.monza, "Monza e i comuni della provincia")}
-${line("Lombardia", R.lombardia, "le dodici province lombarde")}
+${line("Lombardia", R.lombardia, "le dodici province lombarde, con Monza e Brianza")}
 
 ## Guide (con riferimenti al testo vigente su Normattiva)
 ${guide.map((g) => line(g.h1, g.path, g.description)).join("\n")}

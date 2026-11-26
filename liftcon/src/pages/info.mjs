@@ -2,7 +2,6 @@
 
 import { esc, join, checkList, abs } from "../lib/html.mjs";
 import { pageHead, section, steps, ctaBand, ledger, serviceRows, picture } from "../blocks.mjs";
-import { howTo } from "../lib/schema.mjs";
 import { R } from "../routes.mjs";
 import { SITE, COMPANY } from "../config.mjs";
 import { PROCESSO } from "./home.mjs";
@@ -13,13 +12,13 @@ export function serviziHub(ctx) {
     title: "Servizi di consulenza tecnica ascensori | LiftCon",
     description:
       "Sopralluogo tecnico, controllo qualità dei lavori, analisi dei preventivi, supporto al committente, preparazione alla verifica straordinaria e relazioni.",
-    keywords: ["servizi consulenza ascensori", "consulenza tecnica ascensori", "controllo lavori ascensore", "analisi preventivi ascensore", "verifica straordinaria ascensore preparazione", "Carbon Stealth"],
+    keywords: ["consulenza tecnica ascensori", "servizi ascensore condominio", "controllo lavori ascensore", "preventivi ascensore condominiale", "verifica straordinaria ascensore", "Carbon Stealth"],
     breadcrumbs: [{ name: "Servizi", path: R.servizi }],
     pageType: "CollectionPage",
     body: [
       pageHead({
         h1: "Servizi di consulenza tecnica per ascensori",
-        lead: "Sei servizi, organizzati in quattro aree: conoscere l'impianto, controllare i lavori, decidere sui preventivi e arrivare preparati alla verifica. Ognuno si chiude con un documento scritto e firmato.",
+        lead: "Sei servizi, organizzati in quattro aree: conoscere l'impianto, controllare i lavori, decidere sui preventivi e arrivare preparati alla verifica. Ognuno si chiude con un documento scritto.",
       }),
       `<div class="wrap svc-hub">${serviceRows(ctx.servizi, ctx.gruppi)}</div>`,
       ledger(),
@@ -44,6 +43,7 @@ const PRINCIPI = [
   ["Scriviamo anche ciò che non abbiamo potuto esaminare", "Le parti non accessibili in sicurezza o i documenti mancanti sono elencati in modo esplicito."],
   ["Nessuna prova o manovra sull'impianto", "Le operazioni sull'ascensore restano al manutentore. Il sopralluogo si coordina con lui."],
   ["Il committente decide", "Mettiamo in fila elementi e differenze; le decisioni restano all'assemblea, all'amministratore o al proprietario."],
+  ["Nessun ruolo ufficiale", "LiftCon non è un organismo notificato né un organismo di ispezione, non esegue installazione o manutenzione di ascensori e non dirige né collauda i lavori."],
 ];
 
 const LETTERA = [
@@ -64,7 +64,7 @@ export function metodoPage() {
       h1: "Il metodo LiftCon",
       lead: "Un consulente tecnico è utile solo se è chiaro che cosa ha fatto e su che cosa si basa. Per questo ogni incarico ha una lettera scritta, un perimetro dichiarato e una relazione che separa ciò che è stato osservato da ciò che è stato dichiarato.",
     }),
-    section("principi", "Cinque principi di lavoro", `<dl class="scope">${join(PRINCIPI, ([t, d]) => `<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`)}</dl>`),
+    section("principi", "I principi di lavoro", `<dl class="scope">${join(PRINCIPI, ([t, d]) => `<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`)}</dl>`),
     section("processo", "Le fasi di ogni incarico", steps(PROCESSO), { cls: "tint" }),
     section(
       "lettera",
@@ -91,10 +91,10 @@ export function metodoPage() {
     title: "Il metodo e i limiti dell'incarico | LiftCon",
     description:
       "Come lavora LiftCon: lettera d'incarico scritta, relazioni che separano osservato e dichiarato, nessuna prova sull'impianto, nessuna verifica ufficiale.",
-    keywords: ["metodo consulenza ascensori", "lettera d'incarico consulente", "relazione tecnica ascensore", "limiti consulenza ascensore", "consulenza ascensori trasparente", "Carbon Stealth"],
+    keywords: ["consulente tecnico ascensori", "lettera d'incarico consulente tecnico", "relazione tecnica ascensore", "consulenza tecnica condominio", "metodo consulenza tecnica ascensori", "Carbon Stealth"],
     breadcrumbs: [{ name: "Il metodo", path: R.metodo }],
     body,
-    schema: (page) => [howTo(page, "Le fasi di un incarico LiftCon", PROCESSO)],
+    schema: () => [],
     priority: 0.8,
     changefreq: "yearly",
   };
@@ -106,7 +106,7 @@ export function chiSiamoPage(ctx) {
     widths: [600, 900, 1200],
     w: 900,
     h: 675,
-    alt: "Pulsantiera di piano in acciaio con pulsanti circolari accanto al portale dell'ascensore",
+    alt: "Primo piano della pulsantiera di piano in acciaio inox accanto allo stipite della porta, con due pulsanti rotondi e anello luminoso verde su quello superiore",
     sizes: "(min-width: 1100px) 40vw, 100vw",
     cls: "about-pic",
   });
@@ -148,7 +148,7 @@ export function chiSiamoPage(ctx) {
     path: R.chiSiamo,
     title: "Chi siamo | LiftCon, consulenza tecnica ascensori",
     description: `LiftCon è il servizio di consulenza tecnica per ascensori di ${COMPANY.legalName} per amministratori di condominio e privati a Milano e in Lombardia.`,
-    keywords: ["LiftCon chi siamo", "consulenza tecnica ascensori", "Carbon Stealth VCC", "consulente ascensori Milano", "Rilievi Impianti", "Carbon Stealth"],
+    keywords: ["LiftCon", "consulenza tecnica ascensori", "Carbon Stealth VCC", "consulente ascensori Lombardia", "Rilievi Impianti", "Carbon Stealth"],
     breadcrumbs: [{ name: "Chi siamo", path: R.chiSiamo }],
     pageType: "AboutPage",
     body,

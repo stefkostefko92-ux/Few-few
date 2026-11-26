@@ -1,12 +1,11 @@
 // JSON-LD: обща графа (организация, сайт, страница, трохи) + специфичните възли на всяка страница.
 // Адресът е реалното седалище на Carbon Stealth VCC; зоната на обслужване е Ломбардия (areaServed).
 
-import { SITE, COMPANY, CONTACT, GEO, PROVINCE } from "../config.mjs";
+import { SITE, COMPANY, CONTACT, PROVINCE } from "../config.mjs";
 import { abs, plain } from "./html.mjs";
 import { R } from "../routes.mjs";
 
 export const ID = {
-  org: `${SITE.url}/#organization`,
   biz: `${SITE.url}/#liftcon`,
   site: `${SITE.url}/#website`,
   parent: `${COMPANY.url}/#organization`,
@@ -27,11 +26,6 @@ export function areaServed() {
     { "@type": "AdministrativeArea", name: "Città metropolitana di Milano" },
     ...PROVINCE.filter((p) => p !== "Milano").map((p) => ({ "@type": "AdministrativeArea", name: `Provincia di ${p}` })),
     { "@type": "State", name: "Lombardia" },
-    {
-      "@type": "GeoCircle",
-      geoMidpoint: { "@type": "GeoCoordinates", latitude: GEO.lat, longitude: GEO.lng },
-      geoRadius: "150000",
-    },
   ];
 }
 
@@ -92,7 +86,7 @@ export function baseGraph(servizi) {
         name: "Servizi di consulenza tecnica per ascensori",
         itemListElement: servizi.map((s) => ({
           "@type": "Offer",
-          itemOffered: { "@id": `${abs(SITE.url, s.path)}#service` },
+          itemOffered: { "@type": "Service", "@id": `${abs(SITE.url, s.path)}#service`, name: s.h1, url: abs(SITE.url, s.path) },
         })),
       },
     },
@@ -109,6 +103,7 @@ export function baseGraph(servizi) {
       "@id": ID.site,
       url: `${SITE.url}/`,
       name: SITE.name,
+      alternateName: ["LiftCon Consulenza tecnica ascensori", SITE.url.replace(/^https:\/\//, "")],
       description: "Consulenza tecnica ascensori a Milano e in Lombardia per amministratori di condominio e privati.",
       inLanguage: "it-IT",
       publisher: { "@id": ID.biz },
@@ -191,7 +186,7 @@ export function serviceNode(s) {
     description: s.description,
     url,
     provider: { "@id": ID.biz },
-    areaServed: areaServed(),
+    areaServed: { "@type": "State", name: "Lombardia" },
     audience: [
       { "@type": "BusinessAudience", audienceType: "Amministratori di condominio" },
       { "@type": "Audience", audienceType: "Proprietari e gestori immobiliari" },

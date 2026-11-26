@@ -4,7 +4,7 @@ import { SITE, GEO } from "../config.mjs";
 import { esc, abs, jsonLd } from "../lib/html.mjs";
 import { R } from "../routes.mjs";
 
-const DEFAULT_OG = { path: "/img/og/liftcon-og.jpg", w: 1200, h: 630, alt: "LiftCon, consulenza tecnica per ascensori a Milano e in Lombardia" };
+const DEFAULT_OG = { path: "/img/og/liftcon-og.jpg", w: 1200, h: 630, alt: "Logo LiftCon, consulenza tecnica ascensori, su un atrio di condominio con ascensore in acciaio inox" };
 
 export function head(page, ctx) {
   const url = abs(SITE.url, page.path);
@@ -23,10 +23,14 @@ export function head(page, ctx) {
 <meta name="description" content="${esc(page.description)}">
 <meta name="keywords" content="${esc(page.keywords.join(", "))}">
 <meta name="robots" content="${robots}">
-<link rel="canonical" href="${esc(url)}">
+${
+    page.noindex
+      ? ""
+      : `<link rel="canonical" href="${esc(url)}">
 <link rel="alternate" hreflang="it-IT" href="${esc(url)}">
 <link rel="alternate" hreflang="x-default" href="${esc(url)}">
-<meta name="author" content="LiftCon · Carbon Stealth VCC">
+`
+  }<meta name="author" content="LiftCon · Carbon Stealth VCC">
 <meta name="theme-color" content="${SITE.themeColor}">
 <meta name="format-detection" content="telephone=no">
 <meta name="geo.region" content="${esc(geo.region ?? GEO.region)}">
