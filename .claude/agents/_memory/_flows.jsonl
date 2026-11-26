@@ -967,3 +967,7 @@
 {"t":"handoff","ts":"2026-11-24T10:35:40.688Z","id":"rdf00e8d2","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"c186609f"}
 {"t":"start","ts":"2026-11-24T11:06:35.888Z","id":"r20009fe9","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-24T11:06:35.888Z","id":"r20009fe9","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"2d9dc067"}
+{"t":"start","ts":"2026-11-26T05:42:31.485Z","id":"r0e442279","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-11-26T05:42:31.486Z","id":"r0e442279","from":"ai-djiyata","to":"printadjiyata","status":"наред","run":"05956ce3"}
+{"t":"start","ts":"2026-11-26T10:26:17.087Z","id":"r64750171","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-11-26T10:26:17.087Z","id":"r64750171","from":"ai-djiyata","to":"човек","status":"има бележки","run":"68dae64b"}
