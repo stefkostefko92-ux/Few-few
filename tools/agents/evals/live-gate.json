@@ -1,18 +1,23 @@
 {
   "date": "2026-11-26",
-  "ref": "1babff3cdf4cddc8578445f14f94230b2c0792be",
+  "ref": "9f73bef4fe4eabc2d04ae48160c8f6a1888344fa",
   "cli": "2.1.332 (Claude Code)",
-  "summary": "проба 1/1 · оценки 1/1 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-25)",
-  "costUsd": 1.37,
+  "summary": "проба 2/2 · оценки 2/2 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-25)",
+  "costUsd": 2.33,
   "criticalAt": "2026-11-25",
   "probe": [
+    {
+      "agent": "konveyera",
+      "ok": true,
+      "problems": []
+    },
     {
       "agent": "vps-adjiyata",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "8dcf368b10105442a51d73cc1fb36998bcd329b2e3fd4c56a46a39cce03f0045",
+  "inputsHash": "dbcc42349c8f41d1a36029bfbc7a80455ead2857dd320fe54786385dff74f412",
   "files": {
     ".claude/agents/3d-maniac.md": "bdec637b2b2ca2d29db8fdc0049e65598aaf2cf0bc4552f6a5c8718e75ed162d",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -34,7 +39,7 @@
     ".claude/agents/kachestveniyat.md": "879da211d3a16438f30b445fc03a23bfc51af0ec495b03c773e576f9cf570554",
     ".claude/agents/kasadjiyata.md": "149f597ac3d05d84748fbad08f617279aa0786d2b3647dc85cc88ce0cf6a4151",
     ".claude/agents/kodadjiyata.md": "c2d4bf36971a0018c4fe7d307a8b891090ab454a7713c043fe9562b5e43c1f18",
-    ".claude/agents/konveyera.md": "93e9c7a605d0d9a6f1c54cc56522d3903e35ebd16cabacf34ff391a37c394233",
+    ".claude/agents/konveyera.md": "940cdfbd66d014ee3af069fdcbd96183a4d0f5cb899d96485347c1fe8f1b4d14",
     ".claude/agents/letopisetsa.md": "56396fb16d4c630d0c3c4770aafe4eb89a01dd0b15d111d0be7d490cafe07248",
     ".claude/agents/mobildjiyata.md": "a632d13bd67854d418381a9cae4de6a313737f00554f2166b851ebdea2fede98",
     ".claude/agents/nabludatelya.md": "f7b124cdb19a57af4a588e393307bfa8e3f0b7db4226a409ffcdbc9ee0cfe402",
@@ -51,7 +56,7 @@
     ".claude/agents/strazhata.md": "bf659ba22741dee7a7fe94ac1bd8ea562579da106d37f184c93c71d4a58b5a2a",
     ".claude/agents/tayniyat-agent.md": "22ce18f5fe48538cabcb4216005823861c2708047438e6c5fcf11e1162b5a617",
     ".claude/agents/treydara.md": "0047d1976157ad45f4483f8a65c458d462d594770502f27afe3a7b79bc7cb1e0",
-    ".claude/agents/vps-adjiyata.md": "6f360b1ce819ede55b6f05041634d5bef14d9f0ef778462944836f9955ad31fb",
+    ".claude/agents/vps-adjiyata.md": "676a67dc7a5b1587b832fb77771bdba55f147050d5d93701c9db6bccc893d32b",
     ".claude/hooks/agent-cap.mjs": "5ae3058b6929423114920ee2deb8f5ce783e18a2e776e4cbd12f418ba66e0178",
     ".claude/hooks/agent-return.mjs": "e9b76f4e211ad024fc6bf02c6f088f6474ef7232dea8401841efcd17d54615f8",
     ".claude/hooks/artifact-sync.mjs": "1d33833db1a0a73eb3e818bb4360dddd3f807abe8b848adae684e48c77add80a",
