@@ -1,6 +1,6 @@
 {
-  "checkedAt": "2026-11-19",
-  "changelogVersion": "2.1.328",
+  "checkedAt": "2026-11-26",
+  "changelogVersion": "2.1.332",
   "docs": [
     {
       "url": "https://code.claude.com/docs/en/overview.md",
@@ -103,6 +103,10 @@
       "title": "Use Claude Code in the cloud"
     },
     {
+      "url": "https://code.claude.com/docs/en/share-sessions.md",
+      "title": "Share a cloud or Remote Control session"
+    },
+    {
       "url": "https://code.claude.com/docs/en/routines.md",
       "title": "Automate work with scheduled tasks"
     },
@@ -131,12 +135,8 @@
       "title": "Test iOS apps in the simulator"
     },
     {
-      "url": "https://code.claude.com/docs/en/code-review-local.md",
-      "title": "Review locally with /code-review"
-    },
-    {
-      "url": "https://code.claude.com/docs/en/ultrareview.md",
-      "title": "Find bugs with ultrareview"
+      "url": "https://code.claude.com/docs/en/claude-ship.md",
+      "title": "Claude Ship"
     },
     {
       "url": "https://code.claude.com/docs/en/github-enterprise-server.md",
@@ -165,6 +165,70 @@
     {
       "url": "https://code.claude.com/docs/en/code-review-troubleshooting.md",
       "title": "Troubleshoot Code Review"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/pr-steward.md",
+      "title": "PR Steward"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/pr-steward-setup.md",
+      "title": "Set up PR Steward"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/pr-steward-pull-requests.md",
+      "title": "Work with PR Steward on a pull request"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/pr-steward-security.md",
+      "title": "What PR Steward can access"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/pr-steward-troubleshooting.md",
+      "title": "Troubleshoot PR Steward"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/approvals.md",
+      "title": "Claude Approvals"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/approvals-setup.md",
+      "title": "Set up Claude Approvals"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/approvals-pull-requests.md",
+      "title": "Work with Claude Approvals on a pull request"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/approvals-github-rules.md",
+      "title": "Claude Approvals and your GitHub rules"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/approvals-policy.md",
+      "title": "Claude Approvals policy file reference"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/approvals-classifiers.md",
+      "title": "Claude Approvals classifiers"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/approvals-troubleshooting.md",
+      "title": "Troubleshoot Claude Approvals"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/ship-command.md",
+      "title": "Get a pull request ready with /ship and /steward"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/ship-command-troubleshooting.md",
+      "title": "Troubleshoot /ship and /steward"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/code-review-local.md",
+      "title": "Review locally with /code-review"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/ultrareview.md",
+      "title": "Find bugs with ultrareview"
     },
     {
       "url": "https://code.claude.com/docs/en/security-guidance.md",
@@ -837,6 +901,10 @@
       "title": "Read more"
     },
     {
+      "slug": "migrating-api-to-rust",
+      "title": "Migrating our Messages API to Rust"
+    },
+    {
       "slug": "building-strong-safety-evaluations",
       "title": "Building strong safety evaluations"
     },
@@ -915,10 +983,6 @@
     {
       "slug": "confidential-inference-trusted-vms",
       "title": "Confidential Inference via Trusted Virtual Machines"
-    },
-    {
-      "slug": "multi-agent-research-system",
-      "title": "How we built our multi-agent research system"
     }
   ],
   "skills": [
@@ -1018,7 +1082,7 @@
       "skill": "discernment-nudge"
     }
   ],
-  "platformNotesDate": "2026-11-17",
+  "platformNotesDate": "2026-11-23",
   "platformDocs": [
     {
       "url": "https://platform.claude.com/docs/en/home.md",
@@ -1638,7 +1702,11 @@
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/overview.md",
-      "title": "Overview — Claude Platform OAuth (EAP)"
+      "title": "Overview — Claude Platform OAuth"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/overview.md",
+      "title": "Overview — Enterprise Frontier Safeguards"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/compliance-security-posture/overview.md",
@@ -1667,14 +1735,6 @@
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/app-attest.md",
       "title": "App Attest — App Attest for iOS and macOS apps"
-    },
-    {
-      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/app-review.md",
-      "title": "App testing and review — App testing and review (EAP)"
-    },
-    {
-      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/branding-samples.md",
-      "title": "Branding samples — Branding samples (EAP)"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/compliance-security-posture/check-events-against-results.md",
@@ -1713,6 +1773,10 @@
       "title": "Overview — Customer-managed encryption keys"
     },
     {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/customer-owned-storage.md",
+      "title": "Overview — Customer-owned storage"
+    },
+    {
       "url": "https://platform.claude.com/docs/en/manage-claude/data-residency.md",
       "title": "Data residency"
     },
@@ -1729,12 +1793,28 @@
       "title": "Build an integration — Develop an Inference hooks integration"
     },
     {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/faq.md",
+      "title": "FAQ — Enterprise Frontier Safeguards FAQ"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/setup-amazon-bedrock.md",
+      "title": "Amazon Bedrock — Enterprise Frontier Safeguards on Amazon Bedrock"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/setup-google-cloud-agent-platform.md",
+      "title": "Google Cloud's Agent Platform — Enterprise Frontier Safeguards on Google Cloud's Agent Plat…"
+    },
+    {
       "url": "https://platform.claude.com/docs/en/manage-claude/compliance-errors.md",
       "title": "Errors — Handle Compliance API errors"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/cmek-how-it-works.md",
       "title": "How it works — How CMEK works"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/human-review-and-access-transparency.md",
+      "title": "Human Review — Human Review and Access Transparency"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/inference-hooks.md",
@@ -1749,12 +1829,32 @@
       "title": "Limit key to workspaces — Limit an AWS KMS key to specific workspaces"
     },
     {
-      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/organization-billing-connections.md",
-      "title": "Linked billing — Linked billing (EAP)"
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/linked-billing/link-and-bill-a-customer.md",
+      "title": "Link and bill a customer"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/linked-billing/link-button.md",
+      "title": "Link button — Link your Claude organization button"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/linked-billing.md",
+      "title": "Overview — Linked billing"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/linked-billing/errors.md",
+      "title": "Errors — Linked billing errors"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/compliance-org-data.md",
       "title": "Organizations, users, roles, groups, and settings — List organizations, users, roles, groups, and settings"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/external-storage-manage.md",
+      "title": "Manage — Manage customer-owned storage"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/linked-billing/manage-customers.md",
+      "title": "Manage customers — Manage linked customers"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/wif-admin-api.md",
@@ -1765,8 +1865,8 @@
       "title": "Map events to OCSF — Map Security posture events to OCSF"
     },
     {
-      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/oauth-reference.md",
-      "title": "OAuth reference — OAuth reference (EAP)"
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/endpoints-and-parameters.md",
+      "title": "Endpoints and parameters — OAuth endpoints and parameters"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/opentelemetry.md",
@@ -1795,6 +1895,18 @@
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/compliance-sessions.md",
       "title": "Session transcripts — Retrieve session transcripts"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/flagged-cases.md",
+      "title": "Overview — Review Safety Cases"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/safety-case-files.md",
+      "title": "Safety Case files"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/safety-cases-api.md",
+      "title": "Safety Cases API"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/compliance-security-posture/events-reference.md",
@@ -1829,6 +1941,22 @@
       "title": "Google Cloud KMS — Set up CMEK with Google Cloud KMS"
     },
     {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/external-storage.md",
+      "title": "Setup guide — Set up customer-owned storage"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/setup-claude-models-on-google-cloud-anthropic-managed.md",
+      "title": "Claude Models on Google Cloud (Anthropic managed) — Set up Enterprise Frontier Safeguards on Claude Models on G…"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/setup-console.md",
+      "title": "Claude Platform — Set up Enterprise Frontier Safeguards on Claude Platform"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/setup-claude-platform-on-aws.md",
+      "title": "Claude Platform on AWS — Set up Enterprise Frontier Safeguards on Claude Platform on…"
+    },
+    {
       "url": "https://platform.claude.com/docs/en/manage-claude/opentelemetry/sdk.md",
       "title": "Get Anthropic SDK spans — Set up OpenTelemetry with the Anthropic SDK"
     },
@@ -1841,8 +1969,16 @@
       "title": "Set up the Compliance API"
     },
     {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/linked-billing/set-up-your-app.md",
+      "title": "Set up your app — Set up your app for Linked billing"
+    },
+    {
       "url": "https://platform.claude.com/docs/en/manage-claude/spend-limits-api.md",
       "title": "Spend Limits API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/linked-billing/test-and-publish.md",
+      "title": "Test and publish — Test and publish your app"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/cmek-troubleshooting.md",
@@ -1855,6 +1991,14 @@
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/usage-cost-api.md",
       "title": "Usage and Cost API (legacy) — Usage and Cost API"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/enterprise-frontier-safeguards/customer-managed-keys.md",
+      "title": "Use a key with EFS — Use a customer-managed key"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/linked-billing/credential-for-each-customer.md",
+      "title": "Per-customer credentials — Use a separate credential for each customer"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/wif-providers/aws.md",
@@ -1907,6 +2051,10 @@
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/cmek-key-lifecycle.md",
       "title": "Rotate, disable, delete — What happens when you rotate, disable, or delete your encry…"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/manage-claude/oauth-apps/linked-billing/what-your-customers-see.md",
+      "title": "What your customers see"
     },
     {
       "url": "https://platform.claude.com/docs/en/manage-claude/wif-reference.md",

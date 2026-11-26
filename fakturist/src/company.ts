@@ -28,7 +28,7 @@ export const COMPANY = {
  * Датата на последна промяна на витрината (lastmod в sitemap, dateModified в JSON-LD). Сменя се ръчно, когато
  * се промени съдържанието ѝ.
  */
-export const CONTENT_UPDATED = '2026-11-16';
+export const CONTENT_UPDATED = '2026-11-25';
 
 /** Датата на публикуване на статията за е-фактурите (видима в нея, `datePublished`, `article:published_time`). */
 export const ARTICLE_PUBLISHED = '2026-11-12';

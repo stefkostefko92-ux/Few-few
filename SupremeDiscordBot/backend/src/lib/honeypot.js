@@ -7,7 +7,7 @@
 // акаунти, които пускат една и съща измама във всеки канал) пишат навсякъде.
 // Който напише там, бива изваден от сървъра. Изпълнява ботът
 // (bot/src/utils/bait.js); тук са само правилата за записа.
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "./prisma.js";
 
 export const HONEYPOT_ACTIONS = ["softban", "ban", "timeout"];

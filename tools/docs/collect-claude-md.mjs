@@ -14,7 +14,9 @@ import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const OUT = join(ROOT, "agents-dashboard", "docs.js");
+// Изходът е override-ваем (DOCS_JS_OUT) — тестовете работят върху временно копие. Докато регенерираха
+// истинския docs.js на място, build-artifact.test.mjs (върви едновременно) го четеше по средата.
+const OUT = process.env.DOCS_JS_OUT || join(ROOT, "agents-dashboard", "docs.js");
 const CHECK = process.argv.includes("--check");
 
 // Ред: root CLAUDE.md пръв, после product CLAUDE.md по азбучен ред (едно ниво навътре).

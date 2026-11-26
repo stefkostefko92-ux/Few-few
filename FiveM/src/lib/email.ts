@@ -13,19 +13,53 @@
 
 import { readEnv } from './env';
 
-const API = 'https://api.resend.com/emails';
+/**
+ * Доставчикът е Brevo (Sendinblue SAS, Франция — ЕС; API v3). Решение на собственика от
+ * 25.11.2026: имейлите на всички продукти минават през Brevo. Ключът е само на сървъра
+ * (BREVO_API_KEY) и пътува в хедъра `api-key`, никога в адреса.
+ */
+const API = 'https://api.brevo.com/v3/smtp/email';
 
 export type Mail = { to: string; subject: string; body: string };
+export type Sender = { name?: string; email: string };
 
-function sender(): string {
-  return readEnv('EMAIL_FROM') ?? 'Thraex PVP <no-reply@thraex.carbonstealth.eu>';
+/** „Име <адрес>“ или голият адрес → полето `sender` на Brevo; иначе null. */
+export function parseSender(raw: string): Sender | null {
+  const s = raw.trim();
+  const m = /^(.*?)\s*<([^<>\s]+@[^<>\s]+)>$/.exec(s);
+  if (m) {
+    const name = m[1].trim().replace(/^"|"$/g, '');
+    return name ? { name, email: m[2] } : { email: m[2] };
+  }
+  return /^[^<>\s]+@[^<>\s]+\.[^<>\s]+$/.test(s) ? { email: s } : null;
+}
+
+const DEFAULT_SENDER: Sender = { name: 'Thraex PVP', email: 'no-reply@thraex.carbonstealth.eu' };
+
+function sender(): Sender {
+  const raw = readEnv('EMAIL_FROM');
+  if (!raw) return DEFAULT_SENDER;
+  const parsed = parseSender(raw);
+  // Сгрешен EMAIL_FROM не бива да минава тихо към подразбиращия се подател (преглед на PR #489).
+  if (!parsed) console.warn('[email] EMAIL_FROM не е „Име <адрес>“ или адрес — ползвам подателя по подразбиране');
+  return parsed ?? DEFAULT_SENDER;
+}
+
+/** Тялото на POST /v3/smtp/email — чисто, за тестовете. */
+export function brevoPayload(mail: Mail, from: Sender) {
+  return {
+    sender: from,
+    to: [{ email: mail.to }],
+    subject: mail.subject,
+    textContent: mail.body,
+  };
 }
 
 /** Никога не хвърля: неизпратен имейл не бива да отменя взето решение. */
 export async function sendMail(mail: Mail): Promise<boolean> {
-  const key = readEnv('RESEND_API_KEY');
+  const key = readEnv('BREVO_API_KEY');
   if (!key) {
-    console.warn(`[email] няма RESEND_API_KEY — не е изпратено до ${mail.to}: ${mail.subject}`);
+    console.warn(`[email] няма BREVO_API_KEY — не е изпратено до ${mail.to}: ${mail.subject}`);
     return false;
   }
 
@@ -33,19 +67,15 @@ export async function sendMail(mail: Mail): Promise<boolean> {
     const res = await fetch(API, {
       method: 'POST',
       signal: AbortSignal.timeout(10_000),
-      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
-      body: JSON.stringify({
-        from: sender(),
-        to: [mail.to],
-        subject: mail.subject,
-        text: mail.body,
-      }),
+      headers: { 'api-key': key, 'content-type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify(brevoPayload(mail, sender())),
     });
     if (!res.ok) {
       console.error(`[email] доставчикът върна ${res.status} за ${mail.subject}`);
       await res.body?.cancel();
       return false;
     }
+    await res.body?.cancel();
     return true;
   } catch (error) {
     console.error('[email] изпращането се провали', error);

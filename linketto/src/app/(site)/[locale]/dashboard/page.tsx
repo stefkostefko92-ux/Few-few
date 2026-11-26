@@ -51,6 +51,7 @@ import { DashKeepPlace } from '@/components/DashKeepPlace';
 import { SortableLinks } from '@/components/SortableLinks';
 import { blockFieldInput, blockFieldLabels, blockFieldsFor, blockFormValues, type BlockFieldLabel } from '@/lib/blocks';
 import { AddBlockFields } from '@/components/AddBlockFields';
+import { ColorField, type ColorFieldLabels } from '@/components/ColorField';
 import { autoTranslateActive } from '@/lib/auto-translate';
 import {
   ensureReferralCodeAction,
@@ -190,6 +191,18 @@ export default async function DashboardPage({
       })
     : null;
   const canAddProfile = profileList.length < plan.maxProfiles;
+  // Палитрата на всички цветни полета (ColorField): етикетите и снимката за „цветове от снимката“.
+  const colorLabels: ColorFieldLabels = {
+    open: t('colorOpen'),
+    title: t('colorTitle'),
+    fromPhoto: t('colorFromPhoto'),
+    recent: t('colorRecent'),
+    custom: t('colorCustom'),
+    auto: t('colorAuto'),
+    invalid: t('colorInvalid'),
+    groups: { vivid: t('colorVivid'), pastel: t('colorPastel'), dark: t('colorDark'), neutral: t('colorNeutral') },
+  };
+  const colorPhoto = profile ? (parseStyle(profile.style).avatarUrl ?? null) : null;
   const messages = profile
     ? await prisma.contactMessage.findMany({
         where: { profileId: profile.id },
@@ -600,17 +613,14 @@ export default async function DashboardPage({
                     ))}
                   </select>
                 </label>
-                <label className="block text-sm font-medium">
-                  {t('accent')}
-                  <input
-                    type="text"
-                    name="accent"
-                    defaultValue={profile.accent ?? ''}
-                    placeholder="#3b82c4"
-                    pattern="#[0-9a-fA-F]{6}"
-                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
-                  />
-                </label>
+                <ColorField
+                  label={t('accent')}
+                  name="accent"
+                  defaultValue={profile.accent}
+                  allowEmpty
+                  photoUrl={colorPhoto}
+                  labels={colorLabels}
+                />
                 <label className="block text-sm font-medium">
                   {t('customDomainLabel')}
                   <input
@@ -768,24 +778,20 @@ export default async function DashboardPage({
                         )}
                       </select>
                     </label>
-                    <label className="block text-sm font-medium">
-                      {t('styleBgColor1')}
-                      <input
-                        type="color"
-                        name="bgColor1"
-                        defaultValue={styleCfg.bgColor1}
-                        className="mt-1 h-10 w-full rounded-control border border-line-input"
-                      />
-                    </label>
-                    <label className="block text-sm font-medium">
-                      {t('styleBgColor2')}
-                      <input
-                        type="color"
-                        name="bgColor2"
-                        defaultValue={styleCfg.bgColor2}
-                        className="mt-1 h-10 w-full rounded-control border border-line-input"
-                      />
-                    </label>
+                    <ColorField
+                      label={t('styleBgColor1')}
+                      name="bgColor1"
+                      defaultValue={styleCfg.bgColor1}
+                      photoUrl={colorPhoto}
+                      labels={colorLabels}
+                    />
+                    <ColorField
+                      label={t('styleBgColor2')}
+                      name="bgColor2"
+                      defaultValue={styleCfg.bgColor2}
+                      photoUrl={colorPhoto}
+                      labels={colorLabels}
+                    />
                     <label className="block text-sm font-medium sm:col-span-2">
                       {t('styleBgImage')}
                       <input
@@ -928,17 +934,14 @@ export default async function DashboardPage({
                         )}
                       </select>
                     </label>
-                    <label className="block text-sm font-medium">
-                      {t('styleTextColor')}
-                      <input
-                        type="text"
-                        name="textColor"
-                        defaultValue={styleCfg.textColor ?? ''}
-                        placeholder="#ffffff"
-                        pattern="#[0-9a-fA-F]{6}"
-                        className={selectClass}
-                      />
-                    </label>
+                    <ColorField
+                      label={t('styleTextColor')}
+                      name="textColor"
+                      defaultValue={styleCfg.textColor}
+                      allowEmpty
+                      photoUrl={colorPhoto}
+                      labels={colorLabels}
+                    />
                     <label className="flex items-start gap-2 text-sm font-medium sm:col-span-2">
                       <input
                         type="checkbox"
@@ -1367,17 +1370,14 @@ export default async function DashboardPage({
                                     <textarea name="options" rows={3} defaultValue={values.options} className={field} />
                                   </label>
                                 )}
-                                <label className="block text-sm font-medium">
-                                  {t('blockColorLabel')}
-                                  <input
-                                    type="text"
-                                    name="color"
-                                    defaultValue={values.color}
-                                    placeholder="#3b82c4"
-                                    pattern="#[0-9a-fA-F]{6}"
-                                    className={field}
-                                  />
-                                </label>
+                                <ColorField
+                                  label={t('blockColorLabel')}
+                                  name="color"
+                                  defaultValue={values.color}
+                                  allowEmpty
+                                  photoUrl={colorPhoto}
+                                  labels={colorLabels}
+                                />
                                 <TimeZoneField />
                                 <label className="block text-sm font-medium">
                                   {t('scheduleFromLabel')}
@@ -1460,16 +1460,7 @@ export default async function DashboardPage({
                   optionsPlaceholder={t('pollOptionsPlaceholder')}
                   optionsHint={t('pollOptionsHint')}
                 />
-                <label className="block text-sm font-medium">
-                  {t('blockColorLabel')}
-                  <input
-                    type="text"
-                    name="color"
-                    placeholder="#3b82c4"
-                    pattern="#[0-9a-fA-F]{6}"
-                    className="mt-1 w-full rounded-control border border-line-input px-3 py-2"
-                  />
-                </label>
+                <ColorField label={t('blockColorLabel')} name="color" allowEmpty photoUrl={colorPhoto} labels={colorLabels} />
                 <TimeZoneField />
                 <label className="block text-sm font-medium">
                   {t('scheduleFromLabel')}

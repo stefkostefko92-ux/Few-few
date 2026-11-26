@@ -99,6 +99,9 @@ ZIP отпреди месец.
   после `eternaltouch/deploy.sh` (Docker Compose билд + вдигане; схемата се пуска от
   `docker-startup.sh`; идемпотентен seed; Nginx + certbot с auto-reload hook). Health на
   `127.0.0.1:4300/healthz`; app + postgres слушат само на localhost зад Nginx.
+  Имейлите — само през Brevo: без `SMTP_HOST=smtp-relay.brevo.com` (и без `SMTP_TLS_SERVERNAME`) в
+  каноничния `/opt/few-few/shared/eternaltouch/.env` продуктът се **пропуска** (върви предишният му
+  код, останалите се разгръщат). Сменя се там — `current/eternaltouch/.env` се презаписва от него.
 - **adblock** (Supreme AdBlock): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. Копира
   обслужваните файлове (`adblock/server/{index.html,privacy.html,robots.txt,sitemap.xml,
   llms.txt,*.png,*.webp}`) в `/var/www/adblock`. `filters.json` се публикува САМО заедно с
@@ -136,7 +139,7 @@ ZIP отпреди месец.
   ping през `tools/seo/indexnow.mjs` (директорията се мени при всяко откриване).
   Еднократно: DNS A запис, Nginx vhost от `FiveM/deploy/nginx.conf` (**стрипва
   `CF-Connecting-IP`/`X-Forwarded-For` — това е защита, не настройка**) + certbot, и
-  `RESEND_API_KEY` в `.env`, иначе уведомленията по чл. 16/17 DSA не тръгват →
+  `BREVO_API_KEY` в `.env` (имейлите — само през Brevo), иначе уведомленията по чл. 16/17 DSA не тръгват →
   `FiveM/DEPLOY.md`.
 - **linketto** (Linketto — „link in bio“): Docker Compose (db + app на `127.0.0.1:<HTTP_PORT>`, по подразбиране 4350 — 4340 е на rilievi; проект
   `linketto`). Тайните, дъмповете и качените снимки са в `/opt/few-few/shared/linketto/` (`.env` 600 —
@@ -152,7 +155,10 @@ ZIP отпреди месец.
   сийд **само при липсваща база** (админ + каталог за `/admin`), снимка на базата преди
   рестарт, самоинсталиращ се systemd unit (`panev/deploy/systemd/panev.service`, порт
   `127.0.0.1:4102`, User=`panev`), `systemctl restart panev`; при провал — автоматичен
-  rollback на кода **и** на базата. Health на `127.0.0.1:4102/api/health`. Тайните са в
+  rollback на кода **и** на базата. Health на `127.0.0.1:4102/api/health`; при успех — IndexNow
+  през `tools/seo/indexnow.mjs`, пуснат от корена на release-а с ключовия файл от архива
+  (`panev/<key>.txt` — името му е ключът), публичния му адрес и адресите от `panev/sitemap.xml`
+  на същия release; `PANEV_INDEXNOW=0` го спира. Тайните са в
   `/etc/panev/panev.env` (systemd `EnvironmentFile`, права 600) — при пръв деплой се
   генерира с random `JWT_SECRET` (без него приложението спира в продукция), `SMTP_PASS`
   остава `CHANGE_ME`. Еднократно: DNS, nginx vhost (301 `www.` → каноничния non-www) +
@@ -193,6 +199,12 @@ ZIP отпреди месец.
   дневен бекъп (`rilievi-backup.timer`), vhost-ът от репото щом има сертификат. Откатът е към
   `RILIEVI_LAST_GOOD` с `RILIEVI_SKIP_BACKUP=1`; при провалена миграция — човек → `rilievi/DEPLOY.md`.
   Първият MASTER — веднъж с `rilievi/deploy/create-master.sh`; останалите само с покана.
+- **semki** (Semki Bot — Discord бот за семките във FiveM + дашборд): моделът на rilievi — Docker
+  Compose (db + app на `127.0.0.1:<HTTP_PORT>`, първият свободен от 4340), стъпките са в `semki/deploy/deploy.sh`: тайните от
+  `/opt/few-few/shared/semki/.env` (прави ги веднъж `semki/deploy/setup-env.sh` — Discord токен, client
+  secret, ID-тата; без тях semki се пропуска като „още ненастроен“), `pg_dump` преди смяната, сонда с
+  маркер `"app":"semki"`, vhost-ът `vps2.carbonstealth.eu` от репото щом има сертификат. Откатът е към
+  `SEMKI_LAST_GOOD` с `SEMKI_SKIP_BACKUP=1`; при провалена миграция — човек → `semki/DEPLOY.md`.
 - **fakturist** (Фактурист — фактуриране върху EN 16931, `fakturist.carbonstealth.eu`): моделът на
   rilievi — Docker Compose (db + app; по подразбиране `127.0.0.1:4340`, **на живия сървър
   `HTTP_PORT=4342`** — 4340 е на rilievi, 4341 на semki, проверено 13.11.2026), стъпките са в
@@ -208,6 +220,10 @@ ZIP отпреди месец.
   `…/fakturist/ledger-seal-key.sha256` и друг ключ спира деплоя преди build-а. Откатът е към
   `FAKTURIST_LAST_GOOD` с `FAKTURIST_SKIP_BACKUP=1`; при провалена миграция (`P3009`/`P3018`) — човек.
   Мастър акаунтът — веднъж с `fakturist/deploy/create-owner.sh` (паролата през stdin).
+  **IndexNow** — само след зелен деплой (`fakturist_indexnow` в `autodeploy.sh`, 25.11.2026): ключът от
+  `fakturist/public/indexnow-key.txt` (приложението го сервира на `/<ключ>.txt`), адресите от живия
+  `sitemap.xml`; `FAKTURIST_DOMAIN` сменя сайта, `FAKTURIST_INDEXNOW=0` го спира; провалът не е фатален.
+  Google не участва — там sitemap и Search Console.
 
   **Бекъпи на fakturist** (само PostgreSQL — медия няма; моделът на `rilievi/deploy/backup.sh`):
   - Преди всяка миграция: `…/fakturist/backups/pre-deploy-*.sql.gz` (последните 5).
@@ -255,6 +271,14 @@ ZIP отпреди месец.
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
   ping иска сесия), rollback като medqr. Пръв деплой без конфиг: пуска `deploy/install.sh`
   (конфиг + тайни + услуга) → `vpsdash/`.
+- **IndexNow след здрав релийз** (Bing, Yandex, Seznam, Naver, Yep; Google не участва) — подава се
+  сам за zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora и rilievi (двата само
+  при променен sitemap, от собствения си `deploy.sh`), fivem и panev. Само след минала здравна проба — без adblock, който подава след
+  качването на файловете, дори когато публичната му проба още не минава. Никъде не е условие за
+  успеха: провал на подаването е предупреждение, деплоят остава успешен. `tools/seo/indexnow.mjs`
+  излиза с 0 само когато всички адреси от sitemap-а са подадени; непрочетен sitemap е провал, не
+  подаване само на началната страница. За останалите продукти
+  командата се пуска ръчно — от корена на release-а (`cd /opt/few-few/current`), не от `/root`.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -263,13 +287,14 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto semki` | кои проекти да се разгръщат тук |
 | `FIVEM_HEALTH_URL` | `http://127.0.0.1:3010/api/health` | health на fivem |
 | `FIVEM_DOMAIN` | `thraex.carbonstealth.eu` | домейн на fivem (за `.env` и IndexNow) |
 | `LINKETTO_HEALTH_URL` · `LINKETTO_DOMAIN` · `LINKETTO_STATE_DIR` · `LINKETTO_INDEXNOW` | празно → `http://127.0.0.1:<HTTP_PORT от .env, иначе 4350>/api/health` · `piuma.carbonstealth.eu` · `/opt/few-few/shared/linketto` · `1` | сонда, домейн, тайни/бекъпи/снимки/last-good, IndexNow на linketto |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
+| `PANEV_SITE` · `PANEV_INDEXNOW` | `https://panevascensori.it` · `1` | публичният адрес на panev за IndexNow (хостът от `panev/sitemap.xml` — друг хост търсачките отхвърлят) и подаването след успешен деплой (`0` го спира) |
 | `OSPEDALI_DIR` | `/opt/ospedali` | път на ospedali (systemd, без билд) |
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
@@ -278,6 +303,7 @@ ZIP отпреди месец.
 | `KORPORA_LAST_GOOD` | `/opt/few-few/shared/korpora/last-good` | пътят на последния release на korpora, който е отговорил — към него е откатът |
 | `KORPORA_SHARED` · `KORPORA_HEALTH_WAIT` · `KORPORA_INDEXNOW` | `/opt/few-few/shared/korpora` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
 | `RILIEVI_SHARED` · `RILIEVI_LAST_GOOD` · `RILIEVI_HEALTH_WAIT` | `/opt/few-few/shared/rilievi` · `…/last-good` · `90` | тайни и бекъпи на rilievi, последният работещ release (целта на отката), секунди за сондата |
+| `SEMKI_SHARED` · `SEMKI_LAST_GOOD` · `SEMKI_HEALTH_WAIT` | `/opt/few-few/shared/semki` · `…/last-good` · `90` | тайни и бекъпи на semki, последният работещ release (целта на отката), секунди за сондата |
 | `FAKTURIST_SHARED` · `FAKTURIST_LAST_GOOD` · `FAKTURIST_HEALTH_WAIT` | `/opt/few-few/shared/fakturist` · `…/last-good` · `90` | тайни, бекъпи и отпечатък на `LEDGER_SEAL_KEY` на fakturist, последният работещ release (целта на отката), секунди за сондата |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив (до него задължително `<архив>.sha256`) |
