@@ -86,6 +86,12 @@ export function prismaStore(db: PrismaClient = new PrismaClient()): Store & { cl
       },
       ultime: async (limite) => (await db.pubblicazione.findMany({ orderBy: { iniziataIl: "desc" }, take: limite })) as Pubblicazione[],
     },
+    impostazioni: {
+      leggi: (chiave) => db.impostazione.findUnique({ where: { chiave }, select: { valore: true, aggiornatoIl: true } }),
+      async salva(chiave, valore, autoreId) {
+        await db.impostazione.upsert({ where: { chiave }, create: { chiave, valore: json(valore), autoreId }, update: { valore: json(valore), autoreId } });
+      },
+    },
     eventi: {
       async registra(e) {
         await db.evento.create({ data: { ...e, dettagli: e.dettagli ? json(e.dettagli) : Prisma.JsonNull } });

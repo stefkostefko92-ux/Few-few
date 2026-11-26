@@ -29,7 +29,8 @@ for c in nginx docker curl certbot ss tar gzip; do command -v "$c" >/dev/null ||
 [[ -f "$APP/public/index.html" ]] || die "няма $APP/public/index.html — грешен архив?"
 [[ -f "$ENV_FILE" ]] || die "липсва $ENV_FILE (виж server/.env.example)"
 [[ "$(stat -c %a "$ENV_FILE")" == "600" ]] || die "$ENV_FILE трябва да е с права 600"
-for k in BREVO_API_KEY MAIL_FROM MAIL_TO POSTGRES_PASSWORD JWT_SECRET SEAL_KEY ADMIN_EMAIL; do
+# Brevo (ключ, подател, получател) може да е тук или да се настрои от панела: /admin/impostazioni.
+for k in POSTGRES_PASSWORD JWT_SECRET SEAL_KEY ADMIN_EMAIL; do
   grep -qE "^$k=.+" "$ENV_FILE" || die "в $ENV_FILE липсва $k"
 done
 

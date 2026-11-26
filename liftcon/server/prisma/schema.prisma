@@ -141,3 +141,11 @@ model Evento {
   @@index([creatoIl])
   @@index([utenteId])
 }
+
+/// Настройки от панела (напр. „email“ за Brevo). Тайните в стойността са шифровани (seal.ts).
+model Impostazione {
+  chiave       String   @id
+  valore       Json
+  aggiornatoIl DateTime @updatedAt
+  autoreId     String?
+}

@@ -10,6 +10,7 @@ export const PERMESSI = [
   "contenuti.pubblica",
   "registro.leggi",
   "utenti.gestisci",
+  "impostazioni.gestisci",
 ] as const;
 export type Permesso = (typeof PERMESSI)[number];
 
@@ -25,6 +26,7 @@ const SOGLIA: Record<Permesso, Ruolo> = {
   "contenuti.pubblica": "DIREZIONE",
   "registro.leggi": "DIREZIONE",
   "utenti.gestisci": "ADMIN",
+  "impostazioni.gestisci": "ADMIN",
 };
 
 export function puo(r: Ruolo, p: Permesso): boolean {

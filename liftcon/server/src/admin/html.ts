@@ -17,6 +17,7 @@ const VOCI: Array<{ href: string; testo: string; permesso?: Permesso }> = [
   { href: "/admin/contenuti", testo: "Contenuti", permesso: "contenuti.modifica" },
   { href: "/admin/utenti", testo: "Utenti", permesso: "utenti.gestisci" },
   { href: "/admin/registro", testo: "Registro", permesso: "registro.leggi" },
+  { href: "/admin/impostazioni", testo: "Impostazioni", permesso: "impostazioni.gestisci" },
   { href: "/admin/profilo", testo: "Profilo" },
 ];
 

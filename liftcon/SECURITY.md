@@ -15,7 +15,9 @@
 - **Заглавия:** строг CSP без `unsafe-inline` (JSON-LD е data block), HSTS preload, `frame-ancestors 'none'`,
   `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP.
 - **Трети страни при зареждане:** нула. Картата на OpenStreetMap — само след клик.
-- **Тайни:** `BREVO_API_KEY`, `POSTGRES_PASSWORD`, `JWT_SECRET`, `SEAL_KEY`, `ADMIN_INITIAL_PASSWORD` само в
+- **Ключът на Brevo от панела** е шифрован в базата (AES-256-GCM от `SEAL_KEY`, етикет `brevo-v1`), не се показва
+  отново (само последните 4 знака) и не влиза в лога и регистъра.
+- **Тайни:** `BREVO_API_KEY` (по желание), `POSTGRES_PASSWORD`, `JWT_SECRET`, `SEAL_KEY`, `ADMIN_INITIAL_PASSWORD` само в
   `/opt/few-few/shared/liftcon/.env` (mode 600); никога в репото или архива. `SEAL_KEY` не се сменя (шифрова 2FA
   тайните) — в бекъпа на тайните.
 - **Контейнер:** закован по digest, `USER node`, `read_only`, `cap_drop: ALL`, `no-new-privileges`, порт само на

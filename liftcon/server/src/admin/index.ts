@@ -8,6 +8,7 @@ import { rotteAccesso } from "./rotte-accesso.js";
 import { rotteRichieste } from "./rotte-richieste.js";
 import { rotteContenuti } from "./rotte-contenuti.js";
 import { rotteUtenti } from "./rotte-utenti.js";
+import { rotteImpostazioni } from "./rotte-impostazioni.js";
 import { pagina } from "./html.js";
 import { auth } from "../auth/sessione.js";
 
@@ -28,6 +29,7 @@ export function routerAdmin(d: AdminDeps): Router {
   r.use(rotteRichieste(d));
   r.use(rotteContenuti(d));
   r.use(rotteUtenti(d));
+  r.use(rotteImpostazioni(d));
   r.use((_req, res) => {
     res.status(404).send(pagina({ titolo: "Pagina non trovata", auth: auth(res), corpo: `<p><a href="/admin">Torna alla panoramica</a></p>` }));
   });

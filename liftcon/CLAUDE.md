@@ -16,6 +16,8 @@ Città metropolitana, Monza e Brianza и цяла Ломбардия. Публи
   - Заявки: в базата, изтриване 6 месеца след последната промяна (без INCARICO), CSV без CSV injection.
   - Съдържание: промените се пазят в базата (с история), текстов формат → екраниран HTML (`content/mdlite.ts`);
     „Pubblica“ пуска `build.mjs` с `LIFTCON_OVERRIDES` в `releases/<ts>` и сменя атомарно връзката `current`.
+  - Имейлът (Brevo) се настройва и от панела: `/admin/impostazioni` (MASTER/ADMIN) — ключът шифрован (`brevo-v1`),
+    показват се само последните 4 знака; проверка `GET /v3/account` + `/v3/senders`, тестово писмо; `.env` е резерва.
   - Данните минават през интерфейса `Store` (Prisma в продукция, паметта в тестовете).
   - Първият MASTER — от `ADMIN_EMAIL` + `ADMIN_INITIAL_PASSWORD` (смяна при първия вход). Без `DATABASE_URL`
     сървърът работи само като форма → имейл.

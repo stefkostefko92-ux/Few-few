@@ -10,6 +10,7 @@ export function memoryStore(): Store {
   const revisioni: Array<{ id: string; contenutoId: string; dati: unknown; autoreId: string | null; creataIl: Date }> = [];
   const pubblicazioni: Pubblicazione[] = [];
   const eventi: Evento[] = [];
+  const impostazioni = new Map<string, { valore: unknown; aggiornatoIl: Date }>();
   const id = () => randomUUID();
 
   return {
@@ -154,6 +155,14 @@ export function memoryStore(): Store {
       },
       async ultime(limite) {
         return [...pubblicazioni].reverse().slice(0, limite);
+      },
+    },
+    impostazioni: {
+      async leggi(k) {
+        return impostazioni.get(k) ?? null;
+      },
+      async salva(k, valore) {
+        impostazioni.set(k, { valore, aggiornatoIl: new Date() });
       },
     },
     eventi: {

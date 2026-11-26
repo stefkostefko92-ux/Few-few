@@ -130,6 +130,10 @@ export interface Store {
     chiudi(id: string, esito: "OK" | "ERRORE", dati: { errore?: string; versione?: string }): Promise<void>;
     ultime(limite: number): Promise<Pubblicazione[]>;
   };
+  impostazioni: {
+    leggi(chiave: string): Promise<{ valore: unknown; aggiornatoIl: Date } | null>;
+    salva(chiave: string, valore: unknown, autoreId: string | null): Promise<void>;
+  };
   eventi: {
     registra(e: Omit<Evento, "id" | "creatoIl">): Promise<void>;
     ultimi(limite: number, offset: number): Promise<Evento[]>;

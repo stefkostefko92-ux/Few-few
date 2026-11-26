@@ -2,7 +2,8 @@
 import pino from "pino";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
-import { brevoMailer } from "./mailer.js";
+import { brevoMailer, type Mailer } from "./mailer.js";
+import { gestoreEmail } from "./email/configurazione.js";
 import { prismaStore } from "./store/prisma.js";
 import { gestoreSessioni } from "./auth/sessione.js";
 import { sigillo } from "./auth/seal.js";
@@ -15,18 +16,28 @@ import type { AdminDeps } from "./admin/deps.js";
 async function main(): Promise<void> {
   const cfg = loadConfig();
   const logger = pino({ level: cfg.LOG_LEVEL, base: { app: "liftcon" }, redact: ["req.headers", "email", "nome", "telefono", "messaggio", "password"] });
-  const mailer = brevoMailer({ apiKey: cfg.BREVO_API_KEY, from: { email: cfg.MAIL_FROM, name: cfg.MAIL_FROM_NAME }, to: cfg.MAIL_TO });
+  const envMailer: Mailer =
+    cfg.BREVO_API_KEY && cfg.MAIL_FROM && cfg.MAIL_TO
+      ? brevoMailer({ apiKey: cfg.BREVO_API_KEY, from: { email: cfg.MAIL_FROM, name: cfg.MAIL_FROM_NAME }, to: cfg.MAIL_TO })
+      : {
+          send: () => Promise.reject(new Error("Email non configurata")),
+        };
+  let mailer: Mailer = envMailer;
 
   let admin: AdminDeps | undefined;
   let store: ReturnType<typeof prismaStore> | undefined;
   if (cfg.DATABASE_URL && cfg.JWT_SECRET && cfg.SEAL_KEY) {
     store = prismaStore();
+    const seal = sigillo(cfg.SEAL_KEY);
+    const email = gestoreEmail({ store, sigillo: seal, env: { apiKey: cfg.BREVO_API_KEY, mittente: cfg.MAIL_FROM, nomeMittente: cfg.MAIL_FROM_NAME, destinatario: cfg.MAIL_TO } });
+    mailer = email.mailer();
     const cat = catalogo(store, cfg.CONTENT_DEFAULTS);
     const pub = pubblicatore({ store, catalogo: cat, siteSrc: cfg.SITE_SRC, siteDir: cfg.SITE_DIR, siteUrl: cfg.ALLOWED_ORIGIN });
     admin = {
       store,
       sessioni: gestoreSessioni({ store, jwtSecret: cfg.JWT_SECRET, produzione: cfg.NODE_ENV === "production" }),
-      sigillo: sigillo(cfg.SEAL_KEY),
+      sigillo: seal,
+      email,
       catalogo: cat,
       pubblicatore: pub,
       logger,

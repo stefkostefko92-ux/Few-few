@@ -14,6 +14,19 @@ import { pubblicatore } from "../dist/content/pubblica.js";
 import { fixedWindowLimiter } from "../dist/rate-limit.js";
 import { hashPassword } from "../dist/auth/password.js";
 import { totpCodeAt, totpStep } from "../dist/auth/totp.js";
+import { gestoreEmail } from "../dist/email/configurazione.js";
+
+/** Двойник на Brevo: записва заявките, отговаря според `risposte` (по път). Нищо не излиза навън. */
+export function brevoFinto(risposte = {}) {
+  const chiamate = [];
+  const fetchFinto = async (url, init) => {
+    chiamate.push({ url, init });
+    const path = new URL(url).pathname;
+    const r = risposte[path] ?? { status: path.endsWith("/smtp/email") ? 201 : 200, body: {} };
+    return { ok: r.status < 300, status: r.status, json: async () => r.body };
+  };
+  return { chiamate, fetch: fetchFinto };
+}
 
 export const SITE_SRC = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const ORIGIN = "https://liftcon.it";
@@ -28,7 +41,7 @@ export function defaults() {
   return defaultsFile;
 }
 
-export async function setup({ siteSrc = SITE_SRC } = {}) {
+export async function setup({ siteSrc = SITE_SRC, brevo = brevoFinto(), mailerDaPannello = false } = {}) {
   const clock = { t: Date.UTC(2026, 10, 26, 10, 0, 0) };
   const store = memoryStore();
   const logger = pino({ level: "silent" });
@@ -46,13 +59,14 @@ export async function setup({ siteSrc = SITE_SRC } = {}) {
     limiteAccesso: fixedWindowLimiter(1000, 60_000),
     now: () => clock.t,
     siteDir,
+    email: gestoreEmail({ store, sigillo: sig, env: { nomeMittente: "LiftCon" }, fetch: brevo.fetch }),
   };
   const sent = [];
-  const mailer = { async send(m) { sent.push(m); } };
+  const mailer = mailerDaPannello ? admin.email.mailer() : { async send(m) { sent.push(m); } };
   const app = createApp({ mailer, logger, allowedOrigin: ORIGIN, store, admin, baseUrl: ORIGIN, now: () => clock.t, limiter: fixedWindowLimiter(1000, 60_000) });
   const server = await new Promise((r) => { const s = app.listen(0, "127.0.0.1", () => r(s)); });
   const base = `http://127.0.0.1:${server.address().port}`;
-  return { store, sig, clock, base, sent, siteDir, admin, close: () => new Promise((r) => server.close(r)) };
+  return { store, sig, clock, base, sent, siteDir, admin, brevo, close: () => new Promise((r) => server.close(r)) };
 }
 
 /** Клиент с бисквитки (един браузър). */

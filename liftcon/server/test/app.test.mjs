@@ -217,8 +217,10 @@ test("лимитерът не расте безкрайно: при пълен �
   assert.equal(l.hit("c", 60_001), true);
 });
 
-test("конфигурация без ключ за Brevo → грешка при старт", () => {
-  assert.throws(() => loadConfig({ MAIL_FROM: "a@example.com", MAIL_TO: "b@example.com" }), /BREVO_API_KEY/);
+test("конфигурация: Brevo може да липсва в средата (настройва се от панела), но база без JWT_SECRET/SEAL_KEY — не", () => {
+  assert.doesNotThrow(() => loadConfig({}));
+  assert.throws(() => loadConfig({ DATABASE_URL: "postgresql://u:p@db:5432/x" }), /JWT_SECRET e SEAL_KEY/);
+  assert.throws(() => loadConfig({ SEAL_KEY: "corta" }), /SEAL_KEY/);
 });
 
 test("изминалото време не зависи от часовника на клиента: 2 минути попълване → писмото тръгва", async () => {

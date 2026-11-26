@@ -10,10 +10,11 @@ const Env = z.object({
     .url()
     .default("https://liftcon.it")
     .transform((u) => new URL(u).origin),
-  BREVO_API_KEY: z.string().min(20),
-  MAIL_FROM: z.email(),
+  // Brevo: si configura anche dal pannello (/admin/impostazioni); questi valori servono da riserva.
+  BREVO_API_KEY: z.string().min(20).optional(),
+  MAIL_FROM: z.email().optional(),
   MAIL_FROM_NAME: z.string().min(1).max(60).default("LiftCon"),
-  MAIL_TO: z.email(),
+  MAIL_TO: z.email().optional(),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug"]).default("info"),
   // Панелът (/admin). Без DATABASE_URL сървърът работи само като форма → имейл.
   DATABASE_URL: z.string().startsWith("postgresql://").optional(),
