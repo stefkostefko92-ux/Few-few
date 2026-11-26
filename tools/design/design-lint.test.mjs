@@ -178,3 +178,45 @@ test("хиляди находки в един файл не са квадрат�
   assert.equal(lintText(big, "a.html").length, 20000);
   assert.ok(Date.now() - t0 < 2000, `${Date.now() - t0} ms`);
 });
+
+// Повторен преглед на PR #494 (Кодаджията + Дизайнера).
+test("url(//хост) в .scss/.tsx не е коментар — забраненият хост се хваща", () => {
+  assert.deepEqual(ids("@import url(//fonts.googleapis.com/css2?family=Inter);", "a.scss"), ["external-font"]);
+  assert.deepEqual(ids('<div style={{ backgroundImage: "url(//images.unsplash.com/x.jpg)" }} />', "a.tsx"), ["hotlink-image"]);
+  assert.deepEqual(ids("const a = 1; // fonts.googleapis.com", "a.tsx"), [], "истински коментар остава маскиран");
+});
+
+test("data-alt не е alt; outline-offset не рисува фокус", () => {
+  assert.deepEqual(ids('<img data-alt="x" src="/a.png">'), ["img-no-alt"]);
+  assert.deepEqual(ids("a:focus{outline:none} a:focus-visible{outline-offset:2px}", "a.css"), ["focus-hidden"]);
+});
+
+test(":focus-visible освобождава само същия селектор, не целия файл", () => {
+  assert.deepEqual(ids("a:focus{outline:none} a:focus-visible{outline:2px solid} input:focus{outline:none}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(".btn:focus{outline:none}\n.btn:focus-visible{box-shadow:0 0 0 3px #036}", "a.css"), []);
+});
+
+test("Tailwind: само focus-visible:ring/outline/border/shadow е заместител, не focus-visible:bg-…", () => {
+  assert.deepEqual(ids('<input className="outline-none focus-visible:bg-slate-50">', "a.tsx"), ["focus-hidden"]);
+  assert.deepEqual(ids('<input className="outline-none focus-visible:ring-2">', "a.tsx"), []);
+});
+
+// Базова линия след повторния преглед: глобалното `input:focus-visible{outline:3px}` побеждава класовия
+// ресет `.login-input{outline:none}` по специфичност — не е находка; `.x:focus{outline:none}` обаче го бие.
+test("глобално :focus-visible по елемент покрива ресет без :focus, но не и :focus правило с клас", () => {
+  const fv = "a:focus-visible,\ninput:focus-visible,\n[tabindex]:focus-visible { outline: 3px solid gold; outline-offset: 2px; }";
+  assert.deepEqual(ids(`.login-input{outline:none}\n${fv}`, "a.css"), []);
+  assert.deepEqual(ids(`.login-input:focus{outline:none}\n${fv}`, "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(".skip:focus{top:0}\nmain:focus{outline:none}", "a.css"), [], "main — цел на skip link, фокусът е програмен");
+});
+
+test("глобалното :focus-visible от друг CSS файл на продукта важи (каскадата е обща)", () => {
+  const t = mkdtempSync(join(tmpdir(), "dl-"));
+  try {
+    writeFileSync(join(t, "base.css"), "a:focus-visible, button:focus-visible { outline: 3px solid #036; }");
+    writeFileSync(join(t, "nav.css"), ".nav-link { outline: none; }\n.menu button:focus { outline: none; }");
+    const r = spawnSync(process.execPath, [join(here, "design-lint.mjs"), t, "--json"], { encoding: "utf8" });
+    const j = JSON.parse(r.stdout);
+    assert.deepEqual(j.findings.map((f) => `${f.rule}:${f.line}`), ["focus-hidden:2"], "ресетът се покрива, :focus правилото с клас — не");
+  } finally { rmSync(t, { recursive: true, force: true }); }
+});

@@ -61,13 +61,13 @@ function lineIndex(text) {
 
 /** Коментарите стават интервали (новите редове остават) — споменат `<img>` или забранен хост в коментар
  *  не е находка, а редовете и колоните не мърдат. `//` се маха само след интервал/разделител — `https://`
- *  в атрибут остава. */
+ *  в атрибут и `url(//хост)` остават. */
 export function maskComments(text, ext) {
   const blank = (m) => m.replace(/[^\n]/g, " ");
   let t = text.replace(/\/\*[\s\S]*?\*\//g, blank);
   if (ext !== ".css" && ext !== ".scss") t = t.replace(/<!--[\s\S]*?-->/g, blank);
   if (ext === ".ejs") t = t.replace(/<%#[\s\S]*?%>/g, blank);
-  if ([".jsx", ".tsx", ".vue", ".svelte", ".astro", ".scss", ".mdx"].includes(ext)) t = t.replace(/(^|[\s;{}(),])\/\/[^\n]*/g, (m, pre) => pre + blank(m.slice(pre.length)));
+  if ([".jsx", ".tsx", ".vue", ".svelte", ".astro", ".scss", ".mdx"].includes(ext)) t = t.replace(/(^|[\s;{},])\/\/[^\n]*/g, (m, pre) => pre + blank(m.slice(pre.length)));
   return t;
 }
 
@@ -76,12 +76,29 @@ export function maskComments(text, ext) {
 // Заместителят важи само в :focus блок и само с видима стойност (border:none, transparent — не).
 const CSS_ALT = /(?:^|[;{\s])(?:box-shadow|border(?:-[a-z]+)?(?:-color)?|background(?:-color)?|text-decoration(?:-line)?)\s*:\s*(?!none\b|0\s*[;}]|0$|transparent\b|inherit\b|initial\b|unset\b)[^;}]+/i;
 // Правило :focus-visible, което наистина рисува фокус (outline/box-shadow/border с видима стойност).
-const FV_DRAWS = /:focus-visible[^{]*\{[^}]*(?:outline(?:-[a-z]+)?|box-shadow|border(?:-[a-z]+)?(?:-color)?)\s*:\s*(?!none\b|0\s*[;}]|transparent\b)[^;}]+/i;
-const TW_ALT = /\bfocus:(?:ring|border|shadow|bg|underline|outline-(?!none))|\bfocus-within:|\bfocus-visible:/;
+// (outline-offset/outline-color сами не рисуват нищо.)
+const DRAWS = /(?:^|[;{\s])(?:outline|outline-style|box-shadow|border(?:-[a-z]+)?(?:-color)?)\s*:\s*(?!none\b|0\s*[;}]|0$|transparent\b)[^;}]+/i;
+const normSel = (x) => x.replace(/\s+/g, " ").trim();
+/** Базовите селектори, за които има :focus-visible правило, което рисува фокус (`a:focus-visible` → `a`). */
+function focusVisibleBases(text) {
+  const bases = new Set();
+  if (!text.includes(":focus-visible")) return bases;
+  // Линейно по `{` — регекс `([^{}]+)\{` върху дълъг текст без скоби е квадратичен.
+  for (let i = text.indexOf("{"); i !== -1; i = text.indexOf("{", i + 1)) {
+    const sel = text.slice(Math.max(text.lastIndexOf("}", i), text.lastIndexOf("{", i - 1)) + 1, i);
+    if (!sel.includes(":focus-visible")) continue;
+    const end = text.indexOf("}", i);
+    if (!DRAWS.test(text.slice(i + 1, end === -1 ? undefined : end))) continue;
+    for (const piece of sel.split(",")) if (piece.includes(":focus-visible")) bases.add(normSel(piece.replace(/:focus-visible/g, "")));
+  }
+  return bases;
+}
+// Само класове, които рисуват рамка/линия — `focus-visible:bg-…` не е фокус индикатор.
+const TW_ALT = /\b(?:focus|focus-visible|focus-within):(?:ring|border|shadow|underline|outline-(?!none))/;
 const PROG_FOCUS = /tabIndex=\{?-1\}?|tabindex=["']-1["']|role=["'](?:dialog|alertdialog|region|log)["']/i;
 
 /** Всички находки в един текст. `file` решава типа (css/markup) по разширението. */
-export function lintText(raw, file) {
+export function lintText(raw, file, opts = {}) {
   const ext = extname(file).toLowerCase();
   const lines = raw.split("\n");
   const text = maskComments(raw, ext);
@@ -112,7 +129,8 @@ export function lintText(raw, file) {
 
   // Фокус в CSS: outline none/0 е наред в `:focus:not(:focus-visible)`, в :focus блок с видим заместител,
   // или ако файлът има :focus-visible правило, което наистина рисува фокус.
-  const fileDrawsFocusVisible = FV_DRAWS.test(text);
+  // + глобалните от другите CSS файлове на продукта (lintPath): каскадата е обща за сайта.
+  const fvBases = new Set([...focusVisibleBases(text), ...(opts.globalFv || [])]);
   each(/outline\s*:\s*(?:none|0)\b/i, (m) => {
     const start = text.lastIndexOf("}", m.index) + 1;
     const end = text.indexOf("}", m.index);
@@ -122,7 +140,12 @@ export function lintText(raw, file) {
     const decl = brace === -1 ? block : block.slice(brace + 1);
     if (/:focus:not\(:focus-visible\)/.test(sel)) return;
     if (/:focus(?:-within)?\b/.test(sel) && CSS_ALT.test(decl)) return;
-    if (fileDrawsFocusVisible) return;
+    // Освобождава :focus-visible правило за СЪЩИЯ селектор (`.btn:focus` ↔ `.btn:focus-visible`). Ресет БЕЗ
+    // :focus (`.login-input{outline:none}`) се покрива и от глобално правило по елемент (`input:focus-visible`,
+    // `*`, `[tabindex]`) — то е с по-висока специфичност. `main` е цел на skip link — фокусът му е програмен.
+    const pieces = sel.split(",").map((x) => normSel(x.replace(/:focus(?:-within)?(?!-)/g, ""))).filter(Boolean);
+    if (pieces.length && pieces.every((x) => fvBases.has(x) || x === "main")) return;
+    if (!/:focus/.test(sel) && [...fvBases].some((b) => /^(?:\*|[a-z][a-z0-9]*|\[tabindex\])?$/.test(b))) return;
     add("focus-hidden", m.index, m[0]);
   });
   // Tailwind `outline-none` — съди се по собствения клас-низ, не по файла.
@@ -143,7 +166,7 @@ export function lintText(raw, file) {
   if (MARKUP_EXT.has(ext)) {
     each(/<(img|Image)\b(?:<%[\s\S]*?%>|[^>"'{<]|"[^"]*"|'[^']*'|\{[^}]*\})*>/g, (m) => {
       // `{...props}` може да носи alt — не се гадае.
-      if (!/\balt\s*=/.test(m[0]) && !/\{\s*\.\.\./.test(m[0])) add("img-no-alt", m.index, m[0]);
+      if (!/(?<![\w-])alt\s*=/.test(m[0]) && !/\{\s*\.\.\./.test(m[0])) add("img-no-alt", m.index, m[0]);
     });
     const svgs = [...text.matchAll(/<svg\b/gi)];
     if (svgs.length) add("svg", svgs[0].index, svgs.length > 1 ? `<svg ×${svgs.length}` : "<svg");
@@ -176,10 +199,15 @@ function walk(p, acc = []) {
 /** Находките за папка или файл, с относителен път. */
 export function lintPath(root) {
   const findings = [];
-  for (const f of walk(root)) {
-    let text; try { text = readFileSync(f, "utf8"); } catch { continue; }
-    if (text.length > 2_000_000) continue; // минифициран бъндъл, не изходен текст
-    for (const x of lintText(text, f)) findings.push({ file: relative(process.cwd(), f) || f, ...x });
+  const files = walk(root);
+  const read = (f) => { try { const t = readFileSync(f, "utf8"); return t.length > 2_000_000 ? null : t; } catch { return null; } };
+  // Първо минаване: :focus-visible правилата от всички CSS файлове (базов файл често рисува фокуса глобално).
+  const globalFv = new Set();
+  for (const f of files) if (/\.s?css$/i.test(f)) { const t = read(f); if (t) for (const b of focusVisibleBases(maskComments(t, extname(f).toLowerCase()))) globalFv.add(b); }
+  for (const f of files) {
+    const text = read(f); // над 2 MB — минифициран бъндъл, не изходен текст
+    if (text === null) continue;
+    for (const x of lintText(text, f, { globalFv })) findings.push({ file: relative(process.cwd(), f) || f, ...x });
   }
   return findings;
 }
