@@ -663,7 +663,9 @@ SQL_DIRS=()
 # Копията от миналата нощ (offsite-backup.sh) са SQLite файлове в /var/backups —
 # без това всяка нощ ги копира наново, една папка по-надълбоко.
 DUMPS_SEEN="${DUMP_TO:-/var/backups/offsite-dumps}"
-for r in $ROOTS $EXTRA_PATHS /var/lib; do if [ -d "$r" ]; then SQL_DIRS+=("$r"); fi; done
+# Томовете и външните bind-ове са начални точки: find стартира ВЪТРЕ в тях, а -prune по-долу хваща само
+# точния /var/lib/docker — иначе SQLite в Docker том (scuolabulgara, Uptime Kuma) влизаше само сурово.
+for r in $ROOTS $EXTRA_PATHS /var/lib "${INC_VOLS[@]}" "${EXTRA_BINDS[@]}"; do if [ -d "$r" ]; then SQL_DIRS+=("$r"); fi; done
 while IFS= read -r -d '' f; do
   [ "$(head -c 15 "$f" 2>/dev/null)" = "SQLite format 3" ] || continue
   backup_sqlite "$f"

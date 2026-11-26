@@ -194,3 +194,14 @@ test("тайните на offsite не стигат до процесите на
   assert.ok(call, "извикването на migrate-backup.sh");
   assert.match(call, /unset/, "migrate-backup.sh тръгва без RESTIC_*/AWS_*/… в средата");
 });
+
+// Четвърти преглед на PR #312 (VPS-аджията): SQLite в Docker том (scuolabulgara qb-data, Uptime Kuma)
+// и в bind извън корените влизаше само сурово — търсенето пропуска /var/lib/docker. Сега томовете и
+// bind-овете са начални точки на търсенето (find стартира ВЪТРЕ в тях, -prune не ги хваща).
+test("SQLite в Docker томове и външни bind-ове минава през backup API", () => {
+  const src = readFileSync(script, "utf8");
+  const line = src.split("\n").find((l) => /SQL_DIRS\+=\("\$r"\)/.test(l));
+  assert.ok(line, "редът, който пълни SQL_DIRS");
+  assert.match(line, /INC_VOLS\[@\]/, "томовете влизат в търсенето");
+  assert.match(line, /EXTRA_BINDS\[@\]/, "външните bind-ове също");
+});
