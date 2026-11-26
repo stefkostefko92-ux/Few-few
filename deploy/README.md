@@ -141,7 +141,7 @@ ZIP отпреди месец.
   ping през `tools/seo/indexnow.mjs` (директорията се мени при всяко откриване).
   Еднократно: DNS A запис, Nginx vhost от `FiveM/deploy/nginx.conf` (**стрипва
   `CF-Connecting-IP`/`X-Forwarded-For` — това е защита, не настройка**) + certbot, и
-  `RESEND_API_KEY` в `.env`, иначе уведомленията по чл. 16/17 DSA не тръгват →
+  `BREVO_API_KEY` в `.env` (имейлите — само през Brevo), иначе уведомленията по чл. 16/17 DSA не тръгват →
   `FiveM/DEPLOY.md`.
 - **linketto** (Linketto — „link in bio“): Docker Compose (db + app на `127.0.0.1:<HTTP_PORT>`, по подразбиране 4350 — 4340 е на rilievi; проект
   `linketto`). Тайните, дъмповете и качените снимки са в `/opt/few-few/shared/linketto/` (`.env` 600 —
