@@ -68,7 +68,7 @@ export const FAQ_HOME = [
 export function homePage(ctx) {
   const hero = picture(ctx, {
     base: "/img/render/hero",
-    widths: [800, 1200, 1600, 2400],
+    widths: [600, 800, 1200, 1600, 2400],
     w: 1600,
     h: 1200,
     alt: ctx.heroAlt ?? HERO_ALT,
@@ -76,7 +76,7 @@ export function homePage(ctx) {
     cls: "hero-pic",
     eager: true,
   });
-  const avifSet = [800, 1200, 1600, 2400]
+  const avifSet = [600, 800, 1200, 1600, 2400]
     .filter((w) => ctx.exists(`/img/render/hero-${w}.avif`))
     .map((w) => `/img/render/hero-${w}.avif ${w}w`)
     .join(", ");

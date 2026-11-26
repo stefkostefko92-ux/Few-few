@@ -7,7 +7,7 @@ import { fixedWindowLimiter, clientKey } from "../dist/rate-limit.js";
 import { riga } from "../dist/richiesta.js";
 import { loadConfig } from "../dist/config.js";
 
-const ORIGIN = "https://liftcom.it";
+const ORIGIN = "https://liftcon.it";
 const NOW = 1_800_000_000_000;
 
 function setup({ fail = false, limiter } = {}) {
@@ -253,6 +253,6 @@ test("ключ на лимита: IPv4 цял, IPv4-mapped като IPv4, IPv6 �
 });
 
 test("ALLOWED_ORIGIN с наклонена черта накрая се нормализира до произхода", () => {
-  const cfg = loadConfig({ BREVO_API_KEY: "x".repeat(32), MAIL_FROM: "a@example.com", MAIL_TO: "b@example.com", ALLOWED_ORIGIN: "https://liftcom.it/" });
-  assert.equal(cfg.ALLOWED_ORIGIN, "https://liftcom.it");
+  const cfg = loadConfig({ BREVO_API_KEY: "x".repeat(32), MAIL_FROM: "a@example.com", MAIL_TO: "b@example.com", ALLOWED_ORIGIN: "https://liftcon.it/" });
+  assert.equal(cfg.ALLOWED_ORIGIN, "https://liftcon.it");
 });

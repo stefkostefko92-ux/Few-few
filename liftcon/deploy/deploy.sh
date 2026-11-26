@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # LiftCon — деплой на VPS-а. Пуска се НА сървъра от разархивирания release (папката liftcon/):
-#   sudo DOMAIN=liftcom.it bash liftcon/deploy/deploy.sh
+#   sudo DOMAIN=liftcon.it bash liftcon/deploy/deploy.sh
 # Идемпотентен: бекъп на предишния уеб корен → нов сайт атомарно → бекенд (Docker) → Nginx → проверки;
 # при провал на проверките сайтът се връща към бекъпа. Тайните са в $STATE/.env (mode 600), не в архива.
 set -euo pipefail
 
-DOMAIN="${DOMAIN:-liftcom.it}"
+DOMAIN="${DOMAIN:-liftcon.it}"
 PORT="${LIFTCON_HTTP_PORT:-4370}"
 STATE="${LIFTCON_STATE_DIR:-/opt/few-few/shared/liftcon}"
 ENV_FILE="$STATE/.env"
@@ -95,7 +95,7 @@ fi
 if [[ -f "$SNIPPET" ]]; then cp -a "$SNIPPET" "$SNIPPET.prev"; fi
 if [[ -f "$NGINX_CONF" ]]; then cp -a "$NGINX_CONF" "$NGINX_CONF.prev"; fi
 install -m 644 "$HERE/liftcon-headers.conf" "$SNIPPET"
-sed -e "s/liftcom\.it/$DOMAIN/g" -e "s/127\.0\.0\.1:4370/127.0.0.1:$PORT/g" "$HERE/nginx.conf" >"$NGINX_CONF.new"
+sed -e "s/liftcon\.it/$DOMAIN/g" -e "s/127\.0\.0\.1:4370/127.0.0.1:$PORT/g" "$HERE/nginx.conf" >"$NGINX_CONF.new"
 mv "$NGINX_CONF.new" "$NGINX_CONF"
 ln -sf "$NGINX_CONF" "/etc/nginx/sites-enabled/$DOMAIN"
 nginx -t

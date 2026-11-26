@@ -66,7 +66,7 @@ export function guidaPage(g, ctx) {
   )}</ul><p class="note">I riferimenti sono al testo vigente pubblicato su Normattiva, consultato il ${dataIt(
     g.modified,
   )}. Questa guida ha scopo informativo e non costituisce parere legale; il giudizio sulla conformità di un impianto spetta ai soggetti previsti dalle norme.</p></section>`;
-  const author = `<aside class="author" aria-label="Autore"><img src="/assets/brand/icon-192.png" width="64" height="64" alt="" loading="lazy" decoding="async"><div><p class="author-name">${esc(
+  const author = `<aside class="author" aria-label="Autore"><img src="/assets/brand/avatar-144.webp" width="64" height="64" alt="" loading="lazy" decoding="async"><div><p class="author-name">${esc(
     COMPANY.responsabile,
   )}</p><p>${esc(COMPANY.responsabileRuolo)} di LiftCon, servizio di consulenza tecnica per ascensori di ${esc(COMPANY.legalName)}. <a href="${
     R.chiSiamo

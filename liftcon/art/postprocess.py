@@ -47,7 +47,7 @@ def export(name, widths, ref_w, jpg_w, limits):
 
 
 if (OUT / "hero.png").exists():
-    export("hero", [800, 1200, 1600, 2400], 1600, 1600, {"AVIF": 175 * 1024, "WEBP": 250 * 1024})
+    export("hero", [600, 800, 1200, 1600, 2400], 1600, 1600, {"AVIF": 175 * 1024, "WEBP": 250 * 1024})
 if (OUT / "dettaglio.png").exists():
     export("dettaglio", [600, 900, 1200], 1200, 1200, {"AVIF": 140 * 1024, "WEBP": 200 * 1024})
 if (OUT / "og.png").exists():

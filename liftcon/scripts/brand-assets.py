@@ -71,12 +71,15 @@ def main() -> None:
     header.alpha_composite(em_h, (0, 0))
     header.alpha_composite(wm_h, (em_h.width + gap, (h - wm_h.height) // 2))
     save_pair(header, "logo-header")
+    header.resize((header.width // 2, h // 2), Image.LANCZOS).save(OUT / "logo-header-1x.webp", quality=92, method=6)
 
     # Пълното лого (футър, 404, OG): 2× при показване на 84 px височина.
     save_pair(fit_height(full, 168), "logo-full")
+    fit_height(full, 84).save(OUT / "logo-full-1x.webp", quality=92, method=6)
 
     # Иконки — емблемата върху бял квадрат.
     on_white_square(emblem, 180, 0.08).convert("RGB").save(OUT / "apple-touch-icon.png", optimize=True)
+    on_white_square(emblem, 144, 0.08).convert("RGB").save(OUT / "avatar-144.webp", quality=88, method=6)
     on_white_square(emblem, 192, 0.06).save(OUT / "icon-192.png", optimize=True)
     on_white_square(emblem, 512, 0.06).save(OUT / "icon-512.png", optimize=True)
     on_white_square(emblem, 512, 0.16).save(OUT / "icon-maskable-512.png", optimize=True)

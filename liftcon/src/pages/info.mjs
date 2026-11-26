@@ -20,7 +20,7 @@ export function serviziHub(ctx) {
         h1: "Servizi di consulenza tecnica per ascensori",
         lead: "Sei servizi, organizzati in quattro aree: conoscere l'impianto, controllare i lavori, decidere sui preventivi e arrivare preparati alla verifica. Ognuno si chiude con un documento scritto.",
       }),
-      `<div class="wrap svc-hub">${serviceRows(ctx.servizi, ctx.gruppi)}</div>`,
+      `<div class="wrap svc-hub">${serviceRows(ctx.servizi, ctx.gruppi, 2)}</div>`,
       ledger(),
       section("come", "Come funziona un incarico", steps(PROCESSO), { cls: "tint" }),
       ctaBand(),
@@ -138,7 +138,7 @@ export function chiSiamoPage(ctx) {
     section(
       "persone",
       "Le persone",
-      `<div class="person" id="stefan-kostadinov"><img src="/assets/brand/icon-192.png" width="72" height="72" alt="" loading="lazy" decoding="async"><div><h3>${esc(
+      `<div class="person" id="stefan-kostadinov"><img src="/assets/brand/avatar-144.webp" width="72" height="72" alt="" loading="lazy" decoding="async"><div><h3>${esc(
         COMPANY.responsabile,
       )}</h3><p class="person-role">${esc(COMPANY.responsabileRuolo)}</p><p>Responsabile dei contenuti di questo sito: cura le guide e i loro riferimenti al testo vigente delle norme.</p></div></div>`,
     ),

@@ -57,7 +57,7 @@ export function header({ path, servizi, gruppi, guide }) {
   return `<a class="skip" href="#contenuto">Vai al contenuto</a>
 <header class="site-header" data-header>
 <div class="wrap header-in">
-<a class="brand" href="${R.home}" aria-label="LiftCon, pagina iniziale"><img src="/assets/brand/logo-header.webp" width="154" height="36" alt="LiftCon"></a>
+<a class="brand" href="${R.home}" aria-label="LiftCon, pagina iniziale"><img src="/assets/brand/logo-header.webp" srcset="/assets/brand/logo-header-1x.webp 1x, /assets/brand/logo-header.webp 2x" width="154" height="36" alt="LiftCon"></a>
 <nav class="nav" id="nav" aria-label="Menu principale">
 <ul class="nav-list">${items.join("")}</ul>
 <div class="nav-drawer-foot"><a class="btn btn-primary" href="${R.contatti}">Richieda un sopralluogo</a><a class="drawer-phone" href="${CONTACT.phoneHref}">${esc(
@@ -88,7 +88,7 @@ export function footer({ servizi, guide }) {
   return `<footer class="site-footer">
 <div class="wrap foot-grid">
 <div class="foot-brand">
-<a href="${R.home}" class="foot-logo"><img src="/assets/brand/logo-full.webp" width="312" height="84" alt="LiftCon, consulenza tecnica ascensori" loading="lazy" decoding="async"></a>
+<a href="${R.home}" class="foot-logo"><img src="/assets/brand/logo-full.webp" srcset="/assets/brand/logo-full-1x.webp 1x, /assets/brand/logo-full.webp 2x" width="312" height="84" alt="LiftCon, consulenza tecnica ascensori" loading="lazy" decoding="async"></a>
 <p>Consulenza tecnica per ascensori a Milano, nella Città metropolitana e in tutta la Lombardia, per amministratori di condominio, proprietari e gestori immobiliari.</p>
 <address class="nap">
 <strong>LiftCon</strong> è un servizio di ${esc(COMPANY.legalName)}<br>

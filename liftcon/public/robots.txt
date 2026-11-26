@@ -1,4 +1,4 @@
-# robots.txt — LiftCon, consulenza tecnica ascensori (https://liftcom.it)
+# robots.txt — LiftCon, consulenza tecnica ascensori (https://liftcon.it)
 User-agent: *
 Allow: /
 Disallow: /api/
@@ -52,4 +52,4 @@ User-agent: MistralAI-User
 Allow: /
 Disallow: /api/
 
-Sitemap: https://liftcom.it/sitemap.xml
+Sitemap: https://liftcon.it/sitemap.xml

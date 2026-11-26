@@ -2,7 +2,7 @@
 
 Презентационен сайт на **LiftCon** — консултантска услуга за асансьори на Carbon Stealth VCC в Милано,
 Città metropolitana, Monza e Brianza и цяла Ломбардия. Публика: администратори на кондоминиуми и частни лица.
-**Само италиански.** Домейн: `liftcom.it` (сменя се на едно място — `src/config.mjs` или `LIFTCON_SITE_URL`).
+**Само италиански.** Домейн: `liftcon.it` (сменя се на едно място — `src/config.mjs` или `LIFTCON_SITE_URL`).
 
 ## Стек
 - `build.mjs` + `src/` — статичен генератор **без зависимости** (Node ≥22, ESM). Пише в `public/`
@@ -38,4 +38,4 @@ CI: `.github/workflows/liftcon.yml` (path-filtered).
 WebPage + BreadcrumbList + Service/Article/FAQPage/HowTo/DefinedTermSet според страницата, Speakable).
 Файлове: `sitemap.xml` (с изображения), `sitemap.txt`, `robots.txt` (AI ботове позволени), `llms.txt`,
 `llms-full.txt`, `guide/feed.xml`, `site.webmanifest`, `.well-known/security.txt`, IndexNow ключ.
-След промяна на живо: `node tools/seo/indexnow.mjs https://liftcom.it`.
+След промяна на живо: `node tools/seo/indexnow.mjs https://liftcon.it`.

@@ -79,6 +79,7 @@ ul.plain li::before{content:"";position:absolute;left:6px;top:.62em;width:7px;he
 .cta-band :focus-visible{outline-color:var(--verde-vivo)}
 @media (max-width:859px){.cta-in{grid-template-columns:1fr}}
 .svc-group{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.1fr);gap:16px 48px;padding:28px 0;border-top:2px solid var(--grafite)}
+.svc-group-head h2{font-size:1.28rem;line-height:1.2;max-width:none}
 .svc-group-head p{margin:8px 0 0;color:var(--acciaio);font-size:.9688rem;max-width:34ch}
 .svc-rows{list-style:none}
 .svc-rows li+li{border-top:1px solid var(--linea)}

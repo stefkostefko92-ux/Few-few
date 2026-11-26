@@ -117,7 +117,7 @@
 .opt{font-weight:400;color:var(--acciaio)}
 .field input,.field select,.field textarea{width:100%;padding:12px 14px;border:1px solid var(--linea-2);border-radius:8px;background:#FBFBFA;color:var(--grafite);font:400 1rem/1.4 var(--f-t)}
 .field textarea{resize:vertical;min-height:140px}
-.field input:focus,.field select:focus,.field textarea:focus{outline:3px solid rgba(46,125,18,.3);outline-offset:0;border-color:var(--verde)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:3px solid rgba(39,112,15,.3);outline-offset:0;border-color:var(--verde)}
 .field [aria-invalid=true]{border-color:var(--errore)}
 .field-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 @media (max-width:639px){.field-row{grid-template-columns:1fr}}

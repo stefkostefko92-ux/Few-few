@@ -8,7 +8,7 @@ const Env = z.object({
   // Произходът на сайта: заявки с чужд Origin се отказват (формата е само на нашия домейн).
   ALLOWED_ORIGIN: z
     .url()
-    .default("https://liftcom.it")
+    .default("https://liftcon.it")
     .transform((u) => new URL(u).origin),
   BREVO_API_KEY: z.string().min(20),
   MAIL_FROM: z.email(),

@@ -5,7 +5,7 @@
 const envUrl = process.env.LIFTCON_SITE_URL;
 
 export const SITE = Object.freeze({
-  url: (envUrl && /^https:\/\/[a-z0-9.-]+$/i.test(envUrl) ? envUrl : "https://liftcom.it").replace(/\/$/, ""),
+  url: (envUrl && /^https:\/\/[a-z0-9.-]+$/i.test(envUrl) ? envUrl : "https://liftcon.it").replace(/\/$/, ""),
   name: "LiftCon",
   tagline: "Consulenza tecnica ascensori",
   locale: "it_IT",

@@ -8,7 +8,7 @@
 :root{
   --calce:#F5F6F3;--carta:#FFFFFF;--pietra:#E9EBE6;--linea:#D5D9D2;--linea-2:#BFC5BD;
   --grafite:#1E2226;--grafite-2:#2A2F34;--testo:#2F363B;--acciaio:#5C656C;--acciaio-chiaro:#A3ACB1;
-  --verde:#2E7D12;--verde-hover:#256A0E;--verde-vivo:#5FD11E;--verde-tenue:#E6F2DE;--errore:#B3261E;
+  --verde:#27700F;--verde-hover:#1F5C0B;--verde-vivo:#5FD11E;--verde-tenue:#E6F2DE;--errore:#B3261E;
   --f-d:"Saira LC","Saira LC Fallback","Arial Narrow",sans-serif;
   --f-t:"Plex LC","Plex LC Fallback","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --gutter:clamp(16px,4vw,40px);--max:1240px;--r:10px;--r-l:14px;

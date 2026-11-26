@@ -92,11 +92,11 @@ export function ledger({ title = "Che cosa facciamo, e che cosa no", intro = "" 
 }
 
 /** Списък на услугите като редове (не еднакви карти). */
-export function serviceRows(servizi, gruppi) {
+export function serviceRows(servizi, gruppi, level = 3) {
   return join(
     gruppi,
     (g) => `<div class="svc-group">
-<div class="svc-group-head"><h3>${esc(g.nome)}</h3><p>${esc(g.testo)}</p></div>
+<div class="svc-group-head"><h${level}>${esc(g.nome)}</h${level}><p>${esc(g.testo)}</p></div>
 <ul class="svc-rows">${join(
       servizi.filter((s) => s.gruppo === g.key),
       (s) => `<li><a class="svc-row" href="${s.path}"><span class="svc-name">${esc(s.nome)}</span><span class="svc-desc">${esc(s.menu)}</span></a></li>`,
