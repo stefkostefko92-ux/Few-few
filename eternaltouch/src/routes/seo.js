@@ -146,7 +146,7 @@ router.get('/sitemap.xml', async (req, res, next) => {
 
     // Legal pages
     const legalLastmod = new Date('2026-05-01');
-    addUrl('/privacy', legalLastmod, '0.4', 'yearly');
+    addUrl('/privacy', new Date('2026-11-26'), '0.4', 'yearly'); // обработващите: Brevo + Register.it
     addUrl('/terms',   legalLastmod, '0.4', 'yearly');
     addUrl('/cookies', legalLastmod, '0.4', 'yearly');
     addUrl('/legal',   legalLastmod, '0.4', 'yearly');
