@@ -99,6 +99,9 @@ ZIP отпреди месец.
   после `eternaltouch/deploy.sh` (Docker Compose билд + вдигане; схемата се пуска от
   `docker-startup.sh`; идемпотентен seed; Nginx + certbot с auto-reload hook). Health на
   `127.0.0.1:4300/healthz`; app + postgres слушат само на localhost зад Nginx.
+  Имейлите — само през Brevo: без `SMTP_HOST=smtp-relay.brevo.com` (и без `SMTP_TLS_SERVERNAME`) в
+  каноничния `/opt/few-few/shared/eternaltouch/.env` продуктът се **пропуска** (върви предишният му
+  код, останалите се разгръщат). Сменя се там — `current/eternaltouch/.env` се презаписва от него.
 - **adblock** (Supreme AdBlock): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. Копира
   обслужваните файлове (`adblock/server/{index.html,privacy.html,robots.txt,sitemap.xml,
   llms.txt,*.png,*.webp}`) в `/var/www/adblock`. `filters.json` се публикува САМО заедно с
@@ -138,6 +141,14 @@ ZIP отпреди месец.
   `CF-Connecting-IP`/`X-Forwarded-For` — това е защита, не настройка**) + certbot, и
   `BREVO_API_KEY` в `.env` (имейлите — само през Brevo), иначе уведомленията по чл. 16/17 DSA не тръгват →
   `FiveM/DEPLOY.md`.
+- **liftcon** (LiftCon — консултантски услуги за асансьори, `liftcon.it`): статичен сайт (Nginx сервира
+  `/var/www/liftcon.it/current`) + приложение в Docker Compose (db + api на `127.0.0.1:4370`, проект `liftcon`):
+  формата, `/admin` (2FA) и документите (PWA, офлайн). Стъпките са в `liftcon/deploy/deploy.sh`: генерира
+  липсващите тайни в `/opt/few-few/shared/liftcon/.env` (600; при съществуваща база без `POSTGRES_PASSWORD`/`SEAL_KEY`
+  спира), бекъп на базата и на файловете (`liftcon/deploy/backup.sh`; и всеки ден — `liftcon-backup.timer`, срок
+  30 дни), `migrate deploy`, certbot, Nginx (+ `liftcon-headers-admin.conf`), проби на `/`, `/health`, `/admin/login`
+  с откат, първият администратор (пита в терминала), IndexNow. Още не е в `PROJECTS`
+  по подразбиране — първото пускане е `PROJECTS="liftcon"`, след DNS. → `liftcon/DEPLOY.md`.
 - **linketto** (Linketto — „link in bio“): Docker Compose (db + app на `127.0.0.1:<HTTP_PORT>`, по подразбиране 4350 — 4340 е на rilievi; проект
   `linketto`). Тайните, дъмповете и качените снимки са в `/opt/few-few/shared/linketto/` (`.env` 600 —
   при пръв деплой се генерират САМО `POSTGRES_PASSWORD`/`DATABASE_URL`/`CRON_SECRET`, Revolut е в
@@ -270,7 +281,8 @@ ZIP отпреди месец.
   (конфиг + тайни + услуга) → `vpsdash/`.
 - **IndexNow след здрав релийз** (Bing, Yandex, Seznam, Naver, Yep; Google не участва) — подава се
   сам за zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora и rilievi (двата само
-  при променен sitemap, от собствения си `deploy.sh`), fivem и panev. Само след минала здравна проба — без adblock, който подава след
+  при променен sitemap, от собствения си `deploy.sh`), fivem, panev, linketto, fakturist и liftcon (от собствения си
+  `deploy.sh`, `LIFTCON_INDEXNOW=0` го спира). Само след минала здравна проба — без adblock, който подава след
   качването на файловете, дори когато публичната му проба още не минава. Никъде не е условие за
   успеха: провал на подаването е предупреждение, деплоят остава успешен. `tools/seo/indexnow.mjs`
   излиза с 0 само когато всички адреси от sitemap-а са подадени; непрочетен sitemap е провал, не

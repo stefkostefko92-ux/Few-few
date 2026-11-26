@@ -322,6 +322,16 @@ fi
 ok "Източник за деплой: $SRC"
 
 deploy_failed=0
+# Продукти, пропуснати нарочно (условие за обновяване не е изпълнено — работи предишният код). Не
+# провалят пробега: иначе `current` и чистенето спират за ВСИЧКИ продукти (преглед на PR #492).
+SKIPPED=()
+skip_project() {
+  local p=$1; shift
+  SKIPPED+=("$p — $*")
+  # fetch-deploy.sh не записва пропуснатия в пазача на ref-а — той върви на предишния си код.
+  if [ -n "${SKIPPED_FILE:-}" ]; then printf '%s\n' "$p" >> "$SKIPPED_FILE" || true; fi
+  warn "$p НЕ е обновен: $*"
+}
 
 # Пренася .env (тайните) на Compose продукт в новия release и го пази на стабилен
 # път. Преди се четеше САМО от `current` — а деплой само на друг продукт (напр.
@@ -1336,6 +1346,17 @@ supreme_install_backup_timer() {
 
 # ── Health check ──────────────────────────────────────────────────────────────
 # ── 3g) eternaltouch — Docker Compose ─────────────────────────────────────────
+# Имейлите на всички продукти минават през Brevo (собственикът, 25.11.2026). Продукт със SMTP се
+# обновява едва когато .env сочи smtp-relay.brevo.com: новият код назовава Brevo в политиката за
+# поверителност, а обновен без сменен .env би пращал през стария доставчик — неверен текст.
+smtp_is_brevo() {
+  [ -r "$1" ] || return 1
+  # Последният ред печели (както при env_file на compose).
+  grep -E '^SMTP_HOST=' "$1" 2>/dev/null | tail -n 1 | grep -qiE "^SMTP_HOST=[\"']?smtp-relay\.brevo\.com[\"']?[[:space:]]*$" || return 1
+  # Остатък от Register.it: SMTP_TLS_SERVERNAME чупи TLS към Brevo тихо (преглед на PR #492).
+  ! grep -E '^SMTP_TLS_SERVERNAME=' "$1" 2>/dev/null | tail -n 1 | grep -qE "^SMTP_TLS_SERVERNAME=[\"']?[^\"'[:space:]]"
+}
+
 deploy_eternaltouch() {
   local d="$SRC/eternaltouch"
   [ -d "$d" ] || { warn "Няма eternaltouch/ в архива — пропускам."; return; }
@@ -1343,9 +1364,9 @@ deploy_eternaltouch() {
   # Пренеси съществуващия .env (тайните живеят на сървъра, не в архива).
   carry_env eternaltouch "$d"
   # Пръв деплой без .env: генерирай random secrets (app-ът иначе отказва да стартира).
-  # SMTP_PASS остава CHANGE_ME — имейлите тръгват след като го попълниш веднъж ръчно.
+  # SMTP_USER/SMTP_PASS (Brevo) остават CHANGE_ME — имейлите тръгват след като ги попълниш веднъж ръчно.
   if [ ! -f "$d/.env" ]; then
-    warn "Няма eternaltouch/.env — генерирам с random secrets (SMTP_PASS=CHANGE_ME)."
+    warn "Няма eternaltouch/.env — генерирам с random secrets (SMTP през Brevo: CHANGE_ME)."
     local dbp jwt cks sks adp
     dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
     jwt="$(openssl rand -base64 48 | tr -d '\n')"
@@ -1362,25 +1383,25 @@ ADMIN_PASSWORD=${adp}
 SITE_URL=https://eternaltouch.it
 NODE_ENV=production
 PORT=4300
-SMTP_HOST=authsmtp.register.it
+SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=info@eternaltouch.it
+# Brevo → SMTP & API → SMTP: логинът (не пощенската кутия) и SMTP ключът.
+SMTP_USER=CHANGE_ME
 SMTP_PASS=CHANGE_ME
 SMTP_FROM=Eternal Touch <info@eternaltouch.it>
 NOTIFY_TO=info@eternaltouch.it
-# Register.it представя *.securemail.pro / smtp.webnode.com cert на
-# authsmtp.register.it (не за connect хоста) — задай servername, за да остане
-# TLS валидацията вкл. (rejectUnauthorized). Без този ред първото пращане след
-# попълване на SMTP_PASS гърми с cert-mismatch. Стойността е от .env.example.
-SMTP_TLS_SERVERNAME=smtp.webnode.com
 EOF
     chmod 600 "$d/.env"
     warn "Записах eternaltouch/.env. Админ парола: ${adp} — запиши я в password manager СЕГА."
-    warn "Попълни SMTP_PASS в eternaltouch/.env, за да тръгнат имейлите."
+    warn "Попълни SMTP_USER и SMTP_PASS (Brevo) в eternaltouch/.env, за да тръгнат имейлите."
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
   carry_env eternaltouch "$d"   # новогенерираният .env → стабилния път
+  if ! smtp_is_brevo "$d/.env"; then
+    # carry_env копира от споделения .env при всеки деплой — смяна в current/…/.env се губи.
+    skip_project eternaltouch "SMTP не е Brevo в /opt/few-few/shared/eternaltouch/.env (каноничният — current/eternaltouch/.env се презаписва от него). Там: SMTP_HOST=smtp-relay.brevo.com, SMTP_USER и SMTP_PASS от Brevo (SMTP & API → SMTP), махни SMTP_TLS_SERVERNAME, потвърди eternaltouch.it в Brevo и пусни пак."; return
+  fi
   ( cd "$d" && bash deploy.sh ) \
     || { warn "eternaltouch: deploy.sh се провали — продължавам с останалите."; deploy_failed=1; return; }
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
@@ -2218,8 +2239,7 @@ EOF
   # BREVO_API_KEY FiveM НЕ се обновява — върви предишният release, който още праща писма, а политиката
   # му още назовава стария доставчик. Пръв деплой: .env току-що е създаден — попълни ключа и пусни пак.
   if ! fivem_has_brevo_key "$FIVEM_STATE_DIR/.env"; then
-    warn "FiveM НЕ е обновен: няма BREVO_API_KEY в $FIVEM_STATE_DIR/.env. Добави ключа (Brevo → SMTP & API → API keys), потвърди подателя в Brevo и пусни пак. RESEND_API_KEY махни едва след като новият release праща писма."
-    deploy_failed=1; return
+    skip_project fivem "няма BREVO_API_KEY в $FIVEM_STATE_DIR/.env. Добави ключа (Brevo → SMTP & API → API keys), потвърди подателя в Brevo и пусни пак. RESEND_API_KEY махни едва след като новият release праща писма."; return
   fi
   # `-T`: без него, ако `$d/.env` вече е ДИРЕКТОРИЯ, връзката се създава ВЪТРЕ
   # в нея (`.env/.env`) и приложението тръгва без тайни, без грешка.
@@ -2536,6 +2556,26 @@ EOF
   esac
 }
 
+# ── liftcon — сайт (статичен, Nginx) + приложение (Docker Compose: db + api); стъпките: liftcon/deploy/deploy.sh ──
+# deploy.sh е идемпотентен и сам връща предишното състояние при провал (връзката current на сайта, Nginx
+# конфига, образа на приложението); бекъп на базата и на снимките преди смяната. Първият път генерира
+# тайните (.env, права 600) и пита в терминала за имейл и парола на администратора — пуска се от човек в SSH.
+# Още не е в PROJECTS по подразбиране: първото пускане е изрично (PROJECTS="liftcon"), след DNS на liftcon.it.
+deploy_liftcon() {
+  local d="$SRC/liftcon" rc=0
+  [ -d "$d" ] || { warn "Няма liftcon/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "liftcon: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам liftcon (сайт + Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  DOMAIN="${LIFTCON_DOMAIN:-liftcon.it}" INDEXNOW="${LIFTCON_INDEXNOW:-1}" bash "$d/deploy/deploy.sh" || rc=$?
+  if [ "$rc" -eq 0 ]; then
+    ok "liftcon: жив — https://${LIFTCON_DOMAIN:-liftcon.it} (health 200: /, /health, /admin/login)."
+  else
+    deploy_failed=1
+    warn "liftcon: деплоят спря (код $rc); deploy.sh е върнал предишното състояние. Логове: docker logs --tail 200 liftcon-api"
+  fi
+}
+
 for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
@@ -2557,6 +2597,7 @@ for p in $PROJECTS; do
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     fivem|FiveM)          deploy_fivem ;;
     linketto)   deploy_linketto ;;
+    liftcon)    deploy_liftcon ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done
@@ -2708,8 +2749,14 @@ prune_releases() {
 }
 prune_releases
 
+if [ "${#SKIPPED[@]}" -gt 0 ]; then
+  warn "Пропуснати (не са обновени — работи предишният им код):"
+  for x in "${SKIPPED[@]}"; do warn "  · $x"; done
+fi
+SKIPPED_NOTE=""
+if [ "${#SKIPPED[@]}" -gt 0 ]; then SKIPPED_NOTE=" · пропуснати: ${#SKIPPED[@]} (виж по-горе)"; fi
 if [ "$deploy_failed" = "0" ]; then
-  ok "Деплой готов ($TS). Проекти: $PROJECTS"
+  ok "Деплой готов ($TS). Проекти: $PROJECTS${SKIPPED_NOTE}"
 else
   die "Деплой завърши с грешки — виж изхода по-горе (направен е опит за rollback)."
 fi
