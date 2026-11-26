@@ -69,14 +69,14 @@
     {
       "id": "cc-hook-events",
       "kind": "taxonomy",
-      "statement": "Claude Code хуковите събития са 33 (жива сверка 23.11.2026), вкл. ConfigChange, PreModelSwitch и PostModelSwitch. PostToolUseFailure подава грешката в полето `error` (низ, форматът зависи от инструмента) плюс незадължително `is_interrupt`. На Windows има и отделен инструмент PowerShell (поле `command`) — кука, която съди шел команди, назовава `Bash|PowerShell`. Броят се мести без обявяване — сверявай живо, не по памет.",
+      "statement": "Claude Code хуковите събития са 34 (жива сверка 26.11.2026), вкл. ConfigChange, PreModelSwitch, PostModelSwitch и PreSkillShellCommand (от 2.1.332; PreToolUse не тича за inline командите на умение).PostToolUseFailure подава грешката в полето `error` (низ, форматът зависи от инструмента) плюс незадължително `is_interrupt`. На Windows има и отделен инструмент PowerShell (поле `command`) — кука, която съди шел команди, назовава `Bash|PowerShell`. Броят се мести без обявяване — сверявай живо, не по памет.",
       "source": "https://code.claude.com/docs/en/hooks.md ; https://code.claude.com/docs/en/tools-reference",
       "agents": [
         "ai-djiyata",
         "izpitatelya",
         "razbivacha"
       ],
-      "checkedAt": "2026-11-23",
+      "checkedAt": "2026-11-26",
       "note": "Открито при пресверката на карантината (2026-08-04): поука твърдеше 30 и `error_type`; и двете се разминаха с живата дока. Anchor умишлено ЛИПСВА — числото е точно това, което се мени, значи котва по литерал ще пада при всяка промяна вместо да иска пресверка."
     },
     {
