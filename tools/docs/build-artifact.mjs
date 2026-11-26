@@ -33,6 +33,7 @@ import { spawnSync } from "node:child_process";
 // Тайните в билда — по единствения списък (същият като secret-scan/куките), в отделен модул.
 import { findSecretsIn } from "./artifact-secrets.mjs";
 import { isMain } from "../lib/is-main.mjs";
+import { buildAppData, embedJson } from "./agents-app.mjs";
 export { findSecretsIn };
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -72,6 +73,18 @@ export function dashReader(ref = null, cwd = ROOT) {
     read: (p) => { const r = git(["show", `${ref}:agents-dashboard/${p}`], cwd); if (r == null) throw new Error(`няма agents-dashboard/${p} в ${ref}`); return r; },
     readBuf: (p) => { const r = spawnSync("git", ["show", `${ref}:agents-dashboard/${p}`], { cwd, maxBuffer: 1 << 28 }); if (r.status !== 0) throw new Error(`няма agents-dashboard/${p} в ${ref}`); return r.stdout; },
     list: (d) => (git(["ls-tree", "--name-only", `${ref}:agents-dashboard/${d}`], cwd) || "").split("\n").filter(Boolean),
+  };
+}
+
+/** Четец на РЕПОТО (пътища от корена) — дефинициите, екипите и уменията за страницата „Агентите“. */
+export function repoReader(ref = null, cwd = ROOT) {
+  if (!ref) return {
+    read: (p) => readFileSync(join(cwd, p), "utf8"),
+    list: (d) => readdirSync(join(cwd, d)),
+  };
+  return {
+    read: (p) => { const r = git(["show", `${ref}:${p}`], cwd); if (r == null) throw new Error(`няма ${p} в ${ref}`); return r; },
+    list: (d) => (git(["ls-tree", "--name-only", `${ref}:${d}`], cwd) || "").split("\n").filter(Boolean),
   };
 }
 
@@ -223,6 +236,35 @@ export function versionRegressions(html, mem) {
   return out;
 }
 
+// ── Страницата „Агентите“ (26.11.2026): карти по екипи, профили, чат. Главна страница на артефакта;
+// галактиката отива до нея като `galaxy.html` (страница в `files` — цял документ, без обвивка от публикуването).
+const APP_DATA_RE = /<script type="application\/json" id="app-data">[\s\S]*?<\/script>/;
+const APP_MASCOTS_RE = /<script type="application\/json" id="app-mascots">[\s\S]*?<\/script>/;
+
+/** app.html + данните от репото (repo) + маскотите (dash). Връща текста за публикуване и числата. */
+export function buildApp(dash = DASH, reader = null, repo = repoReader(null)) {
+  // Шаблонът е КОД — от работното дърво (в паметта още може да го няма); данните и маскотите — от reader/repo.
+  let html = stripDocumentWrapper(readFileSync(join(dash, "app.html"), "utf8"));
+  if (!APP_DATA_RE.test(html) || !APP_MASCOTS_RE.test(html)) throw new Error("app.html няма местата за данни (app-data/app-mascots) — страницата е сменена");
+  const data = buildAppData(repo);
+  // Само растерни кадри: правилото „никога SVG“ (страницата и без това приема само webp/png/jpeg).
+  const raster = (m) => Object.fromEntries(Object.entries(m).filter(([, u]) => /^data:image\/(webp|png|jpeg);base64,/.test(u)));
+  const mascots = { icons: raster(mascotDataUris(join(dash, "mascots"), reader)), portraits: raster(mascotPortraitUris(join(dash, "mascots"), reader)) };
+  const dataJson = embedJson(data), mascotsJson = embedJson(mascots);
+  html = html.replace(APP_DATA_RE, () => `<script type="application/json" id="app-data">${dataJson}</script>`);
+  html = html.replace(APP_MASCOTS_RE, () => `<script type="application/json" id="app-mascots">${mascotsJson}</script>`);
+  assertPublishable(html, { "данните на агентите": dataJson, "маскотите": mascotsJson });
+  return { html, agents: data.agents.length, teams: data.teams.length };
+}
+
+/** Галактиката като самостоятелна страница (`galaxy.html` в `files`): цял документ + връщане към агентите. */
+export function galaxyDocument(inner) {
+  const back = '<a href="index.html" onclick="if(history.length>1){history.back();return false}" '
+    + 'style="position:fixed;z-index:9999;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:8px 14px;border-radius:999px;'
+    + 'background:rgba(15,18,40,.82);color:#fff;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;border:1px solid rgba(255,255,255,.2)">← Агентите</a>';
+  return `<!doctype html>\n<html lang="bg"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>\n${back}\n${inner}</body></html>\n`;
+}
+
 /** Целият билд. Връща готовия за публикуване текст + числата за доклада. */
 export function build(dash = DASH, reader = null) {
   const rd = reader || { read: (p) => readFileSync(join(dash, p), "utf8") };
@@ -303,9 +345,21 @@ if (isMain(import.meta.url)) {
       process.exit(1);
     }
   }
-  writeFileSync(out, r.html);
-  console.log(`\x1b[32m✓\x1b[0m ${out} · ${(r.html.length / 1024 / 1024).toFixed(2)} MB · ${r.icons} маскота вградени`);
+  // Главната страница = „Агентите“ (карти, профили, чат); галактиката — до нея като galaxy.html.
+  let app;
+  try { app = buildApp(DASH, ref ? reader : null, repoReader(ref)); } catch (e) {
+    console.error(`\x1b[31m✗ страницата „Агентите“: ${e.message}\x1b[0m`);
+    process.exit(1);
+  }
+  const galaxyOut = join(dirname(out), "galaxy.html");
+  writeFileSync(out, app.html);
+  writeFileSync(galaxyOut, galaxyDocument(r.html));
+  console.log(`\x1b[32m✓\x1b[0m ${out} · ${(app.html.length / 1024 / 1024).toFixed(2)} MB · ${app.agents} агента в ${app.teams} екипа`);
+  console.log(`\x1b[32m✓\x1b[0m ${galaxyOut} · ${(r.html.length / 1024 / 1024).toFixed(2)} MB · ${r.icons} маскота вградени`);
   console.log(`  източник: ${reader.source} · агенти: ${r.agents} · сума проверени поуки: ${r.lessons}`);
   console.log(`  публикувай на СЪЩИЯ адрес: ${ARTIFACT_URL}`);
+  console.log(`    file_path: ${out}`);
+  console.log(`    files: { "galaxy.html": "${galaxyOut}" }`);
+  console.log("    capabilities (само при първото публикуване на новата страница): { sample: {}, db: {}, user: {} }");
   if (ref) console.log(`  после: node tools/docs/build-artifact.mjs --mark-published ${ref}`);
 }
