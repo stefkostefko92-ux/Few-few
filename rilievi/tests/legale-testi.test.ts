@@ -46,6 +46,10 @@ const PUBBLICATI: Record<string, string> = {
   // (2.5, A.9), the notice at the end of the quote (15.3, 15.4), the export as it is (A.11, B.7–B.9), Brevo
   // (S.1). Article 24 untouched. In force only announced (art. 18.1).
   'condizioni-2026-11-15': 'dc43326c4e1953c80b96695ad174e65444f887ec0cf391ada4cad0a0a31fe7ae',
+  // The suppliers' forms: «Moduli di terzi» (6.6), only for orders to their owner (6.8), changed or withdrawn by
+  // us (6.9), not ours (13.1), the marks without a list and without affiliation (13.4), 5.5, the export (B.8 f, j);
+  // the specific approval names it (art. 24). In force on its own day without announcement (owner, 26 Nov 2026).
+  'condizioni-2026-11-27': '7f842e7033fc1c0227e3272c5a485c97b950948977e99e92e5239955a2536fd0',
 };
 
 const tutto = (doc: TestoLegaleDoc): string => testoPiano(doc);

@@ -147,7 +147,11 @@
     "hint": "I campi del modulo d'ordine, nello stesso ordine del foglio. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte.",
     "download": "Scarica PDF",
     "print": "Stampa",
-    "errorLabel": "{label} ({fornitore})"
+    "errorLabel": "{label} ({fornitore})",
+    "avviso": {
+      "terzo": "Questo modulo è di {fornitore}, che ne è titolare. Usalo solo per chiedere un preventivo o fare un ordine a {fornitore} e non diffonderlo per altri scopi (Condizioni, art. 6.8).",
+      "ridisegnato": "Foglio di Rilievi Impianti ridisegnato sullo schema del modulo di {fornitore}. Usalo solo per chiedere un preventivo o fare un ordine a {fornitore} (Condizioni, art. 6.8)."
+    }
   },
   "collegati": {
     "luogo": {

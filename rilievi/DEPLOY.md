@@ -43,6 +43,24 @@ sudo bash /opt/few-few/current/rilievi/deploy/setup-env.sh
 `ConfigPagamenti`, `PostaPortale`, `ChiaveApi`), `deploy.sh` НЕ създава нов ключ: спира (изход 1,
 работещото не е пипано), казва колко и какво е намерил и да се върне старият от бекъпа на тайните.
 
+### Ключът на модулите на доставчиците (задължителен от версия 5.8)
+
+Модулите на доставчиците (Pelazza, MoviLift, DMG, Mastech, Elettroquadri, GEAT и нашите листове) са в
+публичното репо само шифровани — `assets/moduli/sigillati/*.enc` (AES-256-GCM, `src/ordini/moduli-sigillo.ts`).
+Ключът `MODULI_KEY` е при собственика (в мениджъра на пароли) и в `.env` на сървъра — никога в репото. Слага се
+веднъж, скрито (не остава в историята на шела):
+
+```bash
+sudo bash /opt/few-few/current/rilievi/deploy/moduli-chiave.sh
+```
+
+Без ключ `deploy.sh` спира още в началото (изход 1, работещото не е пипано). С ключ, който не отваря модулите на
+новия release, спира след build-а, преди смяната на контейнерите (`check_moduli` — `dist/scripts/moduli-verifica.js`
+с новия образ). Ключът е и в бекъпа на тайните (копието на `.env`). За CI — същият ключ в тайната
+`RILIEVI_MODULI_KEY` на репото в GitHub (Settings → Secrets and variables → Actions). Нов или сменен модул:
+незашифрованият PDF в `assets/moduli/` (не влиза в git), после `MODULI_KEY=… npm run moduli:sigilla` и commit на
+`sigillati/`. Смяна на ключа: всички модули наново с новия ключ, после `moduli-chiave.sh` и деплой.
+
 ### Входът с Microsoft / Google (по избор)
 
 Клиент, който иска своите хора да влизат с акаунта си в Microsoft Entra или Google Workspace (условията
@@ -513,7 +531,8 @@ sudo RILIEVI_SKIP_BACKUP=1 bash "$PWD/deploy/deploy.sh"
 
 Дискът или хостът е загубен; има копие извън сървъра (т. 6) и копие на тайните. **Никога `setup-env.sh`**: той
 прави нов `INTERVENTI_SEAL_KEY` и възстановената база става безполезна (2FA, плащания, печати, API ключове —
-т. 1). Нужни от копието на тайните, качени на новия сървър в `/root/rilievi-tajni/`: `.env`, `backup.env` и
+т. 1). Нужни от копието на тайните, качени на новия сървър в `/root/rilievi-tajni/`: `.env` (с `MODULI_KEY`;
+ако го няма в копието — `moduli-chiave.sh` с ключа от мениджъра на пароли), `backup.env` и
 ключът за Storage Box `rilievi_backup` (без тях — само дъмп без снимки и без ключ, т.е. нищо). Колко трае — да
 се измери при първата проба и да се сравни с RTO на `/stato` (8 ч).
 

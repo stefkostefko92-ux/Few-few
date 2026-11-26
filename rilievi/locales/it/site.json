@@ -69,7 +69,7 @@
       },
       "orders": {
         "title": "I moduli d'ordine si compilano dal rilievo",
-        "text": "Se il quadro va sostituito, la scheda compila il modulo d'ordine del costruttore: Pelazza, Movilift, DMG Pitagora 4.0, Mastech (NG120 o QI Touch), Elettroquadri (in base al tipo di impianto) e GEAT. Allo stesso modo prepara il modulo delle bottoniere DMG, la scheda dati dell'argano e il modulo 2SG per operatore e sospensioni. Se la fossa o la testata sono ridotte, prepara anche i dati di AMI 100 Mono RTBS. Ogni modulo esce in PDF e lo mandi al fornitore per email dal portale. I marchi citati appartengono ai rispettivi titolari."
+        "text": "Se il quadro va sostituito, la scheda compila il modulo d'ordine del costruttore: Pelazza, Movilift, DMG Pitagora 4.0, Mastech (NG120 o QI Touch), Elettroquadri (in base al tipo di impianto) e GEAT. Allo stesso modo prepara il modulo delle bottoniere DMG, la scheda dati dell'argano e il modulo 2SG per operatore e sospensioni. Se la fossa o la testata sono ridotte, prepara anche i dati di AMI 100 Mono RTBS. Ogni modulo esce in PDF e lo mandi al fornitore per email dal portale. I marchi citati appartengono ai rispettivi titolari: non siamo affiliati a questi produttori."
       },
       "misure": {
         "title": "Misuri le bottoniere piano per piano",
@@ -271,7 +271,7 @@
       "pages": "Pagine",
       "contact": "Contatti",
       "legal": "Note legali",
-      "trademarks": "I marchi citati appartengono ai rispettivi titolari.",
+      "trademarks": "I marchi citati appartengono ai rispettivi titolari e indicano solo i moduli d'ordine che il portale compila. Rilievi Impianti non è affiliato a questi produttori.",
       "segnalazioni": "Segnalazioni",
       "aggiornato": "Aggiornato il {data}"
     }
