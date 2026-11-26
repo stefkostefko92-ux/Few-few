@@ -971,3 +971,5 @@
 {"t":"handoff","ts":"2026-11-26T05:42:31.486Z","id":"r0e442279","from":"ai-djiyata","to":"printadjiyata","status":"наред","run":"05956ce3"}
 {"t":"start","ts":"2026-11-26T10:26:17.087Z","id":"r64750171","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-11-26T10:26:17.087Z","id":"r64750171","from":"ai-djiyata","to":"човек","status":"има бележки","run":"68dae64b"}
+{"t":"start","ts":"2026-11-26T11:11:28.844Z","id":"r099fd081","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-11-26T11:11:28.845Z","id":"r099fd081","from":"ai-djiyata","to":"човек","status":"има бележки","run":"9c2c2043"}
