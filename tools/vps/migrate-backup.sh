@@ -182,16 +182,19 @@ CONTAINERS=(); BINDS=(); VOLS=(); INC_VOLS=(); SKIP_VOLS=(); WORKDIRS=(); PG_HEL
 if [ "$DOCKER" = 1 ]; then
   while IFS= read -r c; do
     [ -n "$c" ] || continue
+    # Контейнер, изтрит между `ps` и `inspect`, не бива да убива бекъпа под set -e — и не влиза в
+    # списъка, иначе общият `docker inspect` по-долу пада на липсващото име (преглед на PR #312).
+    CRUN[$c]="$(docker inspect -f '{{.State.Running}}' "$c" 2>/dev/null)" || { warn "Контейнер $c изчезна по време на обхода — пропускам."; continue; }
     CONTAINERS+=("$c")
     CKIND[$c]="$(db_kind "$c")"
-    # Контейнер, изтрит между `ps` и `inspect`, не бива да убива бекъпа под set -e.
-    CRUN[$c]="$(docker inspect -f '{{.State.Running}}' "$c" 2>/dev/null)" || { warn "Контейнер $c изчезна по време на обхода — пропускам."; continue; }
     # Образ на Postgres без жив сървър вътре (напр. бекъп помощник с pg_dump) не е
     # база: дъмп от него е невъзможен и би дал фалшив провал.
     if [ "${CKIND[$c]}" = pg ] && [ "${CRUN[$c]}" = true ] && ! docker exec "$c" pg_isready -q >/dev/null 2>&1; then
-      # С том за данни (PGDATA) това е БАЗА, която не отговаря — не помощник. Тихо „помощен“ значеше
-      # без дъмп и без суров том при зелен пинг (преглед на PR #312): сега е провал, а томът ѝ влиза.
-      if docker inspect -f '{{range .Mounts}}{{.Destination}}{{println}}{{end}}' "$c" 2>/dev/null | grep -q '^/var/lib/postgresql'; then
+      # Командата е самият сървър `postgres` → това е БАЗА, която не отговаря, не помощник: тихо
+      # „помощен“ значеше без дъмп и без суров том при зелен пинг (преглед на PR #312). Помощник с
+      # образ postgres (напр. zabobovdol-backup) има друга команда и анонимен VOLUME от образа —
+      # затова решението е по командата, не по наличието на том.
+      if [ "$(docker inspect -f '{{index .Config.Cmd 0}}' "$c" 2>/dev/null || true)" = postgres ]; then
         CKIND[$c]=pgdown
       else
         CKIND[$c]=app; PG_HELPERS+=("$c")
@@ -216,7 +219,7 @@ if [ "$DOCKER" = 1 ]; then
   while IFS= read -r v; do
     [ -n "$v" ] || continue
     VOLS+=("$v")
-    mp="$(docker volume inspect -f '{{.Mountpoint}}' "$v")"
+    mp="$(docker volume inspect -f '{{.Mountpoint}}' "$v" 2>/dev/null)" || { warn "Том $v изчезна по време на обхода — пропускам."; continue; }
     # Горещ режим: том на ЖИВА база не се копира сурово — дъмпът е копието.
     # FINAL спира базите преди архива, значи там суровото копие е консистентно.
     if [ "$MODE" != final ] && [ -n "${LIVE_DB_SRC[$mp]:-}" ]; then SKIP_VOLS+=("$v"); else INC_VOLS+=("$mp"); fi
@@ -341,7 +344,7 @@ if [ "$DOCKER" = 1 ]; then
   done
   sect "Docker томове (име · размер · ползва се от · в архива)"
   for v in "${VOLS[@]}"; do
-    mp="$(docker volume inspect -f '{{.Mountpoint}}' "$v")"
+    mp="$(docker volume inspect -f '{{.Mountpoint}}' "$v" 2>/dev/null)" || { warn "Том $v изчезна по време на обхода — пропускам."; continue; }
     state=да; case " ${SKIP_VOLS[*]} " in *" $v "*) state="не (жива база — дъмпът е копието)";; esac
     inv "$v · $(du -sh "$mp" 2>/dev/null | cut -f1) · ${VOL_USERS[$v]:-нищо} · $state"
   done
@@ -693,7 +696,9 @@ if [ "$DOCKER" = 1 ]; then
   docker network ls > "$STAGE/docker/networks.txt"
   docker images --digests > "$STAGE/docker/images.txt"
   # inspect носи средата на контейнерите (тайни) — затова е САМО вътре в шифрования архив.
-  if [ "${#CONTAINERS[@]}" -gt 0 ]; then docker inspect "${CONTAINERS[@]}" > "$STAGE/docker/inspect.json"; fi
+  if [ "${#CONTAINERS[@]}" -gt 0 ]; then
+    docker inspect "${CONTAINERS[@]}" > "$STAGE/docker/inspect.json" 2>"$ERR" || warn "docker inspect: контейнер изчезна по време на бекъпа — $(errline)"
+  fi
   if [ "$SAVE_IMAGES" = 1 ]; then
     # По име:таг, за да се заредят със същото име. Закачените по @sha256 не се пазят:
     # docker save не ги приема така, а на новия сървър се теглят по същия digest.
@@ -743,7 +748,8 @@ if [ "$MODE" = dumps ]; then
   if [ "$covered" = 0 ]; then printf '%s\n' "$DUMP_TO" >> "$STAGE/paths.txt"; fi
   { for x in "${EXCL_ANCH[@]}"; do printf '/%s\n' "$x"; done
     for x in "${EXCL_NAME[@]}"; do printf '%s\n' "$x"; done; } > "$STAGE/excludes.txt"
-  install -d -m 700 "$(dirname "$DUMP_TO")"
+  # Само ако липсва: install -d -m сменя правата и на СЪЩЕСТВУВАЩА папка (/var/backups 755 → 700).
+  [ -d "$(dirname "$DUMP_TO")" ] || install -d -m 700 "$(dirname "$DUMP_TO")"
   rm -rf -- "$DUMP_TO.new" "$DUMP_TO.old"
   # STAGE и DUMP_TO са на един диск по подразбиране → mv е преименуване, не копие.
   mv "$STAGE" "$DUMP_TO.new"

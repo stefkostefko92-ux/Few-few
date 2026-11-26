@@ -157,6 +157,10 @@ test("backup_sqlite: база, изчезнала по време на обхо�
 test("Postgres без отговор, но с том с данни, е ПРОВАЛ (не „помощен“) и суровият му том влиза", () => {
   const src = readFileSync(script, "utf8");
   assert.match(src, /CKIND\[\$c\]=pgdown/, "жива база без pg_isready се маркира отделно");
+  // Трети преглед: помощник с образ postgres и анонимен VOLUME (zabobovdol-backup) НЕ е база —
+  // база е само контейнер, чиято команда е самият сървър `postgres`.
+  assert.match(src, /index \.Config\.Cmd 0/, "решението е по командата на контейнера");
+  assert.doesNotMatch(src, /grep -q '\^\/var\/lib\/postgresql'/, "не по наличието на том (анонимният VOLUME на образа лъже)");
   assert.match(src, /pgdown\) fail "Postgres \$c/, "и дава fail, не тишина");
   assert.doesNotMatch(src.match(/case "\$\{CKIND\[\$c\]\}" in ([a-z|]+)\) if/)[1], /pgdown/, "томът ѝ не се пропуска");
 });
@@ -166,4 +170,14 @@ test("нощните дъмпове и пробното възстановява
   assert.match(src, /MODE" = dumps \] && \[ "\$FREE" -lt "\$MIN_FREE_KB" \]/, "dumps: минимум свободно място");
   const off = readFileSync(join(here, "offsite-backup.sh"), "utf8");
   assert.match(off, /df -Pk "\$VERIFY_TMP"/, "verify сверява свободното място преди restore");
+});
+
+test("изчезнал контейнер/том по време на бекъпа не убива нощното копие; /var/backups пази правата си", () => {
+  const src = readFileSync(script, "utf8");
+  const loop = src.slice(src.indexOf('while IFS= read -r c; do'), src.indexOf('# Папката на compose проекта'));
+  assert.ok(loop.indexOf("CONTAINERS+=") > loop.indexOf("CRUN[$c]="), "името влиза в списъка едва след успешен inspect");
+  assert.match(src, /docker inspect "\$\{CONTAINERS\[@\]\}" > "\$STAGE\/docker\/inspect\.json" 2>"\$ERR" \|\| warn/, "общият inspect не е фатален");
+  const vols = src.match(/mp="\$\(docker volume inspect -f '\{\{\.Mountpoint\}\}' "\$v"[^\n]*/g) || [];
+  assert.ok(vols.length >= 2 && vols.every((l) => /\|\|/.test(l)), "всеки volume inspect има резервен път");
+  assert.doesNotMatch(src, /^\s*install -d -m 700 "\$\(dirname "\$DUMP_TO"\)"$/m, "не сменя правата на съществуваща /var/backups");
 });
