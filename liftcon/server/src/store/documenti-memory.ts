@@ -53,6 +53,9 @@ export function documentiMemory(): StoreDocumenti {
       async eliminato(id) {
         return lapidi.has(id);
       },
+      async contaEliminati() {
+        return lapidi.size;
+      },
       async figli(id) {
         return [...doc.values()].filter((d) => d.revisioneDi === id).map(sintesi);
       },

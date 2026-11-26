@@ -23,6 +23,8 @@ const Env = z.object({
   SITE_DIR: z.string().default("/srv/site"),
   // Снимките и издадените PDF на документите (том на сървъра, в бекъпа).
   DATA_DIR: z.string().default("/srv/data"),
+  // Списъкът на изтриванията (документи, заявки) — извън бекъпите; при старт се прилага пак (D16а).
+  ELIMINAZIONI_DIR: z.string().default("/srv/eliminazioni"),
   SITE_SRC: z.string().default("/app/site"),
   CONTENT_DEFAULTS: z.string().default("/app/content-defaults.json"),
   // Първият администратор не идва от средата: deploy.sh го създава (stdin → dist/cli/primo-admin.js).

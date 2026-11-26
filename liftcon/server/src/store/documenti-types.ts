@@ -65,6 +65,8 @@ export interface StoreDocumenti {
     /** Изтрива документа (снимките — каскадно) и оставя надгробен запис със същия id. */
     elimina(id: string): Promise<void>;
     eliminato(id: string): Promise<boolean>;
+    /** Брой надгробни записи (изтрити документи). */
+    contaEliminati(): Promise<number>;
     /** Ревизиите, създадени от документа (revisioneDi = id). */
     figli(id: string): Promise<DocumentoSintesi[]>;
     /** Резюметата на всички документи (за синхронизацията на устройствата; таван 10 000). */
