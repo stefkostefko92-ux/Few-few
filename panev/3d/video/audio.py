@@ -7,6 +7,7 @@ import re
 import subprocess
 import sys
 import numpy as np
+import film  # noqa: F401,E402 (the film's own build, pose, timeline and texts come first)
 from dsp import ns, follow, limit, convolve, reverb_ir, write_wav
 from timeline import DURATION
 import score

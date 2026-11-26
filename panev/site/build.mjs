@@ -19,6 +19,7 @@ import {
 import { viewerPage } from './templates/viewer.mjs';
 import { familyPage, familyLd, FAMILY_KEYS } from './templates/families.mjs';
 import { patentPage, patentLd, wallsPage, wallsLd, GUIDE_KEYS, GUIDE_PARENTS } from './templates/guides.mjs';
+import { hubPage, hubLd, videoPage, videoLd, videoWebpage, ogPath, VIDEO_KEYS, VIDEO_PAGE_KEYS, VIDEO_PARENTS } from './templates/videos.mjs';
 import { CATALOG_PDF } from './data/products.mjs';
 import { logoPicture } from './templates/asset.mjs';
 
@@ -32,29 +33,37 @@ const versioned = (file) => `/${file}?v=${createHash('sha256').update(readFileSy
 const VISTA_CSS = versioned('css/vista-3d.css');
 const LISTINO_CSS = versioned('css/listino.css');
 const REGOLA_CSS = versioned('css/regola.css');
+const VIDEO_CSS = versioned('css/video.css');
 const SITE_CSS = versioned('css/site.css');
 const STYLES = `<link rel="stylesheet" href="${SITE_CSS}">`;
 
 const PAGES = [
-  { key: 'home',     body: (t) => homePage(t, locales), ld: (t) => homeLd(t), css: [VISTA_CSS, REGOLA_CSS] },
+  { key: 'home',     body: (t) => homePage(t, locales), ld: (t) => homeLd(t), css: [VISTA_CSS, REGOLA_CSS, VIDEO_CSS] },
   { key: 'products', body: (t) => productsPage(t, locales), ld: (t) => productsLd(t), css: [VISTA_CSS, LISTINO_CSS] },
   { key: 'catalog',  body: (t) => catalogPage(t, locales),  ld: (t) => catalogLd(t) },
   { key: 'contacts', body: (t) => contactsPage(t, locales), ld: (t) => contactsLd(t) },
   { key: 'privacy',  body: (t) => privacyPage(t) },
   { key: 'terms',    body: (t) => termsPage(t) },
   // Страниците по семейства: под листата в пътеката (parents).
-  ...FAMILY_KEYS.map((key) => ({ key, body: (t) => familyPage(t, key), ld: (t) => familyLd(t, key), css: [VISTA_CSS, LISTINO_CSS, REGOLA_CSS], parents: ['products'] })),
+  ...FAMILY_KEYS.map((key) => ({ key, body: (t) => familyPage(t, key), ld: (t) => familyLd(t, key), css: [VISTA_CSS, LISTINO_CSS, REGOLA_CSS, VIDEO_CSS], parents: ['products'] })),
   // Задълбочените страници: патентът и монтажът върху неравни зидарии (templates/guides.mjs).
   { key: 'patent', body: (t) => patentPage(t), ld: (t) => patentLd(t), css: [VISTA_CSS, REGOLA_CSS], parents: GUIDE_PARENTS.patent },
   { key: 'walls', body: (t) => wallsPage(t), ld: (t) => wallsLd(t), css: [VISTA_CSS, REGOLA_CSS], parents: GUIDE_PARENTS.walls },
+  // Инструкциите за монтаж във видео (templates/videos.mjs): хъбът и по една страница за всеки клип; в менюто светва
+  // „Istruzioni“ и на страниците на клиповете, а снимката за споделяне е кадър от клипа.
+  { key: 'howto', body: (t) => hubPage(t), ld: (t) => hubLd(t), css: [VIDEO_CSS], parents: VIDEO_PARENTS.howto },
+  ...VIDEO_KEYS.map((key) => ({ key, active: 'howto', body: (t) => videoPage(t, key), ld: (t) => videoLd(t, key), webpage: (t) => videoWebpage(t, key),
+    og: ogPath(key), css: [VIDEO_CSS], parents: VIDEO_PARENTS[key] })),
 ];
 
 let written = 0;
 for (const t of locales) {
   for (const def of PAGES) {
-    const html = page(t, locales, def.key, def.key, def.body(t), {
+    const html = page(t, locales, def.key, def.active ?? def.key, def.body(t), {
       ldExtra: def.ld ? def.ld(t) : [],
       parents: def.parents ?? [],
+      webpage: def.webpage ? def.webpage(t) : {},
+      ...(def.og ? { ogImage: def.og } : {}),
       styles: [STYLES, ...(def.css ?? []).map((href) => `<link rel="stylesheet" href="${href}">`)].join('\n  '),
     });
     const outPath = join(ROOT, t.base.replace(/^\//, ''), t.slugs[def.key]);
@@ -119,7 +128,7 @@ function lastmod(url, file) {
 }
 const prioOf = (key) => key === 'home' ? '1.0'
   : ['products', 'catalog', ...FAMILY_KEYS].includes(key) ? '0.9'
-  : ['contacts', 'viewer3d', ...GUIDE_KEYS].includes(key) ? '0.8' : '0.3';
+  : ['contacts', 'viewer3d', ...GUIDE_KEYS, ...VIDEO_PAGE_KEYS].includes(key) ? '0.8' : '0.3';
 const urls = [...PAGES, { key: 'viewer3d' }].map((def) => locales.map((t) => {
   const loc = `${ORIGIN}${pagePath(t, def.key)}`;
   const alts = locales.map((lt) =>

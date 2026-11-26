@@ -1,147 +1,183 @@
 {
  "https://panevascensori.it/": {
-  "hash": "f3c14fa3a97756b7",
-  "date": "2026-11-24"
+  "hash": "dbd64b5df420219d",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/": {
-  "hash": "b2cbbeb7d5c46ffb",
-  "date": "2026-11-24"
+  "hash": "ed5eae4b7e479883",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/": {
-  "hash": "8c95a9a99e6b58e0",
-  "date": "2026-11-24"
+  "hash": "012f4c3b10c5196b",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/prodotti": {
-  "hash": "bfe791e6b8216a69",
-  "date": "2026-11-24"
+  "hash": "a471c24c4feba48d",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/products": {
-  "hash": "e3ce95526dcbeda7",
-  "date": "2026-11-24"
+  "hash": "36039287773a4ab4",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/produkti": {
-  "hash": "e097b951563bbd58",
-  "date": "2026-11-24"
+  "hash": "92733908cfdcbbed",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/catalogo": {
-  "hash": "05aab687d38e69b4",
-  "date": "2026-11-24"
+  "hash": "ffab1cf607c8ce40",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/catalogue": {
-  "hash": "1b7c8562c27ec30c",
-  "date": "2026-11-24"
+  "hash": "f8510b932a010ca3",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/katalog": {
-  "hash": "9d3a7c5d9a841aef",
-  "date": "2026-11-24"
+  "hash": "5ebab35af113b289",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/contatti": {
-  "hash": "5b80bf31524b2ba2",
-  "date": "2026-11-22"
+  "hash": "728072800199c34c",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/contacts": {
-  "hash": "19b8c07e0885dd20",
-  "date": "2026-11-22"
+  "hash": "3602890d72bba8d8",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/kontakti": {
-  "hash": "312ca04369246ac3",
-  "date": "2026-11-22"
+  "hash": "603e66a6a8ceeebd",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/privacy": {
-  "hash": "5b92df6be712de81",
-  "date": "2026-11-22"
+  "hash": "86a3972c86369b20",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/privacy": {
-  "hash": "252603416f519de4",
-  "date": "2026-11-22"
+  "hash": "659a40ac2cc04d0f",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/poveritelnost": {
-  "hash": "41b54a8fa3bd0896",
-  "date": "2026-11-22"
+  "hash": "38c86e06a7cba894",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/condizioni": {
-  "hash": "9eaace71d0d50856",
-  "date": "2026-11-24"
+  "hash": "a84c3ef382511f43",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/terms": {
-  "hash": "7ce9f1386937b337",
-  "date": "2026-11-24"
+  "hash": "abfe0e1cee8ea19f",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/usloviya": {
-  "hash": "7ce033e91c95d63a",
-  "date": "2026-11-24"
+  "hash": "e2d32f338b855e3d",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/staffe-porte-di-piano": {
-  "hash": "2ac84b47ae76fa86",
-  "date": "2026-11-24"
+  "hash": "a0469dcf135468cd",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/landing-door-brackets": {
-  "hash": "3019a99e5dab0ef8",
-  "date": "2026-11-24"
+  "hash": "5926dfd0fe3dc861",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/planki-etazhni-vrati": {
-  "hash": "7df5a69dc9b2284d",
-  "date": "2026-11-24"
+  "hash": "d6ddefba6af24d3f",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/supporti-guide-contrappeso": {
-  "hash": "6f3b792f58509cec",
-  "date": "2026-11-24"
+  "hash": "d6758b92feb5e980",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/counterweight-guide-rail-supports": {
-  "hash": "dfd47f4841e6ef6c",
-  "date": "2026-11-24"
+  "hash": "3eb394cabedeb4eb",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/opori-vodachi-protivotezhest": {
-  "hash": "53842916d67bbd7e",
-  "date": "2026-11-24"
+  "hash": "b8d2852bcee8d79f",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/staffe-guida-sg": {
-  "hash": "bc21b0fdffa1586e",
-  "date": "2026-11-24"
+  "hash": "7ea11b1f4927f519",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/sg-guide-brackets": {
-  "hash": "23c59ee91a50ced3",
-  "date": "2026-11-24"
+  "hash": "2cfcfc89c868d284",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/planki-sg": {
-  "hash": "46a18e1d3718dec2",
-  "date": "2026-11-24"
+  "hash": "e5ca5dcce09be047",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/staffe-su-misura": {
-  "hash": "b9d6856a7d8017bb",
-  "date": "2026-11-24"
+  "hash": "5722511e6034337d",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/custom-brackets": {
-  "hash": "b85a6adbf8dc08a9",
-  "date": "2026-11-24"
+  "hash": "7be861e7c58fc3f6",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/planki-po-poruchka": {
-  "hash": "834c67ac56750e1e",
-  "date": "2026-11-24"
+  "hash": "9b3c61e5e37881f4",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/brevetto": {
-  "hash": "a85d33a9a3b7c6b8",
-  "date": "2026-11-24"
+  "hash": "670a8d07fa1da32f",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/patent": {
-  "hash": "87c5f433ac5e087c",
-  "date": "2026-11-24"
+  "hash": "cf87535aabe8402d",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/patent": {
-  "hash": "daf67c8142a80ef8",
-  "date": "2026-11-24"
+  "hash": "f41da3e605718be3",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/staffe-murature-irregolari": {
-  "hash": "8f9f46f108a13cce",
-  "date": "2026-11-22"
+  "hash": "d61e792a6311dabb",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/en/brackets-for-uneven-walls": {
-  "hash": "cfe6b6fa7465244c",
-  "date": "2026-11-22"
+  "hash": "65c999bd26df38db",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/bg/planki-za-neravni-steni": {
-  "hash": "4c204aa4370447f8",
-  "date": "2026-11-22"
+  "hash": "f670e644fc08ce8b",
+  "date": "2026-11-26"
+ },
+ "https://panevascensori.it/istruzioni-montaggio": {
+  "hash": "eb5f3a0ea5881e93",
+  "date": "2026-11-26"
+ },
+ "https://panevascensori.it/en/installation-instructions": {
+  "hash": "30471df3041af506",
+  "date": "2026-11-26"
+ },
+ "https://panevascensori.it/bg/instruktsii-za-montazh": {
+  "hash": "999d26ddae035d49",
+  "date": "2026-11-26"
+ },
+ "https://panevascensori.it/montaggio-staffe-porte-di-piano": {
+  "hash": "7f5d1fbeb7ad9d7f",
+  "date": "2026-11-26"
+ },
+ "https://panevascensori.it/en/landing-door-bracket-installation": {
+  "hash": "23d519cdb522190a",
+  "date": "2026-11-26"
+ },
+ "https://panevascensori.it/bg/montazh-planki-etazhni-vrati": {
+  "hash": "2d3ee648e897b8cd",
+  "date": "2026-11-26"
+ },
+ "https://panevascensori.it/montaggio-guide-contrappeso": {
+  "hash": "2ed92863df0d8457",
+  "date": "2026-11-26"
+ },
+ "https://panevascensori.it/en/counterweight-guide-bracket-installation": {
+  "hash": "af8d0fdc45912da6",
+  "date": "2026-11-26"
+ },
+ "https://panevascensori.it/bg/montazh-vodachi-protivotezhest": {
+  "hash": "be5629051ca47141",
+  "date": "2026-11-26"
  },
  "https://panevascensori.it/staffe-3d": {
   "hash": "2d792ecea52a7be3",

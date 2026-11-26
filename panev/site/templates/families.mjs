@@ -9,6 +9,7 @@ import { COMPANY, CATALOG_PDF } from '../data/products.mjs';
 import { render3d } from './parts.mjs';
 import { regola, regolaScript } from './regola.mjs';
 import { cantiereSection } from './cantiere.mjs';
+import { videoSection, VIDEO_OF_FAMILY } from './videos.mjs';
 
 export const FAMILY_KEYS = Object.keys(FAMILIES);
 
@@ -60,6 +61,7 @@ export function familyPage(t, key) {
 ${key === 'famDoors' || key === 'famGuides' ? regolaScript() : ''}
 
 ${sectionsHtml(t, fam.sections, { covers: false })}
+${VIDEO_OF_FAMILY[key] ? videoSection(t, [VIDEO_OF_FAMILY[key]], { tint: true }) : ''}
 ${cantiereSection(t, key)}
 
 <section class="section section-tint" id="faq">

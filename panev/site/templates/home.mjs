@@ -5,6 +5,7 @@ import { render3d } from './parts.mjs';
 import { regola, regolaScript } from './regola.mjs';
 import { cantiereSection } from './cantiere.mjs';
 import { COMPANY, PATENT, CATALOG_PDF, doorSystems, guideConfigs, sgFixed } from '../data/products.mjs';
+import { videoSection, VIDEO_KEYS } from './videos.mjs';
 
 // ── Начална страница ─────────────────────────────────────────
 export function homePage(t, locales) {
@@ -78,6 +79,7 @@ export function homePage(t, locales) {
 </section>
 ${regolaScript()}
 ${viewerSection(t)}
+${videoSection(t, VIDEO_KEYS)}
 
 <section class="section">
   <div class="wrap section-grid">

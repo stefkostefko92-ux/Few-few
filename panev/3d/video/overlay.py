@@ -1,9 +1,8 @@
 """Italian on-screen text of the mounting video: step cards, part callouts (catalogue numbering, p. 10),
 the angle readout, the slide arrow and the cut line, intro and closing cards. Drawn at 2x and reduced."""
 import math
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
-
 import os
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 # Designed in 1920x1080, drawn at SS times that and reduced to VIDEO_OUT (1920x1080 or 3840x2160).
@@ -14,8 +13,12 @@ FONT = os.environ.get("VIDEO_FONTS", os.path.join(_HERE, "assets", "fonts")) + o
 LOGO = os.path.join(_HERE, "..", "..", "img", "brand", "panev-ascensori-logo.webp")
 NAVY, DEEP, ACCENT, WHITE, RED = (22, 40, 98), (16, 29, 73), (143, 176, 255), (255, 255, 255), (229, 72, 77)
 
+import film  # the film's own texts and timeline come first
+import texts
 from timeline import STEPS as STEP_TIMES, DURATION
 from texts import STEP_TEXT, CALLOUTS
+HEADER, INTRO_CARD, OUTRO_CARD = (texts.CARDS[k] for k in ("header", "intro", "outro"))  # the cards that differ per film
+DOOR = not film.NAME  # the angle readout and the sill dimension belong to the landing-door film
 STEPS = [(a, b, *txt) for (a, b), txt in zip(STEP_TIMES, STEP_TEXT)]
 N_STEPS = len(STEPS)
 _fonts = {}
@@ -119,7 +122,7 @@ def header(c, t, k):
 
     def draw(d, sh):
         x, y = 72, 64
-        txt = "GUIDA AL MONTAGGIO  ·  STAFFA A 45 175 2 + B 45 320"
+        txt = HEADER
         f = font("Inter-SemiBold", 20)
         sh.rounded_rectangle(s(x - 18, y - 14, x + text_w(txt, f, 3) / SS + 18, y + 64), 14 * SS, fill=(0, 0, 0, 90))
         spaced(d, s(x, y), txt, f, (*WHITE, 240), 3)
@@ -231,11 +234,12 @@ def intro(c, t):
 
     def draw(d, sh):
         x, y = 96, 360
-        spaced(d, s(x, y), "GUIDA AL MONTAGGIO", font("Inter-SemiBold", 24), (*ACCENT, 255), 5)
-        d.text(s(x - 4, y + 44), "Montaggio", font=font("InterDisplay-Bold", 104), fill=WHITE)
-        d.text(s(x - 4, y + 160), "in undici passi", font=font("InterDisplay-Bold", 104), fill=WHITE)
-        d.text(s(x, y + 304), "Staffa articolata A 45 175 2 + B 45 320", font=font("Inter-Medium", 32), fill=(214, 221, 240, 255))
-        d.text(s(x, y + 352), "Regolazione angolare ± 7° · lamiera 5 mm", font=font("Inter-Regular", 26), fill=(184, 196, 228, 255))
+        kicker, line1, line2, sub1, sub2 = INTRO_CARD
+        spaced(d, s(x, y), kicker, font("Inter-SemiBold", 24), (*ACCENT, 255), 5)
+        d.text(s(x - 4, y + 44), line1, font=font("InterDisplay-Bold", 104), fill=WHITE)
+        d.text(s(x - 4, y + 160), line2, font=font("InterDisplay-Bold", 104), fill=WHITE)
+        d.text(s(x, y + 304), sub1, font=font("Inter-Medium", 32), fill=(214, 221, 240, 255))
+        d.text(s(x, y + 352), sub2, font=font("Inter-Regular", 26), fill=(184, 196, 228, 255))
     c.layer(al, draw)
 
 
@@ -246,12 +250,12 @@ def outro(c, t):
         x, y, w, h = 72, H - 72 - 300, 900, 300
         sh.rounded_rectangle(s(x, y + 8, x + w, y + h + 8), 24 * SS, fill=(0, 0, 0, 120))
         d.rounded_rectangle(s(x, y, x + w, y + h), 24 * SS, fill=(*DEEP, 238))
-        spaced(d, s(x + 40, y + 34), "MONTAGGIO COMPLETATO", font("Inter-SemiBold", 19), (*ACCENT, 255), 3)
-        d.text(s(x + 38, y + 64), "Soglia in bolla, tre staffe bloccate", font=font("InterDisplay-SemiBold", 44), fill=WHITE)
-        for i, ln in enumerate(wrap("Sintesi per installatori qualificati: fanno fede i disegni di montaggio del catalogo tecnico e il progetto dell’impianto.",
-                                    font("Inter-Regular", 25), w - 80)):
+        kicker, title, note, address = OUTRO_CARD
+        spaced(d, s(x + 40, y + 34), kicker, font("Inter-SemiBold", 19), (*ACCENT, 255), 3)
+        d.text(s(x + 38, y + 64), title, font=font("InterDisplay-SemiBold", 44), fill=WHITE)
+        for i, ln in enumerate(wrap(note, font("Inter-Regular", 25), w - 80)):
             d.text(s(x + 40, y + 132 + i * 36), ln, font=font("Inter-Regular", 25), fill=(214, 221, 240, 255))
-        d.text(s(x + 40, y + 228), "panevascensori.it  ·  Catalogo tecnico 2027, pag. 10", font=font("Inter-SemiBold", 26), fill=WHITE)
+        d.text(s(x + 40, y + 228), address, font=font("Inter-SemiBold", 26), fill=WHITE)
     c.layer(al, draw)
     logo_card(c, 72, 64, 84, al)
 
@@ -266,10 +270,12 @@ def frame_overlay(t, pts):
     for i, (a, b, title, body) in enumerate(STEPS):
         if a <= t < b:
             step_card(c, t, i + 1, a, b, title, body)
-    if 74.0 <= t < 84.0:
+    if DOOR and 74.0 <= t < 84.0:
         angle_panel(c, t, pts)
-    if 21.0 <= t < 30.0:
+    if DOOR and 21.0 <= t < 30.0:
         dimension(c, t, pts)
+    if not DOOR:  # a film's own drawings (panels.py in its folder), imported once overlay is whole
+        __import__("panels").draw(c, t, pts)
     for name, badge, label, a, b, dx, dy in CALLOUTS:
         if a <= t < b:
             callout(c, t, pts.get(name), badge, label, a, b, dx, dy)

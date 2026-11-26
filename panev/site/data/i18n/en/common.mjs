@@ -77,7 +77,7 @@ export default {
         'Panev Ascensori privacy',
         'GDPR notice',
         'personal data processing',
-        'cookie-free website',
+        'no profiling cookies',
         'data controller',
         'Carbon Stealth',
       ],
@@ -107,6 +107,7 @@ export default {
       ],
     },
   },
+  navShort: {},  // по-кратки надписи в лентата: тук пълните се събират (виж bg/common.mjs)
   nav: {
     home: 'Home',
     products: 'Products & price list',

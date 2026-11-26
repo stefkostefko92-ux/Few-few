@@ -4,18 +4,19 @@ On YouTube the copy becomes searchable and a viewer can auto-translate it. Lines
 a card longer than one cue is split, each part on screen for a time in proportion to its length."""
 import os
 import sys
+import film  # the film's own texts and timeline come first
+import timeline
+from overlay import INTRO_CARD, OUTRO_CARD
 from texts import STEP_TEXT
 from timeline import STEPS, DURATION
 
 WIDTH = 42
 TITLE = 2.0  # s: "Passo k di 11 / title" alone before the step's line
-INTRO = (0.3, 4.0, "Montaggio in undici passi", "Staffa articolata A 45 175 2 + B 45 320 · Regolazione angolare ± 7° · lamiera 5 mm")
+INTRO = (0.3, 4.0, f"{INTRO_CARD[1]} {INTRO_CARD[2]}", f"{INTRO_CARD[3]} · {INTRO_CARD[4]}")
 # the outro card (overlay.outro) comes 0.4 s after the last step; its words start 0.6 s before that step ends (the sill
 # is flush again), so the note for installers stays readable before the end. The card's address is in the description.
 OUTRO_START = STEPS[-1][1] - 0.6
-OUTRO = ("Montaggio completato: soglia in bolla, tre staffe bloccate.",
-         "Sintesi per installatori qualificati: fanno fede i disegni di montaggio del catalogo tecnico e il progetto "
-         "dell’impianto.")
+OUTRO = (f"{OUTRO_CARD[0].capitalize()}: {OUTRO_CARD[1][0].lower()}{OUTRO_CARD[1][1:]}.", OUTRO_CARD[2])
 
 
 def lines(text):
@@ -74,14 +75,17 @@ def cues():
     return out + spread(OUTRO_START, DURATION, OUTRO)
 
 
+def timeline_slug():
+    return getattr(timeline, "SLUG", "Panev_montaggio-in-undici-passi")
+
+
 def stamp(t):
     ms = round(t * 1000)
     return f"{ms // 3600000:02d}:{ms // 60000 % 60:02d}:{ms // 1000 % 60:02d},{ms % 1000:03d}"
 
 
 def main():
-    path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "out",
-                                                               "Panev_montaggio-in-undici-passi.it.srt")
+    path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(film.DIR, "out", f"{timeline_slug()}.it.srt")
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as fh:
         for i, (a, b, text) in enumerate(cues(), 1):

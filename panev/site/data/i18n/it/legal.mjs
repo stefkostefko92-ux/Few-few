@@ -15,8 +15,9 @@ export default {
         p: 'Trattiamo esclusivamente i dati che ci invii volontariamente tramite il modulo di contatto o via email (nome, azienda, email, telefono, contenuto del messaggio) al solo fine di rispondere alla tua richiesta, gestire ordini e preventivi e adempiere agli obblighi contrattuali, contabili e fiscali. Registriamo inoltre l’indirizzo IP e la data/ora dell’invio per prevenzione degli abusi e sicurezza del modulo (art. 6.1.f GDPR — legittimo interesse). Base giuridica: misure precontrattuali ed esecuzione del contratto (art. 6.1.b GDPR) e obblighi legali (art. 6.1.c GDPR). Il conferimento dei dati è facoltativo, ma necessario per ricevere risposta. Dopo l’invio ricevi un’email automatica di conferma. Non è presente alcun processo decisionale automatizzato né profilazione. La lista d’ordine è salvata solo nel tuo browser (localStorage), non viene trasmessa finché non invii tu la richiesta e si cancella con “Svuota la lista”.',
       },
       {
-        h: 'Cookie e tracciamento',
-        p: 'Questo sito non utilizza cookie di profilazione né strumenti di tracciamento o analisi di terze parti. Non è quindi presente alcun banner di consenso. Eventuali cookie tecnici strettamente necessari non richiedono consenso.',
+        id: 'video',
+        h: 'Cookie, archiviazione locale e video',
+        p: 'Il sito non utilizza cookie di profilazione né strumenti di analisi o di tracciamento. All’apertura delle pagine non viene caricato alcun contenuto da terze parti: i video sono mostrati come un’immagine ospitata sul nostro server. Solo se fai clic su “Guarda il video” il lettore di YouTube viene caricato dal dominio youtube-nocookie.com (modalità di privacy avanzata). Da quel momento il tuo browser trasmette a Google il tuo indirizzo IP, i dati tecnici del browser e del dispositivo e l’indirizzo della pagina, e YouTube può memorizzare o leggere informazioni sul tuo dispositivo (ad esempio nell’archiviazione locale del browser) per mostrare e riprodurre il video, verificarne la disponibilità, prevenire frodi e abusi e personalizzare il lettore. Base giuridica: il tuo consenso, espresso con il clic (art. 6.1.a GDPR e art. 122 D.Lgs. 196/2003). Il consenso vale solo per il video che apri e non viene memorizzato; se non lo presti non ci sono conseguenze e puoi aprire il video direttamente su YouTube. Puoi revocarlo in ogni momento non avviando altri video e cancellando i dati dei siti dalle impostazioni del browser; la revoca non pregiudica il trattamento già avvenuto. Per la sola raccolta e trasmissione di questi dati, Panev Ascensori SAS e Google Ireland Limited ne determinano congiuntamente finalità e mezzi; per ogni trattamento successivo Google agisce come titolare autonomo secondo la propria informativa: https://policies.google.com/privacy. I dati possono essere trattati da Google LLC negli Stati Uniti, che aderisce all’EU-U.S. Data Privacy Framework (decisione di adeguatezza (UE) 2023/1795): https://policies.google.com/privacy/frameworks. Eventuali cookie tecnici strettamente necessari non richiedono consenso.',
       },
       {
         h: 'Conservazione',
@@ -24,7 +25,7 @@ export default {
       },
       {
         h: 'Destinatari',
-        p: 'I dati non sono venduti né ceduti a terzi. Possono accedervi esclusivamente il personale autorizzato e i fornitori tecnici che ospitano il sito e la posta elettronica (server nell’Unione Europea), nominati responsabili del trattamento ove previsto.',
+        p: 'I dati non sono venduti né ceduti a terzi. Possono accedervi esclusivamente il personale autorizzato e i fornitori tecnici che ospitano il sito e la posta elettronica (server nell’Unione Europea), nominati responsabili del trattamento ove previsto. Solo se scegli di avviare un video, i dati indicati nella sezione “Cookie, archiviazione locale e video” sono ricevuti da Google (vedi sopra).',
       },
       {
         h: 'Diritti dell’interessato',

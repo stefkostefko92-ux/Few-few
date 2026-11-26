@@ -27,6 +27,7 @@ export function catalogPage(t, locales) {
     <div class="hero-cta">
       <a class="btn btn-white" href="${CATALOG_PDF}" download>${esc(c.download)}</a>
       <a class="btn btn-outline" href="${CATALOG_PDF}" target="_blank" rel="noopener">${esc(c.view)}</a>
+      <a class="btn btn-outline" href="${pagePath(t, 'howto')}">${esc(t.videos.howto.crumb)}</a>
     </div>
   </div>
 </section>
@@ -144,7 +145,7 @@ export function contactsLd(t) {
 
 // ── Правни страници ──────────────────────────────────────────
 function legalBody(title, updated, intro, sections) {
-  const secs = sections.map((s) => `<h2>${esc(s.h)}</h2><p>${esc(s.p)}</p>`).join('');
+  const secs = sections.map((s) => `<h2${s.id ? ` id="${s.id}"` : ''}>${esc(s.h)}</h2><p>${esc(s.p)}</p>`).join('');
   return `
 <section class="page-head page-head-slim">
   <div class="wrap"><h1>${esc(title)}</h1><p class="sec-lead">${esc(updated)}</p></div>

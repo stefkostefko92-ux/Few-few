@@ -5,19 +5,19 @@ concrete. Owner, 24.11.2026: on the left A SX + B SX, on the right A DX + B DX; 
 hits the rebar and its B DX is swapped for a B SX on the other face of A DX's web (they are interchangeable), which
 moves the fixing holes 65 mm aside. SX parts are the DX meshes mirrored (the bolts are not: their threads stay
 right-handed, and the joint stack keeps its place). Returns handles for pose.py."""
-import json
 import math
 import os
 import bpy
 import numpy as np
 from mathutils import Matrix, Vector, noise as mnoise
-from lib import MM, Y_UP, link, mesh_from, empty, box, cylinder, node
-from materials import ASSETS, make_materials
+from lib import MM, Y_UP, link, mesh_from, empty, box, cylinder
+from materials import make_materials
 from grinder import build_grinder
 from ratchet import build_ratchet
 from cut import build_cut
 from props import SILL_H, build_drill, build_marker, build_level, build_sill
 from rebar import build_rebar
+from stage import load_meshes, object_from, centre_of, studio
 from hands import HAND, FACE_X, WEB, face_x, mx, mirrored
 
 HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
@@ -27,40 +27,6 @@ ANCHORS = (225.0, 52.0)       # anchor heights on B (mm): middle of the closed s
 
 
 # ---------- the bracket pair ----------
-def load_pair(M):
-    meta = json.load(open(f"{HERE}/mesh/pair.json"))
-    raw = open(f"{HERE}/mesh/pair.bin", "rb").read()
-    out = []
-    for m in meta["meshes"]:
-        ps, ns, idx, mats, base = [], [], [], [], 0
-        for k, (mat, c) in enumerate(m["chunks"].items()):
-            p = np.frombuffer(raw, np.float32, c["verts"] * 3, c["p"]).reshape(-1, 3).astype(np.float64)
-            n = np.frombuffer(raw, np.float32, c["verts"] * 3, c["n"]).reshape(-1, 3).astype(np.float64)
-            i = np.frombuffer(raw, np.uint32, c["tris"] * 3, c["i"]).astype(np.int64)
-            ps.append(p); ns.append(n); idx.append(i + base); mats.append((mat, len(i) // 3)); base += len(p)
-        out.append({"tag": m["tag"], "kind": m["kind"], "p": np.concatenate(ps), "n": np.concatenate(ns),
-                    "i": np.concatenate(idx), "mats": mats})
-    return meta, out
-
-
-def object_from(name, rec, M, origin_mm, parent, scale=1.0):
-    """Mesh in metres (Blender axes) with its origin at origin_mm (three.js mm)."""
-    p = (rec["p"] - np.asarray(origin_mm)) @ Y_UP.T * scale
-    n = rec["n"] @ (Y_UP.T / MM)
-    me = mesh_from(name, p, rec["i"], n, [M[m] for m, _ in rec["mats"]])
-    # material index per triangle, in chunk order
-    mi = np.concatenate([np.full(cnt, k, np.int32) for k, (_, cnt) in enumerate(rec["mats"])])
-    me.polygons.foreach_set("material_index", mi)
-    ob = link(bpy.data.objects.new(name, me))
-    ob.parent = parent
-    ob.location = Vector(Y_UP @ np.asarray(origin_mm))
-    return ob
-
-
-def centre_of(rec):
-    return (rec["p"].min(0) + rec["p"].max(0)) / 2
-
-
 def build_pair(k, wall, M, meta, recs, x):
     rig = empty(f"pair{k}", wall, (x, 0, 0))
     pivot_mm = np.asarray(meta["pivot"])
@@ -171,72 +137,9 @@ def wall_depth_at(P, nx, nz, x, z, x0=-1.6, z0=-0.95, step=0.005):
 
 
 # ---------- lights, world, camera ----------
-def studio(scene):
-    worlds = {}
-    for name, (lo, hi, k) in {"shaft": ((0.010, 0.011, 0.014), (0.30, 0.31, 0.33), 0.55),
-                              "intro": ((0.004, 0.008, 0.03), (0.10, 0.16, 0.42), 0.8)}.items():
-        w = bpy.data.worlds.new(name)
-        w.use_nodes = True
-        nt = w.node_tree
-        co = nt.nodes.new("ShaderNodeTexCoord")
-        sep = nt.nodes.new("ShaderNodeSeparateXYZ")
-        nt.links.new(co.outputs["Generated"], sep.inputs["Vector"])
-        cr = nt.nodes.new("ShaderNodeValToRGB")
-        cr.color_ramp.elements[0].color = (*lo, 1)
-        cr.color_ramp.elements[1].color = (*hi, 1)
-        mr = node(nt, "ShaderNodeMapRange", **{"From Min": -1.0, "From Max": 1.0})
-        nt.links.new(sep.outputs["Z"], mr.inputs["Value"])
-        nt.links.new(mr.outputs["Result"], cr.inputs["Fac"])
-        nt.links.new(cr.outputs["Color"], nt.nodes["Background"].inputs["Color"])
-        nt.nodes["Background"].inputs["Strength"].default_value = k
-        if name == "intro":  # the camera sees the navy backdrop, the metal reflects a bright neutral studio
-            lp = nt.nodes.new("ShaderNodeLightPath")
-            st = nt.nodes.new("ShaderNodeValToRGB")
-            st.color_ramp.elements[0].color = (0.04, 0.04, 0.045, 1)
-            st.color_ramp.elements[1].color = (1.6, 1.6, 1.6, 1)
-            e = st.color_ramp.elements.new(0.52); e.color = (0.35, 0.36, 0.38, 1)
-            nt.links.new(mr.outputs["Result"], st.inputs["Fac"])
-            mix = nt.nodes.new("ShaderNodeMixRGB")
-            nt.links.new(lp.outputs["Is Camera Ray"], mix.inputs["Fac"])
-            nt.links.new(st.outputs["Color"], mix.inputs["Color1"])
-            nt.links.new(cr.outputs["Color"], mix.inputs["Color2"])
-            nt.links.new(mix.outputs["Color"], nt.nodes["Background"].inputs["Color"])
-        worlds[name] = w
-    w = bpy.data.worlds.new("shaft_hdri")
-    w.use_nodes = True
-    nt = w.node_tree
-    env = nt.nodes.new("ShaderNodeTexEnvironment")
-    env.image = bpy.data.images.load(f"{ASSETS}/interior_construction_4k.hdr")
-    co = nt.nodes.new("ShaderNodeTexCoord")
-    mp = node(nt, "ShaderNodeMapping", Rotation=(0, 0, math.radians(140)))
-    nt.links.new(co.outputs["Generated"], mp.inputs["Vector"])
-    nt.links.new(mp.outputs["Vector"], env.inputs["Vector"])
-    nt.links.new(env.outputs["Color"], nt.nodes["Background"].inputs["Color"])
-    nt.nodes["Background"].inputs["Strength"].default_value = 0.9
-    worlds["shaft"] = w
-    lights = {}
-
-    def area(name, loc, target, w, h, radiance, colour=(1, 1, 1)):
-        L = bpy.data.lights.new(name, "AREA")
-        L.shape, L.size, L.size_y, L.color = "RECTANGLE", w, h, colour
-        L.energy = radiance * math.pi * w * h
-        ob = link(bpy.data.objects.new(name, L))
-        ob.location = loc
-        ob.rotation_euler = (Vector(target) - Vector(loc)).to_track_quat("-Z", "Y").to_euler()
-        ob.visible_camera = False
-        lights[name] = ob
-        return ob
-
-    area("key", (-0.62, -1.4, 0.9), (0.2, 0, -0.25), 0.32, 0.22, 70.0, (1.0, 0.97, 0.93))
-    area("fill", (1.6, -1.2, 0.2), (0.3, 0, -0.25), 1.0, 1.4, 0.5, (0.88, 0.93, 1.0))
-    area("top", (0.3, -0.5, 1.6), (0.3, 0, -0.2), 1.6, 1.2, 0.6)
-    # (no rim light: anything behind the wall face is inside the concrete)
-    return worlds, lights
-
-
 def build(scene):
     M = make_materials()
-    meta, recs = load_pair(M)
+    meta, recs = load_meshes(f"{HERE}/mesh/pair")
     wall = empty("wallrig")
     wall.rotation_euler = (LEAN, 0, 0)
     # B's height: once A is set level its platform top carries the sill bottom at -SILL_H (sill top = floor)

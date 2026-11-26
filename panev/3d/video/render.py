@@ -1,5 +1,8 @@
-"""python render.py light|heavy [--only stills,shots,assemble,audio,encode] [--shots asm,pos] [--bench T] [--gpu [OPTIX]]
-— the video.
+"""python render.py light|heavy [--film guida] [--only stills,shots,assemble,audio,encode] [--shots asm,pos] [--bench T]
+[--gpu [OPTIX]] — the video.
+
+--film  which film (film.py): none = the landing-door brackets (this folder), guida = the counterweight guides
+        (guida/). Each film keeps its render/, frames/ and out/ in its own folder.
 
 light  review clip: Cycles on the CPU, 1280x720 at 12 samples, 24 fps, frames 1920x1080, H.264 CRF 23.
 heavy  the master: Cycles + OptiX on the NVIDIA card, 3840x2160 at 96 samples, 60 fps, frames 3840x2160,
@@ -23,16 +26,22 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 PRESETS_MJS = os.path.join(REPO, "tools", "video", "presets.mjs")
-SOUND = os.path.join(HERE, "out", "audio")
 PRESETS = {
     "light": {"VIDEO_FPS": "24", "VIDEO_RES": "1280x720", "VIDEO_OUT": "1920x1080", "VIDEO_DEVICE": "CPU",
               "spp": 12, "still_spp": 32, "still_res": "1920x1080"},
     "heavy": {"VIDEO_FPS": "60", "VIDEO_RES": "3840x2160", "VIDEO_OUT": "3840x2160", "VIDEO_DEVICE": "OPTIX",
               "spp": 96, "still_spp": 256, "still_res": "3840x2160"},
 }
+if "--film" in sys.argv[:-1]:  # before film.py reads it; the Blender and assembly processes inherit it
+    os.environ["VIDEO_FILM"] = sys.argv[sys.argv.index("--film") + 1]
 sys.path.insert(0, HERE)
-from timeline import DURATION  # noqa: E402 (pure python, no bpy)
-STILL_T = {"intro": 2.0, "hero": DURATION - 2.0}
+import film  # noqa: E402
+import timeline  # noqa: E402 (pure python, no bpy)
+from timeline import DURATION  # noqa: E402
+STILL_T = {k: v for k, v in {"intro": 2.0, "hero": DURATION - 2.0}.items() if k in {n for n, *_ in timeline.TIMELINE}}
+SLUG = getattr(timeline, "SLUG", "Panev_montaggio-in-undici-passi")
+MESH = getattr(timeline, "MESH", "mesh/pair.json")  # the film's exported meshes, relative to its folder
+SOUND = os.path.join(film.DIR, "out", "audio")
 
 
 def blender():
@@ -58,8 +67,9 @@ def bl(script, args, env, log):
 
 
 def check_inputs():
-    if not os.path.exists(os.path.join(HERE, "mesh", "pair.json")):
-        sys.exit("mesh/ missing: cd panev/3d && npm ci && node video/export_mesh.mjs")
+    if not os.path.exists(os.path.join(film.DIR, MESH)):
+        exporter = os.path.relpath(os.path.join(film.DIR, "export_mesh.mjs"), os.path.join(HERE, "..")).replace("\\", "/")
+        sys.exit(f"{MESH} missing: cd panev/3d && npm ci && node {exporter}")
     if not os.path.exists(os.path.join(HERE, "assets", "LICENSES.txt")):
         sys.exit("assets/ missing: python fetch_assets.py")
 
@@ -136,14 +146,15 @@ def main():
     ap.add_argument("--shots", default="")
     ap.add_argument("--bench", type=float)
     ap.add_argument("--gpu", nargs="?", const="OPTIX", default=None)
+    ap.add_argument("--film", default="")
     a = ap.parse_args()
     cfg = PRESETS[a.preset]
     if a.gpu:
         cfg = {**cfg, "VIDEO_DEVICE": a.gpu.upper()}
     env = {**os.environ, **{k: v for k, v in cfg.items() if k.startswith("VIDEO_")}}
-    root = os.path.join(HERE, "render", a.preset)
-    frames = os.path.join(HERE, "frames", a.preset)
-    out = os.path.join(HERE, "out", f"Panev_montaggio-in-undici-passi_{'4K60' if a.preset == 'heavy' else 'leggero'}.mp4")
+    root = os.path.join(film.DIR, "render", a.preset)
+    frames = os.path.join(film.DIR, "frames", a.preset)
+    out = os.path.join(film.DIR, "out", f"{SLUG}_{'4K60' if a.preset == 'heavy' else 'leggero'}.mp4")
     os.makedirs(root, exist_ok=True)
     log = os.path.join(root, "render.log")
     steps = a.only.split(",")

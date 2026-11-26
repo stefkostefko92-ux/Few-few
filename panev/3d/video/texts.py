@@ -17,6 +17,17 @@ STEP_TEXT = [
     ("Taglio delle piastre A", "Segna ogni piastra A con il pennarello a filo soglia, arretra la soglia, taglia sul segno con la smerigliatrice angolare e riporta la soglia a filo."),
 ]
 
+# the cards that differ per film (overlay.py): the header, the intro (kicker, two big lines, two small) and the closing
+# card (kicker, title, note, address)
+CARDS = {
+    "header": "GUIDA AL MONTAGGIO  ·  STAFFA A 45 175 2 + B 45 320",
+    "intro": ("GUIDA AL MONTAGGIO", "Montaggio", "in undici passi", "Staffa articolata A 45 175 2 + B 45 320",
+              "Regolazione angolare ± 7° · lamiera 5 mm"),
+    "outro": ("MONTAGGIO COMPLETATO", "Soglia in bolla, tre staffe bloccate",
+              "Sintesi per installatori qualificati: fanno fede i disegni di montaggio del catalogo tecnico e il progetto "
+              "dell’impianto.", "panevascensori.it  ·  Catalogo tecnico 2027, pag. 10"),
+}
+
 # (point, badge, label, from, to, dx, dy)
 CALLOUTS = [
     ("B_0", "B", "Staffa B", 5.0, 13.0, -170, 70), ("A_0", "A", "Piastra A", 6.6, 13.0, 130, -90),
