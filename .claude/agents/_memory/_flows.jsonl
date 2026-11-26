@@ -1050,3 +1050,5 @@
 {"t":"handoff","ts":"2026-11-25T15:49:50.571Z","id":"r9e2042fd","from":"prevodach","to":"човек","status":"има бележки","run":"fcbcb01f"}
 {"t":"start","ts":"2026-11-26T07:29:00.040Z","id":"rc6963b37","flow":"авто","lead":"socialdjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-26T07:29:00.040Z","id":"rc6963b37","from":"socialdjiyata","to":"човек","status":"има бележки","run":"a84d70ff"}
+{"t":"start","ts":"2026-11-26T21:25:42.659Z","id":"rc9c7cc13","flow":"авто","lead":"seo","auto":true}
+{"t":"handoff","ts":"2026-11-26T21:25:42.659Z","id":"rc9c7cc13","from":"seo","to":"skorostnika","status":"има бележки","run":"cd834948"}
