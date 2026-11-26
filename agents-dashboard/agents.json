@@ -2166,6 +2166,11 @@
       "activity": [
         {
           "date": "2026-11-26",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „В live-run worktree Bash с heredoc, съдържащ кавички във фигурни скоби, и `cp -r`/`rm -…\""
+        },
+        {
+          "date": "2026-11-26",
           "type": "learning",
           "summary": "Научи: „В live-run сесия за преглед с указание „нищо не пускай“ дори node tools/agents/rubric.m…\""
         },
