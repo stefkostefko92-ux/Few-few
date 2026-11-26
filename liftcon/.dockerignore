@@ -1,0 +1,16 @@
+# Контекстът на образа е liftcon/: само каквото Dockerfile копира.
+**/node_modules
+server/dist
+server/test
+art
+docs
+deploy
+test
+brand
+scripts
+**/.env
+**/.env.*
+!server/.env.example
+public/**/*.html
+public/*.txt
+public/*.xml
