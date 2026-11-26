@@ -51,5 +51,8 @@ test("deploy_fivem спира ПРЕДИ да пипне release-а и конт�
     const i = body.indexOf(after);
     assert.ok(i > guard, `${after} е след проверката`);
   }
-  assert.match(body.slice(guard, guard + 600), /deploy_failed=1; return/, "отказът се отчита като провал, не като успех");
+  // Преглед на PR #492 (VPS-аджията): провал правеше целия пробег червен и спираше `current` за ВСИЧКИ
+  // продукти. Сега продуктът се ПРОПУСКА (вижда се в резюмето), а другите продължават нормално.
+  assert.match(body.slice(guard, guard + 700), /skip_project fivem [^\n]*; return/, "пропуск с причина, не тишина");
+  assert.doesNotMatch(body.slice(guard, guard + 700), /deploy_failed=1/, "не проваля целия пробег");
 });

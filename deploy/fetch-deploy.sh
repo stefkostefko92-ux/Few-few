@@ -85,6 +85,17 @@ ref_guard_check() {
   exit 1
 }
 
+ref_skipped() {
+  # $1 = продукт. autodeploy.sh го е ПРОПУСНАЛ (условие за обновяване не е изпълнено, работи предишният
+  # му код) → записът „разгърнат от REF“ би лъгал пазача (преглед на PR #492).
+  local s
+  { [ -n "${SKIPPED_FILE:-}" ] && [ -f "$SKIPPED_FILE" ]; } || return 1
+  while IFS= read -r s; do
+    [ -n "$s" ] && [ "$(ref_key "$s")" = "$(ref_key "$1")" ] && return 0
+  done < "$SKIPPED_FILE"
+  return 1
+}
+
 ref_guard_record() {
   # $1 = autodeploy.sh от архива — оттам е списъкът по подразбиране, когато няма PROJECTS.
   local names p
@@ -92,6 +103,7 @@ ref_guard_record() {
   else names="$(sed -n 's/^PROJECTS="\${PROJECTS:-\(.*\)}"$/\1/p' "$1" | head -1)"; fi
   install -d -m 700 "$REF_STATE_DIR"
   for p in $names; do
+    if ref_skipped "$p"; then continue; fi
     printf '%s %s\n' "$REF" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$REF_STATE_DIR/$(ref_key "$p")"
   done
 }
@@ -154,7 +166,8 @@ log "Предавам на autodeploy.sh…"
 # ARCHIVE е изрично: иначе autodeploy избира „най-новия архив в /root", тоест ръчно
 # качен ZIP отпреди месец може да изпревари този, който току-що свалихме.
 # Без `exec` — иначе trap-ът не се изпълнява и временната папка остава.
-ARCHIVE="$ARCHIVE_PATH" bash "$WORK/deploy/autodeploy.sh"
+SKIPPED_FILE="$WORK/skipped.txt"; : > "$SKIPPED_FILE"
+SKIPPED_FILE="$SKIPPED_FILE" ARCHIVE="$ARCHIVE_PATH" bash "$WORK/deploy/autodeploy.sh"
 
 # Само след успешен autodeploy (set -e: провал спира по-горе) — от кой ref върви всеки продукт.
 ref_guard_record "$WORK/deploy/autodeploy.sh"
