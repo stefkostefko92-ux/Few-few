@@ -160,6 +160,30 @@ sect(){ printf '\n== %s ==\n' "$*" >> "$INV"; }
 safe(){ printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '_'; }
 # „my db“ и „my_db“ дават едно име след safe — вторият дъмп не бива да презапише първия (преглед на PR #312).
 uniq_path(){ local f=$1 i=2; while [ -e "$f" ]; do f="${1%.dump}-$i.dump"; i=$((i + 1)); done; printf '%s' "$f"; }
+# Томът с ДАННИТЕ на база (само той се заменя с логическия дъмп в горещ/нощен режим). Конфиг, TLS
+# ключове, init скриптове и ./backups на същия контейнер влизат като при обикновено приложение (преглед
+# на PR #312). pg: Destination е PGDATA или негов родител (pg 18: том /var/lib/postgresql, PGDATA вътре).
+is_db_data_mount(){
+  local kind=$1 d="${2%/}" pd="${3:-/var/lib/postgresql/data}"
+  pd="${pd%/}"
+  case "$kind" in
+    pg) case "$pd/" in "$d/"*) return 0;; esac; return 1 ;;
+    my) [ "$d" = /var/lib/mysql ] ;;
+    *) return 1 ;;
+  esac
+}
+# Има ли symlink в пътя (до корена) — root не пише през него (CWE-59).
+has_symlink_parent(){ local p=$1; while [ -n "$p" ] && [ "$p" != / ]; do [ -L "$p" ] && return 0; p="$(dirname "$p")"; done; return 1; }
+# Redis снимка: нощем/горещо BGSAVE и чакане LASTSAVE да се смени (SAVE блокира всички клиенти); във
+# FINAL — SAVE. Един и същ код за контейнер (`docker exec … sh -c`) и за хоста (`sh -c`); $1 = MODE.
+REDIS_SNAP='cli="$(command -v redis-cli || command -v valkey-cli || command -v keydb-cli)" || exit 3
+if [ -n "${REDIS_PASSWORD:-}" ]; then export REDISCLI_AUTH="$REDIS_PASSWORD"; fi
+if [ "$1" = final ]; then exec "$cli" SAVE; fi
+before="$("$cli" LASTSAVE)" || exit 4
+"$cli" BGSAVE >/dev/null 2>&1 || exit 5
+i=0
+while [ "$i" -lt 300 ]; do sleep 1; i=$((i + 1)); now="$("$cli" LASTSAVE)"; if [ "$now" != "$before" ]; then echo OK; exit 0; fi; done
+echo "BGSAVE не приключи за 300 s"; exit 6'
 kb_h(){ numfmt --to=iec --from-unit=1024 "${1:-0}" 2>/dev/null || printf '%sK' "${1:-0}"; }
 under_roots(){ local p=$1 r; for r in $ROOTS $EXTRA_PATHS; do case "$p/" in "${r%/}/"*) return 0;; esac; done; return 1; }
 has_root_under(){ local p=${1%/} r; for r in $ROOTS $EXTRA_PATHS; do case "${r%/}/" in "$p"/*) return 0;; esac; done; return 1; }
@@ -227,6 +251,8 @@ if [ "$DOCKER" = 1 ]; then
     fi
     # Папката на compose проекта държи compose файла, .env и относителните bind-ове.
     WORKDIRS+=("$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$c" 2>/dev/null || true)")
+    PGD=""
+    if [ "${CKIND[$c]}" = pg ]; then PGD="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$c" 2>/dev/null | sed -n 's/^PGDATA=//p' | head -n 1 || true)"; fi
     while IFS='|' read -r mtype mname msrc mdst; do
       [ -n "$mtype" ] || continue
       [ "$mtype" = volume ] && VOL_USERS[$mname]="${VOL_USERS[$mname]:-}$c "
@@ -238,7 +264,7 @@ if [ "$DOCKER" = 1 ]; then
       if [ "$mtype" = bind ] && [ "${CRUN[$c]}" = true ] && [ ! -e "$msrc" ]; then GONE_BINDS+=("$c|$msrc|$mdst"); fi
       # Само базите с логически дъмп (pg, my) пропускат суровия си том в горещ режим. Mongo няма дъмп
       # тук — суровият ѝ том влиза винаги (преглед на PR #312: иначе данните ѝ липсваха изцяло).
-      case "${CKIND[$c]}" in pg|my) if [ "${CRUN[$c]}" = true ]; then LIVE_DB_SRC[$msrc]=1; fi;; esac
+      case "${CKIND[$c]}" in pg|my) if [ "${CRUN[$c]}" = true ] && is_db_data_mount "${CKIND[$c]}" "$mdst" "${PGD:-}"; then LIVE_DB_SRC[$msrc]=1; fi;; esac
     done < <(docker inspect -f '{{range .Mounts}}{{.Type}}|{{.Name}}|{{.Source}}|{{.Destination}}{{println}}{{end}}' "$c")
   done < <(docker ps -a --format '{{.Names}}')
   while IFS= read -r v; do
@@ -490,7 +516,8 @@ if [ "$RECOVER_BINDS" = 1 ] && [ "$MODE" != plan ]; then
     IFS='|' read -r gc gs gd <<<"$x"
     [ -e "$gs" ] && continue
     gpid="$(docker inspect -f '{{.State.Pid}}' "$gc" 2>/dev/null || echo 0)"
-    if [ "$gpid" -gt 0 ] && mkdir -p "$(dirname "$gs")" && cp -a "/proc/$gpid/root$gd" "$gs"; then
+    if has_symlink_parent "$(dirname "$gs")"; then fail "Не се връща: $gs — symlink в пътя (root не пише през него)."; continue; fi
+    if [ "$gpid" -gt 0 ] && mkdir -p "$(dirname "$gs")" && ! has_symlink_parent "$(dirname "$gs")" && cp -a "/proc/$gpid/root$gd" "$gs"; then
       if [ -d "$gs" ] && [ -z "$(ls -A "$gs" 2>/dev/null)" ]; then warn "Върнат, но ПРАЗЕН: $gs ($gc:$gd) — съдържанието е изтрито; вземи го от git/бекъп."
       else ok "Върнат: $gs ($gc:$gd)"; fi
     else fail "Не се върна: $gs ($gc:$gd)"; fi
@@ -593,8 +620,8 @@ dump_my_container(){
 
 save_redis_container(){
   local c=$1 out
-  out="$(docker exec "$c" sh -c 'cli="$(command -v redis-cli || command -v valkey-cli || command -v keydb-cli)" || exit 3; if [ -n "${REDIS_PASSWORD:-}" ]; then REDISCLI_AUTH="$REDIS_PASSWORD" exec "$cli" SAVE; else exec "$cli" SAVE; fi' 2>&1 | head -c 200)" || true
-  if [ "$out" = OK ]; then DUMPS+=("redis · $c · SAVE · ok"); ok "Redis $c: SAVE"
+  out="$(docker exec "$c" sh -c "$REDIS_SNAP" sh "$MODE" 2>&1 | tail -n 1 | head -c 200)" || true
+  if [ "$out" = OK ]; then DUMPS+=("redis · $c · снимка · ok"); ok "Redis $c: снимка"
   else warn "Redis $c: SAVE не мина (${out:-без отговор}) — суровият том има последния автоматичен запис; FINAL записва и при спирането."; fi
 }
 
@@ -652,7 +679,7 @@ done
 dump_pg_host
 case " ${HOST_DB_UNITS[*]} " in *" mysql.service "*|*" mariadb.service "*) dump_my_host;; esac
 case " ${HOST_DB_UNITS[*]} " in *" redis-server.service "*)
-  if [ "$(redis-cli SAVE 2>&1 | head -c 50)" = OK ]; then ok "Redis на хоста: SAVE"; else warn "Redis на хоста: SAVE не мина — /var/lib/redis влиза суров."; fi;;
+  if [ "$(sh -c "$REDIS_SNAP" sh "$MODE" 2>&1 | tail -n 1 | head -c 50)" = OK ]; then ok "Redis на хоста: снимка"; else warn "Redis на хоста: снимката не мина — /var/lib/redis влиза суров."; fi;;
 esac
 
 # ╔═ SQLite ═════════════════════════════════════════════════════════════════════

@@ -242,3 +242,12 @@ test("restic forget групира по host,tags — смяна на пътищ
   assert.ok(calls.length >= 3, "трите forget извиквания");
   for (const l of calls) assert.match(l, /--group-by host,tags/, l);
 });
+
+// Девети преглед (Кодаджията, ниска · Възможно): код 2 от migrate под set -e може да е ранен изход ПРЕДИ
+// подмяната на DUMP_DIR — тогава restic снимаше дъмповете от миналата нощ. Маркерът трябва да е от това пускане.
+test("снимката се прави само ако дъмповете са от това пускане (маркерът е по-нов от старта)", () => {
+  const off = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "offsite-backup.sh"), "utf8");
+  assert.match(off, /started="\$\(date \+%s\)"/);
+  assert.match(off, /stat -c %Y "\$DUMP_DIR\/\.migrate-backup-dumps"/);
+  assert.ok(off.indexOf('stat -c %Y "$DUMP_DIR/.migrate-backup-dumps"') < off.indexOf("restic backup --host"), "преди restic backup");
+});

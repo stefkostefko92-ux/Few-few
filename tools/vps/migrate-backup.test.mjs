@@ -129,7 +129,7 @@ test("backup_sqlite: -wal/-shm като symlink НЕ прехвърля собс
 // mongod.service на хоста: /var/lib/mongodb не е в ROOTS → нито в архива, нито предупреждение.
 test("MongoDB: томът не се пропуска като „дъмпнат“, а хостовият mongod влиза в ROOTS", () => {
   const src = readFileSync(script, "utf8");
-  const live = src.match(/case "\$\{CKIND\[\$c\]\}" in ([a-z|]+)\) if \[ "\$\{CRUN\[\$c\]\}" = true \]; then LIVE_DB_SRC/);
+  const live = src.match(/case "\$\{CKIND\[\$c\]\}" in ([a-z|]+)\) if \[ "\$\{CRUN\[\$c\]\}" = true \][^\n]*LIVE_DB_SRC/);
   assert.ok(live, "редът с LIVE_DB_SRC съществува");
   assert.doesNotMatch(live[1], /mongo/, "Mongo няма логически дъмп — суровият том трябва да влезе");
   assert.match(src, /mongod\.service "\*\) ROOTS="\$ROOTS \/var\/lib\/mongodb"/, "хостовият mongod влиза в архива");
@@ -291,4 +291,32 @@ test("копието на SQLite е с таймаут (заключена баз
 test("жива Mongo в нощния режим е провал (partial), не тихо предупреждение", () => {
   const src = readFileSync(script, "utf8");
   assert.match(src, /mongo\) if \[ "\$MODE" = dumps \]; then fail "MongoDB \$c/);
+});
+
+// Девети преглед на PR #312 (Кодаджията, средна · Вероятно): за жива pg/my база от бекъпа изпадаше ВСЕКИ
+// mount на контейнера (конфиг, TLS, init, ./backups), не само томът с данните. Сега — само data mount-ът.
+test("от жива база се пропуска само томът с данните (PGDATA / /var/lib/mysql), не конфигът и ключовете", () => {
+  const src = readFileSync(script, "utf8");
+  const fn = src.match(/^is_db_data_mount\(\)\{[\s\S]*?^\}\n/m)?.[0];
+  assert.ok(fn, "is_db_data_mount() е в скрипта");
+  assert.match(src, /is_db_data_mount "\$\{CKIND\[\$c\]\}" "\$mdst"/, "ползва се при маркирането на LIVE_DB_SRC");
+  const run = (args) => spawnSync("bash", ["-c", `${fn}\nis_db_data_mount ${args}`]).status;
+  assert.equal(run("pg /var/lib/postgresql/data ''"), 0, "pg по подразбиране");
+  assert.equal(run("pg /var/lib/postgresql /var/lib/postgresql/18/docker"), 0, "pg 18: томът е родител на PGDATA");
+  assert.equal(run("pg /pgdata /pgdata"), 0, "собствен PGDATA");
+  assert.equal(run("pg /etc/ssl/pg ''"), 1, "TLS ключовете влизат в бекъпа");
+  assert.equal(run("pg /docker-entrypoint-initdb.d ''"), 1);
+  assert.equal(run("my /var/lib/mysql ''"), 0);
+  assert.equal(run("my /backups ''"), 1);
+});
+
+// Девети преглед (ниски): нощният SAVE блокира Redis за всички клиенти → BGSAVE + чакане на LASTSAVE
+// (SAVE само във FINAL); RECOVER_BINDS не пише като root през symlink в родителска папка.
+test("Redis нощем е BGSAVE (SAVE само във FINAL); RECOVER_BINDS отказва symlink в пътя", () => {
+  const src = readFileSync(script, "utf8");
+  assert.match(src, /BGSAVE/);
+  assert.match(src, /LASTSAVE/);
+  assert.match(src, /if \[ "\$1" = final \]; then exec "\$cli" SAVE; fi/, "SAVE само във FINAL");
+  assert.doesNotMatch(src, /redis-cli SAVE 2>&1/, "хостовият Redis също минава през общия код");
+  assert.match(src, /has_symlink_parent "\$\(dirname "\$gs"\)"/);
 });

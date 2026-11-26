@@ -142,6 +142,8 @@ cmd_backup(){
   [ -f "$MIGRATE" ] || die "Липсва $MIGRATE."
   lock
   inf "Дъмпове на базите → $DUMP_DIR"
+  local started
+  started="$(date +%s)"
   # Без ключовете на хранилището: migrate-backup.sh вика процеси като postgres, а те не бива да ги наследят.
   ( for v in $(compgen -e); do case "$v" in RESTIC_*|AWS_*|B2_*|AZURE_*|GOOGLE_*|OS_*) unset "$v";; esac; done; DUMP_TO="$DUMP_DIR" exec bash "$MIGRATE" ) || rc=$?
   case "$rc" in
@@ -152,6 +154,11 @@ cmd_backup(){
     *) die "migrate-backup.sh спря с код $rc — снимка без дъмпове не се прави." ;;
   esac
   [ -s "$DUMP_DIR/paths.txt" ] || die "Няма $DUMP_DIR/paths.txt."
+  # Код 2 може да е ранен изход ПРЕДИ подмяната на DUMP_DIR — тогава там са дъмповете от миналата нощ
+  # (преглед на PR #312). Маркерът се пише наново при всяко пускане.
+  local made
+  made="$(stat -c %Y "$DUMP_DIR/.migrate-backup-dumps" 2>/dev/null || echo 0)"
+  [ "$made" -ge "$started" ] || die "Дъмповете в $DUMP_DIR не са от това пускане — снимка не се прави."
   inf "restic backup ($(wc -l < "$DUMP_DIR/paths.txt") пътя)…"
   # --one-file-system: монтираните файлови системи на живите контейнери не се
   # обхождат — иначе всеки контейнер влиза още веднъж като обикновени файлове.
