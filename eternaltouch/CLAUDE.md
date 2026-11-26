@@ -22,7 +22,7 @@ npm run prisma:seed             # само seed (admin + колекции + съ
 Node ≥20. Задължителни env (виж `.env.example`, режим 600, **никога** в git/архив):
 `DATABASE_URL`, `JWT_SECRET`/`COOKIE_SECRET`/`SESSION_SECRET` (≥32 знака — приложението
 **отказва да стартира** без тях), `ADMIN_EMAIL`, `ADMIN_PASSWORD` (seed-ва админа —
-без вграден дефолт), `SITE_URL`, и `SMTP_*` (Register.it; без тях съобщенията се
+без вграден дефолт), `SITE_URL`, и `SMTP_*` (Brevo, `smtp-relay.brevo.com`; кутията `info@` остава в Register.it — получаване и ръчни отговори; без тях съобщенията се
 пазят в БД, но имейл не тръгва).
 
 ## Layout
@@ -46,7 +46,7 @@ src/routes/api.js        POST /api/contact (honeypot + строг rate limit 5/1
                          audit trail)
 src/routes/seo.js        robots.txt, sitemap.xml (+ hreflang alternates), llms.txt,
                          security.txt, humans.txt
-src/lib/email.js         nodemailer (Register.it SMTP, lazy singleton); admin известие +
+src/lib/email.js         nodemailer (Brevo SMTP relay, lazy singleton); admin известие +
                          клиентско потвърждение
 src/locales/{bg,it,en}.json   UI низове (BG източник на истината)
 src/public/fonts/        self-hosted шрифтове (Italiana/Cormorant/Lora/Cinzel, latin+кирилица) +

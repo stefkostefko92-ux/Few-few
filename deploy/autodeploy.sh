@@ -53,6 +53,8 @@ ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш арх
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
 KEEP_RELEASES="${KEEP_RELEASES:-5}"
+# Стабилен дом на тайните (извън releases/) — виж rescue_release_env.
+SHARED_DIR="${SHARED_DIR:-/opt/few-few/shared}"
 
 # medqr (systemd модел)
 MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
@@ -320,6 +322,16 @@ fi
 ok "Източник за деплой: $SRC"
 
 deploy_failed=0
+# Продукти, пропуснати нарочно (условие за обновяване не е изпълнено — работи предишният код). Не
+# провалят пробега: иначе `current` и чистенето спират за ВСИЧКИ продукти (преглед на PR #492).
+SKIPPED=()
+skip_project() {
+  local p=$1; shift
+  SKIPPED+=("$p — $*")
+  # fetch-deploy.sh не записва пропуснатия в пазача на ref-а — той върви на предишния си код.
+  if [ -n "${SKIPPED_FILE:-}" ]; then printf '%s\n' "$p" >> "$SKIPPED_FILE" || true; fi
+  warn "$p НЕ е обновен: $*"
+}
 
 # Пренася .env (тайните) на Compose продукт в новия release и го пази на стабилен
 # път. Преди се четеше САМО от `current` — а деплой само на друг продукт (напр.
@@ -399,11 +411,29 @@ zbd_health_url() {
   printf '%s\n' "$ZBD_HEALTH_URL"
 }
 
+# Папката, от която РЕАЛНО върви zabobovdol (етикетът на compose върху app), ако още я има.
+# `current` не е надежден: деплой само на друг продукт мести current към release без zabobovdol.
+zbd_running_dir() {
+  command -v docker >/dev/null 2>&1 || return 1
+  local wd
+  wd="$(timeout 20 docker ps -a --filter label=com.docker.compose.project=zabobovdol --filter label=com.docker.compose.service=app \
+    --format '{{.Label "com.docker.compose.project.working_dir"}}' 2>/dev/null | head -1)" || return 1
+  [ -n "$wd" ] && [ -f "$wd/docker-compose.yml" ] || return 1
+  printf '%s\n' "$wd"
+}
+
 # Откат САМО на кода: вдига предишния release на zabobovdol със същото compose име. Базата не се
 # пипа — миграциите са адитивни по правило (prisma-migrate skill), значи старият код работи с нея.
 zbd_rollback() {
   local prev="$1"
   [ -n "$prev" ] && [ -d "$prev" ] || { warn "zabobovdol: няма предишен release за откат — оставям както е."; return 1; }
+  # Release, в който zabobovdol не е разгръщан (current след деплой само на друг продукт), няма .env:
+  # compose спира още на интерполацията и откатът не вдига нищо (живо, 23.10.2026). Тайните — от дома.
+  if [ ! -f "$prev/.env" ]; then
+    [ -f "$ZBD_ENV" ] || { warn "zabobovdol: предишният код няма .env, а $ZBD_ENV липсва — откатът не може да тръгне."; return 1; }
+    cp -a "$ZBD_ENV" "$prev/.env"; chmod 600 "$prev/.env"
+  fi
+  [ -e "$prev/backups" ] || ln -sfnT "$ZBD_BACKUPS" "$prev/backups"
   warn "zabobovdol: връщам предишния код ($prev)…"
   ( cd "$prev" && if docker compose version >/dev/null 2>&1; then docker compose up -d --build; else docker-compose up -d --build; fi ) \
     || { warn "zabobovdol: откатът не вдигна предишния код — нужен е човек."; return 1; }
@@ -420,9 +450,10 @@ deploy_zabobovdol() {
   local d="$SRC/zabobovdol"
   [ -d "$d" ] || { warn "Няма zabobovdol/ в архива — пропускам."; return; }
   log "Разгръщам zabobovdol (Docker Compose)…"
-  # Предишният работещ код (за откат) — current още сочи стария release, мести се само при успех.
+  # Предишният работещ код (за откат): където реално върви app; current е само резерва.
   local prev=""
-  [ -d "$CURRENT_LINK/zabobovdol" ] && prev="$(readlink -f "$CURRENT_LINK/zabobovdol" || true)"
+  prev="$(zbd_running_dir || true)"
+  [ -z "$prev" ] && [ -d "$CURRENT_LINK/zabobovdol" ] && prev="$(readlink -f "$CURRENT_LINK/zabobovdol" || true)"
   [ "$prev" = "$(readlink -f "$d")" ] && prev=""
   # Тайните живеят на сървъра, не в архива: стабилен дом → current → най-нов release.
   if [ ! -f "$d/.env" ]; then
@@ -1315,6 +1346,17 @@ supreme_install_backup_timer() {
 
 # ── Health check ──────────────────────────────────────────────────────────────
 # ── 3g) eternaltouch — Docker Compose ─────────────────────────────────────────
+# Имейлите на всички продукти минават през Brevo (собственикът, 25.11.2026). Продукт със SMTP се
+# обновява едва когато .env сочи smtp-relay.brevo.com: новият код назовава Brevo в политиката за
+# поверителност, а обновен без сменен .env би пращал през стария доставчик — неверен текст.
+smtp_is_brevo() {
+  [ -r "$1" ] || return 1
+  # Последният ред печели (както при env_file на compose).
+  grep -E '^SMTP_HOST=' "$1" 2>/dev/null | tail -n 1 | grep -qiE "^SMTP_HOST=[\"']?smtp-relay\.brevo\.com[\"']?[[:space:]]*$" || return 1
+  # Остатък от Register.it: SMTP_TLS_SERVERNAME чупи TLS към Brevo тихо (преглед на PR #492).
+  ! grep -E '^SMTP_TLS_SERVERNAME=' "$1" 2>/dev/null | tail -n 1 | grep -qE "^SMTP_TLS_SERVERNAME=[\"']?[^\"'[:space:]]"
+}
+
 deploy_eternaltouch() {
   local d="$SRC/eternaltouch"
   [ -d "$d" ] || { warn "Няма eternaltouch/ в архива — пропускам."; return; }
@@ -1322,9 +1364,9 @@ deploy_eternaltouch() {
   # Пренеси съществуващия .env (тайните живеят на сървъра, не в архива).
   carry_env eternaltouch "$d"
   # Пръв деплой без .env: генерирай random secrets (app-ът иначе отказва да стартира).
-  # SMTP_PASS остава CHANGE_ME — имейлите тръгват след като го попълниш веднъж ръчно.
+  # SMTP_USER/SMTP_PASS (Brevo) остават CHANGE_ME — имейлите тръгват след като ги попълниш веднъж ръчно.
   if [ ! -f "$d/.env" ]; then
-    warn "Няма eternaltouch/.env — генерирам с random secrets (SMTP_PASS=CHANGE_ME)."
+    warn "Няма eternaltouch/.env — генерирам с random secrets (SMTP през Brevo: CHANGE_ME)."
     local dbp jwt cks sks adp
     dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
     jwt="$(openssl rand -base64 48 | tr -d '\n')"
@@ -1341,25 +1383,25 @@ ADMIN_PASSWORD=${adp}
 SITE_URL=https://eternaltouch.it
 NODE_ENV=production
 PORT=4300
-SMTP_HOST=authsmtp.register.it
+SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=info@eternaltouch.it
+# Brevo → SMTP & API → SMTP: логинът (не пощенската кутия) и SMTP ключът.
+SMTP_USER=CHANGE_ME
 SMTP_PASS=CHANGE_ME
 SMTP_FROM=Eternal Touch <info@eternaltouch.it>
 NOTIFY_TO=info@eternaltouch.it
-# Register.it представя *.securemail.pro / smtp.webnode.com cert на
-# authsmtp.register.it (не за connect хоста) — задай servername, за да остане
-# TLS валидацията вкл. (rejectUnauthorized). Без този ред първото пращане след
-# попълване на SMTP_PASS гърми с cert-mismatch. Стойността е от .env.example.
-SMTP_TLS_SERVERNAME=smtp.webnode.com
 EOF
     chmod 600 "$d/.env"
     warn "Записах eternaltouch/.env. Админ парола: ${adp} — запиши я в password manager СЕГА."
-    warn "Попълни SMTP_PASS в eternaltouch/.env, за да тръгнат имейлите."
+    warn "Попълни SMTP_USER и SMTP_PASS (Brevo) в eternaltouch/.env, за да тръгнат имейлите."
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
   carry_env eternaltouch "$d"   # новогенерираният .env → стабилния път
+  if ! smtp_is_brevo "$d/.env"; then
+    # carry_env копира от споделения .env при всеки деплой — смяна в current/…/.env се губи.
+    skip_project eternaltouch "SMTP не е Brevo в /opt/few-few/shared/eternaltouch/.env (каноничният — current/eternaltouch/.env се презаписва от него). Там: SMTP_HOST=smtp-relay.brevo.com, SMTP_USER и SMTP_PASS от Brevo (SMTP & API → SMTP), махни SMTP_TLS_SERVERNAME, потвърди eternaltouch.it в Brevo и пусни пак."; return
+  fi
   ( cd "$d" && bash deploy.sh ) \
     || { warn "eternaltouch: deploy.sh се провали — продължавам с останалите."; deploy_failed=1; return; }
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
@@ -2110,6 +2152,12 @@ fivem_indexnow() {
   fi
 }
 
+# Непразен BREVO_API_KEY в .env (без празните кавички, които readEnv брои за празни).
+fivem_has_brevo_key() {
+  [ -r "$1" ] || return 1
+  grep -qE "^BREVO_API_KEY=[\"']?[^\"'[:space:]]" "$1" 2>/dev/null
+}
+
 deploy_fivem() {
   local d="$SRC/FiveM"
   [ -d "$d" ] || { warn "Няма FiveM/ в архива — пропускам."; return; }
@@ -2168,9 +2216,9 @@ DATABASE_URL=postgresql://fivem:${dbp}@db:5432/fivem
 PUBLIC_BASE_URL=https://${FIVEM_DOMAIN}
 ADMIN_PASSWORD_HASH=${hash}
 TRUST_PROXY_IP_HEADER=x-real-ip
-# Без RESEND_API_KEY уведомленията по чл. 16 и чл. 17 DSA НЕ тръгват —
-# липсата се логва, но обещанието остава неизпълнено. Попълни го.
-RESEND_API_KEY=
+# Без BREVO_API_KEY уведомленията по чл. 16 и чл. 17 DSA НЕ тръгват —
+# липсата се логва, но обещанието остава неизпълнено. Попълни го (Brevo → SMTP & API → API keys).
+BREVO_API_KEY=
 EMAIL_FROM=Thraex PVP <no-reply@${FIVEM_DOMAIN}>
 # По избор — без тях съответната платформа просто се пропуска.
 TWITCH_CLIENT_ID=
@@ -2183,9 +2231,16 @@ FIVEM_PING_TIMEOUT_MS=4000
 FIVEM_PING_CONCURRENCY=6
 EOF
     [ -n "$hash" ] && warn "Админ парола за FiveM: ${adp} — запиши я в password manager СЕГА, не се показва пак."
-    warn "Попълни RESEND_API_KEY в $FIVEM_STATE_DIR/.env, иначе решенията по DSA не се изпращат."
+    warn "Попълни BREVO_API_KEY в $FIVEM_STATE_DIR/.env, иначе решенията по DSA не се изпращат."
   fi
   chmod 600 "$FIVEM_STATE_DIR/.env" 2>/dev/null || true
+  # Имейлите минават през Brevo (собственикът, 25.11.2026). Новият код праща САМО през Brevo: без ключ
+  # уведомленията по чл. 16/17 DSA спират ТИХО, а health остава зелен (преглед на PR #489). Затова без
+  # BREVO_API_KEY FiveM НЕ се обновява — върви предишният release, който още праща писма, а политиката
+  # му още назовава стария доставчик. Пръв деплой: .env току-що е създаден — попълни ключа и пусни пак.
+  if ! fivem_has_brevo_key "$FIVEM_STATE_DIR/.env"; then
+    skip_project fivem "няма BREVO_API_KEY в $FIVEM_STATE_DIR/.env. Добави ключа (Brevo → SMTP & API → API keys), потвърди подателя в Brevo и пусни пак. RESEND_API_KEY махни едва след като новият release праща писма."; return
+  fi
   # `-T`: без него, ако `$d/.env` вече е ДИРЕКТОРИЯ, връзката се създава ВЪТРЕ
   # в нея (`.env/.env`) и приложението тръгва без тайни, без грешка.
   ln -sfnT "$FIVEM_STATE_DIR/.env" "$d/.env"
@@ -2501,6 +2556,26 @@ EOF
   esac
 }
 
+# ── liftcon — сайт (статичен, Nginx) + приложение (Docker Compose: db + api); стъпките: liftcon/deploy/deploy.sh ──
+# deploy.sh е идемпотентен и сам връща предишното състояние при провал (връзката current на сайта, Nginx
+# конфига, образа на приложението); бекъп на базата и на снимките преди смяната. Първият път генерира
+# тайните (.env, права 600) и пита в терминала за имейл и парола на администратора — пуска се от човек в SSH.
+# Още не е в PROJECTS по подразбиране: първото пускане е изрично (PROJECTS="liftcon"), след DNS на liftcon.it.
+deploy_liftcon() {
+  local d="$SRC/liftcon" rc=0
+  [ -d "$d" ] || { warn "Няма liftcon/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "liftcon: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам liftcon (сайт + Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  DOMAIN="${LIFTCON_DOMAIN:-liftcon.it}" INDEXNOW="${LIFTCON_INDEXNOW:-1}" bash "$d/deploy/deploy.sh" || rc=$?
+  if [ "$rc" -eq 0 ]; then
+    ok "liftcon: жив — https://${LIFTCON_DOMAIN:-liftcon.it} (health 200: /, /health, /admin/login)."
+  else
+    deploy_failed=1
+    warn "liftcon: деплоят спря (код $rc); deploy.sh е върнал предишното състояние. Логове: docker logs --tail 200 liftcon-api"
+  fi
+}
+
 for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
@@ -2522,6 +2597,7 @@ for p in $PROJECTS; do
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     fivem|FiveM)          deploy_fivem ;;
     linketto)   deploy_linketto ;;
+    liftcon)    deploy_liftcon ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done
@@ -2551,8 +2627,63 @@ fi
 # Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
 # код, който никога не е разгръщан за Korpora. Същото за Rilievi (RILIEVI_LAST_GOOD): там е и
 # docker-compose.yml, от който тече дневният бекъп. И за Фактурист (FAKTURIST_LAST_GOOD) и Semki (SEMKI_LAST_GOOD).
+# Още една защита (инцидент 11.10.2026, zabobovdol 502): release-ите, от които контейнер МОНТИРА файлове.
+# Compose стекът помни абсолютния път на release-а, от който е вдигнат последно (./nginx/*.conf,
+# ./scripts). zabobovdol беше вдигнат от release на 18.09, следващите деплои пускаха само други
+# продукти и prune изтри папката. При рестарт на контейнерите nginx (код 127, „not a directory“)
+# и backup (код 2) не намериха файловете си → 502 за целия сайт. Затова всеки Mounts.Source под
+# $RELEASES_DIR пази своя release. Docker недостъпен → изход 1 и prune не трие НИЩО (fail closed):
+# по-добре малко повече диск, отколкото код, изтрит изпод жив контейнер.
+release_mount_sources() {
+  command -v docker >/dev/null 2>&1 || return 0
+  local ids
+  # timeout: увиснал демон не бива да задържа деплоя завинаги (провал → fail closed, нищо не се трие).
+  ids="$(timeout 20 docker ps -aq 2>/dev/null)" || return 1
+  [ -n "$ids" ] || return 0
+  # shellcheck disable=SC2086
+  timeout 30 docker inspect --format '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}' $ids 2>/dev/null || return 1
+}
+
+# Още една защита (23.10.2026): release, от който върви compose проект (етикетът working_dir — и на
+# спрелите контейнери), дори без монтирани файлове оттам. Деплои без zabobovdol триеха папката
+# изпод работещия стек; откатът и `docker compose` командите от DEPLOY.md сочат натам.
+compose_workdirs() {
+  command -v docker >/dev/null 2>&1 || return 0
+  local ids
+  ids="$(timeout 20 docker ps -aq 2>/dev/null)" || return 1
+  [ -n "$ids" ] || return 0
+  # shellcheck disable=SC2086 # ID-тата са едно-словни; разделянето е нарочно
+  timeout 30 docker inspect --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' $ids 2>/dev/null || return 1
+}
+
+# Преди триене: .env, който живее САМО в този release (няма го в shared и в никой друг release), се
+# спасява в $SHARED_DIR/<продукт>/.env (600). На 11.10.2026 единственото копие на zabobovdol/.env
+# беше в изтрития release — спаси ни само това, че стойностите още живееха в контейнерите.
+# Никога не презаписва съществуващ shared файл. prune обхожда от най-стария към най-новия, затова
+# спасеното е най-новото копие, а не някое застаряло. Обхват: <release>/<обвивка>/<продукт>/.env —
+# плосък release (без обвивка) и вложени .env (напр. SupremeDiscordBot/backend) не се виждат;
+# Supreme има свой стабилен дом (SUPREME_ENV_DIR).
+rescue_release_env() {
+  # rc трупа провалите: статусът на while е само този на последната итерация, а провал в средна
+  # итерация (ENOSPC при пълен диск) иначе се губеше и release-ът се триеше с единственото копие.
+  local old="${1%/}" envf proj shared other rc=0
+  while IFS= read -r envf; do
+    proj="$(basename "$(dirname "$envf")")"
+    shared="$SHARED_DIR/$proj/.env"
+    [ -f "$shared" ] && continue
+    other="$(find "$RELEASES_DIR" -mindepth 4 -maxdepth 4 -path "*/$proj/.env" -type f ! -path "$old/*" -print -quit 2>/dev/null || true)"
+    [ -n "$other" ] && continue
+    if install -D -m 600 "$envf" "$shared"; then
+      warn "Спасих $proj/.env от изтриван release → $shared"
+    else
+      warn "НЕ успях да спася $proj/.env от $old"; rc=1
+    fi
+  done < <(find "$old" -mindepth 3 -maxdepth 3 -path '*/*/.env' -type f 2>/dev/null)
+  return "$rc"
+}
+
 prune_releases() {
-  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected
+  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected mounts m lg lg_any="" workdirs wd
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
@@ -2561,6 +2692,23 @@ prune_releases() {
   # Целта на отката на linketto: без нея деплоите на други продукти я изтриваха изпод отката.
   lg_lnk="$(readlink -f "$(cat "$LINKETTO_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   lg_semki="$(readlink -f "$(cat "$SEMKI_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  # Целта на отката на ВСЕКИ продукт със $SHARED_DIR/<продукт>/last-good — и на такъв, когото този
+  # autodeploy.sh не познава (ChatChat, 11.10.2026: разгърнат от свой клон, после деплой на друг
+  # продукт от main изтри папката, към която сочеха и откатът, и командите от DEPLOY.md).
+  for lg in "${SHARED_DIR:-/opt/few-few/shared}"/*/last-good; do
+    [ -f "$lg" ] || continue
+    lg_any="$lg_any$(readlink -f "$(head -n 1 "$lg" 2>/dev/null || true)" 2>/dev/null || true)"$'\n'
+  done
+  if ! mounts="$(release_mount_sources)"; then
+    warn "Docker не отговаря — не трия стари releases (не мога да видя кои монтират контейнерите)."
+    return 0
+  fi
+  mounts="$(printf '%s\n' "$mounts" | grep -F "$RELEASES_DIR/" || true)"
+  if ! workdirs="$(compose_workdirs)"; then
+    warn "Docker не отговаря — не трия стари releases (не мога да видя кои compose проекти вървят оттам)."
+    return 0
+  fi
+  # От най-стария към най-новия (tac) — виж rescue_release_env.
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
@@ -2572,14 +2720,43 @@ prune_releases() {
         "$old_real"|"$old_real"/*) keep=1 ;;
       esac
     done
-    [ "$keep" = "1" ] && continue
+    while IFS= read -r protected; do
+      [ -n "$protected" ] || continue
+      case "$protected" in
+        "$old_real"|"$old_real"/*) keep=1 ;;
+      esac
+    done <<< "$lg_any"
+    while IFS= read -r wd; do
+      [ -n "$wd" ] || continue
+      case "$wd" in
+        "${old%/}"|"${old%/}"/*|"$old_real"|"$old_real"/*) keep=1 ;;
+      esac
+    done <<< "$workdirs"
+    while IFS= read -r m; do
+      [ -n "$m" ] || continue
+      case "$m" in
+        "${old%/}"/*|"$old_real"/*) keep=1 ;;
+      esac
+    done <<< "$mounts"
+    if [ "$keep" = "1" ]; then
+      [ -n "$mounts" ] && printf '%s\n' "$mounts" | grep -qF "${old%/}/" \
+        && log "Пазя $(basename "${old%/}") — контейнер монтира файлове от него."
+      continue
+    fi
+    rescue_release_env "$old" || { warn "Пазя $(basename "${old%/}") — .env не е спасен"; continue; }
     rm -rf "$old"
-  done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)))
+  done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)) | tac)
 }
 prune_releases
 
+if [ "${#SKIPPED[@]}" -gt 0 ]; then
+  warn "Пропуснати (не са обновени — работи предишният им код):"
+  for x in "${SKIPPED[@]}"; do warn "  · $x"; done
+fi
+SKIPPED_NOTE=""
+if [ "${#SKIPPED[@]}" -gt 0 ]; then SKIPPED_NOTE=" · пропуснати: ${#SKIPPED[@]} (виж по-горе)"; fi
 if [ "$deploy_failed" = "0" ]; then
-  ok "Деплой готов ($TS). Проекти: $PROJECTS"
+  ok "Деплой готов ($TS). Проекти: $PROJECTS${SKIPPED_NOTE}"
 else
   die "Деплой завърши с грешки — виж изхода по-горе (направен е опит за rollback)."
 fi

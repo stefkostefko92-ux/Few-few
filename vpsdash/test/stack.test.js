@@ -1,7 +1,7 @@
 // Redis (eviction, персистентност) и бекъп на томове/качени файлове.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseInfo, parseKeyspace, summarize, evictionChecks, saveSpec, assertName, parseHostRedis, hostPort } from '../src/redis.js';
+import { parseInfo, parseKeyspace, summarize, evictionChecks, saveSpec, assertName, parseHostRedis, hostPort, readInfo, INFO_SH, BGSAVE_SH, HOST_BGSAVE_SH } from '../src/redis.js';
 import { assertVolume, parseSize, volumeBackupSpec, backupAllVolumesSpec, archiveName } from '../src/volumes.js';
 import { loadConfig } from '../src/config.js';
 import fs from 'node:fs';
@@ -125,7 +125,89 @@ test('имената на контейнери минават през allowlist
   assert.throws(() => assertName(''), /Невалидно име/);
   const spec = saveSpec('supremebot_redis');
   assert.equal(spec.cmd, 'docker');
-  assert.deepEqual(spec.args, ['exec', 'supremebot_redis', 'redis-cli', 'BGSAVE']);
+  assert.deepEqual(spec.args, ['exec', 'supremebot_redis', 'sh', '-c', BGSAVE_SH]);
+});
+
+// ── Redis с парола (24.10.2026) ──────────────────────────────────────────────
+// Изходите долу са ИЗМЕРЕНИ на redis:7-alpine: при requirepass `redis-cli`
+// отговаря NOAUTH и излиза с код 0 — точно затова панелът показваше „ok" с
+// празни числа, а BGSAVE минаваше като успешна задача, без да е снимал.
+test('NOAUTH с код 0 НЕ е „ok": казва, че липсва REDIS_PASSWORD', () => {
+  const r = readInfo({ ok: true, code: 0, stdout: 'NOAUTH Authentication required.\n', stderr: '' });
+  assert.equal(r.ok, false);
+  assert.equal(r.reason, 'auth');
+  assert.match(r.error, /REDIS_PASSWORD/);
+});
+
+test('сгрешена парола се различава от липсваща (WRONGPASS идва на stderr)', () => {
+  const r = readInfo({
+    ok: true, code: 0,
+    stdout: 'NOAUTH Authentication required.\n',
+    stderr: 'AUTH failed: WRONGPASS invalid username-password pair or user is disabled.\n',
+  });
+  assert.equal(r.ok, false);
+  assert.equal(r.reason, 'auth');
+  assert.match(r.error, /не е вярна/);
+});
+
+test('истински INFO минава и дава числата', () => {
+  const r = readInfo({ ok: true, code: 0, stdout: INFO, stderr: '' });
+  assert.equal(r.ok, true);
+  assert.equal(summarize(r.info).version, '7.2.4');
+});
+
+test('празен или чужд отговор е „не знам", не празен Redis', () => {
+  for (const stdout of ['', '\n', 'ERR unknown command']) {
+    const r = readInfo({ ok: true, code: 0, stdout, stderr: '' });
+    assert.equal(r.ok, false, JSON.stringify(stdout));
+    assert.equal(r.reason, 'error');
+  }
+  const failed = readInfo({ ok: false, code: 1, stdout: '', stderr: 'Error response from daemon: container x is not running\n' });
+  assert.equal(failed.ok, false);
+  assert.match(failed.detail, /not running/);
+});
+
+test('паролата се взима от средата на контейнера, никога през argv', () => {
+  for (const sh of [INFO_SH, BGSAVE_SH]) {
+    assert.match(sh, /REDISCLI_AUTH="\$REDIS_PASSWORD"/);
+    assert.doesNotMatch(sh, /redis-cli[^;|]*\s-a\s/);
+  }
+});
+
+// Преглед на PR #322 (Кодаджията, VPS-аджията — Medium): провалът се търсеше по списък с лоши
+// думи, а кодът на redis-cli се губеше → „Error: Connection reset“, празен отговор или липсващ
+// redis-cli (127) даваха ЗЕЛЕНА задача без снимка. Сега: успех само по позволен списък.
+import { execFileSync as runSh } from 'node:child_process';
+import { mkdtempSync, writeFileSync as wf, rmSync as rmf } from 'node:fs';
+import { tmpdir as td } from 'node:os';
+import { join as pj } from 'node:path';
+function bgsave(sh, out, code, { cli = true } = {}) {
+  const dir = mkdtempSync(pj(td(), 'rcli-'));
+  try {
+    if (cli) wf(pj(dir, 'redis-cli'), `#!/bin/sh\nprintf '%s\\n' ${JSON.stringify(out)}\nexit ${code}\n`, { mode: 0o755 });
+    const env = { PATH: cli ? `${dir}:/usr/bin:/bin` : '/nonexistent-bin' };
+    try { runSh('/bin/sh', ['-c', sh, 'sh', '6379'], { env, stdio: 'pipe' }); return 0; } catch (e) { return e.status ?? 99; }
+  } finally { rmf(dir, { recursive: true, force: true }); }
+}
+test('BGSAVE: зелено САМО когато Redis е започнал снимка (позволен списък)', () => {
+  for (const sh of [BGSAVE_SH, HOST_BGSAVE_SH]) {
+    assert.equal(bgsave(sh, 'Background saving started', 0), 0, 'успех');
+    assert.equal(bgsave(sh, 'ERR Background save already in progress', 0), 0, 'снимка вече тече — не е провал');
+    assert.notEqual(bgsave(sh, 'NOAUTH Authentication required.', 0), 0, 'NOAUTH с код 0');
+    assert.notEqual(bgsave(sh, 'WRONGPASS invalid username-password pair', 0), 0);
+    assert.notEqual(bgsave(sh, 'Error: Connection reset by peer', 1), 0, 'кодът на redis-cli не се губи');
+    assert.notEqual(bgsave(sh, '', 0), 0, 'празен отговор не е снимка');
+    assert.notEqual(bgsave(sh, 'ERR An AOF log rewriting in progress', 0), 0);
+  }
+  assert.notEqual(bgsave(BGSAVE_SH, '', 0, { cli: false }), 0, 'без redis-cli (127) — червено');
+});
+
+test('INFO с предупреждение AUTH failed на stderr, но пълен отговор → ok (парола без requirepass)', () => {
+  const r = readInfo({
+    ok: true, code: 0, stdout: INFO,
+    stderr: 'AUTH failed: ERR AUTH <password> called without any password configured for the default user.\n',
+  });
+  assert.equal(r.ok, true);
 });
 
 // ── Томове ────────────────────────────────────────────────────────────────────
@@ -396,7 +478,9 @@ test('redis: системният redis-server се открива по ss, па
   assert.equal(hostPort('host:0'), null);
   assert.equal(hostPort('shop-cache-1'), null);
   const spec = saveSpec('host:6379');
-  assert.equal(spec.cmd, 'redis-cli');
+  // През sh, за да падне задачата при NOAUTH/WRONGPASS; портът е позиционен аргумент.
+  assert.equal(spec.cmd, 'sh');
+  assert.deepEqual(spec.args, ['-c', HOST_BGSAVE_SH, 'sh', '6379']);
   assert.ok(!spec.args.includes('-a'), 'паролата никога като аргумент (вижда се в ps)');
   assert.throws(() => saveSpec('host:6379;reboot'));
 });

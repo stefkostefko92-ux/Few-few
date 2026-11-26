@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Агентите · Carbon Stealth</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f3f4fb; --surface: #ffffff; --surface2: #eef0fa; --ink: #15183a; --muted: #5a5f86;
+    --line: #dde0f0; --accent: #4650d4; --accent-ink: #ffffff; --ok: #157f54; --warn: #a8611a;
+    --shadow: 0 1px 2px rgba(21,24,58,.06), 0 6px 18px rgba(21,24,58,.06);
+    --r: 16px; --gutter: 16px;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0b0d1d; --surface: #141836; --surface2: #1b2047; --ink: #eceefe; --muted: #a3a8d2;
+      --line: #2a3064; --accent: #959dff; --accent-ink: #0b0d1d; --ok: #5bd49b; --warn: #f0b066;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0b0d1d; --surface: #141836; --surface2: #1b2047; --ink: #eceefe; --muted: #a3a8d2;
+    --line: #2a3064; --accent: #959dff; --accent-ink: #0b0d1d; --ok: #5bd49b; --warn: #f0b066;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font); }
+  button, input, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-inline: var(--gutter); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ── горна лента ───────────────────────────────────────────── */
+  .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
+         backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: grid; gap: 10px; padding-block: 12px 10px; }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .mark { width: 30px; height: 30px; border-radius: 50%; flex: none;
+          background: radial-gradient(circle at 35% 30%, #fff 0 8%, transparent 9%), conic-gradient(from 200deg, #6f7bff, #c85cff, #ff8a5c, #ffd34d, #4fd1a5, #6f7bff); }
+  .brand h1 { margin: 0; font-size: 19px; line-height: 1.2; letter-spacing: -.01em; }
+  .brand .sub { color: var(--muted); font-size: 13px; }
+  .brand .grow { flex: 1; min-width: 0; }
+  .galaxy-link { display: none; flex: none; text-decoration: none; color: var(--ink); border: 1px solid var(--line); background: var(--surface);
+                 padding: 7px 12px; border-radius: 999px; font-size: 13px; }
+  @media (min-width: 900px) and (pointer: fine) { .galaxy-link { display: inline-block; } }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; }
+  .search input { flex: 1; min-width: 0; border: 0; background: none; padding: 11px 0; outline: none; font-size: 16px; }
+  .search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  /* ── списък ────────────────────────────────────────────────── */
+  main { padding-block: 14px 48px; }
+  .team { margin-top: 22px; }
+  .team:first-child { margin-top: 6px; }
+  .team-h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0 2px 4px; }
+  .team-h h2 { margin: 0; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .team-h .mission { color: var(--muted); font-size: 13px; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 8px; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1000px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .card { --a: var(--accent); display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: start; text-align: left; width: 100%;
+          background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px 12px 12px; cursor: pointer;
+          box-shadow: var(--shadow); position: relative; overflow: hidden; min-height: 92px; }
+  .card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--a); }
+  .card:hover { border-color: color-mix(in srgb, var(--a) 55%, var(--line)); }
+  .ava { width: 56px; height: 56px; border-radius: 14px; background: color-mix(in srgb, var(--a) 16%, var(--surface2)); display: grid; place-items: center;
+         font-size: 26px; overflow: hidden; }
+  .ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card .nm { font-weight: 650; font-size: 16px; line-height: 1.25; }
+  .card .lead { font-size: 11px; font-weight: 600; color: var(--a); border: 1px solid color-mix(in srgb, var(--a) 45%, transparent); padding: 0 6px; border-radius: 999px; margin-left: 6px; vertical-align: 2px; }
+  .card .ti { color: var(--muted); font-size: 13px; margin-top: 1px; }
+  .card .tg { font-size: 13.5px; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .meta { display: flex; gap: 6px 12px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); text-align: center; padding: 40px 0; }
+
+  /* ── профил ────────────────────────────────────────────────── */
+  .profile { padding-block: 10px 40px; }
+  .back { border: 0; background: none; color: var(--accent); padding: 8px 0; cursor: pointer; font-size: 15px; }
+  .hero { --a: var(--accent); display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: center; margin-top: 6px; }
+  .hero .ava { width: 96px; height: 96px; border-radius: 24px; font-size: 44px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--a) 50%, transparent); }
+  .hero h2 { margin: 0; font-size: 24px; line-height: 1.15; letter-spacing: -.01em; text-wrap: balance; }
+  .hero .ti { color: var(--muted); margin-top: 2px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .badge { font-size: 12px; border: 1px solid var(--line); background: var(--surface); padding: 2px 8px; border-radius: 999px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tagline { margin: 14px 0 0; font-size: 16px; }
+  .tabs { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--topH, 0px)); z-index: 10; display: flex; gap: 4px; background: var(--bg);
+          padding: 10px 0 8px; margin-top: 14px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: none; border: 0; background: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 14px; }
+  .tab[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+  .panel { padding-top: 14px; }
+  .sec { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; margin-bottom: 12px; }
+  .sec h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .sec p { margin: 0; max-width: 68ch; }
+  .sec ul { margin: 0; padding-left: 18px; }
+  .sec li { margin: 4px 0; }
+  .kv { display: grid; grid-template-columns: minmax(90px, max-content) 1fr; gap: 6px 12px; }
+  .kv dt { font-family: var(--mono); font-size: 13px; }
+  .kv dd { margin: 0; color: var(--muted); font-size: 14px; }
+  .skill { padding: 8px 0; border-top: 1px solid var(--line); }
+  .skill:first-of-type { border-top: 0; }
+  .skill code { font-family: var(--mono); font-size: 13px; }
+  .skill .why { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .pill { font-size: 11px; border-radius: 999px; padding: 0 6px; margin-left: 6px; border: 1px solid var(--line); color: var(--muted); }
+  .tl { list-style: none; padding: 0; margin: 0; }
+  .tl li { display: grid; grid-template-columns: 74px 1fr; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .tl li:first-child { border-top: 0; }
+  .tl .v { font-family: var(--mono); font-size: 12.5px; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .tl .d { color: var(--muted); font-size: 12px; }
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+  .steps li { counter-increment: s; position: relative; padding: 6px 0 6px 30px; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 6px; width: 22px; height: 22px; border-radius: 50%; background: var(--surface2);
+                      display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--accent); }
+
+  /* ── чат ───────────────────────────────────────────────────── */
+  .chat { display: grid; gap: 10px; }
+  .note { font-size: 13px; color: var(--muted); background: var(--surface2); border-radius: 12px; padding: 10px 12px; }
+  .msgs { display: grid; gap: 10px; }
+  .msg { max-width: 88%; padding: 10px 12px; border-radius: 14px; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: anywhere; font-size: 15px; }
+  .msg.me { justify-self: end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 4px; }
+  .msg.ag { justify-self: start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .msg.ag strong { font-weight: 700; }
+  .msg.ag code { font-family: var(--mono); font-size: 13px; background: var(--surface2); padding: 0 4px; border-radius: 5px; }
+  .msg.err { justify-self: stretch; max-width: none; background: none; border: 1px dashed var(--warn); color: var(--warn); font-size: 14px; }
+  .thinking { color: var(--muted); font-style: italic; }
+  .composer { position: sticky; bottom: 0; padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--bg); display: grid; gap: 8px; }
+  .composer .row { display: flex; gap: 8px; align-items: flex-end; }
+  .composer textarea { flex: 1; min-width: 0; resize: none; min-height: 46px; max-height: 40vh; border: 1px solid var(--line); background: var(--surface);
+                       border-radius: 14px; padding: 11px 12px; font-size: 16px; line-height: 1.4; }
+  .composer textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .btn { border: 0; border-radius: 12px; padding: 11px 16px; font-weight: 650; cursor: pointer; background: var(--accent); color: var(--accent-ink); min-height: 46px; }
+  .btn.ghost { background: none; border: 1px solid var(--line); color: var(--ink); font-weight: 500; }
+  .btn[disabled] { opacity: .5; cursor: default; }
+  .chat-tools { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  .suggest { display: flex; gap: 8px; flex-wrap: wrap; }
+  .suggest button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer; text-align: left; }
+
+  /* ── компютър: списък + профил един до друг ─────────────────── */
+  @media (min-width: 1100px) {
+    body.split .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 24px; align-items: start; }
+    body.split #list .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    body.split #profile { position: sticky; top: calc(var(--topH, 120px) + 8px); max-height: calc(100vh - var(--topH, 120px) - 16px); overflow: auto; padding-inline: 4px; }
+    body.split .back { display: none; }
+  }
+  /* Профил на телефон: търсачката и екипите не трябват — повече място за агента. */
+  body.viewing:not(.split) .top .search, body.viewing:not(.split) .top .chips { display: none; }
+  .hero.compact { grid-template-columns: 56px 1fr; gap: 12px; }
+  .hero.compact .ava { width: 56px; height: 56px; border-radius: 14px; font-size: 26px; }
+  .hero.compact h2 { font-size: 20px; }
+  .hero.compact .badges { display: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .card { transition: border-color .15s, transform .15s; }
+    .card:active { transform: scale(.99); }
+  }
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"></div>
+      <div class="grow">
+        <h1>Агентите</h1>
+        <div class="sub" id="sub">Carbon Stealth</div>
+      </div>
+      <a class="galaxy-link" id="galaxy" href="galaxy.html">Галактиката →</a>
+    </div>
+    <label class="search"><span aria-hidden="true">⌕</span><span class="sr">Търси агент</span>
+      <input id="q" type="search" placeholder="Търси агент, умение или задача…" autocomplete="off" enterkeyhint="search">
+    </label>
+    <div class="chips" id="chips" role="toolbar" aria-label="Екипи"></div>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <main id="list" aria-live="polite"></main>
+  <section id="profile" class="profile" hidden aria-label="Профил на агента"></section>
+</div>
+
+<script type="application/json" id="app-data">{"updated":"","teams":[],"agents":[]}</script>
+<script type="application/json" id="app-mascots">{"icons":{},"portraits":{}}</script>
+<script>
+(() => {
+  "use strict";
+  const DATA = JSON.parse(document.getElementById("app-data").textContent);
+  const MASCOTS = JSON.parse(document.getElementById("app-mascots").textContent);
+  const byId = new Map(DATA.agents.map((a) => [a.id, a]));
+  const teamById = new Map(DATA.teams.map((t) => [t.id, t]));
+  const $ = (s, r = document) => r.querySelector(s);
+  const el = (tag, attrs = {}, ...kids) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v === true ? "" : String(v));
+    }
+    for (const k of kids.flat()) if (k != null) n.append(k instanceof Node ? k : document.createTextNode(String(k)));
+    return n;
+  };
+  const safeImg = (u) => (typeof u === "string" && /^data:image\/(webp|png|jpeg);base64,/.test(u) ? u : "");
+  const num = (n) => Number(n || 0).toLocaleString("bg-BG");
+  const shortVer = (v) => { const [a, b] = String(v || "0").split("."); return `v${a}.${b || 0}`; };
+
+  // Високата горна лента — за sticky табовете и разделения изглед.
+  const top = $("#top");
+  const setTopH = () => document.documentElement.style.setProperty("--topH", `${top.offsetHeight}px`);
+  addEventListener("resize", setTopH); setTopH();
+
+  const total = DATA.agents.reduce((s, a) => s + (a.lessons || 0), 0);
+  $("#sub").textContent = `${DATA.agents.length} агента · ${DATA.teams.length} екипа · ${num(total)} проверени поуки`;
+
+  // ── списък ─────────────────────────────────────────────────
+  let team = "all", query = "";
+  const chips = $("#chips");
+  const chip = (id, label) => el("button", { class: "chip", type: "button", "aria-pressed": String(team === id), onclick: () => { team = id; renderChips(); renderList(); } }, label);
+  function renderChips() { chips.replaceChildren(chip("all", "Всички"), ...DATA.teams.map((t) => chip(t.id, t.name))); }
+
+  const haystack = (a) => [a.name, a.title, a.tagline, a.mission, a.when, ...(a.capabilities || []), ...(a.skills || []).map((s) => s.id)].join(" ").toLowerCase();
+  const HAY = new Map(DATA.agents.map((a) => [a.id, haystack(a)]));
+
+  // Портретите (~0,9 MB) не са в първото зареждане: идват от portraits.json при първия профил (публикуван до
+  // страницата). Дотогава — иконата. Стойностите са данни: минават през safeImg като вградените.
+  let portraitsP = null;
+  const portraits = () => (portraitsP ||= fetch("portraits.json").then((r) => (r.ok ? r.json() : {})).catch(() => ({})));
+  function avatar(a, big) {
+    const src = safeImg(MASCOTS.icons[a.id]);
+    const box = el("div", { class: "ava", "aria-hidden": "true" }, src ? el("img", { src, alt: "", decoding: "async" }) : (a.emoji || a.name[0]));
+    if (big) portraits().then((m) => { const u = safeImg(m && m[a.id]); if (u && box.isConnected) box.replaceChildren(el("img", { src: u, alt: "", decoding: "async" })); });
+    return box;
+  }
+
+  function card(a, isLead) {
+    const b = el("button", { class: "card", type: "button", onclick: () => open(a.id) },
+      avatar(a),
+      el("div", {},
+        el("div", { class: "nm" }, a.name, isLead ? el("span", { class: "lead" }, "водач") : null),
+        el("div", { class: "ti" }, a.title),
+        el("div", { class: "tg" }, a.tagline),
+        el("div", { class: "meta" }, el("span", {}, shortVer(a.version)), el("span", {}, `${num(a.lessons)} поуки`), el("span", {}, `${a.skills.length} умения`))));
+    b.style.setProperty("--a", a.accent);
+    b.setAttribute("aria-label", `${a.name} — ${a.title}`);
+    return b;
+  }
+
+  function renderList() {
+    const q = query.trim().toLowerCase();
+    const match = (a) => !q || q.split(/\s+/).every((w) => HAY.get(a.id).includes(w));
+    const out = [];
+    for (const t of DATA.teams) {
+      if (team !== "all" && team !== t.id) continue;
+      const list = t.members.map((id) => byId.get(id)).filter((a) => a && match(a));
+      if (!list.length) continue;
+      out.push(el("section", { class: "team", "aria-label": t.name },
+        el("div", { class: "team-h" }, el("h2", {}, t.name), el("span", { class: "mission" }, t.mission)),
+        el("div", { class: "grid" }, list.map((a) => card(a, a.id === t.lead)))));
+    }
+    const orphans = DATA.agents.filter((a) => !a.team && match(a) && team === "all");
+    if (orphans.length) out.push(el("section", { class: "team" }, el("div", { class: "team-h" }, el("h2", {}, "Други")), el("div", { class: "grid" }, orphans.map((a) => card(a)))));
+    $("#list").replaceChildren(...(out.length ? out : [el("p", { class: "empty" }, "Няма агент за това търсене.")]));
+  }
+  $("#q").addEventListener("input", (e) => { query = e.target.value; renderList(); });
+
+  // ── профил ─────────────────────────────────────────────────
+  const TABS = [["about", "Профил"], ["skills", "Умения"], ["learn", "Учене"], ["chat", "Чат"]];
+  let current = null, tab = "about", listScroll = 0;
+  const isSplit = () => matchMedia("(min-width: 1100px)").matches;
+
+  function open(id, t = "about") {
+    if (!byId.has(id)) return;
+    const h = t === "about" ? id : `${id}.${t}`;
+    if (location.hash.slice(1) !== h) location.hash = h; else route();
+  }
+  function route() {
+    let h = "";
+    try { h = decodeURIComponent(location.hash.slice(1)); } catch { h = ""; } // развален адрес (#%E0) = списъкът
+    const [id, t] = h.split(".");
+    const a = byId.get(id);
+    document.body.classList.toggle("split", !!a && isSplit());
+    document.body.classList.toggle("viewing", !!a);
+    if (!a) { closeProfile(); return; }
+    const nextTab = TABS.some(([k]) => k === t) ? t : "about";
+    if (current === a && tab === nextTab && !$("#profile").hidden) return; // същият изглед — не го рисувай наново
+    // Смяна на агент или таб спира текущия отговор: частта, която е дошла, остава в историята с „(спряно)“.
+    if (current) abortChat();
+    if (!current) listScroll = scrollY;
+    current = a; tab = nextTab;
+    renderProfile();
+    $("#profile").hidden = false; setTopH();
+    if (!isSplit()) { $("#list").hidden = true; scrollTo(0, 0); }
+  }
+  function closeProfile() {
+    current = null; abortChat();
+    $("#profile").hidden = true; $("#list").hidden = false; document.body.classList.remove("split", "viewing"); setTopH();
+    requestAnimationFrame(() => scrollTo(0, listScroll));
+  }
+  addEventListener("hashchange", route);
+
+  function sec(title, ...body) { return el("div", { class: "sec" }, el("h3", {}, title), ...body); }
+
+  function renderProfile() {
+    const a = current, t = a.team && teamById.get(a.team);
+    const hero = el("div", { class: "hero" }, avatar(a, true),
+      el("div", {}, el("h2", {}, a.name), el("div", { class: "ti" }, a.title),
+        el("div", { class: "badges" },
+          t ? el("span", { class: "badge" }, `${t.name}${t.lead === a.id ? " · водач" : ""}`) : null,
+          el("span", { class: "badge" }, shortVer(a.version)),
+          el("span", { class: "badge" }, `${num(a.lessons)} поуки`),
+          a.model ? el("span", { class: "badge" }, `модел ${a.model}${a.effort ? ` · ${a.effort}` : ""}`) : null)));
+    hero.style.setProperty("--a", a.accent);
+    if (tab === "chat") hero.classList.add("compact");
+    const tabs = el("div", { class: "tabs", role: "tablist" }, TABS.map(([k, label]) =>
+      el("button", { class: "tab", role: "tab", type: "button", "aria-selected": String(tab === k), onclick: () => open(a.id, k) }, label)));
+    const panel = el("div", { class: "panel", role: "tabpanel" });
+    ({ about: aboutPanel, skills: skillsPanel, learn: learnPanel, chat: chatPanel })[tab](panel, a);
+    // replaceChildren пише null като текст „null“ — празните места се махат преди това.
+    $("#profile").replaceChildren(...[
+      el("button", { class: "back", type: "button", onclick: () => { history.length > 1 ? history.back() : (location.hash = ""); } }, "← Всички агенти"),
+      hero, tab === "chat" ? null : el("p", { class: "tagline" }, a.tagline), tabs, panel].filter(Boolean));
+  }
+
+  function aboutPanel(p, a) {
+    p.append(sec("Мисия", el("p", {}, a.mission)));
+    if (a.when) p.append(sec("Кога да го викаш", el("p", {}, a.when)));
+    if (a.capabilities.length) p.append(sec("Какво може", el("ul", {}, a.capabilities.map((c) => el("li", {}, c)))));
+    const t = a.team && teamById.get(a.team);
+    if (t && t.flow && t.flow.steps.length) p.append(sec(`Потокът на екипа · ${t.flow.name}`,
+      el("ol", { class: "steps" }, t.flow.steps.map((s) => el("li", {}, el("strong", {}, (byId.get(s.agent) || { name: s.agent }).name), " — ", s.does)))));
+  }
+
+  function skillsPanel(p, a) {
+    p.append(sec("Инструменти", el("p", { style: "margin-bottom:8px;color:var(--muted)" }, "Какво може да прави сам, когато работи в Claude Code:"),
+      el("dl", { class: "kv" }, a.tools.flatMap((t) => [el("dt", {}, t.id), el("dd", {}, t.info)]))));
+    p.append(sec("Умения", a.skills.length ? a.skills.map((s) => el("div", { class: "skill" },
+      el("div", {}, el("code", {}, s.id), s.preload ? el("span", { class: "pill" }, "зарежда се винаги") : null, s.owner ? el("span", { class: "pill" }, "собственик") : null),
+      s.desc ? el("div", { class: "why" }, s.desc) : null)) : el("p", {}, "Няма отделни умения.")));
+    p.append(sec("Източници", el("p", {}, `${num(a.sources)} проверени източника при изграждането${a.priorArt.length ? "; образци:" : "."}`),
+      a.priorArt.length ? el("ul", { style: "margin-top:6px" }, a.priorArt.map((x) => el("li", {}, x))) : null));
+  }
+
+  function learnPanel(p, a) {
+    p.append(sec("Как се учи", el("ol", { class: "steps" },
+      el("li", {}, "Всеки пуск завършва с блок „learn“: поука + източник + увереност."),
+      el("li", {}, "Кука я проверява: влиза само проверена поука с източник; съмнителната отива в карантина."),
+      el("li", {}, "Поуките живеят в клона agents/memory, не в задачата; един постоянен PR ги носи в main."),
+      el("li", {}, "При следващ старт агентът получава поуките, най-близки до новата задача."),
+      el("li", {}, "Слаб пуск → запис в регистъра на грешките, регресионен тест и нова версия на агента."))));
+    if (a.evolution.length) p.append(sec("Версии", el("ul", { class: "tl" }, a.evolution.map((e) =>
+      el("li", {}, el("div", {}, el("div", { class: "v" }, shortVer(e.version)), el("div", { class: "d" }, e.date)), el("div", {}, e.detail || e.event))))));
+    if (a.recentLessons.length) p.append(sec("Последни поуки", el("ul", { class: "tl" }, a.recentLessons.map((l) =>
+      el("li", {}, el("div", { class: "d" }, l.date), el("div", {}, l.text))))));
+  }
+
+  // ── чат ────────────────────────────────────────────────────
+  // Claude отговаря през акаунта на зрителя (capability `sample`); без инструменти — съвет, не действие.
+  // Историята е лична: db `data/users/<id>` (никой друг не я вижда). Без тях — чатът се скрива, страницата работи.
+  const caps = { sample: null, db: null, uid: null, ready: null };
+  const MAX_TURNS = 24, MAX_STORED = 3000;
+  caps.ready = (async () => {
+    if (!window.claude || typeof window.claude.use !== "function") return;
+    try { caps.sample = await window.claude.use("sample"); } catch { caps.sample = null; }
+    try {
+      const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      if (db && user) { caps.db = db; caps.uid = await user.id(); }
+    } catch { caps.db = null; }
+  })();
+  // Едно състояние на разговор по агент за цялата страница. Панелите идват и си отиват (табове, смяна на
+  // агент), разговорът остава. Преглед на PR #498: панел с локален масив губеше съобщения и с остаряло
+  // копие презаписваше историята. Записите на един документ вървят един след друг (верига), никога два наведнъж.
+  const chats = new Map();
+  function chatOf(id) {
+    let c = chats.get(id);
+    if (!c) {
+      c = { turns: [], epoch: 0, ctl: null, busy: Promise.resolve(), saving: Promise.resolve(), err: null, fatal: false };
+      c.ready = caps.ready.then(() => loadTurns(id)).then((t) => { c.turns.push(...t); });
+      chats.set(id, c);
+    }
+    return c;
+  }
+  const abortChat = () => { for (const c of chats.values()) if (c.ctl) { c.ctl.abort(); c.ctl = null; } };
+  let liveChat = null; // видимият панел: { id, draw, announce }
+  const refresh = (id) => { if (liveChat && liveChat.id === id) liveChat.draw(); };
+  const smooth = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+  const chatDoc = (id) => (caps.db && caps.uid ? caps.db.collection(`data/users/${caps.uid}`).doc(`chat-${id}`) : null);
+  async function loadTurns(id) {
+    const d = chatDoc(id); if (!d) return [];
+    try { const s = await d.get(); const t = s.exists ? s.data().turns : []; return Array.isArray(t) ? t.filter((x) => x && (x.role === "user" || x.role === "assistant") && typeof x.content === "string") : []; }
+    catch { return []; }
+  }
+  // Записва СЕГАШНОТО състояние, когато дойде редът му — последният запис винаги носи последната истина.
+  function save(id) {
+    const c = chatOf(id), d = chatDoc(id); if (!d) return c.saving;
+    c.saving = c.saving.then(() => d.set({ turns: c.turns.slice(-MAX_TURNS).map((t) => ({ role: t.role, content: t.content.slice(0, MAX_STORED) })), at: new Date().toISOString() })).catch(() => { /* историята е удобство */ });
+    return c.saving;
+  }
+  // Входът към Claude: личността, потвърждение, после историята — без поредни реплики с една роля, започва с „user“.
+  function inputFor(a, turns) {
+    const hist = [];
+    for (const t of turns.slice(-MAX_TURNS)) {
+      const last = hist[hist.length - 1];
+      if (last && last.role === t.role) last.content += `\n\n${t.content}`; else hist.push({ role: t.role, content: t.content });
+    }
+    while (hist.length && hist[0].role !== "user") hist.shift();
+    return [{ role: "user", content: a.persona }, { role: "assistant", content: `Разбрах. Аз съм ${a.name}. Питай.` }, ...hist];
+  }
+
+  // Отговорът е ДАННИ: всичко се екранира чрез textContent; само **удебелено** и `код` стават елементи.
+  function richText(text) {
+    const frag = document.createDocumentFragment();
+    for (const part of String(text).split(/(\*\*[^*\n]+\*\*|`[^`\n]+`)/g)) {
+      if (!part) continue;
+      if (part.startsWith("**") && part.endsWith("**")) frag.append(el("strong", {}, part.slice(2, -2)));
+      else if (part.startsWith("`") && part.endsWith("`")) frag.append(el("code", {}, part.slice(1, -1)));
+      else frag.append(document.createTextNode(part));
+    }
+    return frag;
+  }
+
+  const ERR = {
+    not_granted: "Чатът не е разрешен в този изглед. Разреши го от менюто „Разрешения“ на артефакта и опитай пак.",
+    rate_limited: "Достигнат е лимитът на Claude за момента. Опитай след малко.",
+    prompt_too_large: "Разговорът стана твърде дълъг — изчисти го и започни отново.",
+  };
+
+  function chatPanel(p, a) {
+    const c = chatOf(a.id);
+    const box = el("div", { class: "chat" });
+    const note = el("div", { class: "note" }, `Говориш с „${a.name}“ през твоя акаунт в Claude. Тук агентът няма инструменти: не чете репото и не пуска команди — дава съвет и казва как да го пуснеш за реалната работа. Разговорът се пази само за теб.`);
+    // Историята НЕ е live регион: стриймингът я сменя на всеки знак и четецът би я чел на парчета.
+    // Готовият отговор се казва веднъж през отделния тих `status`.
+    const msgs = el("div", { class: "msgs" });
+    const said = el("div", { class: "sr", role: "status", "aria-live": "polite" });
+    const ta = el("textarea", { rows: "1", placeholder: `Пиши на ${a.name}…`, "aria-label": "Съобщение", enterkeyhint: "send", disabled: true });
+    const send = el("button", { class: "btn", type: "button", disabled: true }, "Изпрати");
+    const clear = el("button", { class: "btn ghost", type: "button" }, "Изчисти разговора");
+    const status = el("span", {});
+    const suggest = el("div", { class: "suggest" }, [
+      "С какво точно можеш да ми помогнеш?",
+      "Кога трябва да те викам и кога не?",
+      "Какво научи напоследък?",
+    ].map((s) => el("button", { type: "button", onclick: () => { ta.value = s; go(); } }, s)));
+    const comp = el("div", { class: "composer" }, el("div", { class: "row" }, ta, send), el("div", { class: "chat-tools" }, status, clear));
+    box.append(note, msgs, said, suggest, comp);
+    p.append(box);
+
+    let ready = false, armed = false, stream = null;
+    const draw = () => {
+      msgs.replaceChildren(...c.turns.map((t) => el("div", { class: `msg ${t.role === "user" ? "me" : "ag"}` }, t.role === "user" ? t.content : richText(t.content))));
+      if (stream && c.ctl) msgs.append(stream);
+      if (c.err) msgs.append(el("div", { class: "msg err" }, c.err));
+      suggest.hidden = !ready || c.turns.length > 0 || c.fatal;
+      clear.hidden = c.turns.length === 0;
+      send.textContent = c.ctl ? "Спри" : "Изпрати";
+      ta.disabled = !ready || c.fatal; send.disabled = !ready || c.fatal;
+    };
+    const me = { id: a.id, draw, announce: (t) => { said.textContent = `${a.name}: ${t}`; } };
+    liveChat = me;
+    const fit = () => { ta.style.height = "auto"; ta.style.height = `${Math.min(ta.scrollHeight, innerHeight * 0.4)}px`; };
+    ta.addEventListener("input", fit);
+    ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing && matchMedia("(pointer: fine)").matches) { e.preventDefault(); go(); } });
+    send.onclick = () => { if (c.ctl) c.ctl.abort(); else go(); };
+    clear.addEventListener("click", () => {
+      if (!armed) { armed = true; clear.textContent = "Сигурен ли си? Натисни пак"; setTimeout(() => { armed = false; clear.textContent = "Изчисти разговора"; }, 4000); return; }
+      // Новата епоха казва на текущия отговор (ако има) да не пише нищо в изчистената история.
+      armed = false; clear.textContent = "Изчисти разговора"; c.epoch++; c.err = null;
+      if (c.ctl) { c.ctl.abort(); c.ctl = null; }
+      c.turns.length = 0; stream = null; draw(); save(a.id);
+    });
+
+    async function go() {
+      const text = ta.value.trim();
+      if (!text || c.ctl || !ready || c.fatal) return;
+      await c.busy; // спреният отговор се записва преди новото съобщение
+      if (c.ctl) return;
+      ta.value = ""; fit(); c.err = null;
+      const my = c.epoch;
+      c.turns.push({ role: "user", content: text }); save(a.id);
+      const ctl = (c.ctl = new AbortController());
+      let done; c.busy = new Promise((r) => { done = r; });
+      stream = el("div", { class: "msg ag", "aria-busy": "true" }, el("span", { class: "thinking" }, "Мисли…"));
+      const out = stream;
+      draw(); out.scrollIntoView({ block: "end", behavior: smooth() });
+      try {
+        const r = await caps.sample(inputFor(a, c.turns), { signal: ctl.signal, cache: false, onText: ({ text: t }) => { out.replaceChildren(richText(t)); } });
+        if (c.epoch === my) {
+          c.turns.push({ role: "assistant", content: r.text + (r.truncated ? "\n\n(отговорът е съкратен — попитай за по-малко наведнъж)" : "") });
+          save(a.id);
+          if (liveChat && liveChat.id === a.id) liveChat.announce(r.text);
+        }
+      } catch (e) {
+        const code = e && e.code;
+        if (code === "cancelled") { if (e.text && c.epoch === my) { c.turns.push({ role: "assistant", content: `${e.text}\n\n(спряно)` }); save(a.id); } }
+        else if (c.epoch === my) { c.err = ERR[code] || "Нещо се обърка. Опитай пак."; if (code === "not_granted") c.fatal = true; }
+      } finally {
+        if (c.ctl === ctl) c.ctl = null;
+        if (stream === out) stream = null;
+        done();
+        refresh(a.id);
+      }
+    }
+
+    clear.hidden = true; suggest.hidden = true;
+    status.textContent = "Зарежда…";
+    c.ready.then(() => {
+      if (liveChat !== me) return;
+      if (!caps.sample) { status.textContent = ""; note.textContent = "Чатът работи в claude.ai, когато си влязъл в профила си. Тук можеш да разгледаш профила, уменията и ученето."; return; }
+      status.textContent = caps.db ? "Историята се пази само за теб" : "Историята не се пази в този изглед";
+      ready = true; draw();
+    });
+  }
+
+  renderChips(); renderList(); route();
+  addEventListener("resize", () => { if (current) document.body.classList.toggle("split", isSplit()); });
+})();
+</script>
+</body>
+</html>
