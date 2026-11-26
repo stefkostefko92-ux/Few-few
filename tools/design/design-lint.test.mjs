@@ -214,9 +214,29 @@ test("глобалното :focus-visible от друг CSS файл на про
   const t = mkdtempSync(join(tmpdir(), "dl-"));
   try {
     writeFileSync(join(t, "base.css"), "a:focus-visible, button:focus-visible { outline: 3px solid #036; }");
-    writeFileSync(join(t, "nav.css"), ".nav-link { outline: none; }\n.menu button:focus { outline: none; }");
+    writeFileSync(join(t, "nav.css"), "a.nav-link { outline: none; }\n.menu button:focus { outline: none; }");
     const r = spawnSync(process.execPath, [join(here, "design-lint.mjs"), t, "--json"], { encoding: "utf8" });
     const j = JSON.parse(r.stdout);
     assert.deepEqual(j.findings.map((f) => `${f.rule}:${f.line}`), ["focus-hidden:2"], "ресетът се покрива, :focus правилото с клас — не");
   } finally { rmSync(t, { recursive: true, force: true }); }
+});
+
+// Трети преглед на PR #494 (Кодаджията).
+test("елементен :focus-visible освобождава само ресета на същия елемент; универсален (*, [tabindex]) — всеки", () => {
+  assert.deepEqual(ids("a:focus-visible{outline:2px solid}\n.card-input{outline:none}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids("input:focus-visible{outline:2px solid}\ninput.search{outline:none}", "a.css"), []);
+  assert.deepEqual(ids("[tabindex]:focus-visible{outline:2px solid}\n.card-input{outline:none}", "a.css"), []);
+  assert.deepEqual(ids(":focus-visible{outline:2px solid}\n.card-input{outline:none}", "a.css"), []);
+});
+
+test("Tailwind focus:ring-0 / border-0 / shadow-none не са заместител", () => {
+  assert.deepEqual(ids('<input className="outline-none focus:ring-0">', "a.tsx"), ["focus-hidden"]);
+  assert.deepEqual(ids('<input className="outline-none focus:border-0">', "a.tsx"), ["focus-hidden"]);
+  assert.deepEqual(ids('<input className="outline-none focus:shadow-none">', "a.tsx"), ["focus-hidden"]);
+  assert.deepEqual(ids('<input className="outline-none focus:ring-2 focus:ring-blue-500">', "a.tsx"), []);
+});
+
+test("вложен блок (@media, SCSS) се чете по вътрешната скоба; style={{outline:\"none\"}} се хваща", () => {
+  assert.deepEqual(ids("@media (min-width:1px){.a:focus{outline:none;box-shadow:0 0 0 3px #036}}", "a.css"), []);
+  assert.deepEqual(ids('<input style={{ outline: "none" }} />', "a.tsx"), ["focus-hidden"]);
 });

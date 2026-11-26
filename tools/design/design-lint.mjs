@@ -94,7 +94,8 @@ function focusVisibleBases(text) {
   return bases;
 }
 // Само класове, които рисуват рамка/линия — `focus-visible:bg-…` не е фокус индикатор.
-const TW_ALT = /\b(?:focus|focus-visible|focus-within):(?:ring|border|shadow|underline|outline-(?!none))/;
+// `ring-0`, `border-0`, `shadow-none`, `outline-none` не рисуват нищо.
+const TW_ALT = /\b(?:focus|focus-visible|focus-within):(?:ring-(?!0\b|inset\b|transparent\b)|ring\b(?!-)|border-(?!0\b|none\b|transparent\b)|border\b(?!-)|shadow-(?!none\b)|shadow\b(?!-)|underline\b|outline-(?!none\b|0\b))/;
 const PROG_FOCUS = /tabIndex=\{?-1\}?|tabindex=["']-1["']|role=["'](?:dialog|alertdialog|region|log)["']/i;
 
 /** Всички находки в един текст. `file` решава типа (css/markup) по разширението. */
@@ -131,11 +132,11 @@ export function lintText(raw, file, opts = {}) {
   // или ако файлът има :focus-visible правило, което наистина рисува фокус.
   // + глобалните от другите CSS файлове на продукта (lintPath): каскадата е обща за сайта.
   const fvBases = new Set([...focusVisibleBases(text), ...(opts.globalFv || [])]);
-  each(/outline\s*:\s*(?:none|0)\b/i, (m) => {
+  each(/outline\s*:\s*["']?(?:none|0)\b/i, (m) => {
     const start = text.lastIndexOf("}", m.index) + 1;
     const end = text.indexOf("}", m.index);
     const block = text.slice(start, end === -1 ? undefined : end);
-    const brace = block.indexOf("{");
+    const brace = block.lastIndexOf("{"); // вътрешната скоба — @media/SCSS обвивката е отвън
     const sel = brace === -1 ? "" : block.slice(0, brace);
     const decl = brace === -1 ? block : block.slice(brace + 1);
     if (/:focus:not\(:focus-visible\)/.test(sel)) return;
@@ -145,7 +146,14 @@ export function lintText(raw, file, opts = {}) {
     // `*`, `[tabindex]`) — то е с по-висока специфичност. `main` е цел на skip link — фокусът му е програмен.
     const pieces = sel.split(",").map((x) => normSel(x.replace(/:focus(?:-within)?(?!-)/g, ""))).filter(Boolean);
     if (pieces.length && pieces.every((x) => fvBases.has(x) || x === "main")) return;
-    if (!/:focus/.test(sel) && [...fvBases].some((b) => /^(?:\*|[a-z][a-z0-9]*|\[tabindex\])?$/.test(b))) return;
+    if (!/:focus/.test(sel)) {
+      // Универсален :focus-visible (`*`, голо `:focus-visible`, `[tabindex]`) покрива всеки ресет; елементен
+      // (`input:focus-visible`) — само ресет на същия елемент (`input.search`), не на произволен клас.
+      if (["", "*", "[tabindex]"].some((b) => fvBases.has(b))) return;
+      const elOf = (piece) => (piece.match(/(?:^|[\s>+~])([a-z][a-z0-9]*)(?=[.#[:]|$)/g) || []).pop()?.trim().replace(/^[>+~]/, "");
+      const resetPieces = sel.split(",").map(normSel).filter(Boolean);
+      if (resetPieces.length && resetPieces.every((x) => { const el = elOf(x); return el && fvBases.has(el); })) return;
+    }
     add("focus-hidden", m.index, m[0]);
   });
   // Tailwind `outline-none` — съди се по собствения клас-низ, не по файла.
