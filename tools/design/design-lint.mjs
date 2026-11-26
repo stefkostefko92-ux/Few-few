@@ -12,7 +12,7 @@
 // Изход: 0 — няма HIGH · 1 — има HIGH · 2 — употреба. Движението (reduced-motion, строб) е в
 // motion-a11y.mjs — тук не се дублира. Заглушаване на един ред: `design-lint-disable-line <правило>`.
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, extname, basename, relative } from "node:path";
 import { isMain } from "../lib/is-main.mjs";
 
@@ -28,13 +28,15 @@ export const RULES = {
   svg: { sev: "INFO", why: "SVG — правилото на собственика „никога SVG“ (3D, <canvas>, растер); наличният остава" },
 };
 
-const FONT_HOSTS = /https?:\/\/(?:fonts\.googleapis\.com|fonts\.gstatic\.com|api\.fontshare\.com|cdn\.fontshare\.com|use\.typekit\.net|p\.typekit\.net|fonts\.bunny\.net|fast\.fonts\.net|use\.fontawesome\.com|kit\.fontawesome\.com)/i;
-const CDN_HOSTS = /<(?:script|link)\b[^>]*\b(?:src|href)\s*=\s*["']https?:\/\/(?:cdn\.jsdelivr\.net|unpkg\.com|cdnjs\.cloudflare\.com|code\.jquery\.com|cdn\.tailwindcss\.com|ajax\.googleapis\.com|stackpath\.bootstrapcdn\.com|maxcdn\.bootstrapcdn\.com|esm\.sh|cdn\.skypack\.dev)/i;
-const IMG_HOSTS = /https?:\/\/(?:upload\.wikimedia\.org|images\.unsplash\.com|source\.unsplash\.com|plus\.unsplash\.com|picsum\.photos|placehold\.co|placehold\.it|via\.placeholder\.com|dummyimage\.com|i\.imgur\.com|images\.pexels\.com|loremflickr\.com)/i;
+const FONT_HOSTS = /(?:https?:)?\/\/(?:fonts\.googleapis\.com|fonts\.gstatic\.com|api\.fontshare\.com|cdn\.fontshare\.com|use\.typekit\.net|p\.typekit\.net|fonts\.bunny\.net|fast\.fonts\.net|use\.fontawesome\.com|kit\.fontawesome\.com)/i;
+const CDN_HOSTS = /<(?:script|link)\b[^>]*\b(?:src|href)\s*=\s*["'](?:https?:)?\/\/(?:cdn\.jsdelivr\.net|unpkg\.com|cdnjs\.cloudflare\.com|code\.jquery\.com|cdn\.tailwindcss\.com|ajax\.googleapis\.com|stackpath\.bootstrapcdn\.com|maxcdn\.bootstrapcdn\.com|esm\.sh|cdn\.skypack\.dev)/i;
+const IMG_HOSTS = /(?:https?:)?\/\/(?:upload\.wikimedia\.org|images\.unsplash\.com|source\.unsplash\.com|plus\.unsplash\.com|picsum\.photos|placehold\.co|placehold\.it|via\.placeholder\.com|dummyimage\.com|i\.imgur\.com|images\.pexels\.com|loremflickr\.com)/i;
 // `\b` в JS не разпознава кирилица — границите са по Unicode букви (флаг u).
 const B = "(?<![\\p{L}\\p{N}_])", E = "(?![\\p{L}\\p{N}_])";
 const W = (src) => new RegExp(src.replaceAll("\\b<", B).replaceAll("\\b>", E), "iu");
-const PLACEHOLDER = W("\\b<lorem ipsum\\b>|\\b<dolor sit amet\\b>|\\[(?:ЗА ПОПЪЛВАНЕ|TODO|TBD|DA COMPLETARE)[^\\]]*\\]");
+const PLACEHOLDER = W("\\b<lorem ipsum\\b>|\\b<dolor sit amet\\b>");
+// Скобите — само с главни букви: `[todoItem]` в код не е пълнеж, `[TODO]` в текста е.
+const PLACEHOLDER_TAG = /\[(?:ЗА ПОПЪЛВАНЕ|TODO|TBD|DA COMPLETARE)(?![\p{L}\p{N}_])[^\]\n]*\]/u;
 const CLAIMS = [
   W("\\b<\\d[\\d\\s.,]*\\+?\\s*(?:доволни\\s+)?(?:клиенти|потребители|customers|users|clienti|utenti)\\b>"),
   W("(?:^|[\\s>„\"(])(?:#\\s?1|№\\s?1)(?=[\\s<,.!”\")]|$)"),
@@ -45,11 +47,17 @@ const CLAIMS = [
 
 const TEXT_EXT = new Set([".html", ".htm", ".ejs", ".css", ".scss", ".jsx", ".tsx", ".vue", ".svelte", ".astro", ".mdx"]);
 const MARKUP_EXT = new Set([".html", ".htm", ".ejs", ".jsx", ".tsx", ".vue", ".svelte", ".astro"]);
+// Чист код (без разметка): само `export const viewport` на Next — шрифтове/CDN там са CSP списъци, не заявки.
+const CODE_EXT = new Set([".ts", ".js"]);
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next", "coverage", "out", ".turbo", ".tmp", "vendor"]);
 const isTestFile = (name) => /\.(?:test|spec)\.[a-z]+$/i.test(name) || name === "__tests__";
 
-const lineOf = (text, idx) => text.slice(0, idx).split("\n").length;
-const colOf = (text, idx) => idx - text.lastIndexOf("\n", idx - 1);
+/** Началата на редовете — ред по индекс с двоично търсене (хиляди находки не стават квадратични). */
+function lineIndex(text) {
+  const starts = [0];
+  for (let i = text.indexOf("\n"); i !== -1; i = text.indexOf("\n", i + 1)) starts.push(i + 1);
+  return (idx) => { let lo = 0, hi = starts.length - 1; while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (starts[mid] <= idx) lo = mid; else hi = mid - 1; } return { line: lo + 1, col: idx - starts[lo] + 1 }; };
+}
 
 /** Коментарите стават интервали (новите редове остават) — споменат `<img>` или забранен хост в коментар
  *  не е находка, а редовете и колоните не мърдат. `//` се маха само след интервал/разделител — `https://`
@@ -65,7 +73,10 @@ export function maskComments(text, ext) {
 
 // Видим заместител на outline в същия CSS блок или в същия клас-низ (Tailwind); или контейнер, на който
 // фокусът се дава от кода (tabIndex -1, role=dialog) — той не е в реда на Tab.
-const CSS_ALT = /box-shadow\s*:|border(?:-[a-z]+)?(?:-color)?\s*:|background(?:-color)?\s*:|text-decoration\s*:/i;
+// Заместителят важи само в :focus блок и само с видима стойност (border:none, transparent — не).
+const CSS_ALT = /(?:^|[;{\s])(?:box-shadow|border(?:-[a-z]+)?(?:-color)?|background(?:-color)?|text-decoration(?:-line)?)\s*:\s*(?!none\b|0\s*[;}]|0$|transparent\b|inherit\b|initial\b|unset\b)[^;}]+/i;
+// Правило :focus-visible, което наистина рисува фокус (outline/box-shadow/border с видима стойност).
+const FV_DRAWS = /:focus-visible[^{]*\{[^}]*(?:outline(?:-[a-z]+)?|box-shadow|border(?:-[a-z]+)?(?:-color)?)\s*:\s*(?!none\b|0\s*[;}]|transparent\b)[^;}]+/i;
 const TW_ALT = /\bfocus:(?:ring|border|shadow|bg|underline|outline-(?!none))|\bfocus-within:|\bfocus-visible:/;
 const PROG_FOCUS = /tabIndex=\{?-1\}?|tabindex=["']-1["']|role=["'](?:dialog|alertdialog|region|log)["']/i;
 
@@ -75,39 +86,53 @@ export function lintText(raw, file) {
   const lines = raw.split("\n");
   const text = maskComments(raw, ext);
   const out = [];
+  const seen = new Set();
+  const pos = lineIndex(text);
   const add = (rule, idx, snippet) => {
-    const line = lineOf(text, idx);
+    const { line, col } = pos(idx);
+    const key = `${rule}:${line}`;
+    if (seen.has(key)) return;
     const src = lines[line - 1] || "";
-    const off = new RegExp(`design-lint-disable-line[^\\n]*\\b${rule.replace(/-/g, "\\-")}\\b`);
-    if (off.test(src)) return;
-    if (out.some((f) => f.rule === rule && f.line === line)) return;
-    out.push({ rule, sev: RULES[rule].sev, line, col: colOf(text, idx), snippet: snippet.trim().slice(0, 120), why: RULES[rule].why });
+    if (src.includes("design-lint-disable-line") && new RegExp(`design-lint-disable-line[^\\n]*\\b${rule.replace(/-/g, "\\-")}\\b`).test(src)) return;
+    seen.add(key);
+    out.push({ rule, sev: RULES[rule].sev, line, col, snippet: snippet.trim().slice(0, 120), why: RULES[rule].why });
   };
   const each = (re, fn) => { const g = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g"); let m; while ((m = g.exec(text))) { fn(m); if (m[0] === "") g.lastIndex++; } };
+
+  // Next: `export const viewport = { maximumScale: 1, userScalable: false }` (и в .ts, и в .tsx).
+  each(/\bviewport\s*(?::\s*[A-Za-z]+\s*)?=\s*\{[^}]*\}/, (m) => {
+    const max = m[0].match(/maximumScale\s*:\s*([\d.]+)/);
+    if (/userScalable\s*:\s*false\b/.test(m[0]) || (max && Number(max[1]) < 2)) add("zoom-blocked", m.index, m[0]);
+  });
+  if (CODE_EXT.has(ext)) return out.sort((a, b) => a.line - b.line || a.col - b.col);
 
   each(FONT_HOSTS, (m) => add("external-font", m.index, m[0]));
   each(CDN_HOSTS, (m) => add("cdn-asset", m.index, m[0]));
   each(IMG_HOSTS, (m) => add("hotlink-image", m.index, m[0]));
 
-  // Фокус: outline none/0 (CSS) или Tailwind `outline-none` — наред само ако файлът дава видим фокус.
-  const hasFocusVisible = /:focus-visible|focus-visible:/.test(text);
-  if (!hasFocusVisible) {
-    each(/outline\s*:\s*(?:none|0)\b/i, (m) => {
-      const start = text.lastIndexOf("}", m.index) + 1;
-      const end = text.indexOf("}", m.index);
-      const block = text.slice(start, end === -1 ? undefined : end);
-      if (/:focus:not\(:focus-visible\)/.test(block) || CSS_ALT.test(block)) return;
-      add("focus-hidden", m.index, m[0]);
-    });
-    if (MARKUP_EXT.has(ext)) each(/\boutline-none\b/, (m) => {
-      // Клас-низът (до кавичката/обратната кавичка) и самият таг около него.
-      const q1 = Math.max(text.lastIndexOf('"', m.index), text.lastIndexOf("'", m.index), text.lastIndexOf("`", m.index));
-      const cls = text.slice(q1, text.indexOf(text[q1] || '"', m.index));
-      const tag = text.slice(text.lastIndexOf("<", m.index), m.index + 400);
-      if (TW_ALT.test(cls) || PROG_FOCUS.test(tag.slice(0, tag.indexOf(">") + 1 || undefined))) return;
-      add("focus-hidden", m.index, m[0]);
-    });
-  }
+  // Фокус в CSS: outline none/0 е наред в `:focus:not(:focus-visible)`, в :focus блок с видим заместител,
+  // или ако файлът има :focus-visible правило, което наистина рисува фокус.
+  const fileDrawsFocusVisible = FV_DRAWS.test(text);
+  each(/outline\s*:\s*(?:none|0)\b/i, (m) => {
+    const start = text.lastIndexOf("}", m.index) + 1;
+    const end = text.indexOf("}", m.index);
+    const block = text.slice(start, end === -1 ? undefined : end);
+    const brace = block.indexOf("{");
+    const sel = brace === -1 ? "" : block.slice(0, brace);
+    const decl = brace === -1 ? block : block.slice(brace + 1);
+    if (/:focus:not\(:focus-visible\)/.test(sel)) return;
+    if (/:focus(?:-within)?\b/.test(sel) && CSS_ALT.test(decl)) return;
+    if (fileDrawsFocusVisible) return;
+    add("focus-hidden", m.index, m[0]);
+  });
+  // Tailwind `outline-none` — съди се по собствения клас-низ, не по файла.
+  if (MARKUP_EXT.has(ext)) each(/\boutline-none\b/, (m) => {
+    const q1 = Math.max(text.lastIndexOf('"', m.index), text.lastIndexOf("'", m.index), text.lastIndexOf("`", m.index));
+    const cls = text.slice(q1, text.indexOf(text[q1] || '"', m.index));
+    const tag = text.slice(text.lastIndexOf("<", m.index), m.index + 400);
+    if (TW_ALT.test(cls) || PROG_FOCUS.test(tag.slice(0, tag.indexOf(">") + 1 || undefined))) return;
+    add("focus-hidden", m.index, m[0]);
+  });
 
   each(/<meta\b[^>]*name\s*=\s*["']viewport["'][^>]*>/i, (m) => {
     const c = m[0];
@@ -117,13 +142,15 @@ export function lintText(raw, file) {
 
   if (MARKUP_EXT.has(ext)) {
     each(/<(img|Image)\b(?:<%[\s\S]*?%>|[^>"'{<]|"[^"]*"|'[^']*'|\{[^}]*\})*>/g, (m) => {
-      if (!/\balt\s*=/.test(m[0])) add("img-no-alt", m.index, m[0]);
+      // `{...props}` може да носи alt — не се гадае.
+      if (!/\balt\s*=/.test(m[0]) && !/\{\s*\.\.\./.test(m[0])) add("img-no-alt", m.index, m[0]);
     });
     const svgs = [...text.matchAll(/<svg\b/gi)];
     if (svgs.length) add("svg", svgs[0].index, svgs.length > 1 ? `<svg ×${svgs.length}` : "<svg");
   }
   if (TEXT_EXT.has(ext)) {
     each(PLACEHOLDER, (m) => add("placeholder-copy", m.index, m[0]));
+    each(PLACEHOLDER_TAG, (m) => add("placeholder-copy", m.index, m[0]));
     if (MARKUP_EXT.has(ext) || ext === ".mdx") for (const re of CLAIMS) each(re, (m) => add("claim-needs-proof", m.index, m[0]));
   }
   return out.sort((a, b) => a.line - b.line || a.col - b.col);
@@ -131,7 +158,8 @@ export function lintText(raw, file) {
 
 function walk(p, acc = []) {
   let st; try { st = statSync(p); } catch { return acc; }
-  if (st.isFile()) { if (TEXT_EXT.has(extname(p).toLowerCase()) && !isTestFile(basename(p))) acc.push(p); return acc; }
+  const scan = (n) => (TEXT_EXT.has(extname(n).toLowerCase()) || CODE_EXT.has(extname(n).toLowerCase())) && !isTestFile(n);
+  if (st.isFile()) { if (scan(basename(p))) acc.push(p); return acc; }
   if (!st.isDirectory()) return acc;
   let names = []; try { names = readdirSync(p).sort(); } catch { return acc; }
   for (const n of names) {
@@ -140,7 +168,7 @@ function walk(p, acc = []) {
     const q = join(p, n);
     let s; try { s = statSync(q); } catch { continue; }
     if (s.isDirectory()) walk(q, acc);
-    else if (TEXT_EXT.has(extname(n).toLowerCase()) && !isTestFile(n)) acc.push(q);
+    else if (scan(n)) acc.push(q);
   }
   return acc;
 }
@@ -160,6 +188,8 @@ function main(argv) {
   const json = argv.includes("--json");
   const root = argv.find((a) => !a.startsWith("--"));
   if (!root) { console.error("Употреба: node tools/design/design-lint.mjs <папка|файл> [--json]"); return 2; }
+  // Грешен път не бива да изглежда като „0 находки“ (fail-closed).
+  if (!existsSync(root)) { console.error(`design-lint: няма такъв път: ${root}`); return 2; }
   const findings = lintPath(root);
   const high = findings.filter((f) => f.sev === "HIGH").length;
   if (json) { console.log(JSON.stringify({ root, high, findings }, null, 2)); return high ? 1 : 0; }

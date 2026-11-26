@@ -138,3 +138,43 @@ test("SVG се отчита веднъж на файл с броя (генери
   assert.equal(f.length, 1);
   assert.match(f[0].snippet, /×3/);
 });
+
+// Преглед на PR #494 (Кодаджията + Дизайнера).
+test("ресет без фокус (`input{border:none;outline:none}`) е находка; заместителят важи само в :focus блок", () => {
+  assert.deepEqual(ids("input{border:none;outline:none}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids("input:focus{outline:none;border:none}", "a.css"), ["focus-hidden"], "border:none не е заместител");
+  assert.deepEqual(ids("input:focus{outline:none;background:transparent}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids("input:focus{outline:none;border:2px solid #036}", "a.css"), []);
+});
+
+test(":focus-visible освобождава само ако наистина рисува фокус; Tailwind се съди по класа, не по файла", () => {
+  assert.deepEqual(ids("a:focus{outline:none} .x:focus-visible{color:red}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids("a:focus{outline:none} a:focus-visible{outline:2px solid}", "a.css"), []);
+  assert.deepEqual(ids('<a className="focus-visible:ring-2">x</a><input className="outline-none">', "a.tsx"), ["focus-hidden"]);
+});
+
+test("протоколно-относителни адреси и viewport в Next (export const viewport) се хващат", () => {
+  assert.deepEqual(ids('<link href="//fonts.googleapis.com/css2?family=Inter" rel="stylesheet">'), ["external-font"]);
+  assert.deepEqual(ids('<script src="//cdn.jsdelivr.net/npm/x"></script>'), ["cdn-asset"]);
+  assert.deepEqual(ids("export const viewport = { width: 'device-width', maximumScale: 1, userScalable: false };", "layout.ts"), ["zoom-blocked"]);
+  assert.deepEqual(ids("export const viewport = { width: 'device-width', initialScale: 1 };", "layout.tsx"), []);
+});
+
+test("[todo] в код не е пълнеж; [TODO] в текста е; <Image {...props} /> не е без alt", () => {
+  assert.deepEqual(ids("const xs = [todoItem, other];", "a.tsx"), []);
+  assert.deepEqual(ids("<p>[TODO] текст</p>"), ["placeholder-copy"]);
+  assert.deepEqual(ids("<Image {...props} />", "a.tsx"), []);
+});
+
+test("липсващ път е грешка (изход 2), не тихо „0 находки“", () => {
+  const r = spawnSync(process.execPath, [join(here, "design-lint.mjs"), "/няма/такава/папка"], { encoding: "utf8" });
+  assert.equal(r.status, 2);
+  assert.match(r.stderr, /няма такъв път/);
+});
+
+test("хиляди находки в един файл не са квадратични (под 2 s)", () => {
+  const big = '<img src="/a.png">\n'.repeat(20000);
+  const t0 = Date.now();
+  assert.equal(lintText(big, "a.html").length, 20000);
+  assert.ok(Date.now() - t0 < 2000, `${Date.now() - t0} ms`);
+});
