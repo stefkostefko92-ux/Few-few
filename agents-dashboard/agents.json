@@ -14560,7 +14560,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 388
+        "lessons": 391
       },
       "evolution": [
         {
@@ -14730,9 +14730,20 @@
           "date": "2026-11-26",
           "event": "v38.2 — учене",
           "detail": "Научи: Кириличните знаци (U+0400–U+04FF) в UTF-8 започват с байт D0–D3, а байтовете за продълж… (+22 още)"
+        },
+        {
+          "version": "38.5.0",
+          "date": "2026-11-26",
+          "event": "v38.5 — учене",
+          "detail": "Научи: Репото affaan-m/everything-claude-code вече води към affaan-m/ECC (v2.2.3, 72 агента, 3… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-26",
+          "type": "learning",
+          "summary": "Научи: „Репото affaan-m/everything-claude-code вече води към affaan-m/ECC (v2.2.3, 72 агента, 3…\" (+2 още)"
+        },
         {
           "date": "2026-11-26",
           "type": "learning",
