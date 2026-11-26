@@ -284,9 +284,7 @@ test("обвивката на приложението: CSP с blob: за сни
     assert.match(csp, /script-src 'self';/);
     const html = r.buf.toString();
     assert.doesNotMatch(html, /_csrf|Utente OPERATORE/);
-    const sw = await fetch(`${s.base}/admin/documenti/sw.js`);
-    assert.equal(sw.status, 200);
-    assert.equal(sw.headers.get("service-worker-allowed"), "/admin/documenti/");
+    assert.match(html, /rel="manifest" href="\/admin\/manifest.webmanifest"/);
     const lib = await fetch(`${s.base}/admin/static/lib/componi.js`);
     assert.equal(lib.status, 200);
     assert.equal((await fetch(`${s.base}/admin/static/lib/catalogo/index.js`)).status, 404, "каталогът не е публичен");

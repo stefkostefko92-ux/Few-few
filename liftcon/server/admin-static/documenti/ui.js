@@ -1,10 +1,12 @@
 // Малки помощници за DOM: елементи, полета, сегментирани бутони, известия. Без innerHTML с данни (XSS).
 
-/** h("div.клас", {атрибути, on:{click}}, деца…) */
+/** h("tag#id.клас.клас", {атрибути, on:{click}}, деца…) */
 export function h(tag, attrs = {}, ...figli) {
-  const [nome, ...classi] = tag.split(".");
-  const el = document.createElement(nome || "div");
-  if (classi.length) el.className = classi.join(" ");
+  const m = /^([a-z][a-z0-9-]*)?(?:#([\w-]+))?((?:\.[\w -]+)*)$/i.exec(tag);
+  if (!m) throw new Error(`h(): selettore non valido «${tag}»`);
+  const el = document.createElement(m[1] || "div");
+  if (m[2]) el.id = m[2];
+  if (m[3]) el.className = m[3].split(/[.\s]+/).filter(Boolean).join(" ");
   for (const [k, v] of Object.entries(attrs ?? {})) {
     if (v === undefined || v === null || v === false) continue;
     if (k === "on") for (const [ev, fn] of Object.entries(v)) el.addEventListener(ev, fn);
@@ -62,7 +64,6 @@ export function toast(testo, tipo = "info") {
   let t = document.getElementById("toast");
   if (!t) {
     t = h("div#toast.toast", { role: "status", "aria-live": "polite" });
-    t.id = "toast";
     document.body.append(t);
   }
   t.className = `toast toast-${tipo} visibile`;

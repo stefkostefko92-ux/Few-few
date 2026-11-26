@@ -8,17 +8,18 @@ import { registra } from "./deps.js";
 import { TIPI_DOCUMENTO, type TipoDocumento } from "../documenti/condiviso/tipi.js";
 import { ID } from "../documenti/schema.js";
 import { NOMI_TIPO } from "../documenti/condiviso/testi.js";
+import { testaPwa, versione } from "./pwa.js";
 
 /** Обвивката е една и съща за всички (без лични данни и без CSRF токен) — кешира се от service worker-а. */
-export const SHELL = `<!doctype html>
+export const shell = (v: string): string => `<!doctype html>
 <html lang="it">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#1F2328">
 <title>Documenti | LiftCon Admin</title>
 <link rel="icon" href="/admin/static/favicon.png" type="image/png">
+${testaPwa(v)}
 <link rel="stylesheet" href="/admin/static/admin.css">
 <link rel="stylesheet" href="/admin/static/documenti/documenti.css">
 <script type="module" src="/admin/static/documenti/app.js"></script>
@@ -37,7 +38,7 @@ export function rotteDocumenti(d: AdminDeps): Router {
   // Само с наклонена черта накрая: обхватът на service worker-а е /admin/documenti/ (Express не различава двете).
   r.get("/documenti", (req, res) => {
     if (!req.originalUrl.split("?")[0]!.endsWith("/")) return res.redirect(301, "/admin/documenti/");
-    res.set("cache-control", "no-cache").type("html").send(SHELL);
+    res.set("cache-control", "no-cache").type("html").send(shell(versione()));
   });
 
   // От страницата на заявка: нов документ с възложителя и общината (D2), после — в приложението.

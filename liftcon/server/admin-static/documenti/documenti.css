@@ -88,3 +88,25 @@ textarea{min-height:0}
 .toast.visibile{opacity:1;transform:translate(-50%,0)}
 .toast-errore{background:var(--errore)}.toast-ok{background:var(--verde)}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+/* Индекс на чеклиста: падащо меню на телефон, лепкава колона на таблет в хоризонтално положение и компютър. */
+.salto{margin:0 0 12px}
+.indice{display:none}
+.sezione{scroll-margin-top:72px}
+@media (min-width:1000px){
+  .doc-app .corpo{max-width:1240px}
+  .checklist{display:grid;grid-template-columns:270px 1fr;gap:20px;align-items:start}
+  .salto{display:none}
+  .indice{display:grid;gap:4px;position:sticky;top:72px;max-height:calc(100vh - 170px);overflow:auto;padding-right:4px}
+  .indice button{display:flex;justify-content:space-between;gap:8px;align-items:center;min-height:44px;padding:8px 10px;border:1px solid var(--linea);border-radius:10px;background:var(--carta);font:600 14px var(--f);color:var(--grafite);text-align:left;cursor:pointer}
+  .indice button.completa{border-color:#9CC98A;background:var(--verde-tenue)}
+  .indice .sez-n{margin-left:0;white-space:nowrap}
+}
+/* Таблет в портретно положение: две колони за полетата на заглавната част. */
+@media (min-width:700px){.doc-app .scheda .due{grid-template-columns:1fr 1fr}}
+/* Инсталиране (PWA) */
+.installa{border-color:#9CC98A;background:#F4FAF0}
+.installa ol{padding-left:1.3em;margin:8px 0}
+.installa .btn{margin-top:8px}
+/* Като инсталирано приложение: системната лента на iPhone не покрива заглавието. */
+@media (display-mode:standalone){.testa{padding-top:max(12px,env(safe-area-inset-top))}}

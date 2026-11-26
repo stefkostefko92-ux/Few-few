@@ -6,6 +6,10 @@ import { api, impostaCsrf, online } from "./api.js";
 import { sincronizza, suEvento, pianifica } from "./sync.js";
 import { apriElenco } from "./elenco.js";
 import { apriEditor } from "./editor.js";
+import { salvaLocale } from "./sync.js";
+import { nuovoDocumento } from "../lib/nuovo.js";
+import { uuid } from "./ui.js";
+import "./installa.js"; // улавя beforeinstallprompt още при зареждането
 
 const root = document.getElementById("app");
 const rete = document.getElementById("rete");
@@ -38,6 +42,15 @@ async function carica(chiave, path) {
 
 async function instrada() {
   chiudi();
+  // Пряк път от иконата на приложението (manifest „shortcuts“): нов документ от даден вид.
+  const nuovo = /^#\/nuovo\/(SOPRALLUOGO|CONTROLLO_QUALITA|ESAME_DOCUMENTALE|VERBALE)$/.exec(location.hash);
+  if (nuovo && app.sessione.permessi.modifica) {
+    const d = nuovoDocumento(nuovo[1], uuid());
+    d.autore = { nome: app.sessione.utente.nome, qualifica: app.sessione.utente.qualifica };
+    await salvaLocale(d);
+    location.replace(`#/d/${d.id}`);
+    return;
+  }
   const m = /^#\/d\/([0-9a-f-]{36})$/i.exec(location.hash);
   chiudi = m ? await apriEditor(root, m[1], app) : await apriElenco(root, app);
   window.scrollTo(0, 0);
@@ -60,7 +73,15 @@ async function esci() {
 }
 
 async function avvio() {
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/admin/documenti/sw.js", { scope: "/admin/documenti/" }).catch(() => {});
+  if ("serviceWorker" in navigator) {
+    const avevaController = Boolean(navigator.serviceWorker.controller);
+    navigator.serviceWorker.register("/admin/sw.js", { scope: "/admin/" }).catch(() => {});
+    // Нова версия след деплой: новият service worker поема страницата → предлагаме презареждане (данните са на устройството).
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!avevaController) return;
+      rete.replaceChildren("È disponibile una nuova versione dell'app. ", h("button.link", { type: "button", on: { click: () => location.reload() } }, "Aggiorna"));
+    });
+  }
   app.sessione = await carica("sessione", "/sessione");
   app.catalogo = await carica("catalogo", "/catalogo");
   if (!app.sessione || !app.catalogo) {

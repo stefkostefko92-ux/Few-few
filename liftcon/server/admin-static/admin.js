@@ -55,6 +55,8 @@
       };
     });
   });
+  // PWA: service worker-ът на приложението (обхват /admin/) — инсталиране и документите без връзка.
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/admin/sw.js", { scope: "/admin/" }).catch(() => {});
   document.querySelectorAll("[data-max]").forEach((el) => {
     const out = document.createElement("p");
     out.className = "contatore";

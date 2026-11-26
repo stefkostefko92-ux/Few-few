@@ -2,6 +2,7 @@
 import type { Auth } from "../auth/sessione.js";
 import { puo, ETICHETTE_RUOLO, type Permesso } from "../auth/ruoli.js";
 import { esc } from "../content/mdlite.js";
+import { testaPwa, versione } from "./pwa.js";
 
 export { esc };
 
@@ -39,6 +40,7 @@ export function pagina(o: { titolo: string; corpo: string; auth?: Auth | undefin
 <meta name="robots" content="noindex, nofollow">
 <title>${esc(o.titolo)} | LiftCon Admin</title>
 <link rel="icon" href="/admin/static/favicon.png" type="image/png">
+${testaPwa(versione())}
 <link rel="stylesheet" href="/admin/static/admin.css">
 <script src="/admin/static/admin.js" defer></script>
 </head>

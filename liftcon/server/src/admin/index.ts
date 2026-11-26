@@ -1,7 +1,8 @@
 // /admin: статика → парсер → сесия → CSRF → вход/2FA → (пазач) → заявки, съдържание, потребители.
 import express, { Router } from "express";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
+import { readFileSync } from "node:fs";
+import { LIB_DIR, STATIC_DIR, manifest, versione } from "./pwa.js";
 import type { AdminDeps } from "./deps.js";
 import { controlloCsrf, richiedeAccesso } from "../auth/guards.js";
 import { rotteAccesso } from "./rotte-accesso.js";
@@ -18,9 +19,8 @@ import { auth } from "../auth/sessione.js";
 export const CSP_ADMIN =
   "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'";
 
-const STATIC = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "admin-static");
-// Общите модули за браузъра (сглобяване, текстове) — компилираните condiviso/*.js без каталога.
-const LIB = join(dirname(fileURLToPath(import.meta.url)), "..", "documenti", "condiviso");
+const STATIC = STATIC_DIR;
+const LIB = LIB_DIR;
 
 export function routerAdmin(d: AdminDeps): Router {
   const r = Router();
@@ -45,9 +45,13 @@ export function routerAdmin(d: AdminDeps): Router {
   });
   r.use("/static", express.static(STATIC, { maxAge: "1h", index: false, dotfiles: "deny" }));
   r.use("/static/lib", (req, res, next) => (/^\/[a-z-]+\.js$/.test(req.path) ? next() : res.status(404).end()), express.static(LIB, { maxAge: "1h", index: false, dotfiles: "deny" }));
-  // Service worker-ът на документите: на пътя на обхвата си (/admin/documenti/), без вход — само статичен код.
-  r.get("/documenti/sw.js", (_req, res) => {
-    res.set("cache-control", "no-cache").set("service-worker-allowed", "/admin/documenti/").type("application/javascript").sendFile(join(STATIC, "documenti", "sw.js"));
+  // PWA (pwa.ts): манифестът и service worker-ът с обхват /admin/ — без вход (само статично съдържание).
+  r.get("/manifest.webmanifest", (_req, res) => {
+    res.set("cache-control", "no-cache").type("application/manifest+json").send(JSON.stringify(manifest(versione())));
+  });
+  const swSorgente = readFileSync(join(STATIC, "documenti", "sw.js"), "utf8");
+  r.get("/sw.js", (_req, res) => {
+    res.set("cache-control", "no-cache").type("application/javascript").send(swSorgente.replace("__VERSIONE__", versione()));
   });
   r.use((_req, res, next) => {
     res.set("x-robots-tag", "noindex, nofollow").set("cache-control", "no-store").set("referrer-policy", "same-origin");

@@ -69,7 +69,28 @@ export function tabChecklist(ctx) {
   const sezioni = sezioniApplicabili(ctx);
   const tutte = sezioni.flatMap((s) => vociApplicabili(s, ctx));
   const fatte = tutte.filter((v) => ctx.doc.dati.esiti[v.id]).length;
-  const box = h("div", {});
+  const box = h("div.checklist-corpo", {});
+  // Индекс на секциите: отстрани на таблет/компютър, падащо меню на телефон.
+  const vai = (id) => {
+    ctx.aperte.add(id);
+    ctx.ridisegna();
+    requestAnimationFrame(() => document.getElementById(`s-${id}`)?.scrollIntoView({ block: "start" }));
+  };
+  const conta = (s) => {
+    const voci = vociApplicabili(s, ctx);
+    return { n: voci.filter((v) => ctx.doc.dati.esiti[v.id]).length, tot: voci.length, anom: voci.filter((v) => ctx.doc.dati.esiti[v.id]?.esito === "anomalia").length };
+  };
+  const indice = h(
+    "nav.indice",
+    { "aria-label": "Sezioni della checklist" },
+    ...sezioni.map((s) => {
+      const c = conta(s);
+      return h(`button${c.n === c.tot ? ".completa" : ""}`, { type: "button", on: { click: () => vai(s.id) } }, h("span", {}, s.titolo), h("span.sez-n", {}, `${c.n}/${c.tot}${c.anom ? ` · ${c.anom} anom.` : ""}`));
+    }),
+  );
+  const salto = h("select.salto", { "aria-label": "Vai alla sezione" }, h("option", { value: "" }, "Vai alla sezione…"), ...sezioni.map((s) => h("option", { value: s.id }, `${s.titolo} (${conta(s).n}/${conta(s).tot})`)));
+  salto.addEventListener("change", () => salto.value && vai(salto.value));
+  box.append(salto);
   if (!ctx.doc.intestazione.impianto.tipo) box.append(h("p.avviso.avviso-info", {}, "Scelga il tipo di impianto nella scheda «Dati»: la checklist mostrerà solo le voci pertinenti."));
   box.append(h("div.progresso", { role: "status" }, h("progress", { max: tutte.length, value: fatte }), h("span", {}, `${fatte} di ${tutte.length} voci compilate`)));
   for (const sez of sezioni) {
@@ -84,7 +105,7 @@ export function tabChecklist(ctx) {
         } } }, "Le voci rimanenti: nessuna anomalia");
     const det = h(
       "details.sezione",
-      { open: ctx.aperte.has(sez.id) },
+      { open: ctx.aperte.has(sez.id), id: `s-${sez.id}` },
       h("summary", {}, h("span.sez-t", {}, sez.titolo), h("span.sez-n", {}, `${n}/${voci.length}${anomalie ? ` · ${anomalie} anomalie` : ""}`)),
       tutteOk,
       ...voci.map((v) => voce(sez, v, ctx)),
@@ -92,7 +113,7 @@ export function tabChecklist(ctx) {
     det.addEventListener("toggle", () => (det.open ? ctx.aperte.add(sez.id) : ctx.aperte.delete(sez.id)));
     box.append(det);
   }
-  return box;
+  return h("div.checklist", {}, indice, box);
 }
 
 export function tabOsservazioni(ctx) {

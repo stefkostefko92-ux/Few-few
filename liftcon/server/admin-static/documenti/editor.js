@@ -10,6 +10,7 @@ import { tabLavorazioni, tabDocumentiEsame, tabPrescrizioni, tabRiunione } from 
 import { tabAnteprima, tabFoto } from "./anteprima.js";
 import { NOMI_TIPO } from "./etichette.js";
 import { datiVuoti } from "../lib/nuovo.js";
+import { apriPdf, pdfPronto } from "./installa.js";
 
 const TABS = {
   SOPRALLUOGO: [["dati", "Dati", tabDati], ["checklist", "Checklist", tabChecklist], ["osservazioni", "Osservazioni", tabOsservazioni], ["documenti", "Documenti", tabDocumentiVisti], ["foto", "Foto", tabFoto], ["anteprima", "Anteprima", tabAnteprima]],
@@ -29,7 +30,7 @@ export async function apriEditor(root, id, app) {
     return () => {};
   }
   const doc = rec.doc;
-  const ctx = { doc, cat: app.catalogo, aperte: new Set(), solaLettura: doc.stato !== "BOZZA" || !app.sessione.permessi.modifica, cambia };
+  const ctx = { doc, cat: app.catalogo, aperte: new Set(), solaLettura: doc.stato !== "BOZZA" || !app.sessione.permessi.modifica, cambia, ridisegna: () => disegnaTab() };
   let tab = sessionStorage.getItem(`tab-${id}`) ?? "dati";
   let timer;
   let pendente = false; // редакция, която още не е записана на устройството
@@ -105,7 +106,10 @@ export async function apriEditor(root, id, app) {
 
   const azioni = [];
   const gestione = [];
-  azioni.push(h("button.btn.btn-sec", { type: "button", on: { click: async () => (await primaSincronizza()) && window.open(`/admin/documenti/${id}/pdf`, "_blank", "noopener") } }, doc.stato === "EMESSO" ? "PDF" : "PDF (bozza)"));
+  azioni.push(h("button.btn.btn-sec", { type: "button", on: { click: async () => {
+    const url = `/admin/documenti/${id}/pdf`;
+    if (pdfPronto(url) || (await primaSincronizza())) await apriPdf(url, (t) => toast(t));
+  } } }, doc.stato === "EMESSO" ? "PDF" : "PDF (bozza)"));
   if (doc.stato === "BOZZA" && app.sessione.permessi.emetti) {
     azioni.push(h("button.btn", { type: "button", on: { click: async () => {
       if (!confirm("Emettere il documento? Riceverà un numero e non sarà più modificabile (si potrà fare una nuova revisione).")) return;

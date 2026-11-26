@@ -5,6 +5,7 @@ import { salvaLocale, sincronizza, suEvento } from "./sync.js";
 import { NOMI_TIPO } from "./etichette.js";
 import { nuovoDocumento } from "../lib/nuovo.js";
 import { dataIt } from "../lib/formato.js";
+import { schedaInstalla } from "./installa.js";
 
 const etichettaStato = (r) => {
   const s = r.doc ?? r.sintesi;
@@ -53,6 +54,7 @@ export async function apriElenco(root, app) {
 
   root.replaceChildren(
     h("h1", {}, "Documenti"),
+    schedaInstalla(),
     nuovo ? h("section.scheda", {}, h("h2", {}, "Nuovo documento"), h("p.nota", {}, "Funziona anche senza connessione: il documento resta sul dispositivo e si sincronizza appena possibile."), nuovo) : null,
     h("div.filtri", {}, cerca, h("button.btn.btn-sec", { type: "button", on: { click: async () => {
       const e = await sincronizza();
