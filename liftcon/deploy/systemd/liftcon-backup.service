@@ -1,0 +1,17 @@
+# Дневният бекъп на LiftCon (deploy/backup.sh, копиран от deploy.sh в /usr/local/sbin/liftcon-backup): базата
+# и моментна снимка на файловете на документите; всичко по-старо от 30 дни се трие (docs/documenti-spec.md D16а).
+# Състояние: systemctl list-timers liftcon-backup.timer · journalctl -u liftcon-backup
+[Unit]
+Description=LiftCon — daily backup (database + document files, kept at most 30 days)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/liftcon-backup
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+TimeoutStartSec=2h
+Nice=10
+IOSchedulingClass=idle

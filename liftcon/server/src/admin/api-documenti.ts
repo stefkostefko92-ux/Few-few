@@ -3,7 +3,7 @@
 import express, { Router, type Response } from "express";
 import { z } from "zod";
 import type { AdminDeps } from "./deps.js";
-import { registra } from "./deps.js";
+import { annotaEliminazione, registra, registraAlPiuOgni } from "./deps.js";
 import { auth, type Auth } from "../auth/sessione.js";
 import { richiedeAccessoApi, richiedePermesso } from "../auth/guards.js";
 import { livello, puo } from "../auth/ruoli.js";
@@ -15,6 +15,8 @@ const TIPI_FOTO = new Set(["image/jpeg", "image/png", "image/webp"]);
 /** Едновременни качвания на снимки (тяло в паметта + обработка): 4 × 15 MB е таванът при mem_limit 512m. */
 const MAX_CARICAMENTI = 4;
 let caricamenti = 0;
+/** Редакцията на черновата влиза в регистъра най-много веднъж на час за човек и документ (D15). */
+const FINESTRA_MODIFICHE = 60 * 60_000;
 // Метаданните на снимката идват в заглавие (base64url JSON), не в адреса: надписите са свободен текст и не
 // бива да влизат в access лога на Nginx. В адреса — само редът (число).
 const MetaFoto = z
@@ -122,6 +124,7 @@ export function apiDocumenti(d: AdminDeps): Router {
     if (e.esito === "occupato") return res.status(409).json({ errore: "occupato" });
     if (e.esito === "conflitto") return res.status(409).json({ errore: "conflitto", server: e.doc });
     if (!prima) await registra(d, req, a(res).utente.id, "documento.creato", id, { tipo: p.data.tipo });
+    else await registraAlPiuOgni(d, req, a(res).utente.id, "documento.modificato", id, FINESTRA_MODIFICHE, { versione: e.doc.versione });
     res.json(e.doc);
   });
 
@@ -208,6 +211,7 @@ export function apiDocumenti(d: AdminDeps): Router {
     // Чернова: авторът или RESPONSABILE+; издаден: DIREZIONE+ (спецификация D15).
     const consentito = doc.stato === "EMESSO" ? puo(u.ruolo, "documenti.elimina") : doc.autoreId === u.id || livello(u.ruolo) <= livello("RESPONSABILE");
     if (!consentito) return res.status(403).json({ errore: "permesso" });
+    if (!(await annotaEliminazione(d, "documento", doc.id))) return res.status(503).json({ errore: "registro_eliminazioni" });
     await d.documenti.elimina(doc.id);
     await registra(d, req, u.id, "documento.eliminato", doc.id, { stato: doc.stato, numero: doc.numero });
     res.status(204).end();

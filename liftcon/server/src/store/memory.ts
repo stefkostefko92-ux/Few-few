@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto";
 import { documentiMemory } from "./documenti-memory.js";
 import { STATI_RICHIESTA, type Store, type Utente, type Sessione, type Richiesta, type Contenuto, type Pubblicazione, type Evento } from "./types.js";
 
-export function memoryStore(): Store {
+/** `now` — часовникът на събитията (тестовете подават своя, за да съвпада с този на приложението). */
+export function memoryStore({ now = () => Date.now() }: { now?: () => number } = {}): Store {
   const utenti = new Map<string, Utente>();
   const sessioni = new Map<string, Sessione>();
   const richieste = new Map<string, Richiesta>();
@@ -189,7 +190,10 @@ export function memoryStore(): Store {
     },
     eventi: {
       async registra(e) {
-        eventi.push({ id: id(), creatoIl: new Date(), ...e });
+        eventi.push({ id: id(), creatoIl: new Date(now()), ...e });
+      },
+      async recente(f) {
+        return eventi.some((e) => e.utenteId === f.utenteId && e.azione === f.azione && e.oggetto === f.oggetto && e.creatoIl >= f.dal);
       },
       async ultimi(limite, offset) {
         return [...eventi].reverse().slice(offset, offset + limite);

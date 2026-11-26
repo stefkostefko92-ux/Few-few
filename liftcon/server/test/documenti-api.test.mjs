@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 import sharp from "sharp";
 import { setup, client, creaUtente, entra, ORIGIN } from "./helpers.mjs";
@@ -220,6 +220,71 @@ test("изтриване: черновата — от автора; издаде
     const d = await sessione(s, "DIREZIONE");
     assert.equal((await d.api(`/admin/api/documenti/${id}`, { method: "DELETE" })).status, 204);
     assert.equal(existsSync(join(s.dataDir, "documenti", id)), false);
+  } finally {
+    await s.close();
+  }
+});
+
+test("регистър: documento.modificato — най-много веднъж на час за човек и документ, без съдържание (L4-B)", async () => {
+  const s = await setup();
+  try {
+    const t = await sessione(s, "TECNICO");
+    const id = randomUUID();
+    const corpo = sopralluogo(id);
+    let versione = (await t.api(`/admin/api/documenti/${id}`, { method: "PUT", json: corpo })).json.versione;
+    const salva = async (chi = t) => {
+      const r = await chi.api(`/admin/api/documenti/${id}`, { method: "PUT", json: { ...corpo, versione } });
+      assert.equal(r.status, 200, JSON.stringify(r.json));
+      versione = r.json.versione;
+    };
+    const modifiche = async () => (await s.store.eventi.ultimi(500, 0)).filter((e) => e.azione === "documento.modificato" && e.oggetto === id);
+    assert.equal((await modifiche()).length, 0, "създаването не е редакция");
+    await salva();
+    await salva();
+    await salva();
+    const lista = await modifiche();
+    assert.equal(lista.length, 1, "три записвания в часа → едно събитие");
+    assert.equal(lista[0].utenteId, t.cred.u.id);
+    assert.deepEqual(lista[0].dettagli, { versione: 2 });
+    assert.doesNotMatch(JSON.stringify(lista[0]), /Via Roma|Condominio|Milano/, "без съдържание");
+    s.clock.t += 59 * 60_000;
+    await salva();
+    assert.equal((await modifiche()).length, 1, "в рамките на часа");
+    s.clock.t += 2 * 60_000;
+    await salva();
+    assert.equal((await modifiche()).length, 2, "след часа — ново събитие");
+    const altro = await sessione(s, "RESPONSABILE", "altro@liftcon.it");
+    await salva(altro);
+    assert.equal((await modifiche()).length, 3, "друг човек — свое събитие");
+    // Грешка в регистъра не проваля записа на документа.
+    s.store.eventi.recente = async () => {
+      throw new Error("registro non disponibile");
+    };
+    s.clock.t += 65 * 60_000;
+    await salva();
+    assert.equal((await modifiche()).length, 3);
+  } finally {
+    await s.close();
+  }
+});
+
+test("изтриване: първо ред в списъка на изтриванията (без лични данни, права 600); без списък → 503 и документът остава (L6-B)", async () => {
+  const s = await setup();
+  try {
+    const t = await sessione(s, "TECNICO");
+    const id = randomUUID();
+    await t.api(`/admin/api/documenti/${id}`, { method: "PUT", json: sopralluogo(id) });
+    assert.equal((await t.api(`/admin/api/documenti/${id}`, { method: "DELETE" })).status, 204);
+    const file = join(s.elimDir, "eliminazioni.jsonl");
+    const righe = readFileSync(file, "utf8").trim().split("\n").map((l) => JSON.parse(l));
+    assert.deepEqual(righe, [{ tipo: "documento", id, il: "2026-11-26T10:00:00.000Z" }]);
+    assert.equal((statSync(file).mode & 0o777).toString(8), "600");
+    const id2 = randomUUID();
+    await t.api(`/admin/api/documenti/${id2}`, { method: "PUT", json: sopralluogo(id2) });
+    rmSync(s.elimDir, { recursive: true, force: true });
+    const r = await t.api(`/admin/api/documenti/${id2}`, { method: "DELETE" });
+    assert.equal(r.status, 503);
+    assert.equal((await t.api(`/admin/api/documenti/${id2}`)).status, 200, "без ред в списъка нищо не се трие");
   } finally {
     await s.close();
   }

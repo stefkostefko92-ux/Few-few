@@ -15,6 +15,7 @@ import type { AdminDeps } from "./admin/deps.js";
 import { servizioDocumenti } from "./documenti/servizio.js";
 import { archivio } from "./documenti/archivio.js";
 import { CATALOGO } from "./documenti/condiviso/catalogo/index.js";
+import { registroEliminazioni, riapplicaEliminazioni } from "./eliminazioni.js";
 
 async function main(): Promise<void> {
   const cfg = loadConfig();
@@ -36,6 +37,16 @@ async function main(): Promise<void> {
     mailer = email.mailer();
     const cat = catalogo(store, cfg.CONTENT_DEFAULTS);
     const pub = pubblicatore({ store, catalogo: cat, siteSrc: cfg.SITE_SRC, siteDir: cfg.SITE_DIR, siteUrl: cfg.ALLOWED_ORIGIN });
+    const arch = archivio(cfg.DATA_DIR);
+    // Изтритото не се връща с възстановен бекъп: списъкът се прилага пак, преди да приемем заявки (D16а).
+    // Папката липсва или не се чете → старт не става (fail closed), деплоят се връща.
+    const eliminazioni = registroEliminazioni(cfg.ELIMINAZIONI_DIR);
+    await eliminazioni.verifica();
+    const riapplicate = await riapplicaEliminazioni({ store, archivio: arch, registro: eliminazioni });
+    logger.info({ event: "eliminazioni_riapplicate", ...riapplicate });
+    if (riapplicate.documenti || riapplicate.richieste) {
+      await store.eventi.registra({ utenteId: null, azione: "eliminazioni.riapplicate", oggetto: null, dettagli: { documenti: riapplicate.documenti, richieste: riapplicate.richieste }, ipHmac: null });
+    }
     admin = {
       store,
       sessioni: gestoreSessioni({ store, jwtSecret: cfg.JWT_SECRET, produzione: cfg.NODE_ENV === "production" }),
@@ -48,7 +59,8 @@ async function main(): Promise<void> {
       limiteAccesso: fixedWindowLimiter(10, 15 * 60_000),
       now: () => Date.now(),
       siteDir: cfg.SITE_DIR,
-      documenti: servizioDocumenti({ store, archivio: archivio(cfg.DATA_DIR), catalogo: CATALOGO, now: () => Date.now() }),
+      documenti: servizioDocumenti({ store, archivio: arch, catalogo: CATALOGO, now: () => Date.now() }),
+      eliminazioni,
     };
     if ((await store.utenti.conta()) === 0) logger.warn({ event: "avvio", admin: "nessun utente: lo crea deploy.sh (oppure deploy.sh --admin)" });
     const giro = () => void pulizia(store!, logger).catch((err: unknown) => logger.error({ event: "pulizia", err: err instanceof Error ? err.message : "?" }));
