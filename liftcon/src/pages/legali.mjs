@@ -39,7 +39,7 @@ export function privacyPage() {
 <h2>Quali dati trattiamo e perché</h2>
 <h3>Richieste di contatto</h3>
 <p>Se ci scrive con il modulo, per email o ci chiama, trattiamo i dati che ci fornisce (nome, email, telefono, ruolo, comune dell'impianto, testo del messaggio) per rispondere alla richiesta e preparare una proposta d'incarico. Base giuridica: misure precontrattuali adottate su sua richiesta (art. 6, par. 1, lett. b GDPR). Se ci scrive per conto di un condominio, di un'azienda o di un altro cliente, trattiamo i suoi dati di contatto sulla base del nostro legittimo interesse a rispondere (art. 6, par. 1, lett. f GDPR). Senza questi dati non possiamo rispondere.</p>
-<p>La richiesta viene salvata nella banca dati del nostro server, consultabile solo dal personale autorizzato con accesso protetto da verifica in due passaggi, e ne riceviamo un avviso per email tramite Brevo nella nostra casella di posta, ospitata sullo stesso server.</p>
+<p>La richiesta viene salvata nella banca dati del nostro server, consultabile solo dal personale autorizzato con accesso protetto da verifica in due passaggi, e ne riceviamo un avviso per email: lo invia Brevo e arriva nella nostra casella di posta, gestita da Register.it.</p>
 <h3>Dati tecnici di navigazione</h3>
 <p>Il server registra nei propri log indirizzo IP, data e ora, pagina richiesta e tipo di browser, per garantire la sicurezza del sito e prevenire abusi. Base giuridica: legittimo interesse alla sicurezza del servizio (art. 6, par. 1, lett. f GDPR).</p>
 <h3>Mappa OpenStreetMap</h3>
@@ -49,7 +49,7 @@ export function privacyPage() {
 <h2>Per quanto tempo conserviamo i dati</h2>
 <ul><li>Richieste che non portano a un incarico: cancellate automaticamente 6 mesi dopo l'ultima modifica.</li><li>Richieste che portano a un incarico: per la durata del rapporto e poi per i tempi previsti dagli obblighi contabili e fiscali (art. 6, par. 1, lett. c GDPR).</li><li>Log del server: di norma 14 giorni, con cancellazione automatica.</li></ul>
 <h2>Chi tratta i dati per nostro conto</h2>
-<ul><li>netcup GmbH (Germania): server che ospita il sito, la banca dati delle richieste e la posta elettronica.</li><li>Sendinblue SAS, marchio Brevo (Francia): invio delle email di avviso generate dal modulo di contatto.</li></ul>
+<ul><li>netcup GmbH (Germania): server che ospita il sito e la banca dati delle richieste.</li><li>Sendinblue SAS, marchio Brevo (Francia): invio delle email di avviso generate dal modulo di contatto.</li><li>Register S.p.A., marchio Register.it (Italia): casella di posta elettronica in cui riceviamo gli avvisi del modulo e le email che ci scrive.</li></ul>
 <p>Sono responsabili del trattamento ai sensi dell'articolo 28 GDPR. I dati restano nell'Unione europea, salvo il caso della mappa descritto sopra.</p>
 <h2>I suoi diritti</h2>
 <p>Può chiedere accesso, rettifica, cancellazione, limitazione, portabilità dei dati e opporsi al trattamento basato sul legittimo interesse e revocare il consenso dato per la mappa (articoli 7 e 15–22 GDPR), scrivendo a <a href="mailto:${esc(CONTACT.email)}">${esc(

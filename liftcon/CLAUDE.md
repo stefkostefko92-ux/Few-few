@@ -9,7 +9,7 @@ Città metropolitana, Monza e Brianza и цяла Ломбардия. Публи
   детерминистично (датите от `SITE.updated`, не от часовника). `public/` се комитва; CI проверява синхрона.
 - `server/` — приложението: формата + **админ панелът `/admin`** (спецификация: `docs/admin-spec.md`).
   Node 22 + TS strict + Express 5 + zod + pino + Prisma/PostgreSQL; Brevo Transactional API за известията
-  (HTTPS — SMTP портовете на сървъра са блокирани). Хостинг: нашият VPS в netcup (сайт, база, поща info@liftcon.it).
+  (HTTPS — SMTP портовете на сървъра са блокирани). Хостинг: нашият VPS в netcup (сайт, база); пощенската кутия — Register.it (получава известията от Brevo).
   - Вход: argon2id + **задължителна 2FA (TOTP)**, резервни кодове (HMAC), тайната — AES-256-GCM (HKDF от `SEAL_KEY`),
     JWT в httpOnly бисквитка → сесия в базата (2 ч без действие / 12 ч), CSRF + Origin, заключване 5/15 мин.
   - Роли (7 нива): MASTER > ADMIN > DIREZIONE > RESPONSABILE > TECNICO > OPERATORE > CLIENTE — `src/auth/ruoli.ts`.
