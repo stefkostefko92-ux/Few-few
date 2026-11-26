@@ -1052,3 +1052,6 @@
 {"t":"handoff","ts":"2026-11-25T06:01:35.164Z","id":"ra382540b","from":"razbivacha","to":"kodadjiyata","status":"има бележки","run":"e1ed6ff8"}
 {"t":"start","ts":"2026-11-24T14:58:18.701Z","id":"r9c2c6f07","flow":"авто","lead":"socialdjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-24T14:58:18.701Z","id":"r9c2c6f07","from":"socialdjiyata","to":"човек","status":"има бележки","run":"7ade7616"}
+{"t":"start","ts":"2026-11-26T11:32:42.936Z","id":"r083abe71","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-26T11:32:42.936Z","id":"r083abe71","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"2c5f5d54"}
+{"t":"handoff","ts":"2026-11-26T11:34:03.291Z","id":"r083abe71","from":"razbivacha","to":"ai-djiyata","status":"блокер","run":"49f8de19"}
