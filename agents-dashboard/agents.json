@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-11-25",
+    "updated": "2026-11-26",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -14570,7 +14570,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 380
+        "lessons": 382
       },
       "evolution": [
         {
@@ -14740,9 +14740,20 @@
           "date": "2026-11-25",
           "event": "v37.4 — учене",
           "detail": "Научи: Сензорът undefined-function в tools/vps/deploy-check.mjs (част от gate.mjs) пропуска са… (+14 още)"
+        },
+        {
+          "version": "37.6.0",
+          "date": "2026-11-26",
+          "event": "v37.6 — учене",
+          "detail": "Научи: Харнесът audacity в HKUDS/CLI-Anything не управлява Audacity — пази проекта в JSON мани… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-26",
+          "type": "learning",
+          "summary": "Научи: „Харнесът audacity в HKUDS/CLI-Anything не управлява Audacity — пази проекта в JSON мани…\" (+1 още)"
+        },
         {
           "date": "2026-11-25",
           "type": "learning",
