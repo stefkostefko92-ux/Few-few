@@ -9,7 +9,8 @@
 #           2) restic backup на същите пътища, които влизат в архива за
 #              преместване (конфигурации, /opt, /var/www, томовете без живите
 #              бази) + дъмповете — шифровано, с дедупликация;
-#           3) restic forget --prune по KEEP_* политиката.
+#           3) restic forget --prune по KEEP_* политиката (групи по host,tags — смяна на
+#              пътищата в paths.txt не оставя стари групи без ротация).
 #   verify  restic check (+ прочит на част от данните) и пробно възстановяване на
 #           дъмповете от последната снимка: всеки Postgres дъмп минава
 #           `pg_restore -l`, всяка SQLite — `PRAGMA integrity_check`. Бекъп без
@@ -166,13 +167,13 @@ cmd_backup(){
   esac
   if [ "$rc" -ne 0 ]; then
     # Частичните се ротират отделно (последните 3), пълните не се пипат (преглед на PR #312).
-    restic forget --host "$HOST" --tag partial --keep-last 3 --prune --quiet || warn "forget на partial не мина."
+    restic forget --host "$HOST" --group-by host,tags --tag partial --keep-last 3 --prune --quiet || warn "forget на partial не мина."
     warn "Частичен бекъп — ротацията на пълните (nightly) снимки се пропуска, за да не изпаднат."
     exit 2
   fi
-  restic forget --host "$HOST" --tag partial --keep-last 3 --quiet || warn "forget на partial не мина."
+  restic forget --host "$HOST" --group-by host,tags --tag partial --keep-last 3 --quiet || warn "forget на partial не мина."
   inf "Ротация: ${KEEP_DAILY} дневни · ${KEEP_WEEKLY} седмични · ${KEEP_MONTHLY} месечни…"
-  restic forget --host "$HOST" --tag nightly --keep-daily "$KEEP_DAILY" --keep-weekly "$KEEP_WEEKLY" \
+  restic forget --host "$HOST" --group-by host,tags --tag nightly --keep-daily "$KEEP_DAILY" --keep-weekly "$KEEP_WEEKLY" \
     --keep-monthly "$KEEP_MONTHLY" --prune --quiet
   ok "Бекъпът извън машината приключи."
 }

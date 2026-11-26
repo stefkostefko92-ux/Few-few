@@ -268,3 +268,11 @@ test("подписът на SQLite се чете с timeout (FIFO не блок�
   const src = readFileSync(script, "utf8");
   assert.match(src, /\[ "\$\(timeout 10 head -c 15 -- "\$f" 2>\/dev\/null\)" = "SQLite format 3" \]/);
 });
+
+// Седми преглед (Кодаджията, ниска): `safe` прави „my db“ и „my_db“ едно име — вторият дъмп презаписваше
+// първия, а инвентарът показваше и двата „ok“.
+test("бази със сходни имена не се презаписват в един дъмп", () => {
+  const src = readFileSync(script, "utf8");
+  assert.equal((src.match(/f="\$\(uniq_path "\$STAGE\/db\/pg-/g) || []).length, 2, "и двата Postgres пътя минават през uniq_path");
+  assert.match(src, /^uniq_path\(\)\{/m, "помощникът е в скрипта");
+});

@@ -206,7 +206,7 @@ test("частичен бекъп: таг partial и без forget", () => {
 // бекъпи минаваха „зелено“ върху стара пълна снимка.
 test("partial се ротира; verify пада, ако последната пълна снимка е стара", () => {
   const off = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "offsite-backup.sh"), "utf8");
-  assert.match(off, /restic forget --host "\$HOST" --tag partial --keep-last 3/, "partial: пазят се последните 3");
+  assert.match(off, /restic forget --host "\$HOST" --group-by host,tags --tag partial --keep-last 3/, "partial: пазят се последните 3");
   assert.match(off, /MAX_AGE_HOURS/, "праг за възрастта");
   assert.match(off, /HEALTHCHECK_URL\|HEALTHCHECK_VERIFY_URL\|KEEP_DAILY\|KEEP_WEEKLY\|KEEP_MONTHLY\|VERIFY_READ\|MAX_AGE_HOURS\)/, "четим от конфига");
   assert.match(off, /restic snapshots --host "\$HOST" --tag nightly --latest 1 --json/, "възрастта е на последната ПЪЛНА снимка");
@@ -231,4 +231,14 @@ ping_hc "$U" ${kind}`], { encoding: "utf8", env: { PATH: process.env.PATH, U: u 
   assert.match(r.stdout, /url = "https:\/\/hc-ping\.com\/uuid\/fail"/);
   r = call("https://kuma.example.eu/api/push/TOKEN?status=up&msg=OK", "");
   assert.match(r.stdout, /status=up&msg=OK"/, "успехът е непроменен");
+});
+
+// Седми преглед на PR #312 (Кодаджията + VPS-аджията, средна · Вероятно): restic групира по host,paths, а
+// paths.txt се мени с томовете — старите групи пазеха до 17 снимки завинаги (растеж без таван и лични данни
+// след изтриване). Всяко forget групира по host,tags.
+test("restic forget групира по host,tags — смяна на пътищата не оставя сираци", () => {
+  const off = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "offsite-backup.sh"), "utf8");
+  const calls = off.split("\n").filter((l) => /^\s*restic forget /.test(l));
+  assert.ok(calls.length >= 3, "трите forget извиквания");
+  for (const l of calls) assert.match(l, /--group-by host,tags/, l);
 });

@@ -158,6 +158,8 @@ trap cleanup EXIT
 inv(){  printf '%s\n' "$*" >> "$INV"; }
 sect(){ printf '\n== %s ==\n' "$*" >> "$INV"; }
 safe(){ printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '_'; }
+# „my db“ и „my_db“ дават едно име след safe — вторият дъмп не бива да презапише първия (преглед на PR #312).
+uniq_path(){ local f=$1 i=2; while [ -e "$f" ]; do f="${1%.dump}-$i.dump"; i=$((i + 1)); done; printf '%s' "$f"; }
 kb_h(){ numfmt --to=iec --from-unit=1024 "${1:-0}" 2>/dev/null || printf '%sK' "${1:-0}"; }
 under_roots(){ local p=$1 r; for r in $ROOTS $EXTRA_PATHS; do case "$p/" in "${r%/}/"*) return 0;; esac; done; return 1; }
 has_root_under(){ local p=${1%/} r; for r in $ROOTS $EXTRA_PATHS; do case "${r%/}/" in "$p"/*) return 0;; esac; done; return 1; }
@@ -567,7 +569,7 @@ dump_pg_container(){
   fi
   while IFS= read -r db; do
     [ -n "$db" ] || continue
-    f="$STAGE/db/pg-$c-$(safe "$db").dump"
+    f="$(uniq_path "$STAGE/db/pg-$c-$(safe "$db").dump")"
     # Дъмп, който pg_restore не може да прочете, не е дъмп — проверява се веднага.
     if pg_exec "$c" pg_dump -U "$u" -Fc -d "$db" > "$f" 2>"$ERR" && docker exec -i "$c" pg_restore -l < "$f" >/dev/null 2>&1; then
       DUMPS+=("postgres · $c · $db · $(du -h "$f" | cut -f1) · ok"); n=$((n + 1))
@@ -609,7 +611,7 @@ dump_pg_host(){
     fi
     while IFS= read -r db; do
       [ -n "$db" ] || continue
-      f="$STAGE/db/pg-$tag-$(safe "$db").dump"
+      f="$(uniq_path "$STAGE/db/pg-$tag-$(safe "$db").dump")"
       if runuser -u postgres -- env -i PATH="$PG_PATH" LC_ALL=C.UTF-8 pg_dump -p "$port" -Fc -d "$db" > "$f" 2>"$ERR" && runuser -u postgres -- env -i PATH="$PG_PATH" LC_ALL=C.UTF-8 pg_restore -l < "$f" >/dev/null 2>&1; then
         DUMPS+=("postgres · $tag · $db · $(du -h "$f" | cut -f1) · ok")
       else
