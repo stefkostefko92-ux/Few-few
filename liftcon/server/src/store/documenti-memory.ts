@@ -7,6 +7,8 @@ export function documentiMemory(): StoreDocumenti {
   const foto = new Map<string, FotoRiga>();
   const frasi = new Map<string, FraseRiga>();
   const numeri = new Map<string, number>();
+  const lapidi = new Set<string>();
+  const sintesi = ({ intestazione: _i, dati: _d, ...r }: DocumentoRiga) => structuredClone(r);
   const copia = <T>(x: T): T => structuredClone(x);
   return {
     documenti: {
@@ -22,7 +24,7 @@ export function documentiMemory(): StoreDocumenti {
         return d ? copia(d) : null;
       },
       async crea(r) {
-        if (doc.has(r.id)) throw new Error("documento_esistente");
+        if (doc.has(r.id) || lapidi.has(r.id)) throw new Error("documento_esistente");
         const ora = new Date();
         const d = { ...copia(r), creatoIl: ora, aggiornatoIl: ora };
         doc.set(r.id, d);
@@ -44,7 +46,17 @@ export function documentiMemory(): StoreDocumenti {
       },
       async elimina(id) {
         doc.delete(id);
+        lapidi.add(id);
         for (const [k, f] of foto) if (f.documentoId === id) foto.delete(k);
+      },
+      async eliminato(id) {
+        return lapidi.has(id);
+      },
+      async figli(id) {
+        return [...doc.values()].filter((d) => d.revisioneDi === id).map(sintesi);
+      },
+      async tutti() {
+        return [...doc.values()].slice(0, 10_000).map(sintesi);
       },
       async prossimoNumero(prefisso, anno) {
         const k = `${prefisso}-${anno}`;

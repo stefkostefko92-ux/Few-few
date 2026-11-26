@@ -214,6 +214,13 @@ model FotoDocumento {
   @@index([documentoId, ordine])
 }
 
+/// Надгробен запис на изтрит документ (само id, без лични данни): устройство с несинхронизирани промени не
+/// може да го създаде отново (410) — изтриването по GDPR е окончателно.
+model DocumentoEliminato {
+  id          String   @id
+  eliminatoIl DateTime @default(now())
+}
+
 /// Последователен номер по вид и година (SOP-2026-001…), увеличава се атомарно при издаване.
 model NumeratoreDocumenti {
   prefisso String

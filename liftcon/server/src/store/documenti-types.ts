@@ -62,7 +62,13 @@ export interface StoreDocumenti {
     aggiorna(id: string, attesa: number, patch: Pick<DocumentoRiga, "titolo" | "intestazione" | "dati">): Promise<DocumentoRiga | null>;
     /** Атомарно: чернова с `versione === attesa` → EMESSO с номер; иначе null. */
     emetti(id: string, attesa: number, e: { numero: string; emessoIl: Date; pdfSha256: string; autoreNome: string; autoreQualifica: string }): Promise<DocumentoRiga | null>;
+    /** Изтрива документа (снимките — каскадно) и оставя надгробен запис със същия id. */
     elimina(id: string): Promise<void>;
+    eliminato(id: string): Promise<boolean>;
+    /** Ревизиите, създадени от документа (revisioneDi = id). */
+    figli(id: string): Promise<DocumentoSintesi[]>;
+    /** Резюметата на всички документи (за синхронизацията на устройствата; таван 10 000). */
+    tutti(): Promise<DocumentoSintesi[]>;
     /** Следващият номер за префикс и година — атомарно (паралелните издавания не получават един и същ). */
     prossimoNumero(prefisso: string, anno: number): Promise<number>;
   };

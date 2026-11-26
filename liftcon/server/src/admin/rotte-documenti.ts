@@ -58,8 +58,9 @@ export function rotteDocumenti(d: AdminDeps): Router {
     if (!id.success || !fotoId.success) return res.status(400).send("Richiesta non valida.");
     const buf = await d.documenti.leggiFoto(id.data, fotoId.data, req.query.mini === "1");
     if (!buf) return res.status(404).send("Foto non trovata.");
-    // Частно съдържание: само в кеша на браузъра на влезлия (service worker-ът го трие при изход).
-    res.set("cache-control", "private, max-age=86400, immutable").type("image/jpeg").send(buf);
+    // Лични данни: не в HTTP кеша на браузъра (той не се трие с изхода); за офлайн — кешът на service
+    // worker-а (миниатюрите на отворените документи), който се трие при изход и с Clear-Site-Data.
+    res.set("cache-control", "private, no-store").type("image/jpeg").send(buf);
   });
 
   r.get("/documenti/:id/pdf", async (req, res) => {

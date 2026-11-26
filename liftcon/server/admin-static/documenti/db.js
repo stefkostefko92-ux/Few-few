@@ -13,7 +13,14 @@ function apri() {
       db.createObjectStore("coda", { keyPath: "id", autoIncrement: true });
       db.createObjectStore("meta", { keyPath: "k" });
     };
-    r.onsuccess = () => ok(r.result);
+    r.onsuccess = () => {
+      // Друг раздел (или изходът) трие базата: затваряме нашата връзка, за да не блокира триенето.
+      r.result.onversionchange = () => {
+        r.result.close();
+        dbp = undefined;
+      };
+      ok(r.result);
+    };
     r.onerror = () => ko(r.error);
   });
   return dbp;

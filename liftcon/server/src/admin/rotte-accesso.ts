@@ -189,6 +189,8 @@ export function rotteAccesso(d: AdminDeps): Router {
     const a = auth(res);
     if (a) await registra(d, req, a.utente.id, "uscita");
     await d.sessioni.chiudi(req, res);
+    // Документите на устройството (IndexedDB, кешът на service worker-а, HTTP кешът) се трият от браузъра.
+    res.set("clear-site-data", '"cache", "storage"');
     res.redirect(303, "/admin/login");
   });
 

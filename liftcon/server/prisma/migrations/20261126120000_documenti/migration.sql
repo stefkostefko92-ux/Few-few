@@ -49,6 +49,14 @@ CREATE TABLE "FotoDocumento" (
 );
 
 -- CreateTable
+CREATE TABLE "DocumentoEliminato" (
+    "id" TEXT NOT NULL,
+    "eliminatoIl" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "DocumentoEliminato_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "NumeratoreDocumenti" (
     "prefisso" TEXT NOT NULL,
     "anno" INTEGER NOT NULL,

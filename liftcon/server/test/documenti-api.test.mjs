@@ -14,8 +14,8 @@ async function sessione(s, ruolo, email = `${ruolo.toLowerCase()}@liftcon.it`) {
   const c = client(s.base);
   await entra(c, s.clock, { email, password: cred.password, segreto: cred.segreto });
   const info = JSON.parse((await c.req("/admin/api/sessione")).text);
-  const api = async (path, { method = "GET", json, body, type, csrf = info.csrf, origin = ORIGIN } = {}) => {
-    const headers = { cookie: c.cookie, ...(origin ? { origin } : {}), ...(csrf ? { "x-csrf-token": csrf } : {}) };
+  const api = async (path, { method = "GET", json, body, type, csrf = info.csrf, origin = ORIGIN, headers: extra = {} } = {}) => {
+    const headers = { cookie: c.cookie, ...(origin ? { origin } : {}), ...(csrf ? { "x-csrf-token": csrf } : {}), ...extra };
     if (json) headers["content-type"] = "application/json";
     if (type) headers["content-type"] = type;
     const res = await fetch(s.base + path, { method, redirect: "manual", headers, body: json ? JSON.stringify(json) : body });
@@ -118,12 +118,13 @@ test("снимка: само изображения, без EXIF, идемпот
     const id = randomUUID();
     await api(`/admin/api/documenti/${id}`, { method: "PUT", json: sopralluogo(id) });
     const fotoId = randomUUID();
-    const url = `/admin/api/documenti/${id}/foto/${fotoId}?ordine=1&didascalia=Porta`;
+    const url = `/admin/api/documenti/${id}/foto/${fotoId}?ordine=1`;
     const img = await jpegConExif();
-    const r1 = await api(url, { method: "POST", body: img, type: "image/jpeg" });
+    const metaPorta = { "x-foto-meta": Buffer.from(JSON.stringify({ didascalia: "Porta" })).toString("base64url") };
+    const r1 = await api(url, { method: "POST", body: img, type: "image/jpeg", headers: metaPorta });
     assert.equal(r1.status, 201, JSON.stringify(r1.json));
     assert.equal(r1.json.didascalia, "Porta");
-    assert.equal((await api(url, { method: "POST", body: img, type: "image/jpeg" })).status, 200, "повторното качване не дублира");
+    assert.equal((await api(url, { method: "POST", body: img, type: "image/jpeg", headers: metaPorta })).status, 200, "повторното качване не дублира");
     const doc = await api(`/admin/api/documenti/${id}`);
     assert.equal(doc.json.foto.length, 1);
     const file = await api(`/admin/documenti/${id}/foto/${fotoId}`);
@@ -183,7 +184,7 @@ test("нова ревизия: чернова Rev. 1 с копирани сни�
     const id = randomUUID();
     await api(`/admin/api/documenti/${id}`, { method: "PUT", json: sopralluogo(id) });
     const fotoId = randomUUID();
-    await api(`/admin/api/documenti/${id}/foto/${fotoId}?ordine=1&didascalia=Porta`, { method: "POST", body: await jpegConExif(), type: "image/jpeg" });
+    await api(`/admin/api/documenti/${id}/foto/${fotoId}?ordine=1`, { method: "POST", body: await jpegConExif(), type: "image/jpeg", headers: { "x-foto-meta": Buffer.from(JSON.stringify({ didascalia: "Porta" })).toString("base64url") } });
     await api(`/admin/api/documenti/${id}/emetti`, { method: "POST", json: { versione: 1 } });
     const rev = await api(`/admin/api/documenti/${id}/revisione`, { method: "POST", json: {} });
     assert.equal(rev.status, 201);

@@ -51,9 +51,20 @@ export async function apriEditor(root, id, app) {
           "div.avviso.avviso-errore",
           {},
           h("p", {}, `Il documento è stato modificato anche da un altro dispositivo (versione ${r.conflitto.versione} sul server). Scelga quale tenere:`),
-          h("button.btn", { type: "button", on: { click: async () => (await risolviConflitto(id, "mia"), toast("Verrà salvata la sua versione."), aggiornaStato()) } }, "Mantieni la mia"),
+          h("button.btn", { type: "button", on: { click: async () => {
+            await risolviConflitto(id, "mia");
+            doc.versione = (await db.documento(id))?.doc?.versione ?? doc.versione; // моето съдържание върху версията на сървъра
+            toast("Verrà salvata la sua versione.");
+            aggiornaStato();
+          } } }, "Mantieni la mia"),
           " ",
-          h("button.btn.btn-sec", { type: "button", on: { click: async () => (await risolviConflitto(id, "server"), app.vai(`#/d/${id}`)) } }, "Usa quella del server"),
+          h("button.btn.btn-sec", { type: "button", on: { click: async () => {
+            // Неизпратената редакция се отказва — иначе затварянето на редактора би я записало обратно.
+            clearTimeout(timer);
+            pendente = false;
+            await risolviConflitto(id, "server");
+            app.vai(`#/d/${id}`, true);
+          } } }, "Usa quella del server"),
         ),
       );
     }
@@ -93,6 +104,8 @@ export async function apriEditor(root, id, app) {
 
   async function primaSincronizza() {
     if (!online()) return toast("Serve la connessione.", "errore"), false;
+    // PDF/издаване само когато и снимките са на сървъра (иначе остават извън издадения документ завинаги).
+    const fotoInAttesa = async () => (await db.fotoDi(id)).filter((f) => !f.caricata);
     if (pendente) {
       clearTimeout(timer);
       pendente = false;
@@ -101,6 +114,11 @@ export async function apriEditor(root, id, app) {
     const e = await sincronizza();
     const r = await db.documento(id);
     if (e !== "ok" || r?.sporco || r?.conflitto) return toast(e === "sessione" ? "Sessione scaduta: acceda di nuovo." : "Sincronizzazione non riuscita.", "errore"), false;
+    const attesa = await fotoInAttesa();
+    if (attesa.length) {
+      toast(attesa.some((f) => f.errore) ? "Una foto non è stata accettata dal server: la elimini e la scatti di nuovo." : `Caricamento delle foto in corso (${attesa.length}): riprovi tra poco.`, "errore");
+      return false;
+    }
     return true;
   }
 
@@ -111,15 +129,22 @@ export async function apriEditor(root, id, app) {
     if (pdfPronto(url) || (await primaSincronizza())) await apriPdf(url, (t) => toast(t));
   } } }, doc.stato === "EMESSO" ? "PDF" : "PDF (bozza)"));
   if (doc.stato === "BOZZA" && app.sessione.permessi.emetti) {
-    azioni.push(h("button.btn", { type: "button", on: { click: async () => {
-      if (!confirm("Emettere il documento? Riceverà un numero e non sarà più modificabile (si potrà fare una nuova revisione).")) return;
-      if (!(await primaSincronizza())) return;
-      const r = await api(`/documenti/${id}/emetti`, { method: "POST", json: { versione: (await db.documento(id)).base } });
-      if (r.stato === 422) return ((tab = "anteprima"), disegnaTab(), toast("Mancano alcuni dati: veda l'elenco.", "errore"));
-      if (r.stato !== 200) return toast("Emissione non riuscita.", "errore");
-      await aggiornaDaServer(id);
-      toast(`Emesso: ${r.dati.numero}`, "ok");
-      app.vai(`#/d/${id}`, true);
+    azioni.push(h("button.btn", { type: "button", on: { click: async (ev) => {
+      const btn = ev.currentTarget;
+      if (btn.disabled || !confirm("Emettere il documento? Riceverà un numero e non sarà più modificabile (si potrà fare una nuova revisione).")) return;
+      btn.disabled = true; // un solo «Emetti» alla volta (doppio tocco)
+      try {
+        if (!(await primaSincronizza())) return;
+        const r = await api(`/documenti/${id}/emetti`, { method: "POST", json: { versione: (await db.documento(id)).base } });
+        if (r.stato === 422) return ((tab = "anteprima"), disegnaTab(), toast("Mancano alcuni dati: veda l'elenco.", "errore"));
+        if (r.stato === 409 && r.dati?.errore === "occupato") return toast("Emissione o caricamento di foto già in corso: riprovi tra poco.", "errore");
+        if (r.stato !== 200) return toast("Emissione non riuscita.", "errore");
+        await aggiornaDaServer(id);
+        toast(`Emesso: ${r.dati.numero}`, "ok");
+        app.vai(`#/d/${id}`, true);
+      } finally {
+        btn.disabled = false;
+      }
     } } }, "Emetti"));
   }
   if (doc.stato === "EMESSO" && app.sessione.permessi.modifica) {
@@ -164,7 +189,24 @@ export async function apriEditor(root, id, app) {
   );
   disegnaTab();
   aggiornaStato();
-  const stop = suEvento((e) => e.tipo === "fine" && aggiornaStato());
+  // След синхронизация: собствен запис → само новата версия в паметта; документът е обновен от друго
+  // устройство (свален от сървъра) → редакторът се презарежда; изтрит → към списъка.
+  const stop = suEvento(async (e) => {
+    if (e.tipo === "eliminato" && e.id === id) {
+      toast("Il documento è stato eliminato da un altro utente.", "errore");
+      return app.vai("#/");
+    }
+    if (e.tipo !== "fine") return;
+    const r = await db.documento(id);
+    if (r?.doc && r.doc.versione !== doc.versione) {
+      if (r.fonte === "server" && !r.sporco && !pendente) {
+        toast("Aggiornato con le modifiche fatte su un altro dispositivo.");
+        return app.vai(`#/d/${id}`, true);
+      }
+      if (r.fonte === "locale") Object.assign(doc, { versione: r.doc.versione, stato: r.doc.stato, numero: r.doc.numero, revisione: r.doc.revisione, emessoIl: r.doc.emessoIl, autore: r.doc.autore });
+    }
+    aggiornaStato();
+  });
   return () => {
     clearTimeout(timer);
     stop();

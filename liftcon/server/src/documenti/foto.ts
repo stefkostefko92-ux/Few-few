@@ -7,8 +7,26 @@ import sharp, { type Metadata } from "sharp";
 export const LATO_FOTO = 2560;
 export const LATO_MINI = 960;
 export const MAX_BYTE = 15 * 1024 * 1024;
-const MAX_PIXEL = 50_000_000;
+// Браузърът праща до 2560 px (~6,5 Mpx); таванът е за неочакваното — и за PNG „бомби“ от няколко KB.
+const MAX_PIXEL = 40_000_000;
 const FORMATI = new Set(["jpeg", "png", "webp"]);
+
+// Паметта на контейнера е 512 MB: най-много 2 снимки се декодират едновременно, без кеш на libvips.
+sharp.cache(false);
+sharp.concurrency(2);
+const MAX_PARALLELE = 2;
+let attive = 0;
+const coda: Array<() => void> = [];
+async function conTurno<T>(fn: () => Promise<T>): Promise<T> {
+  if (attive >= MAX_PARALLELE) await new Promise<void>((ok) => coda.push(ok));
+  attive++;
+  try {
+    return await fn();
+  } finally {
+    attive--;
+    coda.shift()?.();
+  }
+}
 
 export class FotoNonValida extends Error {
   constructor(readonly codice: "formato" | "dimensioni") {
@@ -24,7 +42,11 @@ export interface FotoElaborata {
   sha256: string;
 }
 
-export async function elaboraFoto(input: Buffer): Promise<FotoElaborata> {
+export function elaboraFoto(input: Buffer): Promise<FotoElaborata> {
+  return conTurno(() => elabora(input));
+}
+
+async function elabora(input: Buffer): Promise<FotoElaborata> {
   let meta: Metadata;
   try {
     meta = await sharp(input, { limitInputPixels: MAX_PIXEL }).metadata();
@@ -39,7 +61,8 @@ export async function elaboraFoto(input: Buffer): Promise<FotoElaborata> {
       .resize({ width: LATO_FOTO, height: LATO_FOTO, fit: "inside", withoutEnlargement: true })
       .jpeg({ quality: 82, mozjpeg: true })
       .toBuffer({ resolveWithObject: true });
-    const mini = await base().resize({ width: LATO_MINI, height: LATO_MINI, fit: "inside", withoutEnlargement: true }).jpeg({ quality: 80, mozjpeg: true }).toBuffer();
+    // Миниатюрата — от вече смалената снимка (второ декодиране на оригинала би удвоило паметта).
+    const mini = await sharp(file).resize({ width: LATO_MINI, height: LATO_MINI, fit: "inside", withoutEnlargement: true }).jpeg({ quality: 80, mozjpeg: true }).toBuffer();
     return { file, mini, larghezza: info.width, altezza: info.height, sha256: createHash("sha256").update(file).digest("hex") };
   } catch {
     throw new FotoNonValida("formato");

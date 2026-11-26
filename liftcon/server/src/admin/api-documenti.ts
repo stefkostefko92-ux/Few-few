@@ -12,12 +12,26 @@ import { FotoNonValida, MAX_BYTE } from "../documenti/foto.js";
 import { TIPI_DOCUMENTO } from "../documenti/condiviso/tipi.js";
 
 const TIPI_FOTO = new Set(["image/jpeg", "image/png", "image/webp"]);
-const MetaFoto = z.object({
-  ordine: z.coerce.number().int().min(0).max(100000).default(0),
-  didascalia: z.string().max(500).default(""),
-  ubicazione: z.string().max(120).default(""),
-  riferimento: z.string().max(80).default(""),
-});
+// Метаданните на снимката идват в заглавие (base64url JSON), не в адреса: надписите са свободен текст и не
+// бива да влизат в access лога на Nginx. В адреса — само редът (число).
+const MetaFoto = z
+  .object({ didascalia: z.string().max(500).default(""), ubicazione: z.string().max(120).default(""), riferimento: z.string().max(80).default("") })
+  .strict();
+const OrdineFoto = z.coerce.number().int().min(0).max(100000).default(0);
+function metaFoto(intestazione: string | undefined): z.infer<typeof MetaFoto> | null {
+  if (!intestazione) return MetaFoto.parse({});
+  try {
+    const r = MetaFoto.safeParse(JSON.parse(Buffer.from(intestazione, "base64url").toString("utf8")));
+    return r.success ? r.data : null;
+  } catch {
+    return null;
+  }
+}
+/** PATCH на фраза: само подадените полета (без default-и, които биха изтрили препоръката). */
+const FrasePatch = z
+  .object({ testo: z.string().min(3).max(1500), raccomandazione: z.string().max(1500), priorita: z.enum(["alta", "media", "bassa"]), attiva: z.boolean() })
+  .partial()
+  .strict();
 
 const idValido = (v: unknown): string | null => {
   const r = ID.safeParse(v);
@@ -60,15 +74,18 @@ export function apiDocumenti(d: AdminDeps): Router {
   });
 
   r.patch("/frasi/:id", richiedePermesso("frasi.gestisci"), async (req, res) => {
-    const p = FraseInSchema.partial().extend({ attiva: z.boolean().optional() }).safeParse(req.body);
+    const p = FrasePatch.safeParse(req.body);
     const f = await d.store.frasi.perId(String(req.params.id));
     if (!p.success || !f) return res.status(p.success ? 404 : 400).json({ errore: "non_valido" });
-    const { testo, raccomandazione, priorita, attiva } = p.data;
-    await d.store.frasi.aggiorna(f.id, { ...(testo !== undefined ? { testo } : {}), ...(raccomandazione !== undefined ? { raccomandazione } : {}), ...(priorita ? { priorita } : {}), ...(attiva !== undefined ? { attiva } : {}) });
+    const patch = Object.fromEntries(Object.entries(p.data).filter(([, v]) => v !== undefined));
+    await d.store.frasi.aggiorna(f.id, patch);
+    await registra(d, req, a(res).utente.id, "frase.aggiornata", f.id, { campi: Object.keys(patch) });
     res.status(204).end();
   });
 
   r.get("/documenti", async (req, res) => {
+    // Устройствата: всички резюмета наведнъж (без странициране — документ не изпада при пренареждане).
+    if (req.query.sintesi === "1") return res.json({ righe: await d.store.documenti.tutti() });
     const testo = typeof req.query.testo === "string" ? req.query.testo.slice(0, 100) : undefined;
     const pagina = Math.max(1, Math.min(1000, Number(req.query.pagina) || 1));
     res.json(await d.documenti.elenco(testo, pagina));
@@ -98,6 +115,7 @@ export function apiDocumenti(d: AdminDeps): Router {
     const e = await d.documenti.salva(a(res).utente, id, p.data);
     if (e.esito === "non_valido") return res.status(400).json({ errore: "non_valido", campi: e.campi });
     if (e.esito === "emesso") return res.status(423).json({ errore: "emesso" });
+    if (e.esito === "eliminato") return res.status(410).json({ errore: "eliminato" });
     if (e.esito === "conflitto") return res.status(409).json({ errore: "conflitto", server: e.doc });
     if (!prima) await registra(d, req, a(res).utente.id, "documento.creato", id, { tipo: p.data.tipo });
     res.json(e.doc);
@@ -111,12 +129,14 @@ export function apiDocumenti(d: AdminDeps): Router {
     async (req, res) => {
       const id = idValido(req.params.id);
       const fotoId = idValido(req.params.fotoId);
-      const meta = MetaFoto.safeParse(req.query);
-      if (!id || !fotoId || !meta.success || !Buffer.isBuffer(req.body)) return res.status(400).json({ errore: "non_valido" });
+      const meta = metaFoto(req.get("x-foto-meta"));
+      const ordine = OrdineFoto.safeParse(req.query.ordine);
+      if (!id || !fotoId || !meta || !ordine.success || !Buffer.isBuffer(req.body)) return res.status(400).json({ errore: "non_valido" });
       try {
-        const e = await d.documenti.caricaFoto(id, fotoId, req.body, meta.data);
+        const e = await d.documenti.caricaFoto(id, fotoId, req.body, { ...meta, ordine: ordine.data });
         if (e.esito === "non_trovato") return res.status(404).json({ errore: "non_trovato" });
         if (e.esito === "emesso") return res.status(423).json({ errore: "emesso" });
+        if (e.esito === "occupato") return res.status(409).json({ errore: "occupato" });
         res.status(e.esito === "creata" ? 201 : 200).json(e.foto);
       } catch (err) {
         if (err instanceof FotoNonValida) return res.status(400).json({ errore: err.codice });
@@ -132,6 +152,8 @@ export function apiDocumenti(d: AdminDeps): Router {
     const e = await d.documenti.eliminaFoto(id, fotoId);
     if (e === "non_trovato") return res.status(404).json({ errore: e });
     if (e === "emesso") return res.status(423).json({ errore: e });
+    if (e === "occupato") return res.status(409).json({ errore: e });
+    await registra(d, req, a(res).utente.id, "foto.eliminata", id, { foto: fotoId });
     res.status(204).end();
   });
 
@@ -142,6 +164,7 @@ export function apiDocumenti(d: AdminDeps): Router {
     const e = await d.documenti.emetti(a(res).utente, id, versione.data);
     if (e.esito === "non_trovato") return res.status(404).json({ errore: e.esito });
     if (e.esito === "emesso") return res.status(423).json({ errore: e.esito });
+    if (e.esito === "occupato") return res.status(409).json({ errore: e.esito });
     if (e.esito === "conflitto") return res.status(409).json({ errore: e.esito, server: e.doc });
     if (e.esito === "incompleto") return res.status(422).json({ errore: e.esito, problemi: e.problemi });
     await registra(d, req, a(res).utente.id, "documento.emesso", id, { numero: e.doc.numero, revisione: e.doc.revisione });
@@ -150,10 +173,11 @@ export function apiDocumenti(d: AdminDeps): Router {
 
   r.post("/documenti/:id/revisione", richiedePermesso("documenti.modifica"), async (req, res) => {
     const id = idValido(req.params.id);
-    const nuovo = id ? await d.documenti.nuovaRevisione(a(res).utente, id) : null;
-    if (!nuovo) return res.status(id ? 409 : 400).json({ errore: "non_emesso" });
-    await registra(d, req, a(res).utente.id, "documento.revisione", nuovo, { da: id });
-    res.status(201).json({ id: nuovo });
+    const r = id ? await d.documenti.nuovaRevisione(a(res).utente, id) : null;
+    if (!r) return res.status(id ? 409 : 400).json({ errore: "non_emesso" });
+    if (r.esistente) return res.status(200).json({ id: r.id });
+    await registra(d, req, a(res).utente.id, "documento.revisione", r.id, { da: id });
+    res.status(201).json({ id: r.id });
   });
 
   r.post("/documenti/:id/duplica", richiedePermesso("documenti.modifica"), async (req, res) => {

@@ -32,12 +32,21 @@ export function documentiPrisma(db: PrismaClient): StoreDocumenti {
         return n.count === 1 ? ((await db.documento.findUnique({ where: { id } })) as DocumentoRiga | null) : null;
       },
       async emetti(id, attesa, e) {
-        const n = await db.documento.updateMany({ where: { id, versione: attesa, stato: "BOZZA" }, data: { ...e, stato: "EMESSO", versione: { increment: 1 } } });
-        return n.count === 1 ? ((await db.documento.findUnique({ where: { id } })) as DocumentoRiga | null) : null;
+        try {
+          const n = await db.documento.updateMany({ where: { id, versione: attesa, stato: "BOZZA" }, data: { ...e, stato: "EMESSO", versione: { increment: 1 } } });
+          return n.count === 1 ? ((await db.documento.findUnique({ where: { id } })) as DocumentoRiga | null) : null;
+        } catch (err) {
+          // Същият номер и ревизия вече издадени (@@unique) → конфликт, не 500.
+          if ((err as { code?: string }).code === "P2002") return null;
+          throw err;
+        }
       },
       async elimina(id) {
-        await db.documento.deleteMany({ where: { id } });
+        await db.$transaction([db.documento.deleteMany({ where: { id } }), db.documentoEliminato.upsert({ where: { id }, create: { id }, update: {} })]);
       },
+      eliminato: async (id) => (await db.documentoEliminato.count({ where: { id } })) > 0,
+      figli: (id) => db.documento.findMany({ where: { revisioneDi: id }, select: SINTESI }),
+      tutti: () => db.documento.findMany({ select: SINTESI, orderBy: { aggiornatoIl: "desc" }, take: 10_000 }),
       async prossimoNumero(prefisso, anno) {
         const r = await db.$queryRaw<Array<{ ultimo: number }>>`
           INSERT INTO "NumeratoreDocumenti" ("prefisso", "anno", "ultimo") VALUES (${prefisso}, ${anno}, 1)

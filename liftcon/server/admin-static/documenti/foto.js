@@ -60,8 +60,9 @@ export async function eliminaFoto(doc, fotoId) {
     else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) k === "foto" && Array.isArray(x) ? (v[k] = x.filter((id) => id !== fotoId)) : togli(x);
   };
   togli(doc.dati);
-  const loc = await db.foto(fotoId);
-  if (!loc || loc.caricata) await db.accoda({ docId: doc.id, fotoId });
+  // Винаги на опашката: качването може вече да е тръгнало (иначе на сървъра остава снимка-сирак). Ако никога
+  // не е стигнала до сървъра, DELETE връща 404 и записът пак се маха от опашката.
+  await db.accoda({ docId: doc.id, fotoId });
   await db.eliminaFotoLocale(fotoId);
 }
 

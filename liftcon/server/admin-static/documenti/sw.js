@@ -1,6 +1,6 @@
 // Service worker на приложението LiftCon (PWA, обхват /admin/). Сървърът го праща като /admin/sw.js и слага
 // версията (отпечатък на файловете): нов деплой → нов кеш на кода, без смесени версии; старият се трие.
-// Кешира само: обвивката на документите и кода (без лични данни), каталога и сесията („мрежа, иначе кеш“) и
+// Кешира само: обвивката на документите и кода (без лични данни), каталога („мрежа, иначе кеш“) и
 // миниатюрите на снимките на отворените документи. Другите страници на панела НЕ се кешират — без връзка
 // показват кратка страница с път към документите (които работят офлайн). Данните се трият при изход (app.js).
 const VERSIONE = "__VERSIONE__";
@@ -58,6 +58,8 @@ self.addEventListener("fetch", (e) => {
     return e.respondWith(fetch(req).catch(() => new Response(OFFLINE, { status: 503, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } })));
   }
   if (url.pathname.startsWith("/admin/static/") || url.pathname === "/admin/manifest.webmanifest") return e.respondWith(cacheORete(req, STATICO));
-  if (url.pathname === "/admin/api/catalogo" || url.pathname === "/admin/api/sessione") return e.respondWith(reteOCache(req, DATI));
+  // Само каталогът (без лични данни). Сесията (с CSRF токена) не се кешира: приложението пази за офлайн само
+  // името и правата в IndexedDB (без токена).
+  if (url.pathname === "/admin/api/catalogo") return e.respondWith(reteOCache(req, DATI));
   if (/^\/admin\/documenti\/[0-9a-f-]{36}\/foto\/[0-9a-f-]{36}$/.test(url.pathname) && url.searchParams.get("mini") === "1") return e.respondWith(cacheORete(req, DATI));
 });

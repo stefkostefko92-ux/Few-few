@@ -12,6 +12,7 @@ import { rotteUtenti } from "./rotte-utenti.js";
 import { rotteImpostazioni } from "./rotte-impostazioni.js";
 import { apiDocumenti } from "./api-documenti.js";
 import { rotteDocumenti } from "./rotte-documenti.js";
+import { rotteFrasi } from "./rotte-frasi.js";
 import { pagina } from "./html.js";
 import { auth } from "../auth/sessione.js";
 
@@ -68,6 +69,7 @@ export function routerAdmin(d: AdminDeps): Router {
   r.use(rotteUtenti(d));
   r.use(rotteImpostazioni(d));
   r.use(rotteDocumenti(d));
+  r.use(rotteFrasi(d));
   r.use((_req, res) => {
     res.status(404).send(pagina({ titolo: "Pagina non trovata", auth: auth(res), corpo: `<p><a href="/admin">Torna alla panoramica</a></p>` }));
   });

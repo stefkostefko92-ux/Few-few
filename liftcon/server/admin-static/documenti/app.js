@@ -29,7 +29,9 @@ async function carica(chiave, path) {
   if (online()) {
     const r = await api(path);
     if (r.stato === 200) {
-      await db.salvaMeta(chiave, r.dati);
+      // CSRF токенът не се пази на устройството (за офлайн стигат името и правата).
+      const { csrf: _csrf, ...daSalvare } = r.dati;
+      await db.salvaMeta(chiave, daSalvare);
       return r.dati;
     }
     if (r.stato === 401) {
