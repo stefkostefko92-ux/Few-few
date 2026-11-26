@@ -1,0 +1,15 @@
+[Unit]
+# Всяка нощ в 04:10 UTC — СЛЕД местните бекъпи на продуктите (02:30 korpora, 03:00 supreme,
+# 03:30 nexus), за да влязат и техните файлове. Persistent=true наваксва пропуснато пускане.
+Description=Бекъп извън машината — всяка нощ (04:10 UTC)
+Documentation=file:///opt/few-few/current/tools/vps/README.md
+
+[Timer]
+OnCalendar=*-*-* 04:10:00 UTC
+Persistent=true
+RandomizedDelaySec=10min
+AccuracySec=1min
+Unit=offsite-backup.service
+
+[Install]
+WantedBy=timers.target
