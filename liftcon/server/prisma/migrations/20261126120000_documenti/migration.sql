@@ -91,10 +91,10 @@ CREATE INDEX "Documento_richiestaId_idx" ON "Documento"("richiestaId");
 CREATE INDEX "Documento_autoreId_idx" ON "Documento"("autoreId");
 
 -- CreateIndex
-CREATE INDEX "Documento_revisioneDi_idx" ON "Documento"("revisioneDi");
+CREATE UNIQUE INDEX "Documento_numero_revisione_key" ON "Documento"("numero", "revisione");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Documento_numero_revisione_key" ON "Documento"("numero", "revisione");
+CREATE UNIQUE INDEX "Documento_revisioneDi_key" ON "Documento"("revisioneDi");
 
 -- CreateIndex
 CREATE INDEX "FotoDocumento_documentoId_ordine_idx" ON "FotoDocumento"("documentoId", "ordine");

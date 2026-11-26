@@ -4,6 +4,17 @@ import { api, online } from "./api.js";
 import { db } from "./db.js";
 
 const ascoltatori = new Set();
+// Другите раздели на същото устройство: кой документ е записан локално (за да не редактират остаряло копие).
+export const TAB = crypto.randomUUID();
+const canale = "BroadcastChannel" in self ? new BroadcastChannel("liftcon-documenti") : null;
+export function suAltraScheda(fn) {
+  const h = (e) => e.data?.tab !== TAB && fn(e.data);
+  canale?.addEventListener("message", h);
+  return () => canale?.removeEventListener("message", h);
+}
+// Записите помнят потребителя: несинхронизираното на един човек не се праща със сесията на друг.
+let utente = null;
+export const impostaUtente = (id) => (utente = id);
 export const suEvento = (fn) => (ascoltatori.add(fn), () => ascoltatori.delete(fn));
 const emetti = (e) => ascoltatori.forEach((fn) => fn(e));
 
@@ -27,7 +38,8 @@ export async function salvaLocale(doc) {
   // сървъра (редакторът може да не е видял още новия номер на версията). Ако междувременно е свалено копие
   // от сървъра (fonte server) → базата е версията на редактора: по-старо съдържание дава 409, не презапис.
   const base = rec.fonte === "server" ? (doc.versione ?? 0) : Math.max(rec.base ?? 0, doc.versione ?? 0);
-  await db.salvaDocumento({ ...rec, doc: { ...doc, versione: base }, base, fonte: "locale", sporco: true, rev: (rec.rev ?? 0) + 1, modificato: Date.now(), solaSintesi: false });
+  await db.salvaDocumento({ ...rec, doc: { ...doc, versione: base }, base, fonte: "locale", sporco: true, rev: (rec.rev ?? 0) + 1, modificato: Date.now(), solaSintesi: false, utenteId: rec.utenteId ?? utente });
+  canale?.postMessage({ tab: TAB, id: doc.id });
   pianifica();
 }
 
@@ -49,6 +61,7 @@ async function inviaDocumento(rec) {
     await db.salvaDocumento({ ...ora, base: s.versione, sporco: ora.rev !== rec.rev, doc, conflitto: null, errore: null });
     return "ok";
   }
+  if (r.stato === 409 && r.dati?.errore === "occupato") return "rete"; // издава се в момента — следващия път
   if (r.stato === 409) return db.salvaDocumento({ ...ora, conflitto: r.dati.server }).then(() => "conflitto");
   if (r.stato === 410) {
     // Изтрит на сървъра (и по GDPR): не се създава отново; локалното копие и снимките му се махат.
@@ -102,6 +115,7 @@ export async function sincronizza() {
     try {
       for (const rec of await db.documenti()) {
         if (!rec.sporco || rec.conflitto || !rec.doc) continue;
+        if (rec.utenteId && utente && rec.utenteId !== utente) continue; // на друг потребител (app.js пита)
         const e = await inviaDocumento(rec);
         if (e === "sessione" || e === "rete") return (esito = e);
       }
@@ -113,7 +127,8 @@ export async function sincronizza() {
       }
       for (const op of await db.coda()) {
         const r = await api(`/documenti/${op.docId}/foto/${op.fotoId}`, { method: "DELETE" });
-        if (r.stato === 204 || r.stato === 404) await db.togliDaCoda(op.id);
+        // 423: документът е издаден — снимката остава в него, триенето вече не е възможно.
+        if (r.stato === 204 || r.stato === 404 || r.stato === 423) await db.togliDaCoda(op.id);
         else if (r.stato === 401) return (esito = "sessione");
       }
       await scaricaElenco();

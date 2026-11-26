@@ -12,6 +12,9 @@ import { FotoNonValida, MAX_BYTE } from "../documenti/foto.js";
 import { TIPI_DOCUMENTO } from "../documenti/condiviso/tipi.js";
 
 const TIPI_FOTO = new Set(["image/jpeg", "image/png", "image/webp"]);
+/** Едновременни качвания на снимки (тяло в паметта + обработка): 4 × 15 MB е таванът при mem_limit 512m. */
+const MAX_CARICAMENTI = 4;
+let caricamenti = 0;
 // Метаданните на снимката идват в заглавие (base64url JSON), не в адреса: надписите са свободен текст и не
 // бива да влизат в access лога на Nginx. В адреса — само редът (число).
 const MetaFoto = z
@@ -116,6 +119,7 @@ export function apiDocumenti(d: AdminDeps): Router {
     if (e.esito === "non_valido") return res.status(400).json({ errore: "non_valido", campi: e.campi });
     if (e.esito === "emesso") return res.status(423).json({ errore: "emesso" });
     if (e.esito === "eliminato") return res.status(410).json({ errore: "eliminato" });
+    if (e.esito === "occupato") return res.status(409).json({ errore: "occupato" });
     if (e.esito === "conflitto") return res.status(409).json({ errore: "conflitto", server: e.doc });
     if (!prima) await registra(d, req, a(res).utente.id, "documento.creato", id, { tipo: p.data.tipo });
     res.json(e.doc);
@@ -125,6 +129,14 @@ export function apiDocumenti(d: AdminDeps): Router {
     "/documenti/:id/foto/:fotoId",
     richiedePermesso("documenti.modifica"),
     (req, res, next) => (TIPI_FOTO.has(String(req.get("content-type")).split(";")[0]!.trim()) ? next() : res.status(415).json({ errore: "formato" })),
+    // Таван на едновременните качвания, ПРЕДИ тялото да влезе в паметта (до 15 MB всяко): над него — 503 и
+    // устройството опитва пак (Retry-After). Тялото на отказаната заявка се изчита без запазване (index.ts).
+    (req, res, next) => {
+      if (caricamenti >= MAX_CARICAMENTI) return res.status(503).set("retry-after", "10").json({ errore: "occupato" });
+      caricamenti++;
+      res.once("close", () => caricamenti--);
+      next();
+    },
     express.raw({ type: () => true, limit: MAX_BYTE }),
     async (req, res) => {
       const id = idValido(req.params.id);

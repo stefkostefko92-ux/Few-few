@@ -23,6 +23,7 @@ export type EsitoSalva =
   | { esito: "conflitto"; doc: DocumentoCompleto }
   | { esito: "emesso" }
   | { esito: "eliminato" }
+  | { esito: "occupato" }
   | { esito: "non_valido"; campi: string[] };
 
 const fotoMeta = (f: FotoRiga): Foto => ({ id: f.id, ordine: f.ordine, didascalia: f.didascalia, ubicazione: f.ubicazione, riferimento: f.riferimento, larghezza: f.larghezza, altezza: f.altezza });
@@ -102,6 +103,8 @@ export function servizioDocumenti(o: { store: Store; archivio: Archivio; catalog
 
     /** Създаване (versione 0) или запис на чернова с проверка на версията. */
     async salva(u: Utente, id: string, input: DocumentoIn): Promise<EsitoSalva> {
+      // По време на издаване записът би вдигнал версията и номерът би се изгубил → устройството опитва пак.
+      if (occupato(id)) return { esito: "occupato" };
       const dati = DATI_PER_TIPO[input.tipo].safeParse(input.dati);
       if (!dati.success) return { esito: "non_valido", campi: dati.error.issues.map((i) => i.path.join(".")).slice(0, 20) };
       const esistente = await store.documenti.perId(id);
@@ -161,12 +164,19 @@ export function servizioDocumenti(o: { store: Store; archivio: Archivio; catalog
 
     async eliminaFoto(docId: string, fotoId: string): Promise<"ok" | "non_trovato" | "emesso" | "occupato"> {
       if (occupato(docId)) return "occupato";
-      const [doc, f] = await Promise.all([store.documenti.perId(docId), store.foto.perId(fotoId)]);
-      if (!doc || !f || f.documentoId !== docId) return "non_trovato";
-      if (doc.stato !== "BOZZA") return "emesso";
-      await store.foto.elimina(fotoId);
-      await archivio.eliminaFoto(docId, fotoId);
-      return "ok";
+      fotoInCorso.set(docId, (fotoInCorso.get(docId) ?? 0) + 1); // като при качването: издаването чака
+      try {
+        const [doc, f] = await Promise.all([store.documenti.perId(docId), store.foto.perId(fotoId)]);
+        if (!doc || !f || f.documentoId !== docId) return "non_trovato";
+        if (doc.stato !== "BOZZA") return "emesso";
+        await store.foto.elimina(fotoId);
+        await archivio.eliminaFoto(docId, fotoId);
+        return "ok";
+      } finally {
+        const n = (fotoInCorso.get(docId) ?? 1) - 1;
+        if (n > 0) fotoInCorso.set(docId, n);
+        else fotoInCorso.delete(docId);
+      }
     },
 
     async pdf(d: DocumentoCompleto): Promise<Buffer> {
@@ -236,7 +246,15 @@ export function servizioDocumenti(o: { store: Store; archivio: Archivio; catalog
     const base = d;
     const foto = await store.foto.perDocumento(base.id);
     const mappa = new Map(foto.map((f) => [f.id, randomUUID()]));
-    const r = await nuovo(u, base.tipo, base.intestazione as Intestazione, rimappaFoto(base.dati, mappa), { revisione: base.revisione + 1, revisioneDi: base.id, richiestaId: base.richiestaId });
+    let r: DocumentoRiga;
+    try {
+      r = await nuovo(u, base.tipo, base.intestazione as Intestazione, rimappaFoto(base.dati, mappa), { revisione: base.revisione + 1, revisioneDi: base.id, richiestaId: base.richiestaId });
+    } catch (err) {
+      // Паралелна заявка вече е създала черновата (@@unique([revisioneDi])) → връщаме нея.
+      const bozza = (await store.documenti.figli(base.id)).find((f) => f.stato === "BOZZA");
+      if (bozza) return { id: bozza.id, esistente: true };
+      throw err;
+    }
     for (const f of foto) {
       const nuovoId = mappa.get(f.id)!;
       await archivio.copiaFoto(base.id, r.id, f.id, nuovoId);

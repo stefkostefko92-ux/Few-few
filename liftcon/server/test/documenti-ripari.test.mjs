@@ -200,3 +200,59 @@ test("страницата /admin/frasi: RESPONSABILE добавя и изклю
     await s.close();
   }
 });
+
+test("повторно ревю M3/M4: докато тече издаване — запис и триене на снимка → „occupato“ (номерът не се губи)", async () => {
+  const s = await setup();
+  try {
+    const { api, utente } = await sessione(s, "TECNICO");
+    const id = randomUUID();
+    const corpo = sopralluogo(id);
+    await api(`/admin/api/documenti/${id}`, { method: "PUT", json: corpo });
+    const fotoId = randomUUID();
+    await api(`/admin/api/documenti/${id}/foto/${fotoId}`, { method: "POST", body: await jpeg(), type: "image/jpeg", headers: { "x-foto-meta": meta({ didascalia: "Porta" }) } });
+    // триене на снимка, започнато преди издаването → издаването чака (occupato)
+    const triene = s.admin.documenti.eliminaFoto(id, fotoId);
+    assert.equal((await s.admin.documenti.emetti(utente, id, 1)).esito, "occupato");
+    await triene;
+    const emissione = s.admin.documenti.emetti(utente, id, 1);
+    const salva = await s.admin.documenti.salva(utente, id, { ...corpo, versione: 1, foto: [] });
+    assert.equal(salva.esito, "occupato");
+    assert.equal((await emissione).esito, "ok");
+    assert.equal((await s.admin.documenti.carica(id)).numero, "SOP-2026-001");
+  } finally {
+    await s.close();
+  }
+});
+
+test("повторно ревю M5: два паралелни „Nuova revisione“ → една и съща чернова", async () => {
+  const s = await setup();
+  try {
+    const { api } = await sessione(s, "TECNICO");
+    const id = randomUUID();
+    await api(`/admin/api/documenti/${id}`, { method: "PUT", json: sopralluogo(id) });
+    await api(`/admin/api/documenti/${id}/emetti`, { method: "POST", json: { versione: 1 } });
+    const [a, b] = await Promise.all([1, 2].map(() => api(`/admin/api/documenti/${id}/revisione`, { method: "POST", json: {} })));
+    assert.equal(a.json.id, b.json.id);
+    assert.equal((await s.store.documenti.figli(id)).length, 1);
+  } finally {
+    await s.close();
+  }
+});
+
+test("повторно ревю M7: таван на чакащите качвания (503 + Retry-After), без да се чете тялото", async () => {
+  const s = await setup();
+  try {
+    const { api } = await sessione(s, "TECNICO");
+    const id = randomUUID();
+    await api(`/admin/api/documenti/${id}`, { method: "PUT", json: sopralluogo(id) });
+    const img = await sharp({ create: { width: 2400, height: 1800, channels: 3, background: "#777" } }).jpeg().toBuffer();
+    const r = await Promise.all(Array.from({ length: 12 }, () => api(`/admin/api/documenti/${id}/foto/${randomUUID()}`, { method: "POST", body: img, type: "image/jpeg" })));
+    const stati = r.map((x) => x.status);
+    assert.ok(stati.includes(503), `някои чакат: ${stati}`);
+    assert.ok(stati.includes(201), `някои минават: ${stati}`);
+    for (const x of r.filter((y) => y.status === 503)) assert.equal(x.headers.get("retry-after"), "10");
+    assert.equal((await api(`/admin/api/documenti/${id}/foto/${randomUUID()}`, { method: "POST", body: img, type: "image/jpeg" })).status, 201, "после пак се приема");
+  } finally {
+    await s.close();
+  }
+});

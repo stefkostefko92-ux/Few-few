@@ -193,7 +193,8 @@ model Documento {
   @@index([stato, aggiornatoIl])
   @@index([richiestaId])
   @@index([autoreId])
-  @@index([revisioneDi])
+  /// Веригата на ревизиите е линейна: от един документ — най-много една следваща ревизия.
+  @@unique([revisioneDi])
 }
 
 /// Снимка към документ: файловете са на диска (DATA_DIR/documenti/<документ>/<id>.jpg), тук — само данните.

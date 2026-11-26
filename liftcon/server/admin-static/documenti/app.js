@@ -3,7 +3,7 @@
 import { h, toast } from "./ui.js";
 import { db } from "./db.js";
 import { api, impostaCsrf, online } from "./api.js";
-import { sincronizza, suEvento, pianifica } from "./sync.js";
+import { sincronizza, suEvento, pianifica, impostaUtente } from "./sync.js";
 import { apriElenco } from "./elenco.js";
 import { apriEditor } from "./editor.js";
 import { salvaLocale } from "./sync.js";
@@ -91,6 +91,12 @@ async function avvio() {
     return;
   }
   impostaCsrf(app.sessione.csrf);
+  impostaUtente(app.sessione.utente.id);
+  // Несинхронизирани документи на друг потребител (сесията му е изтекла, без изход): не се пращат с моята сесия.
+  const altrui = (await db.documenti()).filter((r) => r.sporco && r.utenteId && r.utenteId !== app.sessione.utente.id);
+  if (altrui.length && confirm(`Su questo dispositivo ci sono ${altrui.length} documenti non sincronizzati di un altro utente. Non possono essere inviati con il suo accesso: eliminarli dal dispositivo?`)) {
+    for (const r of altrui) await db.eliminaDocumento(r.id);
+  }
   chi.replaceChildren(`${app.sessione.utente.nome} · `, h("a", { href: "/admin" }, "Pannello"), " · ", h("button.link", { type: "button", on: { click: esci } }, "Esci"));
   window.addEventListener("hashchange", instrada);
   window.addEventListener("online", () => (statoRete(), pianifica(500)));

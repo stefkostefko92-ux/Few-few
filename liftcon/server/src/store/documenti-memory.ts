@@ -25,6 +25,7 @@ export function documentiMemory(): StoreDocumenti {
       },
       async crea(r) {
         if (doc.has(r.id) || lapidi.has(r.id)) throw new Error("documento_esistente");
+        if (r.revisioneDi && [...doc.values()].some((d) => d.revisioneDi === r.revisioneDi)) throw new Error("revisione_esistente"); // като @@unique
         const ora = new Date();
         const d = { ...copia(r), creatoIl: ora, aggiornatoIl: ora };
         doc.set(r.id, d);

@@ -3,7 +3,7 @@
 import { h, toast, avviso, uuid } from "./ui.js";
 import { db } from "./db.js";
 import { api, online } from "./api.js";
-import { salvaLocale, sincronizza, aggiornaDaServer, risolviConflitto, suEvento } from "./sync.js";
+import { salvaLocale, sincronizza, aggiornaDaServer, risolviConflitto, suEvento, suAltraScheda } from "./sync.js";
 import { tabDati } from "./campi.js";
 import { tabChecklist, tabOsservazioni, tabDocumentiVisti } from "./ed-sopralluogo.js";
 import { tabLavorazioni, tabDocumentiEsame, tabPrescrizioni, tabRiunione } from "./ed-altri.js";
@@ -148,12 +148,19 @@ export async function apriEditor(root, id, app) {
     } } }, "Emetti"));
   }
   if (doc.stato === "EMESSO" && app.sessione.permessi.modifica) {
-    azioni.push(h("button.btn", { type: "button", on: { click: async () => {
+    azioni.push(h("button.btn", { type: "button", on: { click: async (ev) => {
+      const btn = ev.currentTarget;
+      if (btn.disabled) return;
       if (!online()) return toast("Serve la connessione.", "errore");
-      const r = await api(`/documenti/${id}/revisione`, { method: "POST", json: {} });
-      if (r.stato !== 201) return toast("Operazione non riuscita.", "errore");
-      await aggiornaDaServer(r.dati.id);
-      app.vai(`#/d/${r.dati.id}`);
+      btn.disabled = true;
+      try {
+        const r = await api(`/documenti/${id}/revisione`, { method: "POST", json: {} });
+        if (r.stato !== 201 && r.stato !== 200) return toast("Operazione non riuscita.", "errore");
+        await aggiornaDaServer(r.dati.id);
+        app.vai(`#/d/${r.dati.id}`);
+      } finally {
+        btn.disabled = false;
+      }
     } } }, "Nuova revisione"));
   }
   if (app.sessione.permessi.modifica) {
@@ -191,6 +198,10 @@ export async function apriEditor(root, id, app) {
   aggiornaStato();
   // След синхронизация: собствен запис → само новата версия в паметта; документът е обновен от друго
   // устройство (свален от сървъра) → редакторът се презарежда; изтрит → към списъка.
+  // Същият документ е записан в друг раздел: това копие е остаряло → презареждане (ако тук няма нова редакция).
+  const stopSchede = suAltraScheda((m) => {
+    if (m.id === id && !pendente) void app.vai(`#/d/${id}`, true);
+  });
   const stop = suEvento(async (e) => {
     if (e.tipo === "eliminato" && e.id === id) {
       toast("Il documento è stato eliminato da un altro utente.", "errore");
@@ -210,6 +221,7 @@ export async function apriEditor(root, id, app) {
   return () => {
     clearTimeout(timer);
     stop();
+    stopSchede();
     if (pendente) void salvaLocale(doc).catch(() => {});
   };
 }
