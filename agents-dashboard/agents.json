@@ -5270,7 +5270,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 309
+        "lessons": 310
       },
       "evolution": [
         {
@@ -5812,9 +5812,20 @@
           "date": "2026-11-26",
           "event": "v33.7 — учене",
           "detail": "Научи: В eternaltouch ключът legal.updateDate е един общ за четирите правни страници (privacy,…"
+        },
+        {
+          "version": "33.8.0",
+          "date": "2026-11-26",
+          "event": "v33.8 — учене",
+          "detail": "Научи: В политиката за поверителност на eternaltouch датата на /privacy живее в два независими…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-26",
+          "type": "learning",
+          "summary": "Научи: „В политиката за поверителност на eternaltouch датата на /privacy живее в два независими…\""
+        },
         {
           "date": "2026-11-26",
           "type": "learning",
