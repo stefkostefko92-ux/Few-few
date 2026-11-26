@@ -328,6 +328,8 @@ SKIPPED=()
 skip_project() {
   local p=$1; shift
   SKIPPED+=("$p — $*")
+  # fetch-deploy.sh не записва пропуснатия в пазача на ref-а — той върви на предишния си код.
+  if [ -n "${SKIPPED_FILE:-}" ]; then printf '%s\n' "$p" >> "$SKIPPED_FILE" || true; fi
   warn "$p НЕ е обновен: $*"
 }
 
@@ -1397,7 +1399,8 @@ EOF
   chmod 600 "$d/.env" 2>/dev/null || true
   carry_env eternaltouch "$d"   # новогенерираният .env → стабилния път
   if ! smtp_is_brevo "$d/.env"; then
-    skip_project eternaltouch "SMTP в .env не е Brevo (SMTP_HOST=smtp-relay.brevo.com, без SMTP_TLS_SERVERNAME). Смени SMTP_HOST, SMTP_USER и SMTP_PASS с данните от Brevo (SMTP & API → SMTP), махни SMTP_TLS_SERVERNAME, потвърди eternaltouch.it в Brevo и пусни пак."; return
+    # carry_env копира от споделения .env при всеки деплой — смяна в current/…/.env се губи.
+    skip_project eternaltouch "SMTP не е Brevo в /opt/few-few/shared/eternaltouch/.env (каноничният — current/eternaltouch/.env се презаписва от него). Там: SMTP_HOST=smtp-relay.brevo.com, SMTP_USER и SMTP_PASS от Brevo (SMTP & API → SMTP), махни SMTP_TLS_SERVERNAME, потвърди eternaltouch.it в Brevo и пусни пак."; return
   fi
   ( cd "$d" && bash deploy.sh ) \
     || { warn "eternaltouch: deploy.sh се провали — продължавам с останалите."; deploy_failed=1; return; }
@@ -2729,8 +2732,10 @@ if [ "${#SKIPPED[@]}" -gt 0 ]; then
   warn "Пропуснати (не са обновени — работи предишният им код):"
   for x in "${SKIPPED[@]}"; do warn "  · $x"; done
 fi
+SKIPPED_NOTE=""
+if [ "${#SKIPPED[@]}" -gt 0 ]; then SKIPPED_NOTE=" · пропуснати: ${#SKIPPED[@]} (виж по-горе)"; fi
 if [ "$deploy_failed" = "0" ]; then
-  ok "Деплой готов ($TS). Проекти: $PROJECTS"
+  ok "Деплой готов ($TS). Проекти: $PROJECTS${SKIPPED_NOTE}"
 else
   die "Деплой завърши с грешки — виж изхода по-горе (направен е опит за rollback)."
 fi

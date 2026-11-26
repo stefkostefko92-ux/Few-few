@@ -66,3 +66,12 @@ test("пропуснатите продукти се виждат в края н
   const tail = script.slice(script.lastIndexOf("\nprune_releases\n"));
   assert.match(tail, /SKIPPED\[@\]/, "резюмето в края изрежда пропуснатите");
 });
+
+// Повторен преглед на PR #492 (VPS-аджията): carry_env винаги копира от споделения .env, значи смяна в
+// current/eternaltouch/.env се губи и пропускът се повтаря — съобщението назовава каноничния път.
+// Пропуснатият продукт отива и в SKIPPED_FILE (пазачът на ref-а не го записва), а „Деплой готов“ го казва.
+test("пропускът назовава каноничния .env, отива в SKIPPED_FILE и в последния ред", () => {
+  assert.match(script, /skip_project eternaltouch "[^"]*\/opt\/few-few\/shared\/eternaltouch\/\.env/, "каноничният път е в съобщението");
+  assert.match(fn("skip_project"), /SKIPPED_FILE/, "записва пропуснатия за fetch-deploy");
+  assert.match(script, /ok "Деплой готов \(\$TS\)\. Проекти: \$PROJECTS\$\{SKIPPED_NOTE/, "редът за успех казва пропуснатите");
+});

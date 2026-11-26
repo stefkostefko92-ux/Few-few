@@ -99,6 +99,9 @@ ZIP отпреди месец.
   после `eternaltouch/deploy.sh` (Docker Compose билд + вдигане; схемата се пуска от
   `docker-startup.sh`; идемпотентен seed; Nginx + certbot с auto-reload hook). Health на
   `127.0.0.1:4300/healthz`; app + postgres слушат само на localhost зад Nginx.
+  Имейлите — само през Brevo: без `SMTP_HOST=smtp-relay.brevo.com` (и без `SMTP_TLS_SERVERNAME`) в
+  каноничния `/opt/few-few/shared/eternaltouch/.env` продуктът се **пропуска** (върви предишният му
+  код, останалите се разгръщат). Сменя се там — `current/eternaltouch/.env` се презаписва от него.
 - **adblock** (Supreme AdBlock): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. Копира
   обслужваните файлове (`adblock/server/{index.html,privacy.html,robots.txt,sitemap.xml,
   llms.txt,*.png,*.webp}`) в `/var/www/adblock`. `filters.json` се публикува САМО заедно с
