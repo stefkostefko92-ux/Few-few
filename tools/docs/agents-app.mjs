@@ -83,6 +83,20 @@ function skillDescriptions(reader) {
 const verNum = (v) => String(v || "0").split(".").map(Number).reduce((a, n, i) => a + n / 1000 ** i, 0);
 const clip = (s, n) => (String(s || "").length > n ? `${String(s).slice(0, n - 1).trimEnd()}…` : String(s || ""));
 
+/** Последните поуки: най-новите проверени от историята („Научи: …“, новото първо), после `recentLessons`
+ *  от agents.json — той може да е застоял (26.11: само юлски поуки, а историята стига до ноември). */
+function freshLessons(evo, recent) {
+  const learned = evo.filter((e) => /^Научи:/.test(e.detail || "")).reverse()
+    .map((e) => ({ date: e.date || "", text: String(e.detail).replace(/^Научи:\s*/, "") }));
+  const seen = new Set(), out = [];
+  for (const l of [...learned, ...(recent || [])]) {
+    const key = String(l.text || "").replace(/\s+/g, " ").trim().slice(0, 60);
+    if (!key || seen.has(key)) continue;
+    seen.add(key); out.push({ date: l.date || "", text: clip(l.text, 400) });
+  }
+  return out.slice(0, 12);
+}
+
 /** Всичко, което страницата показва. Никога не хвърля за липсваща дефиниция — агентът остава с данните от agents.json. */
 export function buildAppData(reader) {
   const roster = JSON.parse(reader.read("agents-dashboard/agents.json"));
@@ -122,7 +136,7 @@ export function buildAppData(reader) {
       lessons: a.knowledge?.lessons || 0,
       version: evo.length ? evo[evo.length - 1].version : "0.1.0",
       evolution: evo.slice(-8).reverse().map((e) => ({ version: e.version, date: e.date || "", event: e.event || "", detail: clip(e.detail, 200) })),
-      recentLessons: (a.recentLessons || []).slice(0, 12).map((l) => ({ date: l.date || "", text: clip(l.text, 400) })),
+      recentLessons: freshLessons(evo, a.recentLessons),
       prompt: clip(fm.body.trim(), 24000),
     };
   });

@@ -89,3 +89,11 @@ test("вграждане: `<` става \\u003c — нищо от даннит�
   assert.doesNotMatch(s, /</);
   assert.deepEqual(JSON.parse(s), d);
 });
+
+test("последните поуки: най-новите от историята („Научи: …“) първи, после старият списък, без повторения", () => {
+  const d = buildAppData(reader);
+  const k = d.agents.find((a) => a.id === "kodadjiyata");
+  assert.deepEqual(k.recentLessons.map((l) => l.text.slice(0, 6)), ["нещо", "Поука "]);
+  assert.equal(k.recentLessons[0].date, "2026-11-24");
+  assert.match(k.persona, /2026-11-24: нещо/, "чатът знае най-новата поука");
+});
