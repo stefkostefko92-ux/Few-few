@@ -69,7 +69,7 @@
     {
       "id": "cc-hook-events",
       "kind": "taxonomy",
-      "statement": "Claude Code хуковите събития са 34 (жива сверка 26.11.2026), вкл. ConfigChange, PreModelSwitch, PostModelSwitch и PreSkillShellCommand (от 2.1.332; PreToolUse не тича за inline командите на умение).PostToolUseFailure подава грешката в полето `error` (низ, форматът зависи от инструмента) плюс незадължително `is_interrupt`. На Windows има и отделен инструмент PowerShell (поле `command`) — кука, която съди шел команди, назовава `Bash|PowerShell`. Броят се мести без обявяване — сверявай живо, не по памет.",
+      "statement": "Claude Code хуковите събития са 34 (жива сверка 26.11.2026), вкл. ConfigChange, PreModelSwitch, PostModelSwitch и PreSkillShellCommand (от 2.1.332; PreToolUse не тича за inline командите на умение). PostToolUseFailure подава грешката в полето `error` (низ, форматът зависи от инструмента) плюс незадължително `is_interrupt`. На Windows има и отделен инструмент PowerShell (поле `command`) — кука, която съди шел команди, назовава `Bash|PowerShell`. Броят се мести без обявяване — сверявай живо, не по памет.",
       "source": "https://code.claude.com/docs/en/hooks.md ; https://code.claude.com/docs/en/tools-reference",
       "agents": [
         "ai-djiyata",
