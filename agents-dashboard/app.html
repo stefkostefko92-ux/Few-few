@@ -227,9 +227,15 @@
   const haystack = (a) => [a.name, a.title, a.tagline, a.mission, a.when, ...(a.capabilities || []), ...(a.skills || []).map((s) => s.id)].join(" ").toLowerCase();
   const HAY = new Map(DATA.agents.map((a) => [a.id, haystack(a)]));
 
+  // Портретите (~0,9 MB) не са в първото зареждане: идват от portraits.json при първия профил (публикуван до
+  // страницата). Дотогава — иконата. Стойностите са данни: минават през safeImg като вградените.
+  let portraitsP = null;
+  const portraits = () => (portraitsP ||= fetch("portraits.json").then((r) => (r.ok ? r.json() : {})).catch(() => ({})));
   function avatar(a, big) {
-    const src = safeImg(big ? (MASCOTS.portraits[a.id] || MASCOTS.icons[a.id]) : MASCOTS.icons[a.id]);
-    return el("div", { class: "ava", "aria-hidden": "true" }, src ? el("img", { src, alt: "", loading: "lazy", decoding: "async" }) : (a.emoji || a.name[0]));
+    const src = safeImg(MASCOTS.icons[a.id]);
+    const box = el("div", { class: "ava", "aria-hidden": "true" }, src ? el("img", { src, alt: "", decoding: "async" }) : (a.emoji || a.name[0]));
+    if (big) portraits().then((m) => { const u = safeImg(m && m[a.id]); if (u && box.isConnected) box.replaceChildren(el("img", { src: u, alt: "", decoding: "async" })); });
+    return box;
   }
 
   function card(a, isLead) {
@@ -274,13 +280,19 @@
     if (location.hash.slice(1) !== h) location.hash = h; else route();
   }
   function route() {
-    const [id, t] = decodeURIComponent(location.hash.slice(1)).split(".");
+    let h = "";
+    try { h = decodeURIComponent(location.hash.slice(1)); } catch { h = ""; } // развален адрес (#%E0) = списъкът
+    const [id, t] = h.split(".");
     const a = byId.get(id);
     document.body.classList.toggle("split", !!a && isSplit());
     document.body.classList.toggle("viewing", !!a);
     if (!a) { closeProfile(); return; }
+    const nextTab = TABS.some(([k]) => k === t) ? t : "about";
+    if (current === a && tab === nextTab && !$("#profile").hidden) return; // същият изглед — не го рисувай наново
+    // Смяна на агент или таб спира текущия отговор: частта, която е дошла, остава в историята с „(спряно)“.
+    if (current) abortChat();
     if (!current) listScroll = scrollY;
-    current = a; tab = TABS.some(([k]) => k === t) ? t : "about";
+    current = a; tab = nextTab;
     renderProfile();
     $("#profile").hidden = false; setTopH();
     if (!isSplit()) { $("#list").hidden = true; scrollTo(0, 0); }
@@ -309,9 +321,10 @@
       el("button", { class: "tab", role: "tab", type: "button", "aria-selected": String(tab === k), onclick: () => open(a.id, k) }, label)));
     const panel = el("div", { class: "panel", role: "tabpanel" });
     ({ about: aboutPanel, skills: skillsPanel, learn: learnPanel, chat: chatPanel })[tab](panel, a);
-    $("#profile").replaceChildren(
+    // replaceChildren пише null като текст „null“ — празните места се махат преди това.
+    $("#profile").replaceChildren(...[
       el("button", { class: "back", type: "button", onclick: () => { history.length > 1 ? history.back() : (location.hash = ""); } }, "← Всички агенти"),
-      hero, tab === "chat" ? null : el("p", { class: "tagline" }, a.tagline), tabs, panel);
+      hero, tab === "chat" ? null : el("p", { class: "tagline" }, a.tagline), tabs, panel].filter(Boolean));
   }
 
   function aboutPanel(p, a) {
@@ -359,17 +372,44 @@
       if (db && user) { caps.db = db; caps.uid = await user.id(); }
     } catch { caps.db = null; }
   })();
-  let ctl = null;
-  const abortChat = () => { if (ctl) { ctl.abort(); ctl = null; } };
+  // Едно състояние на разговор по агент за цялата страница. Панелите идват и си отиват (табове, смяна на
+  // агент), разговорът остава. Преглед на PR #498: панел с локален масив губеше съобщения и с остаряло
+  // копие презаписваше историята. Записите на един документ вървят един след друг (верига), никога два наведнъж.
+  const chats = new Map();
+  function chatOf(id) {
+    let c = chats.get(id);
+    if (!c) {
+      c = { turns: [], epoch: 0, ctl: null, busy: Promise.resolve(), saving: Promise.resolve(), err: null, fatal: false };
+      c.ready = caps.ready.then(() => loadTurns(id)).then((t) => { c.turns.push(...t); });
+      chats.set(id, c);
+    }
+    return c;
+  }
+  const abortChat = () => { for (const c of chats.values()) if (c.ctl) { c.ctl.abort(); c.ctl = null; } };
+  let liveChat = null; // видимият панел: { id, draw, announce }
+  const refresh = (id) => { if (liveChat && liveChat.id === id) liveChat.draw(); };
+  const smooth = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
   const chatDoc = (id) => (caps.db && caps.uid ? caps.db.collection(`data/users/${caps.uid}`).doc(`chat-${id}`) : null);
   async function loadTurns(id) {
     const d = chatDoc(id); if (!d) return [];
     try { const s = await d.get(); const t = s.exists ? s.data().turns : []; return Array.isArray(t) ? t.filter((x) => x && (x.role === "user" || x.role === "assistant") && typeof x.content === "string") : []; }
     catch { return []; }
   }
-  async function saveTurns(id, turns) {
-    const d = chatDoc(id); if (!d) return;
-    try { await d.set({ turns: turns.slice(-MAX_TURNS).map((t) => ({ role: t.role, content: t.content.slice(0, MAX_STORED) })), at: new Date().toISOString() }); } catch { /* историята е удобство */ }
+  // Записва СЕГАШНОТО състояние, когато дойде редът му — последният запис винаги носи последната истина.
+  function save(id) {
+    const c = chatOf(id), d = chatDoc(id); if (!d) return c.saving;
+    c.saving = c.saving.then(() => d.set({ turns: c.turns.slice(-MAX_TURNS).map((t) => ({ role: t.role, content: t.content.slice(0, MAX_STORED) })), at: new Date().toISOString() })).catch(() => { /* историята е удобство */ });
+    return c.saving;
+  }
+  // Входът към Claude: личността, потвърждение, после историята — без поредни реплики с една роля, започва с „user“.
+  function inputFor(a, turns) {
+    const hist = [];
+    for (const t of turns.slice(-MAX_TURNS)) {
+      const last = hist[hist.length - 1];
+      if (last && last.role === t.role) last.content += `\n\n${t.content}`; else hist.push({ role: t.role, content: t.content });
+    }
+    while (hist.length && hist[0].role !== "user") hist.shift();
+    return [{ role: "user", content: a.persona }, { role: "assistant", content: `Разбрах. Аз съм ${a.name}. Питай.` }, ...hist];
   }
 
   // Отговорът е ДАННИ: всичко се екранира чрез textContent; само **удебелено** и `код` стават елементи.
@@ -391,11 +431,15 @@
   };
 
   function chatPanel(p, a) {
+    const c = chatOf(a.id);
     const box = el("div", { class: "chat" });
     const note = el("div", { class: "note" }, `Говориш с „${a.name}“ през твоя акаунт в Claude. Тук агентът няма инструменти: не чете репото и не пуска команди — дава съвет и казва как да го пуснеш за реалната работа. Разговорът се пази само за теб.`);
-    const msgs = el("div", { class: "msgs", "aria-live": "polite" });
-    const ta = el("textarea", { rows: "1", placeholder: `Пиши на ${a.name}…`, "aria-label": "Съобщение", enterkeyhint: "send" });
-    const send = el("button", { class: "btn", type: "button" }, "Изпрати");
+    // Историята НЕ е live регион: стриймингът я сменя на всеки знак и четецът би я чел на парчета.
+    // Готовият отговор се казва веднъж през отделния тих `status`.
+    const msgs = el("div", { class: "msgs" });
+    const said = el("div", { class: "sr", role: "status", "aria-live": "polite" });
+    const ta = el("textarea", { rows: "1", placeholder: `Пиши на ${a.name}…`, "aria-label": "Съобщение", enterkeyhint: "send", disabled: true });
+    const send = el("button", { class: "btn", type: "button", disabled: true }, "Изпрати");
     const clear = el("button", { class: "btn ghost", type: "button" }, "Изчисти разговора");
     const status = el("span", {});
     const suggest = el("div", { class: "suggest" }, [
@@ -404,55 +448,72 @@
       "Какво научи напоследък?",
     ].map((s) => el("button", { type: "button", onclick: () => { ta.value = s; go(); } }, s)));
     const comp = el("div", { class: "composer" }, el("div", { class: "row" }, ta, send), el("div", { class: "chat-tools" }, status, clear));
-    box.append(note, msgs, suggest, comp);
+    box.append(note, msgs, said, suggest, comp);
     p.append(box);
 
-    let turns = [], armed = false;
+    let ready = false, armed = false, stream = null;
     const draw = () => {
-      msgs.replaceChildren(...turns.map((t) => el("div", { class: `msg ${t.role === "user" ? "me" : "ag"}` }, t.role === "user" ? t.content : richText(t.content))));
-      suggest.hidden = turns.length > 0 || !caps.sample;
-      clear.hidden = turns.length === 0;
+      msgs.replaceChildren(...c.turns.map((t) => el("div", { class: `msg ${t.role === "user" ? "me" : "ag"}` }, t.role === "user" ? t.content : richText(t.content))));
+      if (stream && c.ctl) msgs.append(stream);
+      if (c.err) msgs.append(el("div", { class: "msg err" }, c.err));
+      suggest.hidden = !ready || c.turns.length > 0 || c.fatal;
+      clear.hidden = c.turns.length === 0;
+      send.textContent = c.ctl ? "Спри" : "Изпрати";
+      ta.disabled = !ready || c.fatal; send.disabled = !ready || c.fatal;
     };
+    const me = { id: a.id, draw, announce: (t) => { said.textContent = `${a.name}: ${t}`; } };
+    liveChat = me;
     const fit = () => { ta.style.height = "auto"; ta.style.height = `${Math.min(ta.scrollHeight, innerHeight * 0.4)}px`; };
     ta.addEventListener("input", fit);
     ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing && matchMedia("(pointer: fine)").matches) { e.preventDefault(); go(); } });
-    clear.addEventListener("click", async () => {
+    send.onclick = () => { if (c.ctl) c.ctl.abort(); else go(); };
+    clear.addEventListener("click", () => {
       if (!armed) { armed = true; clear.textContent = "Сигурен ли си? Натисни пак"; setTimeout(() => { armed = false; clear.textContent = "Изчисти разговора"; }, 4000); return; }
-      armed = false; clear.textContent = "Изчисти разговора"; abortChat(); turns = []; draw(); await saveTurns(a.id, turns);
+      // Новата епоха казва на текущия отговор (ако има) да не пише нищо в изчистената история.
+      armed = false; clear.textContent = "Изчисти разговора"; c.epoch++; c.err = null;
+      if (c.ctl) { c.ctl.abort(); c.ctl = null; }
+      c.turns.length = 0; stream = null; draw(); save(a.id);
     });
 
     async function go() {
       const text = ta.value.trim();
-      if (!text || ctl) return;
-      if (!caps.sample) { msgs.append(el("div", { class: "msg err" }, "Чатът работи само в claude.ai, когато си влязъл в профила си.")); return; }
-      ta.value = ""; fit();
-      turns.push({ role: "user", content: text }); draw();
-      const out = el("div", { class: "msg ag" }, el("span", { class: "thinking" }, "Мисли…"));
-      msgs.append(out); out.scrollIntoView({ block: "end", behavior: "smooth" });
-      send.textContent = "Спри"; send.onclick = () => abortChat();
-      ctl = new AbortController();
-      const input = [{ role: "user", content: a.persona }, { role: "assistant", content: `Разбрах. Аз съм ${a.name}. Питай.` }, ...turns.slice(-MAX_TURNS)];
+      if (!text || c.ctl || !ready || c.fatal) return;
+      await c.busy; // спреният отговор се записва преди новото съобщение
+      if (c.ctl) return;
+      ta.value = ""; fit(); c.err = null;
+      const my = c.epoch;
+      c.turns.push({ role: "user", content: text }); save(a.id);
+      const ctl = (c.ctl = new AbortController());
+      let done; c.busy = new Promise((r) => { done = r; });
+      stream = el("div", { class: "msg ag", "aria-busy": "true" }, el("span", { class: "thinking" }, "Мисли…"));
+      const out = stream;
+      draw(); out.scrollIntoView({ block: "end", behavior: smooth() });
       try {
-        const r = await caps.sample(input, { signal: ctl.signal, cache: false, onText: ({ text: t }) => { out.replaceChildren(richText(t)); } });
-        turns.push({ role: "assistant", content: r.text + (r.truncated ? "\n\n(отговорът е съкратен — попитай за по-малко наведнъж)" : "") });
-        draw(); await saveTurns(a.id, turns);
+        const r = await caps.sample(inputFor(a, c.turns), { signal: ctl.signal, cache: false, onText: ({ text: t }) => { out.replaceChildren(richText(t)); } });
+        if (c.epoch === my) {
+          c.turns.push({ role: "assistant", content: r.text + (r.truncated ? "\n\n(отговорът е съкратен — попитай за по-малко наведнъж)" : "") });
+          save(a.id);
+          if (liveChat && liveChat.id === a.id) liveChat.announce(r.text);
+        }
       } catch (e) {
         const code = e && e.code;
-        if (code === "cancelled") { if (e.text) { turns.push({ role: "assistant", content: `${e.text}\n\n(спряно)` }); draw(); await saveTurns(a.id, turns); } else out.remove(); }
-        else { out.remove(); msgs.append(el("div", { class: "msg err" }, ERR[code] || "Нещо се обърка. Опитай пак.")); if (code === "not_granted") ta.disabled = send.disabled = true; }
+        if (code === "cancelled") { if (e.text && c.epoch === my) { c.turns.push({ role: "assistant", content: `${e.text}\n\n(спряно)` }); save(a.id); } }
+        else if (c.epoch === my) { c.err = ERR[code] || "Нещо се обърка. Опитай пак."; if (code === "not_granted") c.fatal = true; }
       } finally {
-        ctl = null; send.textContent = "Изпрати"; send.onclick = go;
+        if (c.ctl === ctl) c.ctl = null;
+        if (stream === out) stream = null;
+        done();
+        refresh(a.id);
       }
     }
-    send.onclick = go;
 
-    clear.hidden = true;
+    clear.hidden = true; suggest.hidden = true;
     status.textContent = "Зарежда…";
-    caps.ready.then(async () => {
-      if (current !== a || tab !== "chat") return;
-      if (!caps.sample) { status.textContent = ""; note.textContent = "Чатът работи в claude.ai, когато си влязъл в профила си. Тук можеш да разгледаш профила, уменията и ученето."; ta.disabled = send.disabled = true; suggest.hidden = true; clear.hidden = true; return; }
+    c.ready.then(() => {
+      if (liveChat !== me) return;
+      if (!caps.sample) { status.textContent = ""; note.textContent = "Чатът работи в claude.ai, когато си влязъл в профила си. Тук можеш да разгледаш профила, уменията и ученето."; return; }
       status.textContent = caps.db ? "Историята се пази само за теб" : "Историята не се пази в този изглед";
-      turns = await loadTurns(a.id); draw();
+      ready = true; draw();
     });
   }
 

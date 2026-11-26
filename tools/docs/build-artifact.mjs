@@ -241,7 +241,8 @@ export function versionRegressions(html, mem) {
 const APP_DATA_RE = /<script type="application\/json" id="app-data">[\s\S]*?<\/script>/;
 const APP_MASCOTS_RE = /<script type="application\/json" id="app-mascots">[\s\S]*?<\/script>/;
 
-/** app.html + данните от репото (repo) + маскотите (dash). Връща текста за публикуване и числата. */
+/** app.html + данните от репото (repo) + маскотите (dash). Връща текста за публикуване, portraits.json и числата.
+ *  Портретите (~0,9 MB) не са в главната страница: тя ги взима при първия профил (преглед на PR #498). */
 export function buildApp(dash = DASH, reader = null, repo = repoReader(null)) {
   // Шаблонът е КОД — от работното дърво (в паметта още може да го няма); данните и маскотите — от reader/repo.
   let html = stripDocumentWrapper(readFileSync(join(dash, "app.html"), "utf8"));
@@ -249,12 +250,15 @@ export function buildApp(dash = DASH, reader = null, repo = repoReader(null)) {
   const data = buildAppData(repo);
   // Само растерни кадри: правилото „никога SVG“ (страницата и без това приема само webp/png/jpeg).
   const raster = (m) => Object.fromEntries(Object.entries(m).filter(([, u]) => /^data:image\/(webp|png|jpeg);base64,/.test(u)));
-  const mascots = { icons: raster(mascotDataUris(join(dash, "mascots"), reader)), portraits: raster(mascotPortraitUris(join(dash, "mascots"), reader)) };
+  const mascots = { icons: raster(mascotDataUris(join(dash, "mascots"), reader)), portraits: {} };
+  const portraitsJson = JSON.stringify(raster(mascotPortraitUris(join(dash, "mascots"), reader)));
   const dataJson = embedJson(data), mascotsJson = embedJson(mascots);
   html = html.replace(APP_DATA_RE, () => `<script type="application/json" id="app-data">${dataJson}</script>`);
   html = html.replace(APP_MASCOTS_RE, () => `<script type="application/json" id="app-mascots">${mascotsJson}</script>`);
   assertPublishable(html, { "данните на агентите": dataJson, "маскотите": mascotsJson });
-  return { html, agents: data.agents.length, teams: data.teams.length };
+  const leaks = findSecretsIn(portraitsJson); // публикува се до страницата — същата проверка за тайни
+  if (leaks.length) throw new Error(`portraits.json съдържа шаблон за тайна (${leaks.map((l) => l.name).join(", ")}) — НЕ публикувай`);
+  return { html, portraitsJson, agents: data.agents.length, teams: data.teams.length };
 }
 
 /** Галактиката като самостоятелна страница (`galaxy.html` в `files`): цял документ + връщане към агентите. */
@@ -351,15 +355,16 @@ if (isMain(import.meta.url)) {
     console.error(`\x1b[31m✗ страницата „Агентите“: ${e.message}\x1b[0m`);
     process.exit(1);
   }
-  const galaxyOut = join(dirname(out), "galaxy.html");
+  const galaxyOut = join(dirname(out), "galaxy.html"), portraitsOut = join(dirname(out), "portraits.json");
   writeFileSync(out, app.html);
   writeFileSync(galaxyOut, galaxyDocument(r.html));
+  writeFileSync(portraitsOut, app.portraitsJson);
   console.log(`\x1b[32m✓\x1b[0m ${out} · ${(app.html.length / 1024 / 1024).toFixed(2)} MB · ${app.agents} агента в ${app.teams} екипа`);
   console.log(`\x1b[32m✓\x1b[0m ${galaxyOut} · ${(r.html.length / 1024 / 1024).toFixed(2)} MB · ${r.icons} маскота вградени`);
   console.log(`  източник: ${reader.source} · агенти: ${r.agents} · сума проверени поуки: ${r.lessons}`);
   console.log(`  публикувай на СЪЩИЯ адрес: ${ARTIFACT_URL}`);
   console.log(`    file_path: ${out}`);
-  console.log(`    files: { "galaxy.html": "${galaxyOut}" }`);
+  console.log(`    files: { "galaxy.html": "${galaxyOut}", "portraits.json": "${portraitsOut}" }`);
   console.log("    capabilities (само при първото публикуване на новата страница): { sample: {}, db: {}, user: {} }");
   if (ref) console.log(`  после: node tools/docs/build-artifact.mjs --mark-published ${ref}`);
 }

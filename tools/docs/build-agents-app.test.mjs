@@ -23,7 +23,9 @@ test("страницата „Агентите“: всички агенти и 
   assert.equal(parsed.agents.length, r.agents);
   assert.ok(parsed.agents.every((a) => a.persona && a.persona.includes("Нямаш инструменти")), "всеки агент има личност за чата");
   const masc = JSON.parse(r.html.match(/<script type="application\/json" id="app-mascots">([\s\S]*?)<\/script>/)[1]);
-  assert.ok(Object.keys(masc.portraits).length >= r.agents, "портрет за всеки агент");
+  assert.ok(Object.keys(masc.icons).length >= r.agents, "икона за всеки агент");
+  assert.ok(Object.keys(JSON.parse(r.portraitsJson)).length >= r.agents, "портрет за всеки агент в portraits.json");
+  assert.ok(r.html.length < 1.2 * 1024 * 1024, `главната страница е лека: ${(r.html.length / 1048576).toFixed(2)} MB`);
   assert.doesNotMatch(r.html, /fonts\.googleapis|fonts\.gstatic|<svg\b/i, "без чужди шрифтове и без SVG");
 });
 
