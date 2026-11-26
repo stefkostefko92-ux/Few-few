@@ -186,3 +186,13 @@ test("init → backup → verify в пясъчник; повредена сни�
     rmSync(s.t, { recursive: true, force: true });
   }
 });
+
+// Пети преглед на PR #312 (VPS-аджията, ниска · Сигурно): при частични дъмпове (код 2) снимката получаваше
+// таг nightly и после минаваше forget — база, която пада дълго незабелязано, губеше добрите си дъмпове
+// от ротацията. Сега частичната снимка е `partial` и forget не тича.
+test("частичен бекъп: таг partial и без forget", () => {
+  const off = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "offsite-backup.sh"), "utf8");
+  assert.match(off, /TAG=partial/, "частичната снимка има свой таг");
+  assert.match(off, /--tag "\$TAG"/, "restic backup ползва тага");
+  assert.match(off, /\[ "\$rc" -eq 0 \] \|\| \{ warn "[^"]*forget/, "forget се пропуска при частичен бекъп");
+});

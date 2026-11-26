@@ -180,6 +180,17 @@ systemctl daemon-reload && systemctl enable --now offsite-backup.timer offsite-v
 SQLite, не (тя няма контролни суми) — гниенето в самото хранилище хваща `restic check`.
 Тестван (`offsite-backup.test.mjs`: init → backup → verify, повредена снимка, пинговете).
 
+Частичен бекъп (някой дъмп не мина) влиза с таг `partial`, без `forget` — пълните снимки не
+изпадат от ротацията, докато една база пада незабелязано. `DUMP_DIR` се трие и подменя всяка нощ
+само ако носи маркера `.migrate-backup-dumps` (или стария формат `paths.txt` + `inventory.txt`):
+чужда папка спира скрипта, преди да е пипнато каквото и да е.
+
+**Пробив на сървъра ≠ загуба на диска.** `forget --prune` тича със SFTP ключа от сървъра, значи root
+на компрометиран сървър може да изтрие и снимките извън него. Две мерки (решение на собственика,
+още не са включени): автоматични снимки на самия Storage Box (Hetzner Robot → Storage Box →
+Snapshots) и/или хранилище само за добавяне (`rest-server --append-only`), с `forget --prune` от друга
+машина.
+
 ## Мониторинг (леко)
 ```bash
 docker compose -f tools/vps/monitoring/docker-compose.monitoring.yml up -d

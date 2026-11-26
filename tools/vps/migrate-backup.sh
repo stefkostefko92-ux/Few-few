@@ -86,10 +86,27 @@ esac
 case "$OUT_DIR" in /?*) ;; *) die "OUT_DIR трябва да е абсолютен път, различен от /.";; esac
 if [ "$MODE" = dumps ]; then
   case "$DUMP_TO" in /?*/*) DUMP_TO="${DUMP_TO%/}";; *) die "DUMP_TO трябва да е абсолютен път поне две нива навътре.";; esac
+  # DUMP_TO, .new и .old се трият с rm -rf накрая. Чужда папка (DUMP_TO=/opt/medqr) не бива да
+  # стига дотам: наша е само папка с маркера или старият формат paths.txt + inventory.txt
+  # (преглед на PR #312). Проверката е ПРЕДИ всякаква работа.
+  dump_ours(){ [ -f "$1/.migrate-backup-dumps" ] || { [ -f "$1/paths.txt" ] && [ -f "$1/inventory.txt" ]; }; }
+  for x in "$DUMP_TO" "$DUMP_TO.new" "$DUMP_TO.old"; do
+    if [ -e "$x" ] || [ -L "$x" ]; then
+      if [ -L "$x" ] || [ ! -d "$x" ] || ! dump_ours "$x"; then
+        die "$x съществува и не е папка с дъмпове от migrate-backup.sh (няма маркер .migrate-backup-dumps) — отказвам да я трия. Избери друг DUMP_TO или я махни ръчно."
+      fi
+    fi
+  done
   # Образите не са нощна работа: гигабайти всяка нощ, а на новия сървър се билдват/теглят.
   SAVE_IMAGES=0
 fi
 OUT_DIR="${OUT_DIR%/}"
+# Две пускания (нощният таймер и ръчно) се биеха за една папка — собствена ключалка (преглед на PR
+# #312). Fd 8: offsite-backup.sh държи своята на 9 и ние я наследяваме.
+if [ "$MODE" != plan ]; then
+  exec 8>/run/migrate-backup.lock || die "Не мога да отворя /run/migrate-backup.lock."
+  flock -n 8 || die "Друг migrate-backup.sh вече върви (/run/migrate-backup.lock)."
+fi
 for r in $ROOTS $EXTRA_PATHS; do
   case "$OUT_DIR/" in "${r%/}/"*)
     die "OUT_DIR ($OUT_DIR) е вътре в архивирания $r — архивът би влязъл сам в себе си. Избери друг, напр. /var/migrate.";;
@@ -197,14 +214,13 @@ if [ "$DOCKER" = 1 ]; then
       # „помощен“ значеше без дъмп и без суров том при зелен пинг (преглед на PR #312). Помощник с
       # образ postgres (напр. zabobovdol-backup) има друга команда и анонимен VOLUME от образа —
       # затова решението е по командата, не по наличието на том.
-      if [ "$(docker inspect -f '{{index .Config.Cmd 0}}' "$c" 2>/dev/null || true)" = postgres ]; then
-        CKIND[$c]=pgdown
-      else
-        CKIND[$c]=app; PG_HELPERS+=("$c")
-      fi
+      # `command: -c max_connections=200` дава Cmd[0]=-c: entrypoint-ът сам слага `postgres` отпред,
+      # значи и това е база (пети преглед на PR #312). Помощникът сменя entrypoint и няма такава команда.
+      pgcmd="$(docker inspect -f '{{index .Config.Cmd 0}}' "$c" 2>/dev/null || true)"
+      case "$pgcmd" in postgres|-*) CKIND[$c]=pgdown;; *) CKIND[$c]=app; PG_HELPERS+=("$c");; esac
     fi
     # Папката на compose проекта държи compose файла, .env и относителните bind-ове.
-    WORKDIRS+=("$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$c")")
+    WORKDIRS+=("$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$c" 2>/dev/null || true)")
     while IFS='|' read -r mtype mname msrc mdst; do
       [ -n "$mtype" ] || continue
       [ "$mtype" = volume ] && VOL_USERS[$mname]="${VOL_USERS[$mname]:-}$c "
@@ -243,7 +259,15 @@ for f in /etc/systemd/system/*.service /etc/systemd/system/*.timer; do
   # Обвивка около docker compose: спирането ѝ би пуснало `compose down` и би махнало
   # и базата ПРЕДИ дъмпа. Нейните контейнери се спират поотделно по-долу.
   if systemctl cat "$u" 2>/dev/null | grep -qiE '^[[:space:]]*Exec(Start|Stop)[^=]*=.*(docker|podman)'; then
-    DOCKER_WRAPPERS+=("$u"); continue
+    DOCKER_WRAPPERS+=("$u")
+    # С Restart= и `compose up` без -d обвивката излиза, щом спрем контейнерите, и systemd я вдига
+    # отново по време на tar — „замразеният“ архив вече не е замразен (преглед на PR #312).
+    if systemctl cat "$u" 2>/dev/null | grep -qiE '^[[:space:]]*Restart=(always|on-)' \
+      && systemctl cat "$u" 2>/dev/null | grep -iE '^[[:space:]]*ExecStart[^=]*=.*compose.*[[:space:]]up([[:space:]]|$)' \
+        | grep -qvE '[[:space:]](-d|--detach)([[:space:]]|$)'; then
+      warn "$u: docker обвивка с Restart= и „compose up“ без -d — във FINAL може да вдигне контейнерите отново. Спри я ръчно след дъмповете (systemctl stop $u)."
+    fi
+    continue
   fi
   # Скриптът, пуснат от уеб терминала на панела, живее в cgroup-а на панела —
   # спирането му би убило и самия архив по средата.
@@ -427,8 +451,15 @@ inv "изключени имена: ${EXCL_NAME[*]}"
 FREE="$(df -Pk "$OUT_DIR" | awk 'NR==2{print $4}')"
 # Нощните дъмпове (DUMP_TO на същия диск): под минимума не пишем — пълен диск сваля и продуктите.
 MIN_FREE_KB="${MIN_FREE_KB:-2097152}"
-if [ "$MODE" = dumps ] && [ "$FREE" -lt "$MIN_FREE_KB" ] && [ "$FORCE" != 1 ]; then
-  die "Свободни $(kb_h "$FREE") в $OUT_DIR — под минимума $(kb_h "$MIN_FREE_KB") за нощните дъмпове. Освободи място или MIN_FREE_KB=…"
+if [ "$MODE" = dumps ] && [ "$FORCE" != 1 ]; then
+  # В пика на диска стоят и старият $DUMP_TO (трие се чак накрая), и новият STAGE — затова
+  # нужното е предишният размер × 1,2 + минимумът, не само минимумът (преглед на PR #312).
+  PREV_KB=0
+  if [ -d "$DUMP_TO" ]; then PREV_KB="$(du -sk "$DUMP_TO" 2>/dev/null | cut -f1 || true)"; fi
+  NEED_KB=$(( ${PREV_KB:-0} * 12 / 10 + MIN_FREE_KB ))
+  if [ "$FREE" -lt "$NEED_KB" ]; then
+    die "Свободни $(kb_h "$FREE") в $OUT_DIR — нужни $(kb_h "$NEED_KB") (предишният бекъп $(kb_h "${PREV_KB:-0}") × 1,2 + минимум $(kb_h "$MIN_FREE_KB")). Освободи място, MIN_FREE_KB=… или FORCE=1."
+  fi
 fi
 if [ "$SAVE_IMAGES" = 1 ]; then EST=$((EST + ${IMG_KB:-0})); inv "образи (SAVE_IMAGES=1) · $(kb_h "${IMG_KB:-0}")"; fi
 inv "общо ≈ $(kb_h "$EST") · свободно в $OUT_DIR: $(kb_h "$FREE")"
@@ -460,7 +491,7 @@ if [ "$RECOVER_BINDS" = 1 ] && [ "$MODE" != plan ]; then
   done
 fi
 
-if [ "$PM2_LIVE" = 1 ]; then pm2 save --force >/dev/null 2>&1 || warn "pm2 save не мина"; fi
+if [ "$PM2_LIVE" = 1 ] && [ "$MODE" != dumps ]; then pm2 save --force >/dev/null 2>&1 || warn "pm2 save не мина"; fi
 
 # ╔═ FINAL: спиране на писачите ═════════════════════════════════════════════════
 STOPPED_CRON=0; STOPPED_TIMERS=(); STOPPED_SVCS=(); STOPPED_APPC=(); STOPPED_DBC=(); STOPPED_HOSTDB=()
@@ -755,6 +786,7 @@ if [ "$MODE" = dumps ]; then
     for x in "${EXCL_NAME[@]}"; do printf '%s\n' "$x"; done; } > "$STAGE/excludes.txt"
   # Само ако липсва: install -d -m сменя правата и на СЪЩЕСТВУВАЩА папка (/var/backups 755 → 700).
   [ -d "$(dirname "$DUMP_TO")" ] || install -d -m 700 "$(dirname "$DUMP_TO")"
+  : > "$STAGE/.migrate-backup-dumps"
   rm -rf -- "$DUMP_TO.new" "$DUMP_TO.old"
   # STAGE и DUMP_TO са на един диск по подразбиране → mv е преименуване, не копие.
   mv "$STAGE" "$DUMP_TO.new"

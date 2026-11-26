@@ -167,7 +167,8 @@ test("Postgres без отговор, но с том с данни, е ПРОВ�
 
 test("нощните дъмпове и пробното възстановяване проверяват свободното място", () => {
   const src = readFileSync(script, "utf8");
-  assert.match(src, /MODE" = dumps \] && \[ "\$FREE" -lt "\$MIN_FREE_KB" \]/, "dumps: минимум свободно място");
+  assert.match(src, /MODE" = dumps \] && \[ "\$FORCE" != 1 \]/, "dumps: проверка на свободното място");
+  assert.match(src, /\[ "\$FREE" -lt "\$NEED_KB" \]/, "dumps: минимумът е част от нужното");
   const off = readFileSync(join(here, "offsite-backup.sh"), "utf8");
   assert.match(off, /df -Pk "\$VERIFY_TMP"/, "verify сверява свободното място преди restore");
 });
@@ -204,4 +205,58 @@ test("SQLite в Docker томове и външни bind-ове минава п�
   assert.ok(line, "редът, който пълни SQL_DIRS");
   assert.match(line, /INC_VOLS\[@\]/, "томовете влизат в търсенето");
   assert.match(line, /EXTRA_BINDS\[@\]/, "външните bind-ове също");
+});
+
+// Пети преглед на PR #312 (VPS-аджията, средна · Сигурно): DUMP_TO се преименува на .old и се трие с
+// rm -rf, а проверката беше само „поне две нива навътре“ — DUMP_TO=/opt/medqr би изтрил продукта.
+// Сега чужда папка (без нашия маркер) на DUMP_TO, .new или .old спира скрипта ПРЕДИ всякаква работа.
+test("DUMP_TO: чужда папка без маркер не се трие — скриптът отказва", { skip: !isRoot && "иска root" }, () => {
+  const t = mkdtempSync(join(tmpdir(), "mb-"));
+  for (const suffix of ["", ".old", ".new"]) {
+    const dump = join(t, "app", "dumps");
+    rmSync(join(t, "app"), { recursive: true, force: true });
+    mkdirSync(dump + suffix, { recursive: true });
+    writeFileSync(join(dump + suffix, "ценно.txt"), "не е наш бекъп");
+    const r = spawnSync("bash", [script], { encoding: "utf8", env: { ...process.env, DUMP_TO: dump, OUT_DIR: join(t, "o") } });
+    assert.equal(r.status, 1, `DUMP_TO${suffix}: ${r.stderr}`);
+    assert.match(r.stderr, /маркер/, `DUMP_TO${suffix}: причината е назована`);
+    assert.ok(existsSync(join(dump + suffix, "ценно.txt")), `DUMP_TO${suffix}: файлът е непокътнат`);
+  }
+  rmSync(t, { recursive: true, force: true });
+});
+
+test("DUMP_TO: новият бекъп носи маркер; старият формат (paths.txt + inventory.txt) се приема", () => {
+  const src = readFileSync(script, "utf8");
+  assert.match(src, /: > "\$STAGE\/\.migrate-backup-dumps"/, "маркерът се пише в STAGE преди преместването");
+  assert.match(src, /paths\.txt" \] && \[ -f "\$1\/inventory\.txt"/, "папка от предишна версия без маркер още е наша");
+});
+
+// Пети преглед (VPS-аджията, средна · Вероятно): в пика на диска стоят и старият DUMP_TO, и новият STAGE.
+test("нощните дъмпове искат място за стария бекъп + минимума", () => {
+  const src = readFileSync(script, "utf8");
+  assert.match(src, /PREV_KB="\$\(du -sk "\$DUMP_TO"/, "размерът на предишния бекъп се мери");
+  assert.match(src, /NEED_KB=\$\(\( \$\{PREV_KB:-0\} \* 12 \/ 10 \+ MIN_FREE_KB \)\)/, "нужно = стар × 1,2 + минимум");
+});
+
+// Пети преглед (Кодаджията, средна · Възможно): `command: -c max_connections=200` дава Cmd[0]=-c —
+// entrypoint-ът сам слага `postgres` отпред. Такава база без pg_isready ставаше тихо „помощник“.
+test("Postgres с команда само от флагове (-c …) пак е база, не помощник", () => {
+  const src = readFileSync(script, "utf8");
+  assert.match(src, /case "\$pgcmd" in postgres\|-\*\) CKIND\[\$c\]=pgdown;;/, "postgres или флаг → база");
+});
+
+// Пети преглед (Кодаджията, ниска): контейнер, изчезнал след първия inspect, убиваше нощния бекъп под set -e.
+test("изчезнал контейнер не убива бекъпа и при четенето на working_dir", () => {
+  const src = readFileSync(script, "utf8");
+  const line = src.split("\n").find((l) => /WORKDIRS\+=\(/.test(l));
+  assert.match(line, /2>\/dev\/null \|\| true\)"\)/);
+});
+
+// Пети преглед (VPS-аджията, ниски): нощното пускане не пипа PM2; две пускания не се бият за една папка;
+// обвивка с Restart= и `compose up` без -d се назовава (във FINAL би вдигнала контейнерите отново).
+test("dumps не пипа PM2; ключалка; обвивка с Restart= се предупреждава", () => {
+  const src = readFileSync(script, "utf8");
+  assert.match(src, /\[ "\$PM2_LIVE" = 1 \] && \[ "\$MODE" != dumps \]/, "pm2 save само в hot/final");
+  assert.match(src, /flock -n 8/, "собствена ключалка");
+  assert.match(src, /Restart=\(always\|on-\)/, "обвивка с автоматичен рестарт се проверява");
 });

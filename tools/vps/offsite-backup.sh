@@ -127,7 +127,7 @@ cmd_init(){
 }
 
 cmd_backup(){
-  local rc=0 brc=0
+  local rc=0 brc=0 TAG=nightly
   [ -f "$MIGRATE" ] || die "Липсва $MIGRATE."
   lock
   inf "Дъмпове на базите → $DUMP_DIR"
@@ -135,7 +135,9 @@ cmd_backup(){
   ( for v in $(compgen -e); do case "$v" in RESTIC_*|AWS_*|B2_*|AZURE_*|GOOGLE_*|OS_*) unset "$v";; esac; done; DUMP_TO="$DUMP_DIR" exec bash "$MIGRATE" ) || rc=$?
   case "$rc" in
     0) ;;
-    2) warn "Някои дъмпове не минаха (виж по-горе) — снимката се прави с наличното, а задачата завършва с провал." ;;
+    2) warn "Някои дъмпове не минаха (виж по-горе) — снимката се прави с наличното (таг partial), а задачата завършва с провал."
+       # Частичната снимка не бива да измества пълните от ротацията (преглед на PR #312).
+       TAG=partial ;;
     *) die "migrate-backup.sh спря с код $rc — снимка без дъмпове не се прави." ;;
   esac
   [ -s "$DUMP_DIR/paths.txt" ] || die "Няма $DUMP_DIR/paths.txt."
@@ -143,7 +145,7 @@ cmd_backup(){
   # --one-file-system: монтираните файлови системи на живите контейнери не се
   # обхождат — иначе всеки контейнер влиза още веднъж като обикновени файлове.
   # --files-from-verbatim: пътят е път, не шаблон (`[` в име не се разгъва).
-  restic backup --host "$HOST" --tag nightly --one-file-system --exclude-caches \
+  restic backup --host "$HOST" --tag "$TAG" --one-file-system --exclude-caches \
     --files-from-verbatim "$DUMP_DIR/paths.txt" --exclude-file "$DUMP_DIR/excludes.txt" || brc=$?
   # 3 = снимката е направена, но част от файловете не се прочетоха (изтрити по
   # време на четене, сокети). Снимката е използваема — предупреждение, не провал.
@@ -152,11 +154,11 @@ cmd_backup(){
     3) warn "Снимката е готова, но някои файлове не се прочетоха (restic код 3)." ;;
     *) die "restic backup спря с код $brc." ;;
   esac
+  [ "$rc" -eq 0 ] || { warn "Частичен бекъп — forget/prune се пропуска, за да не изпаднат пълните снимки."; exit 2; }
   inf "Ротация: ${KEEP_DAILY} дневни · ${KEEP_WEEKLY} седмични · ${KEEP_MONTHLY} месечни…"
   restic forget --host "$HOST" --tag nightly --keep-daily "$KEEP_DAILY" --keep-weekly "$KEEP_WEEKLY" \
     --keep-monthly "$KEEP_MONTHLY" --prune --quiet
   ok "Бекъпът извън машината приключи."
-  [ "$rc" -eq 0 ] || exit 2
 }
 
 # Дъмп, който не се отваря, е по-лош от липсващ — изглежда като бекъп.
