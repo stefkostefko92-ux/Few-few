@@ -1,0 +1,60 @@
+name: liftcon
+
+on:
+  push:
+    paths:
+      - 'liftcon/**'
+      - '.github/workflows/liftcon.yml'
+  pull_request:
+    paths:
+      - 'liftcon/**'
+      - '.github/workflows/liftcon.yml'
+
+concurrency:
+  group: liftcon-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      # Генераторът е без зависимости и детерминистичен: билдът в CI трябва да даде същите байтове
+      # като комитнатия public/ (иначе някой е пипал генерирания HTML на ръка или е забравил билда).
+      - name: Билд на сайта
+        run: node liftcon/build.mjs
+      - name: public/ е в синхрон с източника
+        run: git diff --exit-code -- liftcon/public
+      - name: Тестове на сайта (SEO/AEO, връзки, схеми, без SVG, т. 8 на каталога)
+        run: node --test liftcon/test/*.test.mjs
+      - name: Проверка на статичния сайт (общият гейт)
+        run: node tools/qa/static-site-check.mjs liftcon/public
+
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: liftcon/server
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: liftcon/server/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
