@@ -42,10 +42,27 @@ jobs:
 
   server:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: liftcon/server
+    # Истински PostgreSQL само за миграциите (тестовете на панела са върху Store в паметта).
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: liftcon
+          POSTGRES_PASSWORD: liftcon
+          POSTGRES_DB: liftcon
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U liftcon -d liftcon"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://liftcon:liftcon@localhost:5432/liftcon?schema=public
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -57,4 +74,8 @@ jobs:
           cache-dependency-path: liftcon/server/package-lock.json
       - run: npm ci
       - run: npm run typecheck
+      # Миграциите се прилагат върху празна база и схемата съвпада с тях (без отклонение).
+      - run: npx prisma migrate deploy
+      - run: npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
+      # Тестовете (вкл. панела: вход с 2FA, роли, CSRF, заявки, публикуване с генератора).
       - run: npm test

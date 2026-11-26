@@ -1,0 +1,143 @@
+// LiftCon — схемата на базата (PostgreSQL). Миграции: `prisma migrate deploy` (никога `db push`).
+// Спецификация: liftcon/docs/admin-spec.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// 7 нива, както в нашите продукти. CLIENTE няма достъп до /admin.
+enum Ruolo {
+  MASTER
+  ADMIN
+  DIREZIONE
+  RESPONSABILE
+  TECNICO
+  OPERATORE
+  CLIENTE
+}
+
+enum StatoRichiesta {
+  NUOVA
+  IN_LAVORAZIONE
+  PROPOSTA_INVIATA
+  INCARICO
+  CHIUSA
+}
+
+enum StatoSessione {
+  /// Само парола — отваря само /admin/2fa* и изхода.
+  PARZIALE
+  COMPLETA
+}
+
+model Utente {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  nome               String
+  passwordHash       String
+  ruolo              Ruolo
+  attivo             Boolean   @default(true)
+  cambiarePassword   Boolean   @default(false)
+  /// AES-256-GCM (ключ от SEAL_KEY през HKDF). Празно до потвърждението на 2FA.
+  totpSecretEnc      String?
+  totpAttivaDal      DateTime?
+  /// Последната приета стъпка — повторен код в същия прозорец не минава.
+  totpUltimoPasso    Int?
+  /// HMAC на неизползваните резервни кодове.
+  codiciRecupero     String[]  @default([])
+  tentativiFalliti   Int       @default(0)
+  bloccatoFino       DateTime?
+  ultimoAccesso      DateTime?
+  creatoIl           DateTime  @default(now())
+  aggiornatoIl       DateTime  @updatedAt
+  sessioni           Sessione[]
+}
+
+model Sessione {
+  id         String        @id @default(cuid())
+  utenteId   String
+  utente     Utente        @relation(fields: [utenteId], references: [id], onDelete: Cascade)
+  stato      StatoSessione
+  csrf       String
+  creataIl   DateTime      @default(now())
+  ultimoUso  DateTime      @default(now())
+  scadeIl    DateTime
+
+  @@index([utenteId])
+  @@index([scadeIl])
+}
+
+model Richiesta {
+  id            String         @id @default(cuid())
+  nome          String
+  email         String
+  telefono      String         @default("")
+  ruolo         String
+  comune        String
+  servizio      String
+  messaggio     String
+  stato         StatoRichiesta @default(NUOVA)
+  note          String         @default("")
+  creataIl      DateTime       @default(now())
+  aggiornataIl  DateTime       @updatedAt
+  /// Срокът от privacy (6 месеца от последната промяна); празно при INCARICO.
+  eliminareDopo DateTime?
+
+  @@index([stato])
+  @@index([creataIl])
+  @@index([eliminareDopo])
+}
+
+/// Промяна на съдържанието спрямо стойностите в репото. id = "<tipo>:<chiave>" (напр. "servizio:controllo").
+model Contenuto {
+  id           String                @id
+  tipo         String
+  dati         Json
+  aggiornatoIl DateTime              @updatedAt
+  autoreId     String?
+  revisioni    RevisioneContenuto[]
+
+  @@index([tipo])
+}
+
+model RevisioneContenuto {
+  id          String    @id @default(cuid())
+  contenutoId String
+  contenuto   Contenuto @relation(fields: [contenutoId], references: [id], onDelete: Cascade)
+  dati        Json
+  autoreId    String?
+  creataIl    DateTime  @default(now())
+
+  @@index([contenutoId, creataIl])
+}
+
+model Pubblicazione {
+  id         String    @id @default(cuid())
+  iniziataIl DateTime  @default(now())
+  finitaIl   DateTime?
+  esito      String
+  errore     String?
+  versione   String?
+  autoreId   String?
+
+  @@index([iniziataIl])
+}
+
+/// Регистър на събитията. Без пароли, кодове и съдържание на заявки; IP — само като HMAC.
+model Evento {
+  id        String   @id @default(cuid())
+  creatoIl  DateTime @default(now())
+  utenteId  String?
+  azione    String
+  oggetto   String?
+  dettagli  Json?
+  ipHmac    String?
+
+  @@index([creatoIl])
+  @@index([utenteId])
+}

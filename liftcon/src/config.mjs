@@ -35,17 +35,18 @@ export const COMPANY = Object.freeze({
   responsabileRuolo: "Fondatore e responsabile dei contenuti",
 });
 
-export const CONTACT = Object.freeze({
+// Не е замразен: панелът (/admin) може да смени телефона, имейла и часовете — build.mjs ги прилага преди рендера.
+export const CONTACT = {
   phone: "+39 379 296 9699",
   phoneHref: "tel:+393792969699",
   phoneSchema: "+39-379-296-9699",
-  email: "info@carbonstealth.eu",
+  email: "info@liftcon.it",
   // Orari dichiarati da Carbon Stealth VCC (carbonstealth.eu, JSON-LD openingHoursSpecification).
   hours: [
     { days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], label: "Lunedì–venerdì", opens: "09:00", closes: "18:00" },
     { days: ["Saturday"], label: "Sabato", opens: "10:00", closes: "14:00" },
   ],
-});
+};
 
 // Centro geografico della zona servita (Milano, piazza del Duomo) — per geo.position e areaServed.
 export const GEO = Object.freeze({ lat: 45.4642, lng: 9.19, region: "IT-25", place: "Milano" });

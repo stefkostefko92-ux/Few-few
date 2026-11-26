@@ -39,7 +39,7 @@ export function privacyPage() {
 <h2>Quali dati trattiamo e perché</h2>
 <h3>Richieste di contatto</h3>
 <p>Se ci scrive con il modulo, per email o ci chiama, trattiamo i dati che ci fornisce (nome, email, telefono, ruolo, comune dell'impianto, testo del messaggio) per rispondere alla richiesta e preparare una proposta d'incarico. Base giuridica: misure precontrattuali adottate su sua richiesta (art. 6, par. 1, lett. b GDPR). Se ci scrive per conto di un condominio, di un'azienda o di un altro cliente, trattiamo i suoi dati di contatto sulla base del nostro legittimo interesse a rispondere (art. 6, par. 1, lett. f GDPR). Senza questi dati non possiamo rispondere.</p>
-<p>Il server del sito non salva i dati in una banca dati: li inoltra tramite Brevo alla nostra casella di posta elettronica, dove la richiesta è conservata per i tempi indicati sotto.</p>
+<p>La richiesta viene salvata nella banca dati del nostro server, consultabile solo dal personale autorizzato con accesso protetto da verifica in due passaggi, e ne riceviamo un avviso per email tramite Brevo nella nostra casella di posta, ospitata sullo stesso server.</p>
 <h3>Dati tecnici di navigazione</h3>
 <p>Il server registra nei propri log indirizzo IP, data e ora, pagina richiesta e tipo di browser, per garantire la sicurezza del sito e prevenire abusi. Base giuridica: legittimo interesse alla sicurezza del servizio (art. 6, par. 1, lett. f GDPR).</p>
 <h3>Mappa OpenStreetMap</h3>
@@ -47,10 +47,10 @@ export function privacyPage() {
 <h2>Che cosa non facciamo</h2>
 <p>Questo sito non usa cookie, strumenti di analisi del traffico, pubblicità o profilazione, e non prende decisioni automatizzate sulle persone.</p>
 <h2>Per quanto tempo conserviamo i dati</h2>
-<ul><li>Richieste che non portano a un incarico: cancellate entro 6 mesi dall'ultimo contatto.</li><li>Richieste che portano a un incarico: per la durata del rapporto e poi per i tempi previsti dagli obblighi contabili e fiscali (art. 6, par. 1, lett. c GDPR).</li><li>Log del server: di norma 14 giorni, con cancellazione automatica.</li></ul>
+<ul><li>Richieste che non portano a un incarico: cancellate automaticamente 6 mesi dopo l'ultima modifica.</li><li>Richieste che portano a un incarico: per la durata del rapporto e poi per i tempi previsti dagli obblighi contabili e fiscali (art. 6, par. 1, lett. c GDPR).</li><li>Log del server: di norma 14 giorni, con cancellazione automatica.</li></ul>
 <h2>Chi tratta i dati per nostro conto</h2>
-<ul><li>netcup GmbH (Germania): hosting del sito e del server.</li><li>Sendinblue SAS, marchio Brevo (Francia): invio delle email generate dal modulo di contatto.</li><li>Il fornitore della nostra posta elettronica aziendale: conservazione delle email ricevute.</li></ul>
-<p>Sono responsabili del trattamento ai sensi dell'articolo 28 GDPR. Se un fornitore tratta dati fuori dall'Unione europea, il trasferimento avviene sulla base di una decisione di adeguatezza o di clausole contrattuali tipo (articoli 45 e 46 GDPR); su richiesta indichiamo quali.</p>
+<ul><li>netcup GmbH (Germania): server che ospita il sito, la banca dati delle richieste e la posta elettronica.</li><li>Sendinblue SAS, marchio Brevo (Francia): invio delle email di avviso generate dal modulo di contatto.</li></ul>
+<p>Sono responsabili del trattamento ai sensi dell'articolo 28 GDPR. I dati restano nell'Unione europea, salvo il caso della mappa descritto sopra.</p>
 <h2>I suoi diritti</h2>
 <p>Può chiedere accesso, rettifica, cancellazione, limitazione, portabilità dei dati e opporsi al trattamento basato sul legittimo interesse e revocare il consenso dato per la mappa (articoli 7 e 15–22 GDPR), scrivendo a <a href="mailto:${CONTACT.email}">${esc(
       CONTACT.email,
@@ -66,11 +66,12 @@ export function cookiePage() {
   return legal(
     R.cookie,
     "Cookie | LiftCon",
-    "Il sito LiftCon non usa cookie né strumenti di tracciamento: per questo non mostra banner. Unica eccezione facoltativa, la mappa OpenStreetMap su richiesta.",
+    "Le pagine pubbliche di LiftCon non usano cookie né strumenti di tracciamento: per questo non c'è banner. Unica eccezione facoltativa, la mappa OpenStreetMap.",
     "Cookie",
-    "Questo sito non usa cookie, né tecnici né di profilazione, e nessuno strumento di analisi del traffico. Per questo non le chiediamo il consenso con un banner.",
+    "Le pagine pubbliche del sito non usano cookie, né tecnici né di profilazione, e nessuno strumento di analisi del traffico. Per questo non le chiediamo il consenso con un banner.",
     `<h2>Che cosa memorizza il sito nel suo browser</h2>
 <p>Nulla: niente cookie, niente archiviazione locale, niente identificativi.</p>
+<p>Solo l'area riservata al personale (<code>/admin</code>) usa un cookie tecnico di sessione, necessario per l'accesso protetto e quindi esente da consenso; i visitatori del sito non lo ricevono.</p>
 <h2>Contenuti di terze parti</h2>
 <p>La mappa della pagina <a href="${R.contatti}">Contatti</a> è di OpenStreetMap e si carica solo se lei preme «Mostri la mappa». Da quel momento valgono le regole di OpenStreetMap Foundation, che può impostare propri cookie: <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener">informativa di OpenStreetMap Foundation</a>.</p>
 <p>Per il resto del trattamento dei dati personali, veda l'<a href="${R.privacy}">informativa privacy</a>.</p>`,

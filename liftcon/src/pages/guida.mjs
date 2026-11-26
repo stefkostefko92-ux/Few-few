@@ -8,6 +8,7 @@ import { R, guida } from "../routes.mjs";
 import { G_PERIODICA, G_STRAORDINARIA, G_MANUTENZIONE, G_LIBRETTO } from "../content/guide-a.mjs";
 import { G_PREVENTIVI, G_ESERCIZIO, G_FINELAVORI, G_SPESE } from "../content/guide-b.mjs";
 import { G_AMMODERNAMENTO } from "../content/guide-c.mjs";
+import { PROMO } from "../content/promo.mjs";
 
 export const GUIDE = [G_PERIODICA, G_MANUTENZIONE, G_AMMODERNAMENTO, G_SPESE, G_STRAORDINARIA, G_PREVENTIVI, G_LIBRETTO, G_ESERCIZIO, G_FINELAVORI].map((g) => ({
   ...g,
@@ -44,6 +45,12 @@ function guideCollegate(g) {
   )}</ul></section>`;
 }
 
+/** Малка реклама до ръководството (редува двата продукта по ръководство). */
+function promoSide(g) {
+  const p = PROMO[GUIDE.findIndex((x) => x.slug === g.slug) % PROMO.length] ?? PROMO[0];
+  return `<aside class="promo-side" aria-label="Altri progetti Carbon Stealth"><p class="promo-head">Altri progetti Carbon Stealth</p><a class="promo" href="${p.url}" target="_blank" rel="noopener"><img src="${p.logo.src}" width="${p.logo.w}" height="${p.logo.h}" alt="${esc(p.nome)}" loading="lazy" decoding="async"><span class="promo-text">${esc(p.testo)}</span><span class="promo-dom">${esc(p.dominio)}</span></a></aside>`;
+}
+
 function words(g) {
   return plain([g.lead, ...g.sezioni.map((s) => s.html), ...(g.faq ?? []).map((f) => f.a)].join(" ")).split(" ").length;
 }
@@ -76,7 +83,7 @@ export function guidaPage(g, ctx) {
     pageHead({ h1: g.h1, lead: g.lead, kicker: meta }),
     `<div class="wrap article-grid"><article class="article">${sezioni}${passi}${
       g.faq ? `<section class="art-sec" id="domande" aria-labelledby="domande-t"><h2 id="domande-t">Domande frequenti</h2>${faqList(g.faq)}</section>` : ""
-    }${guideCollegate(g)}${fonti}${author}</article><div class="article-side">${toc}</div></div>`,
+    }${guideCollegate(g)}${fonti}${author}</article><div class="article-side">${toc}${promoSide(g)}</div></div>`,
     related(g.correlati.map((k) => ctx.byKey[k]), "Servizi utili"),
     ctaBand(),
   ].join("\n");

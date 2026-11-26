@@ -1,0 +1,79 @@
+/* LiftCon Admin — stessi colori del sito, interfaccia sobria e leggibile. Nessuna risorsa esterna. */
+:root{--calce:#F5F6F3;--carta:#fff;--pietra:#E9EBE6;--linea:#D5D9D2;--grafite:#1E2226;--testo:#2F363B;--acciaio:#5C656C;--verde:#27700F;--verde-tenue:#E6F2DE;--errore:#B3261E;--giallo:#FFF4D6;--f:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--calce);color:var(--testo);font:400 15.5px/1.55 var(--f)}
+a{color:var(--verde)}
+:focus-visible{outline:3px solid var(--verde);outline-offset:2px}
+.testa{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 24px;background:var(--carta);border-bottom:1px solid var(--linea)}
+.marchio{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--grafite);font-weight:700}
+.marchio span{padding:2px 8px;border:1px solid var(--linea);border-radius:6px;font-size:13px}
+.chi{margin:0;color:var(--acciaio);font-size:14px}
+.nav{display:flex;flex-wrap:wrap;gap:4px;padding:8px 20px;background:var(--grafite)}
+.nav a{color:#E6EAE7;text-decoration:none;padding:8px 12px;border-radius:6px}
+.nav a:hover,.nav a[aria-current=page]{background:#3A4147;color:#fff}
+.esci{margin-left:auto}
+.esci button{background:none;border:1px solid #5A636A;color:#E6EAE7;padding:7px 12px;border-radius:6px;cursor:pointer;font:inherit}
+.corpo{max-width:1180px;margin:0 auto;padding:28px 20px 64px}
+.semplice .corpo{max-width:520px}
+h1{font-size:1.7rem;margin:0 0 20px;color:var(--grafite)}
+h2{font-size:1.15rem;margin:0 0 12px;color:var(--grafite)}
+.scheda{background:var(--carta);border:1px solid var(--linea);border-radius:12px;padding:20px;margin:0 0 20px}
+.scheda.stretta{max-width:520px}
+.scheda.trasparente{background:none;border:0;padding:0}
+label{display:block;font-weight:600;margin:14px 0 6px;color:var(--grafite)}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #BFC5BD;border-radius:8px;background:#FBFBFA;font:inherit;color:var(--grafite)}
+textarea{resize:vertical}
+.btn{display:inline-block;margin-top:16px;padding:11px 18px;border:0;border-radius:8px;background:var(--verde);color:#fff;font:600 15px var(--f);text-decoration:none;cursor:pointer}
+.btn-sec{background:var(--carta);color:var(--grafite);border:1.5px solid var(--grafite)}
+.btn-pericolo{background:var(--errore)}
+.link{background:none;border:0;padding:4px 6px;color:var(--verde);font:inherit;text-decoration:underline;cursor:pointer}
+.nota{color:var(--acciaio);font-size:14px}
+.avviso{padding:12px 16px;border-radius:8px;margin:0 0 16px;font-weight:600}
+.avviso-ok{background:var(--verde-tenue);color:#1F4E0C}
+.avviso-errore{background:#FBE4E2;color:var(--errore)}
+.avviso-info{background:var(--giallo);color:#5A4300}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.tile{display:grid;gap:4px;padding:16px;background:var(--carta);border:1px solid var(--linea);border-radius:12px;text-decoration:none;color:var(--testo)}
+.tile-n{font-size:1.8rem;font-weight:700;color:var(--grafite)}
+.elenco{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.tabella-wrap{overflow-x:auto;background:var(--carta);border:1px solid var(--linea);border-radius:12px}
+.tabella{width:100%;border-collapse:collapse;font-size:14.5px}
+.tabella th,.tabella td{padding:10px 12px;border-bottom:1px solid var(--linea);text-align:left;vertical-align:top}
+.tabella th{background:var(--pietra);font-weight:600;white-space:nowrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--pietra);font-size:12.5px;font-weight:600;white-space:nowrap}
+.badge-nuova{background:#FFE7A8}.badge-in_lavorazione{background:#DCEBFA}.badge-proposta_inviata{background:#EADCF8}.badge-incarico{background:var(--verde-tenue)}.badge-chiusa{background:var(--pietra)}
+.filtri{display:flex;flex-wrap:wrap;align-items:end;gap:8px 12px;margin-bottom:12px}
+.filtri label{margin:0}
+.filtri input,.filtri select{width:auto;min-width:180px}
+.filtri .btn{margin-top:0}
+.pagine{display:flex;gap:16px;align-items:center;margin-top:16px}
+.griglia2{display:grid;grid-template-columns:1.3fr 1fr;gap:20px}
+@media (max-width:860px){.griglia2{grid-template-columns:1fr}}
+.dati{display:grid;gap:0;margin:0 0 16px}
+.dati>div{display:grid;grid-template-columns:12em 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--linea)}
+.dati dt{font-weight:600}.dati dd{margin:0}
+.messaggio{white-space:pre-wrap;background:var(--calce);padding:12px;border-radius:8px}
+.pericolo{margin-top:24px;padding-top:16px;border-top:1px dashed var(--linea)}
+.spunta{display:flex;gap:8px;align-items:flex-start;font-weight:400}
+.spunta input{width:auto;margin-top:4px}
+.inline{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.inline select{width:auto}
+.qr{display:block;margin:16px auto;border:1px solid var(--linea);border-radius:8px}
+.segreto{font-size:15px;letter-spacing:.06em;word-break:break-all}
+.codici{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:16px}
+.modulo{display:grid;gap:16px}
+.campo{background:var(--carta);border:1px solid var(--linea);border-radius:12px;padding:16px;margin:0}
+.campo legend{font-weight:700;color:var(--grafite);padding:0 6px}
+.campo legend label{margin:0}
+.con-errore{border-color:var(--errore)}
+.errore-campo{color:var(--errore);font-weight:600;margin:8px 0 0}
+.ripeti{display:grid;gap:10px}
+.riga{border:1px solid var(--linea);border-radius:10px;padding:10px 12px;background:var(--calce)}
+.riga label{font-weight:500;font-size:14px;margin:6px 0 4px}
+.riga-azioni{display:flex;gap:4px;justify-content:flex-end;margin-top:6px}
+.contatore{font-size:13px;color:var(--acciaio);text-align:right;margin-top:4px}
+.contatore.oltre{color:var(--errore);font-weight:700}
+.azioni{position:sticky;bottom:0;display:flex;gap:12px;padding:12px 0;background:linear-gradient(transparent,var(--calce) 30%)}
+.azioni .btn{margin-top:0}
+.pubblica .elenco{margin-top:16px;font-size:14px}
+pre{white-space:pre-wrap;font-size:12.5px;background:var(--calce);padding:8px;border-radius:6px}

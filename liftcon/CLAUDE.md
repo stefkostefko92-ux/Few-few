@@ -7,10 +7,22 @@ Città metropolitana, Monza e Brianza и цяла Ломбардия. Публи
 ## Стек
 - `build.mjs` + `src/` — статичен генератор **без зависимости** (Node ≥22, ESM). Пише в `public/`
   детерминистично (датите от `SITE.updated`, не от часовника). `public/` се комитва; CI проверява синхрона.
-- `server/` — бекендът на формата: Node 22 + TS strict + Express 5 + zod + pino; Brevo Transactional API
-  (HTTPS — SMTP портовете на сървъра са блокирани). **Нищо не се пази** — само се препраща по имейл.
-- `deploy/` — `nginx.conf` + `liftcon-headers.conf` (CSP, HSTS…), `deploy.sh` (бекъп → атомарна смяна → Docker →
-  Nginx → health → откат). Порт на бекенда: `127.0.0.1:4370` (`LIFTCON_HTTP_PORT`).
+- `server/` — приложението: формата + **админ панелът `/admin`** (спецификация: `docs/admin-spec.md`).
+  Node 22 + TS strict + Express 5 + zod + pino + Prisma/PostgreSQL; Brevo Transactional API за известията
+  (HTTPS — SMTP портовете на сървъра са блокирани). Хостинг: нашият VPS в netcup (сайт, база, поща info@liftcon.it).
+  - Вход: argon2id + **задължителна 2FA (TOTP)**, резервни кодове (HMAC), тайната — AES-256-GCM (HKDF от `SEAL_KEY`),
+    JWT в httpOnly бисквитка → сесия в базата (2 ч без действие / 12 ч), CSRF + Origin, заключване 5/15 мин.
+  - Роли (7 нива): MASTER > ADMIN > DIREZIONE > RESPONSABILE > TECNICO > OPERATORE > CLIENTE — `src/auth/ruoli.ts`.
+  - Заявки: в базата, изтриване 6 месеца след последната промяна (без INCARICO), CSV без CSV injection.
+  - Съдържание: промените се пазят в базата (с история), текстов формат → екраниран HTML (`content/mdlite.ts`);
+    „Pubblica“ пуска `build.mjs` с `LIFTCON_OVERRIDES` в `releases/<ts>` и сменя атомарно връзката `current`.
+  - Данните минават през интерфейса `Store` (Prisma в продукция, паметта в тестовете).
+  - Първият MASTER — от `ADMIN_EMAIL` + `ADMIN_INITIAL_PASSWORD` (смяна при първия вход). Без `DATABASE_URL`
+    сървърът работи само като форма → имейл.
+- `deploy/` — `nginx.conf` (root `/var/www/liftcon.it/current`, `/admin` → приложението) + `liftcon-headers.conf`,
+  `deploy.sh` (бекъп на базата и сайта → базова версия от репото → Docker: db + api с `migrate deploy` →
+  Nginx → health на `/`, `/health`, `/admin/login` → откат). Порт: `127.0.0.1:4370` (`LIFTCON_HTTP_PORT`).
+- Реклами на другите продукти (Panev Ascensori, Rilievi Impianti): `src/content/promo.mjs`, етикет „Altri progetti“.
 - `art/` — 3D рендерите (three.js, bundled; правило „никога SVG“). `scripts/brand-assets.py` — растерните
   активи от `brand/liftcon-logo-originale.png`.
 
@@ -30,6 +42,7 @@ Città metropolitana, Monza e Brianza и цяла Ломбардия. Публи
 node liftcon/build.mjs && node --test liftcon/test/*.test.mjs && node tools/qa/static-site-check.mjs liftcon/public
 cd liftcon/server && npm ci && npm run typecheck && npm test
 ```
+Миграции: само `prisma migrate deploy` (CI ги прилага върху празна база и проверява за отклонение от схемата).
 CI: `.github/workflows/liftcon.yml` (path-filtered).
 
 ## SEO/GEO/AEO

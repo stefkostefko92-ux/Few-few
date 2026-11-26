@@ -2,11 +2,13 @@
 // Генераторът на сайта LiftCon — нула зависимости (Node ≥22). Пише в public/ детерминистично:
 // същото съдържание → същите байтове (датите идват от SITE.updated, не от часовника).
 //
-//   node liftcon/build.mjs            # билд
+//   node liftcon/build.mjs            # билд в liftcon/public
 //   LIFTCON_SITE_URL=https://liftcon.it node liftcon/build.mjs   # друг домейн
+//   LIFTCON_OUT=/srv/site/releases/x LIFTCON_OVERRIDES=ov.json node build.mjs   # публикуване от /admin
+//   node liftcon/build.mjs --dump-content defaults.json   # стойностите за формите в панела
 
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -23,10 +25,14 @@ import { serviziHub, metodoPage, chiSiamoPage } from "./src/pages/info.mjs";
 import { contattiPage, grazieePage } from "./src/pages/contatti.mjs";
 import { faqHub, glossarioPage } from "./src/pages/risorse.mjs";
 import { privacyPage, cookiePage, noteLegaliPage, notFoundPage } from "./src/pages/legali.mjs";
+import { applyOverrides, dumpContent } from "./src/overrides.mjs";
 import { sitemapXml, sitemapTxt, robotsTxt, llmsTxt, llmsFullTxt, rssXml, manifest, securityTxt, INDEXNOW_KEY } from "./src/seo-files.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
-const OUT = join(ROOT, "public");
+const PUBLIC = join(ROOT, "public");
+// Папка за публикуване от панела: празна нова папка; статичните активи се копират от public/.
+const OUT = process.env.LIFTCON_OUT ? process.env.LIFTCON_OUT : PUBLIC;
+const STATICI = ["assets/fonts", "assets/brand", "assets/promo", "img", "favicon.ico"];
 
 function write(rel, content) {
   const file = join(OUT, rel);
@@ -36,7 +42,7 @@ function write(rel, content) {
 
 /** Маха всичко генерирано (HTML, хеширани активи, SEO файлове); пази шрифтове, бранд и рендери. */
 function clean() {
-  const keep = new Set(["assets/fonts", "assets/brand", "img", "favicon.ico"]);
+  const keep = new Set(["assets/fonts", "assets/brand", "assets/promo", "img", "favicon.ico"]);
   (function walk(dir, rel) {
     if (!existsSync(dir)) return;
     for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -70,7 +76,17 @@ function hashed(srcRel, outDir, ext, name = "site") {
 }
 
 function main() {
-  clean();
+  const dumpAt = process.argv.indexOf("--dump-content");
+  if (dumpAt > 0) {
+    writeFileSync(process.argv[dumpAt + 1], `${JSON.stringify(dumpContent(), null, 2)}\n`);
+    return;
+  }
+  if (process.env.LIFTCON_OVERRIDES) applyOverrides(JSON.parse(readFileSync(process.env.LIFTCON_OVERRIDES, "utf8")));
+  if (OUT === PUBLIC) clean();
+  else {
+    mkdirSync(OUT, { recursive: true });
+    for (const s of STATICI) cpSync(join(PUBLIC, s), join(OUT, s), { recursive: true });
+  }
   const ctx = {
     css: hashed("src/assets/css", "assets/css", "css"),
     js: hashed("src/assets/site.js", "assets/js", "js"),
@@ -80,7 +96,7 @@ function main() {
     byKey: BY_KEY,
     guide: GUIDE,
     site: SITE.url,
-    exists: (p) => existsSync(join(OUT, p)) && statSync(join(OUT, p)).isFile(),
+    exists: (p) => existsSync(join(PUBLIC, p)) && statSync(join(PUBLIC, p)).isFile(),
   };
 
   const specs = [

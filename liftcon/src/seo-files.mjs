@@ -56,9 +56,10 @@ export function robotsTxt() {
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /admin/
 
 # Assistenti e motori AI: i contenuti sono liberamente citabili con link alla fonte.
-${AI_BOTS.map((b) => `User-agent: ${b}\nAllow: /\nDisallow: /api/`).join("\n\n")}
+${AI_BOTS.map((b) => `User-agent: ${b}\nAllow: /\nDisallow: /api/\nDisallow: /admin/`).join("\n\n")}
 
 Sitemap: ${SITE.url}/sitemap.xml
 `;

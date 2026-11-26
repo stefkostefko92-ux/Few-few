@@ -1,30 +1,69 @@
-# LiftCon — само бекендът на формата; статичният сайт го сервира Nginx на хоста от /var/www/<домейн>.
-# Портът е публикуван само на 127.0.0.1 (зад Nginx с TLS). Тайните — в env_file на сървъра (mode 600).
+# LiftCon: база (PostgreSQL, само вътрешна мрежа) + приложението (формата и /admin) на 127.0.0.1:4370.
+# Nginx на хоста сервира сайта от ${LIFTCON_SITE_DIR}/current (връзка към последната публикувана версия).
+# Тайните — в env файла на сървъра (mode 600), подаден с `docker compose --env-file`.
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
 services:
+  db:
+    # закован по digest (същият като rilievi и korpora)
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    <<: *hardening
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs:
+      - /var/run/postgresql:size=4m
+      - /tmp:size=64m
+    mem_limit: 512m
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: liftcon
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?manca POSTGRES_PASSWORD}
+      POSTGRES_DB: liftcon
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U liftcon -d liftcon"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api:
-    build: ./server
+    build:
+      context: .
+      dockerfile: server/Dockerfile
     image: liftcon-api:latest
     container_name: liftcon-api
+    <<: *hardening
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     env_file:
       - ${LIFTCON_ENV_FILE:-/opt/few-few/shared/liftcon/.env}
     environment:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: "4370"
+      DATABASE_URL: postgresql://liftcon:${POSTGRES_PASSWORD}@db:5432/liftcon?schema=public
+      SITE_DIR: /srv/site
     ports:
       - "127.0.0.1:${LIFTCON_HTTP_PORT:-4370}:4370"
+    volumes:
+      - ${LIFTCON_SITE_DIR:-/var/www/liftcon.it}:/srv/site
     read_only: true
     tmpfs:
-      - /tmp
+      - /tmp:size=256m
     cap_drop:
       - ALL
-    security_opt:
-      - no-new-privileges:true
-    mem_limit: 256m
-    pids_limit: 128
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+    mem_limit: 512m
+    pids_limit: 256
+
+volumes:
+  db-data:

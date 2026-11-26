@@ -4,7 +4,7 @@
 
 Limiti dichiarati: LiftCon NON esegue verifiche periodiche o straordinarie ai sensi del DPR 162/1999, non rilascia verbali ufficiali, certificazioni di sicurezza o di conformità, dichiarazioni ai sensi del DM 37/2008, progetti, asseverazioni o perizie giudiziarie, e non esegue prove o manovre sugli impianti. Le relazioni descrivono fatti, documenti e condizioni osservate.
 
-Contatti: telefono +39 379 296 9699, email info@carbonstealth.eu, modulo https://liftcon.it/contatti/. Lingua del sito: italiano.
+Contatti: telefono +39 379 296 9699, email info@liftcon.it, modulo https://liftcon.it/contatti/. Lingua del sito: italiano.
 
 ## Servizi
 - [Sopralluogo tecnico dell'ascensore](https://liftcon.it/servizi/sopralluogo-tecnico-ascensore/): Sopralluogo tecnico descrittivo dell'ascensore a Milano e in Lombardia: cabina, porte, accessi, vano e locali tecnici, con relazione e report fotografico.

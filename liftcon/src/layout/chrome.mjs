@@ -4,6 +4,7 @@
 import { SITE, COMPANY, CONTACT, CREDIT } from "../config.mjs";
 import { esc, join } from "../lib/html.mjs";
 import { R } from "../routes.mjs";
+import { PROMO } from "../content/promo.mjs";
 
 function panelLink(href, title, text, current) {
   const cur = current === href ? ' aria-current="page"' : "";
@@ -85,7 +86,12 @@ export function footer({ servizi, guide }) {
   const year = SITE.updated.slice(0, 4);
   const col = (title, links) =>
     `<div class="foot-col"><p class="foot-head">${esc(title)}</p><ul>${join(links, ([href, label]) => `<li><a href="${href}">${esc(label)}</a></li>`)}</ul></div>`;
+  const promo = `<aside class="promo-band wrap" aria-label="Altri progetti Carbon Stealth"><p class="promo-head">Altri progetti Carbon Stealth</p><ul class="promo-list">${join(
+    PROMO,
+    (p) => `<li><a class="promo" href="${p.url}" target="_blank" rel="noopener"><img src="${p.logo.src}" width="${p.logo.w}" height="${p.logo.h}" alt="${esc(p.nome)}" loading="lazy" decoding="async"><span class="promo-text">${esc(p.testo)}</span><span class="promo-dom">${esc(p.dominio)}</span></a></li>`,
+  )}</ul></aside>`;
   return `<footer class="site-footer">
+${promo}
 <div class="wrap foot-grid">
 <div class="foot-brand">
 <a href="${R.home}" class="foot-logo"><img src="/assets/brand/logo-full.webp" srcset="/assets/brand/logo-full-1x.webp 1x, /assets/brand/logo-full.webp 2x" width="312" height="84" alt="LiftCon, consulenza tecnica ascensori" loading="lazy" decoding="async"></a>

@@ -2,7 +2,11 @@
 // в лога — само изход и услуга, никога име, имейл или текст (лични данни).
 import express, { type Request, type Response, type NextFunction } from "express";
 import type { Logger } from "pino";
-import { Richiesta, sembraBot, riga, ETICHETTE_SERVIZIO, ETICHETTE_RUOLO, type RichiestaValida } from "./richiesta.js";
+import { Richiesta, sembraBot, riga, ETICHETTE_SERVIZIO } from "./richieste/schema.js";
+import { registraRichiesta, testoEmail } from "./richieste/servizio.js";
+import type { Store } from "./store/types.js";
+import { routerAdmin } from "./admin/index.js";
+import type { AdminDeps } from "./admin/deps.js";
 import type { Mailer } from "./mailer.js";
 import { fixedWindowLimiter, clientKey, type Limiter } from "./rate-limit.js";
 
@@ -13,6 +17,10 @@ export interface AppDeps {
   now?: () => number;
   limiter?: Limiter;
   phone?: string;
+  /** С база: заявките се пазят и се виждат в /admin; без база — само имейл (както преди). */
+  store?: Store;
+  baseUrl?: string;
+  admin?: AdminDeps;
 }
 
 const MSG_DATI = "Alcuni dati non sono validi: controlli i campi e riprovi.";
@@ -28,24 +36,6 @@ function paginaErrore(res: Response, status: number, testo: string): void {
     .send(
       `<!doctype html><html lang="it"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Richiesta non inviata | LiftCon</title><body><h1>Richiesta non inviata</h1><p>${testo}</p><p><a href="/contatti/">Torni al modulo</a></p></body></html>`,
     );
-}
-
-function testoEmail(r: RichiestaValida): string {
-  return [
-    "Nuova richiesta dal sito LiftCon",
-    "",
-    `Nome: ${r.nome}`,
-    `Email: ${r.email}`,
-    `Telefono: ${r.telefono || "-"}`,
-    `Ruolo: ${ETICHETTE_RUOLO[r.ruolo]}`,
-    `Comune dell'impianto: ${r.comune}`,
-    `Servizio: ${ETICHETTE_SERVIZIO[r.servizio]}`,
-    "",
-    "Messaggio:",
-    r.messaggio,
-    "",
-    "Informativa privacy letta: sì. I dati non sono salvati sul server del sito.",
-  ].join("\n");
 }
 
 export function createApp(deps: AppDeps): express.Express {
@@ -99,23 +89,33 @@ export function createApp(deps: AppDeps): express.Express {
         ok();
         return;
       }
-      try {
-        await deps.mailer.send({
-          subject: riga(`Richiesta LiftCon: ${ETICHETTE_SERVIZIO[r.servizio]} – ${r.comune}`),
-          text: testoEmail(r),
-          replyTo: { email: r.email, name: riga(r.nome) },
-        });
-      } catch (err) {
-        deps.logger.error({ event: "richiesta", esito: "invio_fallito", err: err instanceof Error ? err.message : "sconosciuto" });
+      let riuscita = false;
+      if (deps.store) {
+        riuscita = (await registraRichiesta({ store: deps.store, mailer: deps.mailer, logger: deps.logger, baseUrl: deps.baseUrl ?? deps.allowedOrigin }, r)).ok;
+      } else {
+        try {
+          await deps.mailer.send({
+            subject: riga(`Richiesta LiftCon: ${ETICHETTE_SERVIZIO[r.servizio]} – ${r.comune}`),
+            text: testoEmail(r, undefined),
+            replyTo: { email: r.email, name: riga(r.nome) },
+          });
+          riuscita = true;
+        } catch (err) {
+          deps.logger.error({ event: "richiesta", esito: "invio_fallito", err: err instanceof Error ? err.message : "sconosciuto" });
+        }
+      }
+      if (!riuscita) {
         const msg = `Invio non riuscito. Riprovi tra poco o ci chiami al ${phone}.`;
         if (vuoleJson(req)) res.status(502).json({ ok: false, message: msg });
         else paginaErrore(res, 502, msg);
         return;
       }
-      deps.logger.info({ event: "richiesta", esito: "inviata", servizio: r.servizio });
+      deps.logger.info({ event: "richiesta", esito: "ricevuta", servizio: r.servizio });
       ok();
     },
   );
+
+  if (deps.admin) app.use("/admin", routerAdmin(deps.admin));
 
   app.use((_req, res) => {
     res.status(404).json({ ok: false, message: "Non trovato." });

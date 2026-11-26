@@ -41,7 +41,7 @@ export function faqHub(ctx) {
   };
 }
 
-const TERMINI = [
+export const TERMINI = [
   ["Amministratore di condominio", "Rappresenta il condominio (art. 1131 del Codice civile) e, tra l'altro, compie gli atti conservativi sulle parti comuni, compreso l'ascensore (art. 1130)."],
   ["Capitolato descrittivo", "Documento che descrive in modo uniforme il lavoro richiesto ai fornitori, così le offerte arrivano confrontabili. Non è un progetto."],
   ["Certificato di abilitazione", "Titolo rilasciato dal Prefetto dopo una prova teorico-pratica, richiesto per la manutenzione degli ascensori (art. 15 del DPR 162/1999)."],
