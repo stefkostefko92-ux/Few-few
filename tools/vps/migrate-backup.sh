@@ -105,7 +105,11 @@ OUT_DIR="${OUT_DIR%/}"
 # #312). Fd 8: offsite-backup.sh държи своята на 9 и ние я наследяваме.
 if [ "$MODE" != plan ]; then
   exec 8>/run/migrate-backup.lock || die "Не мога да отворя /run/migrate-backup.lock."
-  flock -n 8 || die "Друг migrate-backup.sh вече върви (/run/migrate-backup.lock)."
+  # Изчаква другото пускане (ръчно срещу нощното), вместо да провали нощния бекъп.
+  if ! flock -n 8; then
+    inf "Друг migrate-backup.sh върви — чакам го (до 30 мин)…"
+    flock -w 1800 8 || die "Друг migrate-backup.sh върви над 30 мин (/run/migrate-backup.lock)."
+  fi
 fi
 for r in $ROOTS $EXTRA_PATHS; do
   case "$OUT_DIR/" in "${r%/}/"*)

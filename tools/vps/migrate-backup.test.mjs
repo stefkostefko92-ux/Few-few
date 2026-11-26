@@ -258,6 +258,7 @@ test("dumps не пипа PM2; ключалка; обвивка с Restart= се
   const src = readFileSync(script, "utf8");
   assert.match(src, /\[ "\$PM2_LIVE" = 1 \] && \[ "\$MODE" != dumps \]/, "pm2 save само в hot/final");
   assert.match(src, /flock -n 8/, "собствена ключалка");
+  assert.match(src, /flock -w 1800 8/, "второто пускане чака, не проваля нощния бекъп");
   assert.match(src, /Restart=\(always\|on-\)/, "обвивка с автоматичен рестарт се проверява");
 });
 
