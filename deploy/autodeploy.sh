@@ -2556,6 +2556,26 @@ EOF
   esac
 }
 
+# ── liftcon — сайт (статичен, Nginx) + приложение (Docker Compose: db + api); стъпките: liftcon/deploy/deploy.sh ──
+# deploy.sh е идемпотентен и сам връща предишното състояние при провал (връзката current на сайта, Nginx
+# конфига, образа на приложението); бекъп на базата и на снимките преди смяната. Първият път генерира
+# тайните (.env, права 600) и пита в терминала за имейл и парола на администратора — пуска се от човек в SSH.
+# Още не е в PROJECTS по подразбиране: първото пускане е изрично (PROJECTS="liftcon"), след DNS на liftcon.it.
+deploy_liftcon() {
+  local d="$SRC/liftcon" rc=0
+  [ -d "$d" ] || { warn "Няма liftcon/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "liftcon: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам liftcon (сайт + Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  DOMAIN="${LIFTCON_DOMAIN:-liftcon.it}" INDEXNOW="${LIFTCON_INDEXNOW:-1}" bash "$d/deploy/deploy.sh" || rc=$?
+  if [ "$rc" -eq 0 ]; then
+    ok "liftcon: жив — https://${LIFTCON_DOMAIN:-liftcon.it} (health 200: /, /health, /admin/login)."
+  else
+    deploy_failed=1
+    warn "liftcon: деплоят спря (код $rc); deploy.sh е върнал предишното състояние. Логове: docker logs --tail 200 liftcon-api"
+  fi
+}
+
 for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
@@ -2577,6 +2597,7 @@ for p in $PROJECTS; do
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     fivem|FiveM)          deploy_fivem ;;
     linketto)   deploy_linketto ;;
+    liftcon)    deploy_liftcon ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done

@@ -45,6 +45,7 @@ file holds only what is true across all products. Keep it that way.
 | `lovets/` | Ловец — вътрешно B2B търсене на клиенти + „може ли да пишем/звъним“ (КЗП, RPO) | Node 22 · TS · Express 5 · Prisma · PostgreSQL | BG/IT · само собственикът · порт 4360 |
 | `cs-revolution/` | Carbon Stealth — фирменият сайт (уеб агенция и софтуер) | Vite · React 18 SPA (началната) + ~400 статични страници от Python генератори · PHP API · живи сцени от Blender (`public/js/cs-live.js`) | IT/EN/BG · carbonstealth.eu · деплой от клон `deploy-live` с `deploy-all.sh` (**не** през autodeploy) · **логото не се променя** |
 | `semki/` | Semki Bot — Discord бот за изтичането на семките във FiveM + дашборд с вход през Discord | Node 22 · TS · Express 5 · discord.js v14 · Prisma · PostgreSQL · Docker | BG · vps2.carbonstealth.eu (порт от 4340, `HTTP_PORT`) |
+| `liftcon/` | LiftCon — консултантски услуги за асансьори (оглед, контрол на работите, оферти, подготовка за verifica straordinaria) за администратори и частни лица | статичен генератор (Node, нула зависимости) + приложение (форма + `/admin` с 2FA, роли, заявки, редакция и публикуване): Node 22 · TS · Express 5 · zod · Prisma · PostgreSQL · Brevo · Docker | IT · liftcon.it (порт 4370) · само т. 1–4 от каталога · **никога** verifica ufficiale/certificazione |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
@@ -82,7 +83,7 @@ hooks, skills).
   **IndexNow** (Bing, Yandex, Seznam, Naver, Yep — one call reaches all):
   `node tools/seo/indexnow.mjs https://<live-domain>` (needs the site deployed with
   its `indexnow-key.txt` at web root). `deploy/autodeploy.sh` pings after a healthy release for
-  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora, rilievi, fivem, panev, linketto and fakturist (details: `deploy/README.md`);
+  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora, rilievi, fivem, panev, linketto, fakturist and liftcon (details: `deploy/README.md`);
   for the rest run the command yourself. **Google does NOT
   support IndexNow** (sitemap ping retired 2023) — for Google keep the sitemap fresh
   (auto-discovered) and use Search Console (`tools/seo/gsc.mjs`).
