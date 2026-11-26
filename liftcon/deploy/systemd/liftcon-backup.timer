@@ -1,0 +1,11 @@
+# 04:10 UTC — след korpora (02:30), rilievi (03:10) и fakturist (03:40), за да не се застъпват дъмповете.
+[Unit]
+Description=LiftCon — daily backup at 04:10 UTC
+
+[Timer]
+OnCalendar=*-*-* 04:10:00 UTC
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

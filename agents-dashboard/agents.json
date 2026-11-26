@@ -2129,137 +2129,17 @@
           "detail": "Научи: guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет… (+7 още)"
         },
         {
-          "version": "74.6.0",
-          "date": "2026-11-26",
-          "event": "v74.6 — учене",
-          "detail": "Научи: Хукът guard-readonly блокира Bash команди, които пишат по пътища, зададени чрез shell п… (+59 още)"
-        },
-        {
-          "version": "74.7.0",
-          "date": "2026-11-26",
-          "event": "v74.7 — учене",
-          "detail": "Научи: В live-run worktree командите с cd и относителни пътища (ls, sed) искат одобрение зарад…"
-        },
-        {
-          "version": "74.8.0",
-          "date": "2026-11-26",
-          "event": "v74.8 — учене",
-          "detail": "Научи: При pr-review в live-run worktree `node tools/agents/rubric.mjs` иска одобрение и не ти…"
-        },
-        {
-          "version": "74.9.0",
-          "date": "2026-11-26",
-          "event": "v74.9 — учене",
-          "detail": "Научи: В .pr-review/494 diff-ът е пълен (6 от 6 файла по .stat), а .pr-review/494/files/tools …"
-        },
-        {
-          "version": "75.0.0",
-          "date": "2026-11-26",
-          "event": "v75.0 — учене",
-          "detail": "Научи: В if-тяло под set -e неуспешна команда (напр. chown след проверка [ -f ]) прекратява ск…"
-        },
-        {
-          "version": "75.1.0",
-          "date": "2026-11-26",
-          "event": "v75.1 — учене",
-          "detail": "Научи: В live-run worktree пазачът guard-self блокира Bash команда, в която присвояваш на пром…"
-        },
-        {
-          "version": "75.2.0",
-          "date": "2026-11-26",
-          "event": "v75.2 — учене",
-          "detail": "Научи: CSS regex от вида border(?:-[a-z]+)? за „видимо свойство“ хваща и border-radius/border-…"
-        },
-        {
-          "version": "75.3.0",
-          "date": "2026-11-26",
-          "event": "v75.3 — учене",
-          "detail": "Научи: В live-run worktree без одобрение не тръгват нито `node tools/agents/rubric.mjs`, нито …"
-        },
-        {
-          "version": "75.4.0",
-          "date": "2026-11-26",
-          "event": "v75.4 — учене",
-          "detail": "Научи: Маскиране на коментари с /\\/\\*[\\s\\S]*?\\*\\//g върху HTML/JSX без прескачане на низове из…"
-        },
-        {
-          "version": "75.5.0",
-          "date": "2026-11-26",
-          "event": "v75.5 — учене",
-          "detail": "Научи: В live-run worktree дори единична команда node tools/agents/rubric.mjs иска одобрение, …"
-        },
-        {
           "version": "75.7.0",
           "date": "2026-11-26",
           "event": "v75.7 — учене",
-          "detail": "Научи: В live-run worktree за PR 494 tools/design/design-lint*.mjs в работното дърво са байт п… (+1 още)"
+          "detail": "Научи: В live-run worktree за PR 494 tools/design/design-lint*.mjs в работното дърво са байт п… (+70 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-26",
           "type": "learning",
-          "summary": "Научи: „В live-run worktree за PR 494 tools/design/design-lint*.mjs в работното дърво са байт п…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „В live-run worktree дори единична команда node tools/agents/rubric.mjs иска одобрение, …\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „Маскиране на коментари с /\\/\\*[\\s\\S]*?\\*\\//g върху HTML/JSX без прескачане на низове из…\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „В live-run worktree без одобрение не тръгват нито `node tools/agents/rubric.mjs`, нито …\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „CSS regex от вида border(?:-[a-z]+)? за „видимо свойство“ хваща и border-radius/border-…\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „В live-run worktree пазачът guard-self блокира Bash команда, в която присвояваш на пром…\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „В CSS `:focus-visible` и `*:focus-visible` имат специфичност (0,1,0) колкото един клас,…\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „В if-тяло под set -e неуспешна команда (напр. chown след проверка [ -f ]) прекратява ск…\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Аргументът -d на pg_dump се приема за conninfo, ако съдържа „=“ или започва с postgres:…\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „В .pr-review/494 diff-ът е пълен (6 от 6 файла по .stat), а .pr-review/494/files/tools …\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „При pr-review в live-run worktree `node tools/agents/rubric.mjs` иска одобрение и не ти…\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „В live-run worktree командите с cd и относителни пътища (ls, sed) искат одобрение зарад…\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „Хукът guard-readonly блокира Bash команди, които пишат по пътища, зададени чрез shell п…\" (+59 още) · 14 в карантина"
+          "summary": "Научи: „В live-run worktree за PR 494 tools/design/design-lint*.mjs в работното дърво са байт п…\" (+70 още) · 16 в карантина"
         },
         {
           "date": "2026-11-24",
@@ -7621,18 +7501,8 @@
       "activity": [
         {
           "date": "2026-11-26",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „GNU date -d парсва времевия печат на restic (RFC3339 с наносекунди и отместване) без до…\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „GNU date -d парсва времевия печат на restic (RFC3339 с наносекунди и отместване, напр. …\""
-        },
-        {
-          "date": "2026-11-26",
           "type": "learning",
-          "summary": "Научи: „Към f6ea9c639 migrate-backup.sh отказва да трие DUMP_TO/.new/.old без маркер .migrate-b…\" (+20 още) · 6 в карантина"
+          "summary": "Научи: „Към f6ea9c639 migrate-backup.sh отказва да трие DUMP_TO/.new/.old без маркер .migrate-b…\" (+20 още) · 8 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -12354,18 +12224,8 @@
       "activity": [
         {
           "date": "2026-11-26",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „В еднофайлов artifact с чат, който стриймва, reduced-motion трябва да гейтва и JS-скрол…\""
-        },
-        {
-          "date": "2026-11-26",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Няма нова проверена поука от този преглед — находките са от статично четене, не от пусн…\""
-        },
-        {
-          "date": "2026-11-26",
           "type": "learning",
-          "summary": "Научи: „Форма с `novalidate`, чието сървърно рендериране показва грешка само през `aria-invalid…\" (+1 още) · 1 в карантина"
+          "summary": "Научи: „Форма с `novalidate`, чието сървърно рендериране показва грешка само през `aria-invalid…\" (+1 още) · 3 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -16807,28 +16667,17 @@
           "detail": "Научи: Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо… (+21 още)"
         },
         {
-          "version": "35.6.0",
-          "date": "2026-11-26",
-          "event": "v35.6 — учене",
-          "detail": "Научи: В споделеното работно дърво друг агент може да промени файл по време на ревюто — преди …"
-        },
-        {
           "version": "35.8.0",
           "date": "2026-11-26",
           "event": "v35.8 — учене",
-          "detail": "Научи: validate-findings.cjs от cloudflare/security-audit-skill проверява само формата — прием… (+1 още)"
+          "detail": "Научи: validate-findings.cjs от cloudflare/security-audit-skill проверява само формата — прием… (+2 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-26",
           "type": "learning",
-          "summary": "Научи: „validate-findings.cjs от cloudflare/security-audit-skill проверява само формата — прием…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-26",
-          "type": "learning",
-          "summary": "Научи: „В споделеното работно дърво друг агент може да промени файл по време на ревюто — преди …\" · 2 в карантина"
+          "summary": "Научи: „validate-findings.cjs от cloudflare/security-audit-skill проверява само формата — прием…\" (+2 още) · 2 в карантина"
         },
         {
           "date": "2026-11-24",
