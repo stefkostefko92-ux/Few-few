@@ -1048,3 +1048,5 @@
 {"t":"handoff","ts":"2026-11-24T14:58:18.701Z","id":"r9c2c6f07","from":"socialdjiyata","to":"човек","status":"има бележки","run":"7ade7616"}
 {"t":"start","ts":"2026-11-25T15:49:50.571Z","id":"r9e2042fd","flow":"авто","lead":"prevodach","auto":true}
 {"t":"handoff","ts":"2026-11-25T15:49:50.571Z","id":"r9e2042fd","from":"prevodach","to":"човек","status":"има бележки","run":"fcbcb01f"}
+{"t":"start","ts":"2026-11-26T07:29:00.040Z","id":"rc6963b37","flow":"авто","lead":"socialdjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-26T07:29:00.040Z","id":"rc6963b37","from":"socialdjiyata","to":"човек","status":"има бележки","run":"a84d70ff"}
