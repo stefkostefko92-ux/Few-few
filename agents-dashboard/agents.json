@@ -2156,6 +2156,11 @@
       "activity": [
         {
           "date": "2026-11-26",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Аргументът -d на pg_dump се приема за conninfo, ако съдържа „=“ или започва с postgres:…\""
+        },
+        {
+          "date": "2026-11-26",
           "type": "learning",
           "summary": "Научи: „В .pr-review/494 diff-ът е пълен (6 от 6 файла по .stat), а .pr-review/494/files/tools …\""
         },
