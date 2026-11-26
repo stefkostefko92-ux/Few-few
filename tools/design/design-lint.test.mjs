@@ -330,3 +330,21 @@ test("твърдение с число: дълга поредица от чис�
   assert.ok(Date.now() - t0 < 2000, `${Date.now() - t0} ms`);
   assert.deepEqual(ids("<p>10 000+ доволни клиенти</p>"), ["claim-needs-proof"]);
 });
+
+// Седми преглед на PR #494 (Кодаджията, „чисто“ с три Low).
+test("`/*` в шаблонен низ или в текст на HTML не отваря коментар; в <style>/<script> пак се маскира", () => {
+  assert.deepEqual(ids('const g = `uploads/*`;\n<img src="x.png" />\n{/* бележка */}', "a.tsx"), ["img-no-alt"]);
+  assert.deepEqual(ids('<p>Приема image/* файлове</p>\n<img src="x.png">\n<style>/* x */</style>'), ["img-no-alt"]);
+  assert.deepEqual(ids('<style>/* <img src="x.png"> */</style>'), []);
+});
+
+test("причината за заглушаване се търси само в коментара, не в кода след него", () => {
+  assert.deepEqual(ids('{/* design-lint-disable-line img-no-alt */}<img src="x.png" />', "a.tsx"), ["img-no-alt"]);
+  assert.deepEqual(ids('<img src="x.png" /> {/* design-lint-disable-line img-no-alt — декоративна */}', "a.tsx"), []);
+});
+
+test("прозрачен border или box-shadow не е видим заместител; прозрачен outline не рисува :focus-visible", () => {
+  assert.deepEqual(ids(".btn:focus{outline:none;border:1px solid transparent}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(".btn:focus{outline:none;box-shadow:0 0 0 0 transparent}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(".btn{outline:none}.btn:focus-visible{outline:2px solid transparent}", "a.css"), ["focus-hidden"]);
+});

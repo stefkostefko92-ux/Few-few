@@ -67,9 +67,15 @@ export function maskComments(text, ext) {
   // Низовете в кавички (на един ред) се прескачат: `accept="image/*"` или "src/**/*.ts" не отварят коментар,
   // който да скрие всичко до следващото `*/` (шести преглед на PR #494). Кавичка без двойка на реда не е низ;
   // апостроф в текст може само да остави коментар немаскиран — повече находки, никога по-малко.
-  const parts = [String.raw`"(?:\\.|[^"\\\n])*"`, String.raw`'(?:\\.|[^'\\\n])*'`, String.raw`\/\*[\s\S]*?\*\/`];
+  // Шаблонен низ (`…`) на един ред — също (седми преглед).
+  const parts = [String.raw`"(?:\\.|[^"\\\n])*"`, String.raw`'(?:\\.|[^'\\\n])*'`, String.raw`\x60(?:\\.|[^\x60\\\n])*\x60`, String.raw`\/\*[\s\S]*?\*\/`];
   if ([".jsx", ".tsx", ".vue", ".svelte", ".astro", ".scss", ".mdx"].includes(ext)) parts.push(String.raw`(?<=^|[\s;{},])\/\/[^\n]*`);
-  let t = text.replace(new RegExp(parts.join("|"), "g"), (m) => (m[0] === '"' || m[0] === "'" ? m : blank(m)));
+  const re = new RegExp(parts.join("|"), "g");
+  const mask = (src) => src.replace(re, (m) => (m[0] === '"' || m[0] === "'" || m[0] === "\x60" ? m : blank(m)));
+  // В HTML/EJS `/* */` е коментар само в <style>/<script>; в текста `image/*` е просто текст.
+  let t = [".html", ".htm", ".ejs"].includes(ext)
+    ? text.replace(/(<(style|script)\b[^>]*>)([\s\S]*?)(<\/\2\s*>)/gi, (m, open, tag, body, close) => open + mask(body) + close)
+    : mask(text);
   if (ext !== ".css" && ext !== ".scss") t = t.replace(/<!--[\s\S]*?-->/g, blank);
   if (ext === ".ejs") t = t.replace(/<%#[\s\S]*?%>/g, blank);
   return t;
@@ -80,10 +86,10 @@ export function maskComments(text, ext) {
 // Заместителят важи само в :focus блок и само с видима стойност (border:none, transparent — не).
 // `border-*` — само страните и цвят/дебелина: border-radius/-collapse/-spacing не рисуват (пети преглед на PR #494).
 const BORDER_DRAWS = "border(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?(?:-(?:color|width))?";
-const CSS_ALT = new RegExp(String.raw`(?:^|[;{\s])(?:box-shadow|${BORDER_DRAWS}|background(?:-color)?|text-decoration(?:-line)?)\s*:(?!\s*(?:none\b|0\s*(?:[;}]|$)|transparent\b|inherit\b|initial\b|unset\b))[^;}]+`, "i");
+const CSS_ALT = new RegExp(String.raw`(?:^|[;{\s])(?:box-shadow|${BORDER_DRAWS}|background(?:-color)?|text-decoration(?:-line)?)\s*:(?!\s*(?:none\b|0\s*(?:[;}]|$)|inherit\b|initial\b|unset\b))(?![^;}]*\btransparent\b)[^;}]+`, "i");
 // Правило :focus-visible, което наистина рисува фокус (outline/box-shadow/border с видима стойност).
 // (outline-offset/outline-color сами не рисуват нищо.)
-const DRAWS = new RegExp(String.raw`(?:^|[;{\s])(?:outline|outline-style|box-shadow|${BORDER_DRAWS})\s*:(?!\s*(?:none\b|0\s*(?:[;}]|$)|transparent\b))[^;}]+`, "i");
+const DRAWS = new RegExp(String.raw`(?:^|[;{\s])(?:outline|outline-style|box-shadow|${BORDER_DRAWS})\s*:(?!\s*(?:none\b|0\s*(?:[;}]|$)))(?![^;}]*\btransparent\b)[^;}]+`, "i");
 const normSel = (x) => x.replace(/\s+/g, " ").trim();
 /** Базовите селектори, за които има :focus-visible правило, което рисува фокус (`a:focus-visible` → `a`). */
 function focusVisibleBases(text) {
@@ -140,7 +146,7 @@ export function lintText(raw, file, opts = {}) {
     if (seen.has(key)) return;
     const src = lines[line - 1] || "";
     // Заглушава само с причина (поне една дума след правилото): `design-lint-disable-line focus-hidden — фокусът е на родителя`.
-    if (src.includes("design-lint-disable-line") && new RegExp(`design-lint-disable-line[^\\n]*?(?<![\\w-])${rule}(?![\\w-])[^\\n]*?\\p{L}{3}`, "u").test(src)) return;
+    if (src.includes("design-lint-disable-line") && new RegExp(`design-lint-disable-line[^\\n]*?(?<![\\w-])${rule}(?![\\w-])[^\\n*>]*?\\p{L}{3}`, "u").test(src)) return;
     seen.add(key);
     out.push({ rule, sev: RULES[rule].sev, line, col, snippet: snippet.trim().slice(0, 120), why: RULES[rule].why });
   };
