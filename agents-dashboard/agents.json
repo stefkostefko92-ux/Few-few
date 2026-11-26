@@ -7589,6 +7589,11 @@
       "activity": [
         {
           "date": "2026-11-26",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „restic forget с --tag X разглежда само снимките с този таг, затова снимки с друг таг (н…\""
+        },
+        {
+          "date": "2026-11-26",
           "type": "learning",
           "summary": "Научи: „carry_env в autodeploy.sh копира .env в новия release от /opt/few-few/shared/<продукт>/…\" (+1 още)"
         },
