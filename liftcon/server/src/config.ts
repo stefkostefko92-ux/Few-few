@@ -21,6 +21,8 @@ const Env = z.object({
   JWT_SECRET: z.string().min(32).optional(),
   SEAL_KEY: z.string().regex(/^[0-9a-fA-F]{64}$/, "32 byte in esadecimale").optional(),
   SITE_DIR: z.string().default("/srv/site"),
+  // Снимките и издадените PDF на документите (том на сървъра, в бекъпа).
+  DATA_DIR: z.string().default("/srv/data"),
   SITE_SRC: z.string().default("/app/site"),
   CONTENT_DEFAULTS: z.string().default("/app/content-defaults.json"),
   // Първият администратор не идва от средата: deploy.sh го създава (stdin → dist/cli/primo-admin.js).

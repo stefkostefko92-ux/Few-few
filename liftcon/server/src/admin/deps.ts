@@ -9,6 +9,7 @@ import { clientKey } from "../rate-limit.js";
 import type { Catalogo } from "../content/catalogo.js";
 import type { Pubblicatore } from "../content/pubblica.js";
 import type { GestoreEmail } from "../email/configurazione.js";
+import type { ServizioDocumenti } from "../documenti/servizio.js";
 
 export interface AdminDeps {
   store: Store;
@@ -22,6 +23,7 @@ export interface AdminDeps {
   now: () => number;
   siteDir: string;
   email: GestoreEmail;
+  documenti: ServizioDocumenti;
 }
 
 export async function registra(d: AdminDeps, req: Request, utenteId: string | null, azione: string, oggetto?: string, dettagli?: Record<string, unknown>): Promise<void> {

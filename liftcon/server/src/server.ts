@@ -12,6 +12,9 @@ import { pubblicatore } from "./content/pubblica.js";
 import { fixedWindowLimiter } from "./rate-limit.js";
 import { pulizia } from "./manutenzione.js";
 import type { AdminDeps } from "./admin/deps.js";
+import { servizioDocumenti } from "./documenti/servizio.js";
+import { archivio } from "./documenti/archivio.js";
+import { CATALOGO } from "./documenti/condiviso/catalogo/index.js";
 
 async function main(): Promise<void> {
   const cfg = loadConfig();
@@ -45,6 +48,7 @@ async function main(): Promise<void> {
       limiteAccesso: fixedWindowLimiter(10, 15 * 60_000),
       now: () => Date.now(),
       siteDir: cfg.SITE_DIR,
+      documenti: servizioDocumenti({ store, archivio: archivio(cfg.DATA_DIR), catalogo: CATALOGO, now: () => Date.now() }),
     };
     if ((await store.utenti.conta()) === 0) logger.warn({ event: "avvio", admin: "nessun utente: lo crea deploy.sh (oppure deploy.sh --admin)" });
     const giro = () => void pulizia(store!, logger).catch((err: unknown) => logger.error({ event: "pulizia", err: err instanceof Error ? err.message : "?" }));

@@ -1,10 +1,12 @@
 // Store върху Prisma (PostgreSQL) — продукция.
 import { PrismaClient, Prisma } from "@prisma/client";
+import { documentiPrisma } from "./documenti-prisma.js";
 import { STATI_RICHIESTA, type Store, type Evento, type Pubblicazione } from "./types.js";
 
 export function prismaStore(db: PrismaClient = new PrismaClient()): Store & { close(): Promise<void> } {
   const json = (v: unknown) => v as Prisma.InputJsonValue;
   return {
+    ...documentiPrisma(db),
     async close() {
       await db.$disconnect();
     },

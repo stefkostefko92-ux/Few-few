@@ -20,14 +20,17 @@
     "argon2": "^0.45.2",
     "express": "^5.3.0",
     "jose": "^6.2.18",
+    "pdfkit": "0.20.2",
     "pino": "^9.14.0",
     "prisma": "^6.19.3",
     "qrcode": "^1.5.4",
+    "sharp": "0.35.5",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^22.20.5",
+    "@types/pdfkit": "^0.17.6",
     "@types/qrcode": "^1.5.6",
     "typescript": "^5.9.3"
   }

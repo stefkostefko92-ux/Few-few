@@ -1,5 +1,6 @@
 // Слоят за данните: интерфейс, който Prisma изпълнява в продукция, а паметта — в тестовете.
 // Типовете са на домейна (не на Prisma), за да не изтича ORM в маршрутите.
+import type { StoreDocumenti } from "./documenti-types.js";
 
 export const RUOLI = ["MASTER", "ADMIN", "DIREZIONE", "RESPONSABILE", "TECNICO", "OPERATORE", "CLIENTE"] as const;
 export type Ruolo = (typeof RUOLI)[number];
@@ -22,6 +23,7 @@ export interface Utente {
   tentativiFalliti: number;
   bloccatoFino: Date | null;
   ultimoAccesso: Date | null;
+  qualifica: string;
   creatoIl: Date;
 }
 
@@ -92,7 +94,7 @@ export interface Evento {
   ipHmac: string | null;
 }
 
-export interface Store {
+export interface Store extends StoreDocumenti {
   utenti: {
     conta(): Promise<number>;
     tutti(): Promise<Utente[]>;
@@ -108,7 +110,8 @@ export interface Store {
     consumaCodice(id: string, hmac: string): Promise<boolean>;
   };
   sessioni: {
-    crea(s: Omit<Sessione, "id" | "creataIl" | "ultimoUso">): Promise<Sessione>;
+    /** `ultimoUso` идва от часовника на приложението (същият, с който се мери бездействието). */
+    crea(s: Omit<Sessione, "id" | "creataIl">): Promise<Sessione>;
     perId(id: string): Promise<Sessione | null>;
     aggiorna(id: string, patch: Partial<Pick<Sessione, "stato" | "ultimoUso" | "csrf">>): Promise<void>;
     elimina(id: string): Promise<void>;

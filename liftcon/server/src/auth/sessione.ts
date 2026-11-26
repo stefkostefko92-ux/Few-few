@@ -49,7 +49,7 @@ export function gestoreSessioni(o: OpzioniSessione) {
     nome,
     async apri(res: Response, utente: Utente, stato: Sessione["stato"]): Promise<Sessione> {
       const scadeIl = new Date(now() + DURATA_MS);
-      const s = await o.store.sessioni.crea({ utenteId: utente.id, stato, csrf: randomToken(24), scadeIl });
+      const s = await o.store.sessioni.crea({ utenteId: utente.id, stato, csrf: randomToken(24), scadeIl, ultimoUso: new Date(now()) });
       const jwt = await new SignJWT({ sid: s.id })
         .setProtectedHeader({ alg: "HS256" })
         .setIssuedAt(Math.floor(now() / 1000))

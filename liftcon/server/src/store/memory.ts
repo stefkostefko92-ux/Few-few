@@ -1,5 +1,6 @@
 // Store в паметта — за тестовете (и локален преглед без база). Поведението следва Prisma реализацията.
 import { randomUUID } from "node:crypto";
+import { documentiMemory } from "./documenti-memory.js";
 import { STATI_RICHIESTA, type Store, type Utente, type Sessione, type Richiesta, type Contenuto, type Pubblicazione, type Evento } from "./types.js";
 
 export function memoryStore(): Store {
@@ -14,6 +15,7 @@ export function memoryStore(): Store {
   const id = () => randomUUID();
 
   return {
+    ...documentiMemory(),
     utenti: {
       async conta() {
         return utenti.size;
@@ -41,6 +43,7 @@ export function memoryStore(): Store {
           tentativiFalliti: 0,
           bloccatoFino: null,
           ultimoAccesso: null,
+          qualifica: "",
           creatoIl: new Date(),
         };
         utenti.set(nuovo.id, nuovo);
@@ -76,8 +79,7 @@ export function memoryStore(): Store {
     },
     sessioni: {
       async crea(s) {
-        const ora = new Date();
-        const nuova: Sessione = { id: id(), creataIl: ora, ultimoUso: ora, ...s };
+        const nuova: Sessione = { id: id(), creataIl: s.ultimoUso, ...s };
         sessioni.set(nuova.id, nuova);
         return nuova;
       },

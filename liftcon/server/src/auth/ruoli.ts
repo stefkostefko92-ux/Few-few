@@ -11,6 +11,11 @@ export const PERMESSI = [
   "registro.leggi",
   "utenti.gestisci",
   "impostazioni.gestisci",
+  "documenti.leggi",
+  "documenti.modifica",
+  "documenti.emetti",
+  "documenti.elimina",
+  "frasi.gestisci",
 ] as const;
 export type Permesso = (typeof PERMESSI)[number];
 
@@ -27,6 +32,12 @@ const SOGLIA: Record<Permesso, Ruolo> = {
   "registro.leggi": "DIREZIONE",
   "utenti.gestisci": "ADMIN",
   "impostazioni.gestisci": "ADMIN",
+  // Документи (docs/documenti-spec.md D15). Изтриване на издаден — DIREZIONE+; чернова — авторът или RESPONSABILE+.
+  "documenti.leggi": "OPERATORE",
+  "documenti.modifica": "TECNICO",
+  "documenti.emetti": "TECNICO",
+  "documenti.elimina": "DIREZIONE",
+  "frasi.gestisci": "RESPONSABILE",
 };
 
 export function puo(r: Ruolo, p: Permesso): boolean {

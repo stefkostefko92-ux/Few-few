@@ -15,6 +15,9 @@ import { fixedWindowLimiter } from "../dist/rate-limit.js";
 import { hashPassword } from "../dist/auth/password.js";
 import { totpCodeAt, totpStep } from "../dist/auth/totp.js";
 import { gestoreEmail } from "../dist/email/configurazione.js";
+import { servizioDocumenti } from "../dist/documenti/servizio.js";
+import { archivio } from "../dist/documenti/archivio.js";
+import { CATALOGO } from "../dist/documenti/condiviso/catalogo/index.js";
 
 /** Двойник на Brevo: записва заявките, отговаря според `risposte` (по път). Нищо не излиза навън. */
 export function brevoFinto(risposte = {}) {
@@ -47,6 +50,7 @@ export async function setup({ siteSrc = SITE_SRC, brevo = brevoFinto(), mailerDa
   const logger = pino({ level: "silent" });
   const sig = sigillo(SEAL);
   const siteDir = mkdtempSync(join(tmpdir(), "liftcon-site-"));
+  const dataDir = mkdtempSync(join(tmpdir(), "liftcon-data-"));
   const cat = catalogo(store, defaults());
   const admin = {
     store,
@@ -60,13 +64,14 @@ export async function setup({ siteSrc = SITE_SRC, brevo = brevoFinto(), mailerDa
     now: () => clock.t,
     siteDir,
     email: gestoreEmail({ store, sigillo: sig, env: { nomeMittente: "LiftCon" }, fetch: brevo.fetch }),
+    documenti: servizioDocumenti({ store, archivio: archivio(dataDir), catalogo: CATALOGO, now: () => clock.t }),
   };
   const sent = [];
   const mailer = mailerDaPannello ? admin.email.mailer() : { async send(m) { sent.push(m); } };
   const app = createApp({ mailer, logger, allowedOrigin: ORIGIN, store, admin, baseUrl: ORIGIN, now: () => clock.t, limiter: fixedWindowLimiter(1000, 60_000) });
   const server = await new Promise((r) => { const s = app.listen(0, "127.0.0.1", () => r(s)); });
   const base = `http://127.0.0.1:${server.address().port}`;
-  return { store, sig, clock, base, sent, siteDir, admin, brevo, close: () => new Promise((r) => server.close(r)) };
+  return { store, sig, clock, base, sent, siteDir, dataDir, admin, brevo, close: () => new Promise((r) => server.close(r)) };
 }
 
 /** Клиент с бисквитки (един браузър). */

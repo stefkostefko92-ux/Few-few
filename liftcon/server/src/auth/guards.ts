@@ -16,6 +16,16 @@ export function richiedeAccesso() {
   };
 }
 
+/** Като richiedeAccesso, но за JSON API-то: 401/403 вместо пренасочване (приложението решава какво да покаже). */
+export function richiedeAccessoApi() {
+  return (_req: Request, res: Response, next: NextFunction) => {
+    const a = auth(res);
+    if (!a || a.sessione.stato !== "COMPLETA") return res.status(401).json({ errore: "sessione" });
+    if (!accessoAdmin(a.utente.ruolo) || a.utente.cambiarePassword) return res.status(403).json({ errore: "accesso" });
+    next();
+  };
+}
+
 /** Сесия „само парола“ — за стъпката 2FA. */
 export function richiedeSessioneParziale() {
   return (_req: Request, res: Response, next: NextFunction) => {
