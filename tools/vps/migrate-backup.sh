@@ -40,6 +40,9 @@
 # FORCE=1 продължава при малко свободно място.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
+# Процесите на postgres тръгват с ЧИСТА среда: тайните на извикващия (RESTIC_*, AWS_*, …) иначе стоят в
+# /proc/<pid>/environ на процес с uid postgres и SQL суперпотребител ги чете (преглед на PR #312, CWE-214).
+PG_PATH="/usr/lib/postgresql/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 umask 077
 cd /
 
@@ -564,15 +567,15 @@ dump_pg_host(){
   while read -r ver name port status rest; do
     case "$status" in online*) ;; *) continue;; esac
     tag="host-$ver-$name"
-    runuser -u postgres -- pg_dumpall -p "$port" --globals-only > "$STAGE/db/pg-$tag-globals.sql" 2>"$ERR" \
+    runuser -u postgres -- env -i PATH="$PG_PATH" LC_ALL=C.UTF-8 pg_dumpall -p "$port" --globals-only > "$STAGE/db/pg-$tag-globals.sql" 2>"$ERR" \
       || fail "Postgres $tag: ролите — $(errline)"
-    if ! dbs="$(runuser -u postgres -- psql -p "$port" -d postgres -Atc 'SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate ORDER BY 1' 2>"$ERR")"; then
+    if ! dbs="$(runuser -u postgres -- env -i PATH="$PG_PATH" LC_ALL=C.UTF-8 psql -p "$port" -d postgres -Atc 'SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate ORDER BY 1' 2>"$ERR")"; then
       fail "Postgres $tag: списъкът с бази — $(errline)"; continue
     fi
     while IFS= read -r db; do
       [ -n "$db" ] || continue
       f="$STAGE/db/pg-$tag-$(safe "$db").dump"
-      if runuser -u postgres -- pg_dump -p "$port" -Fc -d "$db" > "$f" 2>"$ERR" && runuser -u postgres -- pg_restore -l < "$f" >/dev/null 2>&1; then
+      if runuser -u postgres -- env -i PATH="$PG_PATH" LC_ALL=C.UTF-8 pg_dump -p "$port" -Fc -d "$db" > "$f" 2>"$ERR" && runuser -u postgres -- env -i PATH="$PG_PATH" LC_ALL=C.UTF-8 pg_restore -l < "$f" >/dev/null 2>&1; then
         DUMPS+=("postgres · $tag · $db · $(du -h "$f" | cut -f1) · ok")
       else
         fail "Postgres $tag/$db: дъмпът не мина — $(errline)"; DUMPS+=("postgres · $tag · $db · — · ПРОВАЛ")

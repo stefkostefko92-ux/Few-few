@@ -131,7 +131,8 @@ cmd_backup(){
   [ -f "$MIGRATE" ] || die "Липсва $MIGRATE."
   lock
   inf "Дъмпове на базите → $DUMP_DIR"
-  DUMP_TO="$DUMP_DIR" bash "$MIGRATE" || rc=$?
+  # Без ключовете на хранилището: migrate-backup.sh вика процеси като postgres, а те не бива да ги наследят.
+  ( for v in $(compgen -e); do case "$v" in RESTIC_*|AWS_*|B2_*|AZURE_*|GOOGLE_*|OS_*) unset "$v";; esac; done; DUMP_TO="$DUMP_DIR" exec bash "$MIGRATE" ) || rc=$?
   case "$rc" in
     0) ;;
     2) warn "Някои дъмпове не минаха (виж по-горе) — снимката се прави с наличното, а задачата завършва с провал." ;;

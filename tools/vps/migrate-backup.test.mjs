@@ -181,3 +181,16 @@ test("изчезнал контейнер/том по време на бекъп
   assert.ok(vols.length >= 2 && vols.every((l) => /\|\|/.test(l)), "всеки volume inspect има резервен път");
   assert.doesNotMatch(src, /^\s*install -d -m 700 "\$\(dirname "\$DUMP_TO"\)"$/m, "не сменя правата на съществуваща /var/backups");
 });
+
+// Четвърти преглед на PR #312 (Кодаджията, CWE-214): offsite-backup.sh експортва RESTIC_*/AWS_*/B2_*…,
+// а migrate-backup.sh вика `runuser -u postgres` без чиста среда → ключовете стоят в /proc/<pid>/environ
+// на процес с uid postgres (четим от SQL суперпотребител). Два слоя: migrate тръгва без тях, а всяко
+// runuser към postgres — с env -i.
+test("тайните на offsite не стигат до процесите на postgres", () => {
+  const src = readFileSync(script, "utf8");
+  assert.doesNotMatch(src, /runuser -u postgres -- (?!env -i )/, "всяко runuser към postgres е с env -i");
+  const off = readFileSync(join(here, "offsite-backup.sh"), "utf8");
+  const call = off.split("\n").find((l) => /bash "\$MIGRATE"/.test(l));
+  assert.ok(call, "извикването на migrate-backup.sh");
+  assert.match(call, /unset/, "migrate-backup.sh тръгва без RESTIC_*/AWS_*/… в средата");
+});
