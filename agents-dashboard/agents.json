@@ -1272,7 +1272,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 788
+        "lessons": 789
       },
       "evolution": [
         {
@@ -2144,9 +2144,20 @@
           "date": "2026-11-26",
           "event": "v74.2 — учене",
           "detail": "Научи: В live-run worktree командите rubric.mjs и grep с относителен път след cd искат одобрен…"
+        },
+        {
+          "version": "74.3.0",
+          "date": "2026-11-26",
+          "event": "v74.3 — учене",
+          "detail": "Научи: prune_releases в deploy/autodeploy.sh пази release-и по етикета com.docker.compose.proj…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-26",
+          "type": "learning",
+          "summary": "Научи: „prune_releases в deploy/autodeploy.sh пази release-и по етикета com.docker.compose.proj…\""
+        },
         {
           "date": "2026-11-26",
           "type": "quarantine",
