@@ -1,11 +1,22 @@
 #!/usr/bin/env bash
 # LiftCon — деплой на VPS-а (netcup). Пуска се НА сървъра от разархивирания release (папката liftcon/):
-#   sudo DOMAIN=liftcon.it bash liftcon/deploy/deploy.sh
-# Идемпотентен: бекъп на базата и на сайта → базова версия на сайта от репото → база + приложение (Docker;
-# приложението прилага миграциите и публикува сайта с промените от панела) → Nginx → проверки.
-# При провал всичко се връща: сайтът (връзката current), Nginx конфигът и образът на приложението.
-# Тайните са в $STATE/.env (mode 600), не в архива.
+#   sudo DOMAIN=liftcon.it bash liftcon/deploy/deploy.sh             # пълен деплой
+#   sudo bash liftcon/deploy/deploy.sh --solo-env                    # само .env (генерира липсващите тайни)
+#   sudo bash liftcon/deploy/deploy.sh --admin                       # само първият администратор на панела
+# Идемпотентен: .env (тайните се генерират, ако липсват; съществуващите не се пипат) → бекъп на базата и на
+# сайта → базова версия на сайта от репото → база + приложение (Docker; приложението прилага миграциите и
+# публикува сайта с промените от панела) → Nginx → проверки → първият администратор (пита за имейл и парола,
+# само ако панелът няма потребители). При провал всичко се връща: сайтът (връзката current), Nginx конфигът
+# и образът на приложението. Тайните са в $STATE/.env (mode 600), не в архива.
 set -euo pipefail
+
+MODE="deploy"
+case "${1:-}" in
+  "") ;;
+  --solo-env) MODE="env" ;;
+  --admin) MODE="admin" ;;
+  *) printf 'употреба: deploy.sh [--solo-env | --admin]\n' >&2; exit 2 ;;
+esac
 
 DOMAIN="${DOMAIN:-liftcon.it}"
 PORT="${LIFTCON_HTTP_PORT:-4370}"
@@ -18,21 +29,133 @@ CERT="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP="$(dirname "$HERE")"
 TS="$(date -u +%Y%m%dT%H%M%SZ)"
-NODE_UID=1000 # потребителят node в образа
+NODE_UID=1000         # потребителят node в образа
+DB_VOLUME="liftcon_db-data" # томът на базата (проект „liftcon“ + volume „db-data“ в docker-compose.yml)
 
 log() { printf '[liftcon] %s\n' "$*"; }
 die() { printf '[liftcon] ГРЕШКА: %s\n' "$*" >&2; exit 1; }
 compose() { LIFTCON_ENV_FILE="$ENV_FILE" LIFTCON_HTTP_PORT="$PORT" LIFTCON_SITE_DIR="$WEB_ROOT" docker compose --env-file "$ENV_FILE" -f "$APP/docker-compose.yml" -p liftcon "$@"; }
+need() { for c in "$@"; do command -v "$c" >/dev/null || die "липсва командата $c"; done; }
+
+# --- .env: стойност на ключ / запис на ключ (атомарно, права 600; стойностите не се показват никъде) ---
+valore_env() { grep -E "^$1=" "$ENV_FILE" 2>/dev/null | tail -n 1 | cut -d= -f2- || true; }
+imposta_env() {
+  local tmp
+  tmp="$(mktemp "$STATE/.env.XXXXXX")"
+  { grep -vE "^$1=" "$ENV_FILE" || true; printf '%s=%s\n' "$1" "$2"; } >"$tmp"
+  chmod 600 "$tmp"
+  mv -f "$tmp" "$ENV_FILE"
+}
+
+# Тайните, които могат да се генерират, се генерират (openssl rand); съществуващите никога не се сменят.
+# POSTGRES_PASSWORD и SEAL_KEY — само за нова база: при съществуващ том нова стойност би заключила базата
+# и шифрованите 2FA тайни и ключа за Brevo → спиране без промени (спецификация т. 18а).
+assicura_env() {
+  mkdir -p "$STATE"
+  chmod 700 "$STATE"
+  if [[ ! -f "$ENV_FILE" ]]; then
+    (
+      umask 077
+      cat >"$ENV_FILE" <<ENV
+# LiftCon — създаден от deploy.sh ($TS). Тайните са генерирани автоматично: пазете копие на този файл на
+# сигурно място (без SEAL_KEY 2FA тайните и ключът за Brevo в базата не могат да се дешифрират).
+# Brevo се настройва от панела: /admin/impostazioni (тук — само по желание, като резерва).
+ALLOWED_ORIGIN=https://$DOMAIN
+MAIL_FROM_NAME=LiftCon
+MAIL_TO=info@$DOMAIN
+LOG_LEVEL=info
+ENV
+    )
+    log "създаден $ENV_FILE (права 600)"
+  fi
+  [[ "$(stat -c %a "$ENV_FILE")" == "600" ]] || die "$ENV_FILE трябва да е с права 600 (chmod 600 $ENV_FILE)"
+  local db_esiste=0 nuovi=() k
+  if docker volume inspect "$DB_VOLUME" >/dev/null 2>&1; then db_esiste=1; fi
+  for k in POSTGRES_PASSWORD SEAL_KEY; do
+    if [[ -z "$(valore_env "$k")" && "$db_esiste" == 1 ]]; then
+      die "в $ENV_FILE липсва $k, а базата вече съществува (том $DB_VOLUME): нова стойност би я заключила. Върнете стойността от копието на .env."
+    fi
+  done
+  if [[ -z "$(valore_env POSTGRES_PASSWORD)" ]]; then imposta_env POSTGRES_PASSWORD "$(openssl rand -hex 32)"; nuovi+=(POSTGRES_PASSWORD); fi
+  if [[ -z "$(valore_env SEAL_KEY)" ]]; then imposta_env SEAL_KEY "$(openssl rand -hex 32)"; nuovi+=(SEAL_KEY); fi
+  # JWT_SECRET може да се генерира и при съществуваща база: само изписва всички от панела.
+  if [[ -z "$(valore_env JWT_SECRET)" ]]; then imposta_env JWT_SECRET "$(openssl rand -hex 48)"; nuovi+=(JWT_SECRET); fi
+  if ((${#nuovi[@]})); then log "генерирани: ${nuovi[*]} — запазете копие на $ENV_FILE на сигурно място (password manager)"; fi
+  return 0
+}
+
+# Първият администратор (MASTER) — само ако панелът няма потребители. Пита в терминала за имейл и парола
+# (скрито, два пъти); паролата минава през stdin към командата в контейнера — не се пише в .env, в лога или в
+# аргументите на процес (спецификация т. 18). В режим --admin неуспехът е грешка; при деплой — предупреждение.
+primo_admin() {
+  local n tentativo email pw pw2 rc
+  n="$(compose exec -T api node dist/cli/primo-admin.js conta 2>/dev/null | tr -dc '0-9')" || n=""
+  if [[ -z "$n" ]]; then
+    log "ВНИМАНИЕ: не мога да проверя потребителите на панела. Нов опит: sudo bash $HERE/deploy.sh --admin"
+    [[ "$MODE" != admin ]] || exit 1
+    return 0
+  fi
+  if [[ "$n" != 0 ]]; then
+    [[ "$MODE" != admin ]] || log "панелът вече има потребители ($n) — първият администратор не се създава отново"
+    return 0
+  fi
+  if [[ ! -t 0 ]]; then
+    log "ВНИМАНИЕ: панелът няма администратор, а тук няма терминал за въвеждане. Пуснете: sudo bash $HERE/deploy.sh --admin"
+    [[ "$MODE" != admin ]] || exit 1
+    return 0
+  fi
+  log "Първият администратор на панела https://$DOMAIN/admin (роля MASTER)."
+  log "Паролата: поне 12 знака, най-добре фраза от няколко думи. Пази се само като хеш (argon2id) в базата."
+  for tentativo in 1 2 3; do
+    read -r -p "Имейл на администратора: " email || break
+    IFS= read -r -s -p "Парола: " pw || break
+    printf '\n'
+    IFS= read -r -s -p "Повторете паролата: " pw2 || break
+    printf '\n'
+    if [[ "$pw" != "$pw2" ]]; then
+      log "паролите не съвпадат (опит $tentativo от 3)"
+      continue
+    fi
+    rc=0
+    printf '%s\n%s\n' "$email" "$pw" | compose exec -T api node dist/cli/primo-admin.js crea || rc=$?
+    pw=""
+    pw2=""
+    case "$rc" in
+      0) log "вход: https://$DOMAIN/admin — при първия вход се настройва 2FA (приложение за кодове)"; return 0 ;;
+      3) return 0 ;;
+      2) log "опит $tentativo от 3" ;;
+      *) break ;;
+    esac
+  done
+  pw=""
+  pw2=""
+  log "ВНИМАНИЕ: администраторът не е създаден. Нов опит: sudo bash $HERE/deploy.sh --admin"
+  [[ "$MODE" != admin ]] || exit 1
+  return 0
+}
 
 [[ "$DOMAIN" =~ ^[a-z0-9.-]+\.[a-z]{2,}$ ]] || die "невалиден DOMAIN: $DOMAIN"
-for c in nginx docker curl certbot ss tar gzip; do command -v "$c" >/dev/null || die "липсва командата $c"; done
+
+if [[ "$MODE" == env ]]; then
+  need docker openssl
+  docker info >/dev/null 2>&1 || die "Docker не работи"
+  assicura_env
+  log "готово: $ENV_FILE"
+  exit 0
+fi
+
+if [[ "$MODE" == admin ]]; then
+  need docker
+  [[ -f "$ENV_FILE" ]] || die "липсва $ENV_FILE — първо пълен деплой"
+  docker ps --format '{{.Names}}' | grep -q '^liftcon-api$' || die "приложението (liftcon-api) не работи — първо пълен деплой"
+  primo_admin
+  exit 0
+fi
+
+need nginx docker curl certbot ss tar gzip openssl
 [[ -f "$APP/public/index.html" ]] || die "няма $APP/public/index.html — грешен архив?"
-[[ -f "$ENV_FILE" ]] || die "липсва $ENV_FILE (виж server/.env.example)"
-[[ "$(stat -c %a "$ENV_FILE")" == "600" ]] || die "$ENV_FILE трябва да е с права 600"
-# Brevo (ключ, подател, получател) може да е тук или да се настрои от панела: /admin/impostazioni.
-for k in POSTGRES_PASSWORD JWT_SECRET SEAL_KEY ADMIN_EMAIL; do
-  grep -qE "^$k=.+" "$ENV_FILE" || die "в $ENV_FILE липсва $k"
-done
+docker info >/dev/null 2>&1 || die "Docker не работи"
+assicura_env
 
 # Портът: свободен или вече държан от нашия контейнер.
 if ss -tlnH "sport = :$PORT" | grep -q .; then
@@ -121,7 +244,10 @@ active="$(readlink "$WEB_ROOT/current")"
 ls -1dt "$WEB_ROOT"/releases/* 2>/dev/null | grep -v "/${active#releases/}$" | tail -n +6 | xargs -r rm -rf || true
 log "health 200: https://$DOMAIN/health, https://$DOMAIN/ и https://$DOMAIN/admin/login (активна версия: $active)"
 
-# 7. IndexNow (Bing, Yandex, Seznam, Naver, Yep) — по желание: INDEXNOW=1.
+# 7. Първият администратор (само ако панелът няма потребители).
+primo_admin
+
+# 8. IndexNow (Bing, Yandex, Seznam, Naver, Yep) — по желание: INDEXNOW=1.
 if [[ "${INDEXNOW:-0}" == "1" && -f "$APP/../tools/seo/indexnow.mjs" ]]; then
   node "$APP/../tools/seo/indexnow.mjs" "https://$DOMAIN" || log "IndexNow не мина (сайтът е жив; пуснете го ръчно)"
 fi

@@ -19,11 +19,12 @@ Città metropolitana, Monza e Brianza и цяла Ломбардия. Публи
   - Имейлът (Brevo) се настройва и от панела: `/admin/impostazioni` (MASTER/ADMIN) — ключът шифрован (`brevo-v1`),
     показват се само последните 4 знака; проверка `GET /v3/account` + `/v3/senders`, тестово писмо; `.env` е резерва.
   - Данните минават през интерфейса `Store` (Prisma в продукция, паметта в тестовете).
-  - Първият MASTER — от `ADMIN_EMAIL` + `ADMIN_INITIAL_PASSWORD` (смяна при първия вход). Без `DATABASE_URL`
-    сървърът работи само като форма → имейл.
+  - Първият MASTER — при деплоя: `deploy.sh` пита за имейл и парола (stdin → `dist/cli/primo-admin.js`, само
+    ако няма потребители; нищо в `.env`). Без `DATABASE_URL` сървърът работи само като форма → имейл.
 - `deploy/` — `nginx.conf` (root `/var/www/liftcon.it/current`, `/admin` → приложението) + `liftcon-headers.conf`,
-  `deploy.sh` (бекъп на базата и сайта → базова версия от репото → Docker: db + api с `migrate deploy` →
-  Nginx → health на `/`, `/health`, `/admin/login` → откат). Порт: `127.0.0.1:4370` (`LIFTCON_HTTP_PORT`).
+  `deploy.sh` (`.env`: генерира липсващите тайни → бекъп на базата и сайта → базова версия от репото → Docker:
+  db + api с `migrate deploy` → Nginx → health на `/`, `/health`, `/admin/login` → откат → първият
+  администратор). Режими: `--solo-env`, `--admin`. Тест: `test/deploy.test.mjs`. Порт: `127.0.0.1:4370`.
 - Реклами на другите продукти (Panev Ascensori, Rilievi Impianti): `src/content/promo.mjs`, етикет „Altri progetti“.
 - `art/` — 3D рендерите (three.js, bundled; правило „никога SVG“). `scripts/brand-assets.py` — растерните
   активи от `brand/liftcon-logo-originale.png`.

@@ -10,8 +10,12 @@ cd liftcon/server && npm ci && npm test       # приложението (фор
 
 Локален преглед на сайта: `npx http-server liftcon/public -p 4399`.
 
-**Админ панел** `https://liftcon.it/admin` — първият вход е с `ADMIN_EMAIL` + `ADMIN_INITIAL_PASSWORD` от `.env`
-на сървъра; при него се настройва 2FA (приложение за кодове) и се сменя паролата. Спецификация: `docs/admin-spec.md`.
+**Админ панел** `https://liftcon.it/admin` — първият администратор се създава при деплоя (имейл и парола се
+въвеждат в терминала); при първия вход се настройва 2FA (приложение за кодове). Спецификация: `docs/admin-spec.md`.
 
-Деплой (на сървъра, от `main`): `sudo DOMAIN=liftcon.it bash liftcon/deploy/deploy.sh` — изисква
-`/opt/few-few/shared/liftcon/.env` (mode 600) по образеца `server/.env.example`. Подробности — `CLAUDE.md`.
+Деплой (на сървъра, от `main`, в терминал): `sudo DOMAIN=liftcon.it bash liftcon/deploy/deploy.sh`.
+`/opt/few-few/shared/liftcon/.env` (mode 600) се създава сам: `POSTGRES_PASSWORD`, `JWT_SECRET` и `SEAL_KEY` се
+генерират, ако липсват (съществуващите не се пипат) — **пазете копие на файла на сигурно място**. Ако панелът няма
+потребители, деплоят пита за имейл и парола на администратора (паролата — скрито, два пъти; не се записва никъде
+освен като хеш в базата). Отделно: `--solo-env` (само `.env`) и `--admin` (само администраторът). Подробности —
+`CLAUDE.md`.

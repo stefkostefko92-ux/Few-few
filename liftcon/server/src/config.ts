@@ -23,9 +23,7 @@ const Env = z.object({
   SITE_DIR: z.string().default("/srv/site"),
   SITE_SRC: z.string().default("/app/site"),
   CONTENT_DEFAULTS: z.string().default("/app/content-defaults.json"),
-  ADMIN_EMAIL: z.email().optional(),
-  ADMIN_NAME: z.string().min(2).max(100).default("Amministratore"),
-  ADMIN_INITIAL_PASSWORD: z.string().min(12).optional(),
+  // Първият администратор не идва от средата: deploy.sh го създава (stdin → dist/cli/primo-admin.js).
 });
 
 export type Config = z.infer<typeof Env>;

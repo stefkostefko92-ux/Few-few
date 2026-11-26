@@ -10,7 +10,7 @@ import { sigillo } from "./auth/seal.js";
 import { catalogo } from "./content/catalogo.js";
 import { pubblicatore } from "./content/pubblica.js";
 import { fixedWindowLimiter } from "./rate-limit.js";
-import { pulizia, primoMaster } from "./manutenzione.js";
+import { pulizia } from "./manutenzione.js";
 import type { AdminDeps } from "./admin/deps.js";
 
 async function main(): Promise<void> {
@@ -46,7 +46,7 @@ async function main(): Promise<void> {
       now: () => Date.now(),
       siteDir: cfg.SITE_DIR,
     };
-    await primoMaster(store, logger, { email: cfg.ADMIN_EMAIL, nome: cfg.ADMIN_NAME, password: cfg.ADMIN_INITIAL_PASSWORD });
+    if ((await store.utenti.conta()) === 0) logger.warn({ event: "avvio", admin: "nessun utente: lo crea deploy.sh (oppure deploy.sh --admin)" });
     const giro = () => void pulizia(store!, logger).catch((err: unknown) => logger.error({ event: "pulizia", err: err instanceof Error ? err.message : "?" }));
     giro();
     setInterval(giro, 6 * 60 * 60_000).unref();
