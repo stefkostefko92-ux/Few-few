@@ -16555,7 +16555,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 258
+        "lessons": 260
       },
       "evolution": [
         {
@@ -16671,9 +16671,20 @@
           "date": "2026-11-26",
           "event": "v35.6 — учене",
           "detail": "Научи: В споделеното работно дърво друг агент може да промени файл по време на ревюто — преди …"
+        },
+        {
+          "version": "35.8.0",
+          "date": "2026-11-26",
+          "event": "v35.8 — учене",
+          "detail": "Научи: validate-findings.cjs от cloudflare/security-audit-skill проверява само формата — прием… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-26",
+          "type": "learning",
+          "summary": "Научи: „validate-findings.cjs от cloudflare/security-audit-skill проверява само формата — прием…\" (+1 още)"
+        },
         {
           "date": "2026-11-26",
           "type": "learning",
