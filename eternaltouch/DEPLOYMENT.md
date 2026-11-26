@@ -30,7 +30,7 @@ SESSION_SECRET=$(openssl rand -base64 48 | tr -d '\n')
 # Generate the admin password too — never hard-code it in a file that travels.
 ADMIN_PASSWORD=$(openssl rand -base64 18 | tr -d '\n')
 
-# 3. Create .env  (fill SMTP_* with your real Register.it mailbox credentials)
+# 3. Create .env  (fill SMTP_USER/SMTP_PASS with the Brevo SMTP login and key — Brevo → SMTP & API → SMTP)
 cat > .env <<EOF
 DB_PASSWORD=${DB_PASSWORD}
 JWT_SECRET=${JWT_SECRET}
@@ -41,10 +41,10 @@ ADMIN_PASSWORD=${ADMIN_PASSWORD}
 SITE_URL=https://eternaltouch.it
 NODE_ENV=production
 PORT=4300
-SMTP_HOST=authsmtp.register.it
+SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=info@eternaltouch.it
+SMTP_USER=CHANGE_ME
 SMTP_PASS=CHANGE_ME
 SMTP_FROM=Eternal Touch <info@eternaltouch.it>
 NOTIFY_TO=info@eternaltouch.it
