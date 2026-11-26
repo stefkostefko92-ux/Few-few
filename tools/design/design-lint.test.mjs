@@ -1,0 +1,140 @@
+// design-lint.test.mjs — статичният под на дизайна (идеята е от Nutlope/hallmark, кодът е наш).
+//
+// Всяко правило има положителен и отрицателен случай: линтер, който вика за всичко, се изключва
+// за седмица. Затова „шрифт от Google през next/font“ (самохостван при билда), `:focus:not(:focus-visible)`
+// и `alt=""` за декоративна картинка НЕ са находки.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { lintText, RULES } from "./design-lint.mjs";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const ids = (text, file = "x.html") => lintText(text, file).map((f) => f.rule);
+
+test("чужд шрифт от CDN е HIGH; next/font/google (самохостван) и локален @font-face не са", () => {
+  assert.deepEqual(ids('<link href="https://fonts.googleapis.com/css2?family=Inter" rel="stylesheet">'), ["external-font"]);
+  assert.deepEqual(ids("@import url('https://fonts.bunny.net/css?family=lato');", "a.css"), ["external-font"]);
+  assert.deepEqual(ids('<link href="https://api.fontshare.com/v2/css?f[]=satoshi" rel="stylesheet">'), ["external-font"]);
+  assert.deepEqual(ids('import { Inter } from "next/font/google";', "layout.tsx"), []);
+  assert.deepEqual(ids("@font-face { font-family: X; src: url('/fonts/x.woff2'); }", "a.css"), []);
+  assert.equal(RULES["external-font"].sev, "HIGH");
+});
+
+test("скрипт или стил от публичен CDN е HIGH; собственият е наред", () => {
+  assert.deepEqual(ids('<script src="https://cdn.jsdelivr.net/npm/three@0.160/build/three.min.js"></script>'), ["cdn-asset"]);
+  assert.deepEqual(ids('<link rel="stylesheet" href="https://unpkg.com/aos@2/dist/aos.css">'), ["cdn-asset"]);
+  assert.deepEqual(ids('<script src="/js/three.module.js"></script>'), []);
+});
+
+test("картинка, закачена от чужд сайт (Wikimedia, Unsplash, placeholder), е HIGH", () => {
+  assert.deepEqual(ids('<img alt="x" src="https://upload.wikimedia.org/a.jpg">'), ["hotlink-image"]);
+  assert.deepEqual(ids(".hero{background:url(https://images.unsplash.com/photo-1)}", "a.css"), ["hotlink-image"]);
+  assert.deepEqual(ids('<img alt="x" src="https://picsum.photos/200">'), ["hotlink-image"]);
+  assert.deepEqual(ids('<img alt="x" src="/img/hero.avif">'), []);
+});
+
+test("outline: none без :focus-visible е HIGH; със :focus-visible или :focus:not(:focus-visible) не е", () => {
+  assert.deepEqual(ids("button:focus{outline:none}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids("a{outline: 0}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids("button:focus{outline:none} button:focus-visible{outline:2px solid}", "a.css"), []);
+  assert.deepEqual(ids("button:focus:not(:focus-visible){outline:none}", "a.css"), []);
+  assert.deepEqual(ids('<button className="outline-none focus-visible:ring-2">', "b.tsx"), [], "Tailwind с focus-visible");
+  assert.deepEqual(ids('<button className="outline-none">', "b.tsx"), ["focus-hidden"]);
+});
+
+test("забранен зум (user-scalable=no, maximum-scale=1) е HIGH — WCAG 1.4.4", () => {
+  assert.deepEqual(ids('<meta name="viewport" content="width=device-width, user-scalable=no">'), ["zoom-blocked"]);
+  assert.deepEqual(ids('<meta name="viewport" content="width=device-width, maximum-scale=1">'), ["zoom-blocked"]);
+  assert.deepEqual(ids('<meta name="viewport" content="width=device-width, initial-scale=1">'), []);
+  assert.deepEqual(ids('<meta name="viewport" content="width=device-width, maximum-scale=5">'), []);
+});
+
+test("img без alt е HIGH; alt=\"\" (декоративна) и next/image с alt са наред", () => {
+  assert.deepEqual(ids('<img src="/a.png">'), ["img-no-alt"]);
+  assert.deepEqual(ids('<img src="/a.png" alt="">'), []);
+  assert.deepEqual(ids('<Image src={hero} alt="Залата" />', "p.tsx"), []);
+  assert.deepEqual(ids('<Image src={hero} width={4} />', "p.tsx"), ["img-no-alt"]);
+  assert.deepEqual(ids('<img\n  src="/a.png"\n  alt="ред по-долу"\n>'), [], "alt на следващ ред в същия таг");
+});
+
+test("текст-пълнеж (lorem ipsum, [ЗА ПОПЪЛВАНЕ]) е HIGH — без измислено съдържание", () => {
+  assert.deepEqual(ids("<p>Lorem ipsum dolor sit amet</p>"), ["placeholder-copy"]);
+  assert.deepEqual(ids("<p>Срок: [ЗА ПОПЪЛВАНЕ от собственика]</p>"), ["placeholder-copy"]);
+  assert.deepEqual(ids("<p>Работно време: 9–18 ч.</p>"), []);
+});
+
+test("твърдение, което иска доказателство, е MEDIUM (към marketing-claims-review); нов SVG е INFO", () => {
+  assert.deepEqual(ids("<h2>Над 10 000 доволни клиенти</h2>"), ["claim-needs-proof"]);
+  assert.deepEqual(ids("<p>Il migliore servizio di Milano</p>"), ["claim-needs-proof"]);
+  assert.deepEqual(ids("<p>The #1 platform for teams</p>"), ["claim-needs-proof"]);
+  assert.deepEqual(ids("<p>Свържете се с нас</p>"), []);
+  assert.equal(RULES["claim-needs-proof"].sev, "MEDIUM");
+  assert.deepEqual(ids('<svg viewBox="0 0 10 10"><path d="M0 0"/></svg>'), ["svg"]);
+  assert.equal(RULES.svg.sev, "INFO");
+});
+
+test("design-lint-disable-line <правило> заглушава точно това правило на точно този ред", () => {
+  assert.deepEqual(ids('<img src="/a.png"> <!-- design-lint-disable-line img-no-alt -->'), []);
+  assert.deepEqual(ids('<img src="/a.png"> <!-- design-lint-disable-line svg -->'), ["img-no-alt"]);
+});
+
+test("находката носи ред и колона", () => {
+  const [f] = lintText('<p>ok</p>\n<img src="/a.png">', "x.html");
+  assert.equal(f.line, 2);
+  assert.equal(f.rule, "img-no-alt");
+});
+
+test("CLI: обхожда папка, прескача node_modules и тестове, изход 1 при HIGH, 0 без HIGH", () => {
+  const t = mkdtempSync(join(tmpdir(), "dl-"));
+  try {
+    mkdirSync(join(t, "site", "node_modules", "x"), { recursive: true });
+    mkdirSync(join(t, "site", "src"), { recursive: true });
+    writeFileSync(join(t, "site", "node_modules", "x", "a.html"), '<img src="/a.png">');
+    writeFileSync(join(t, "site", "src", "a.test.tsx"), '<img src="/a.png">');
+    writeFileSync(join(t, "site", "src", "ok.html"), '<p>Свържете се с нас</p><svg></svg>');
+    let r = spawnSync(process.execPath, [join(here, "design-lint.mjs"), join(t, "site"), "--json"], { encoding: "utf8" });
+    assert.equal(r.status, 0, r.stderr);
+    const j = JSON.parse(r.stdout);
+    assert.deepEqual(j.findings.map((f) => f.rule), ["svg"]);
+    writeFileSync(join(t, "site", "src", "bad.html"), '<img src="/a.png">');
+    r = spawnSync(process.execPath, [join(here, "design-lint.mjs"), join(t, "site")], { encoding: "utf8" });
+    assert.equal(r.status, 1);
+    assert.match(r.stdout, /bad\.html:1/);
+    r = spawnSync(process.execPath, [join(here, "design-lint.mjs")], { encoding: "utf8" });
+    assert.equal(r.status, 2, "без папка — употреба");
+  } finally { rmSync(t, { recursive: true, force: true }); }
+});
+
+// Базова линия по 26-те продукта (26.11): тези бяха фалшиви тревоги — заковани, за да не се върнат.
+test("споменаване в коментар (JS, CSS, HTML, EJS) не е находка; URL с // в атрибут остава", () => {
+  assert.deepEqual(ids("/**\n * Two stacked <img> layers cross-fade\n */", "a.tsx"), []);
+  assert.deepEqual(ids("// satori рендира <img>, не next/image", "a.tsx"), []);
+  assert.deepEqual(ids("<%# валиден <img> и без скрипт %>", "a.ejs"), []);
+  assert.deepEqual(ids("<!-- <img src=x> -->", "a.html"), []);
+  assert.deepEqual(ids("/* fonts.googleapis.com е забранен */", "a.css"), []);
+  assert.deepEqual(ids('<img alt="x" src="https://upload.wikimedia.org/a.jpg"> // бележка', "a.tsx"), ["hotlink-image"]);
+});
+
+test("скрит outline с видим заместител или върху програмно фокусиран контейнер не е находка", () => {
+  assert.deepEqual(ids('<input className="outline-none focus:ring-2 focus:ring-blue-500">', "a.tsx"), []);
+  assert.deepEqual(ids('<input className="outline-none focus:border-slate-900">', "a.tsx"), []);
+  assert.deepEqual(ids('<div role="dialog" tabIndex={-1} className="focus:outline-none">', "a.tsx"), []);
+  assert.deepEqual(ids("input:focus{outline:none;box-shadow:0 0 0 3px #036}", "a.css"), []);
+  assert.deepEqual(ids("input:focus{outline:none;border-color:#036}", "a.css"), []);
+  assert.deepEqual(ids("input:focus{outline:none;color:red}", "a.css"), ["focus-hidden"], "смяна само на цвета на текста не стига");
+});
+
+test("EJS вътре в таг (<%- … %>) не реже тага преди alt", () => {
+  assert.deepEqual(ids(`<img class="still" src="<%= a %>" <%- first ? 'srcset="x"' : '' %> alt="" decoding="async">`, "a.ejs"), []);
+  assert.deepEqual(ids(`<img src="<%= a %>" <%- x %> decoding="async">`, "a.ejs"), ["img-no-alt"]);
+});
+
+test("SVG се отчита веднъж на файл с броя (генериран сайт не дава хиляди редове)", () => {
+  const f = lintText("<svg></svg>\n<svg></svg>\n<svg></svg>", "a.html").filter((x) => x.rule === "svg");
+  assert.equal(f.length, 1);
+  assert.match(f[0].snippet, /×3/);
+});
