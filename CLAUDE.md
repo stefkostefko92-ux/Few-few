@@ -36,7 +36,7 @@ file holds only what is true across all products. Keep it that way.
 | `FiveM/` | Thraex PVP — директория на българските FiveM RP сървъри | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind | BG · жив статус от `info.json`/`dynamic.json` · **от `players.json` само имената, идентификаторите никога** (лични данни) · thraex.carbonstealth.eu |
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + разследване на финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · отчет за всяка SSN структура · сигнали и аномалии · официални open data |
 | `mascot/` | Маскотът на Carbon Stealth — бранд персонаж | SVG (3 нива на детайл) · генериран React компонент · plain JS ESM · нула зависимости | BG · бранд асет, **не** продукт с деплой · продуктите копират каквото ползват |
-| `vpsdash/` | Carbon Stealth VPS Dashboard — контролен панел за сървъра (метрики, systemd, Docker, деплой, бекъпи, терминал… → `vpsdash/CLAUDE.md`) | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · един сървър (federation по избор) · owner: VPS-аджията |
+| `vpsdash/` | Carbon Stealth VPS Dashboard — контролен панел за сървъра → `vpsdash/CLAUDE.md` | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · един сървър (federation по избор) · owner: VPS-аджията |
 | `piuma/` | Piuma — Instagram контент-двигател (чернова → човешко одобрение → публикуване) + управлявани страници | Node 22 · TS · Express 5 · Prisma · PostgreSQL · BullMQ + Redis · Anthropic SDK | BG/EN/IT · официален Instagram Platform API · агентът — само чернови · акаунти се създават **ръчно** (ToS на Meta) |
 | `agentgw/` | Агентски шлюз — нашите агенти за сайтовете от ЕС сървър чрез агентски ключове | Node 22 · TS · Express 5 · Prisma · PostgreSQL · Vertex SDK · уиджет | BG/EN/IT · Claude **само през Vertex AI в ЕС** · публичните агенти — нула инструменти · разговорите не се пазят |
 | `korpora/` | Korpora — корпусни мебели в браузъра (3D, разкрой, чертежи за пробиване, DXF/G-code) | Node 22 · TS · Express 5 · Prisma · PostgreSQL · three.js · Docker | BG/EN/IT · korpora.carbonstealth.eu · плановете се активират **ръчно** · каталогът е в репото **само шифрован** |
@@ -45,7 +45,7 @@ file holds only what is true across all products. Keep it that way.
 | `lovets/` | Ловец — вътрешно B2B търсене на клиенти + „може ли да пишем/звъним“ (КЗП, RPO) | Node 22 · TS · Express 5 · Prisma · PostgreSQL | BG/IT · само собственикът · порт 4360 |
 | `cs-revolution/` | Carbon Stealth — фирменият сайт (уеб агенция и софтуер) | Vite · React 18 SPA (началната) + ~400 статични страници от Python генератори · PHP API · живи сцени от Blender (`public/js/cs-live.js`) | IT/EN/BG · carbonstealth.eu · деплой от клон `deploy-live` с `deploy-all.sh` (**не** през autodeploy) · **логото не се променя** |
 | `semki/` | Semki Bot — Discord бот за изтичането на семките във FiveM + дашборд с вход през Discord | Node 22 · TS · Express 5 · discord.js v14 · Prisma · PostgreSQL · Docker | BG · vps2.carbonstealth.eu (порт от 4340, `HTTP_PORT`) |
-| `liftcon/` | LiftCon — консултантски услуги за асансьори (оглед, контрол на работите, оферти, подготовка за verifica straordinaria) за администратори и частни лица | статичен генератор (Node, нула зависимости) + приложение (форма + `/admin` с 2FA, роли, заявки, редакция и публикуване): Node 22 · TS · Express 5 · zod · Prisma · PostgreSQL · Brevo · Docker | IT · liftcon.it (порт 4370) · само т. 1–4 от каталога · **никога** verifica ufficiale/certificazione |
+| `liftcon/` | LiftCon — консултации за асансьори (оглед, контрол, оферти) → `liftcon/CLAUDE.md` | статичен генератор + Node 22 · TS · Express 5 · Prisma · PostgreSQL · Brevo · Docker | IT · liftcon.it (порт 4370) · **никога** verifica ufficiale/certificazione |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
@@ -83,8 +83,7 @@ hooks, skills).
   **IndexNow** (Bing, Yandex, Seznam, Naver, Yep — one call reaches all):
   `node tools/seo/indexnow.mjs https://<live-domain>` (needs the site deployed with
   its `indexnow-key.txt` at web root). `deploy/autodeploy.sh` pings after a healthy release for
-  zabobovdol, SupremeDiscordBot, mastilko, ospedali, adblock, korpora, rilievi, fivem, panev, linketto, fakturist and liftcon (details: `deploy/README.md`);
-  for the rest run the command yourself. **Google does NOT
+  the products listed in `deploy/README.md`; for the rest run the command yourself. **Google does NOT
   support IndexNow** (sitemap ping retired 2023) — for Google keep the sitemap fresh
   (auto-discovered) and use Search Console (`tools/seo/gsc.mjs`).
 - **Keywords: always ≥5, one always „Carbon Stealth“.** Every site we build/touch
