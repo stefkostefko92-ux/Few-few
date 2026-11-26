@@ -1336,6 +1336,14 @@ supreme_install_backup_timer() {
 
 # ── Health check ──────────────────────────────────────────────────────────────
 # ── 3g) eternaltouch — Docker Compose ─────────────────────────────────────────
+# Имейлите на всички продукти минават през Brevo (собственикът, 25.11.2026). Продукт със SMTP се
+# обновява едва когато .env сочи smtp-relay.brevo.com: новият код назовава Brevo в политиката за
+# поверителност, а обновен без сменен .env би пращал през стария доставчик — неверен текст.
+smtp_is_brevo() {
+  [ -r "$1" ] || return 1
+  grep -qiE "^SMTP_HOST=[\"']?smtp-relay\.brevo\.com[\"']?[[:space:]]*$" "$1" 2>/dev/null
+}
+
 deploy_eternaltouch() {
   local d="$SRC/eternaltouch"
   [ -d "$d" ] || { warn "Няма eternaltouch/ в архива — пропускам."; return; }
@@ -1343,9 +1351,9 @@ deploy_eternaltouch() {
   # Пренеси съществуващия .env (тайните живеят на сървъра, не в архива).
   carry_env eternaltouch "$d"
   # Пръв деплой без .env: генерирай random secrets (app-ът иначе отказва да стартира).
-  # SMTP_PASS остава CHANGE_ME — имейлите тръгват след като го попълниш веднъж ръчно.
+  # SMTP_USER/SMTP_PASS (Brevo) остават CHANGE_ME — имейлите тръгват след като ги попълниш веднъж ръчно.
   if [ ! -f "$d/.env" ]; then
-    warn "Няма eternaltouch/.env — генерирам с random secrets (SMTP_PASS=CHANGE_ME)."
+    warn "Няма eternaltouch/.env — генерирам с random secrets (SMTP през Brevo: CHANGE_ME)."
     local dbp jwt cks sks adp
     dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
     jwt="$(openssl rand -base64 48 | tr -d '\n')"
@@ -1362,25 +1370,25 @@ ADMIN_PASSWORD=${adp}
 SITE_URL=https://eternaltouch.it
 NODE_ENV=production
 PORT=4300
-SMTP_HOST=authsmtp.register.it
+SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=info@eternaltouch.it
+# Brevo → SMTP & API → SMTP: логинът (не пощенската кутия) и SMTP ключът.
+SMTP_USER=CHANGE_ME
 SMTP_PASS=CHANGE_ME
 SMTP_FROM=Eternal Touch <info@eternaltouch.it>
 NOTIFY_TO=info@eternaltouch.it
-# Register.it представя *.securemail.pro / smtp.webnode.com cert на
-# authsmtp.register.it (не за connect хоста) — задай servername, за да остане
-# TLS валидацията вкл. (rejectUnauthorized). Без този ред първото пращане след
-# попълване на SMTP_PASS гърми с cert-mismatch. Стойността е от .env.example.
-SMTP_TLS_SERVERNAME=smtp.webnode.com
 EOF
     chmod 600 "$d/.env"
     warn "Записах eternaltouch/.env. Админ парола: ${adp} — запиши я в password manager СЕГА."
-    warn "Попълни SMTP_PASS в eternaltouch/.env, за да тръгнат имейлите."
+    warn "Попълни SMTP_USER и SMTP_PASS (Brevo) в eternaltouch/.env, за да тръгнат имейлите."
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
   carry_env eternaltouch "$d"   # новогенерираният .env → стабилния път
+  if ! smtp_is_brevo "$d/.env"; then
+    warn "eternaltouch НЕ е обновен: SMTP_HOST в .env не е smtp-relay.brevo.com. Смени SMTP_HOST, SMTP_USER и SMTP_PASS с данните от Brevo (SMTP & API → SMTP), потвърди домейна eternaltouch.it в Brevo и пусни пак."
+    deploy_failed=1; return
+  fi
   ( cd "$d" && bash deploy.sh ) \
     || { warn "eternaltouch: deploy.sh се провали — продължавам с останалите."; deploy_failed=1; return; }
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1

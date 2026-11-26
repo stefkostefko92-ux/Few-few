@@ -1,20 +1,24 @@
 // Eternal Touch — Email module
-// SMTP via Register.it (authsmtp.register.it:465 SSL).
+// SMTP via Brevo (Sendinblue SAS, France — EU): smtp-relay.brevo.com:587 STARTTLS.
+// Owner's decision (2026-11-25): every product sends email through Brevo. The
+// info@eternaltouch.it mailbox itself stays at Register.it (receiving only).
 // Lazy initialization, save-first-send-second philosophy: emails are an
 // enhancement on top of DB persistence, never the primary path.
 
 import nodemailer from 'nodemailer';
 
 // --- Configuration --------------------------------------------------
-const SMTP_HOST   = process.env.SMTP_HOST   || 'authsmtp.register.it';
+const SMTP_HOST   = process.env.SMTP_HOST   || 'smtp-relay.brevo.com';
 // Default to 587 (submission + STARTTLS): port 465 is blocked outbound on many
 // hosts (e.g. Hetzner), whereas 587 is virtually always open. Override via .env.
 const SMTP_PORT   = parseInt(process.env.SMTP_PORT || '587', 10);
 const SMTP_SECURE = (process.env.SMTP_SECURE || 'false') === 'true'; // true=465 implicit TLS, false=587 STARTTLS
 const SMTP_USER   = process.env.SMTP_USER   || '';
 const SMTP_PASS   = process.env.SMTP_PASS   || '';
-const SMTP_FROM   = process.env.SMTP_FROM   || `Eternal Touch <${SMTP_USER}>`;
-const NOTIFY_TO   = process.env.NOTIFY_TO   || SMTP_USER;
+// With Brevo, SMTP_USER is the relay login (…@smtp-brevo.com), NOT a mailbox — so
+// the sender and the notification recipient are explicit, never derived from it.
+const SMTP_FROM   = process.env.SMTP_FROM   || 'Eternal Touch <info@eternaltouch.it>';
+const NOTIFY_TO   = process.env.NOTIFY_TO   || 'info@eternaltouch.it';
 const SITE_URL    = process.env.SITE_URL    || 'https://eternaltouch.it';
 // Some providers (e.g. Register.it) front their SMTP with a shared platform
 // whose TLS certificate does NOT list the connect hostname — Register.it's
