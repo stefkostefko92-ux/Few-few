@@ -77,9 +77,11 @@ test("твърдение, което иска доказателство, е MED
   assert.equal(RULES.svg.sev, "INFO");
 });
 
-test("design-lint-disable-line <правило> заглушава точно това правило на точно този ред", () => {
-  assert.deepEqual(ids('<img src="/a.png"> <!-- design-lint-disable-line img-no-alt -->'), []);
-  assert.deepEqual(ids('<img src="/a.png"> <!-- design-lint-disable-line svg -->'), ["img-no-alt"]);
+test("design-lint-disable-line <правило> — <причина> заглушава точно това правило на точно този ред", () => {
+  assert.deepEqual(ids('<img src="/a.png"> <!-- design-lint-disable-line img-no-alt — декоративна, има текст до нея -->'), []);
+  assert.deepEqual(ids('<img src="/a.png"> <!-- design-lint-disable-line svg — икона -->'), ["img-no-alt"]);
+  // без причина не заглушава (README и dizayner.md го казват; шести преглед на PR #494)
+  assert.deepEqual(ids('<img src="/a.png"> <!-- design-lint-disable-line img-no-alt -->'), ["img-no-alt"]);
 });
 
 test("находката носи ред и колона", () => {
@@ -296,4 +298,35 @@ test("нечетим път вътре в дървото (цикъл от връ
     const j = JSON.parse(r.stdout);
     assert.ok(j.skipped.some((x) => x.error && /ELOOP/.test(x.why)), JSON.stringify(j.skipped));
   } finally { rmSync(t, { recursive: true, force: true }); }
+});
+
+// Шести преглед на PR #494 (Кодаджията).
+test("`/*` в низ (accept=\"image/*\", глоб) не отваря коментар и не крие нарушенията след него", () => {
+  assert.deepEqual(ids('<input accept="image/*" />\n<img src="x.png" />\n{/* бележка */}', "a.tsx"), ["img-no-alt"]);
+  assert.deepEqual(ids('<script>const g = "src/**/*.ts";</script>\n<script src="https://unpkg.com/x@1/x.js"></script>\n<style>/* x */</style>'), ["cdn-asset"]);
+  // истинските коментари пак се маскират
+  assert.deepEqual(ids('{/* <img src="x.png"> */}', "a.tsx"), []);
+  assert.deepEqual(ids('const a = 1; // <img src="x.png">', "a.tsx"), []);
+});
+
+test("`border: 0` (с интервал или в края на блока) не е заместител на фокуса", () => {
+  assert.deepEqual(ids(".btn:focus { outline: none; border: 0 }", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(".btn:focus { outline: none; box-shadow: 0\n}", "a.css"), ["focus-hidden"]);
+  assert.deepEqual(ids(".btn{outline:none}.btn:focus-visible{ outline: 0 }", "a.css"), ["focus-hidden"]);
+});
+
+test("Tailwind: ring-<цвят>, ring-offset-*, outline-offset-* сами не рисуват фокус; ширината рисува", () => {
+  assert.deepEqual(ids('<input className="outline-none focus:ring-blue-500">', "a.tsx"), ["focus-hidden"]);
+  assert.deepEqual(ids('<input className="outline-none focus:ring-offset-2">', "a.tsx"), ["focus-hidden"]);
+  assert.deepEqual(ids('<input className="outline-none focus-visible:outline-offset-2">', "a.tsx"), ["focus-hidden"]);
+  assert.deepEqual(ids('<input className="outline-none focus-visible:ring">', "a.tsx"), []);
+  assert.deepEqual(ids('<input className="outline-none focus-visible:ring-[3px]">', "a.tsx"), []);
+  assert.deepEqual(ids('<input className="outline-none focus-visible:outline-2 focus-visible:outline-blue-600">', "a.tsx"), []);
+});
+
+test("твърдение с число: дълга поредица от числа не е квадратична; „10 000+ клиенти“ пак се хваща", () => {
+  const t0 = Date.now();
+  lintText(`<p>${"1, ".repeat(60000)}x</p>`, "x.html");
+  assert.ok(Date.now() - t0 < 2000, `${Date.now() - t0} ms`);
+  assert.deepEqual(ids("<p>10 000+ доволни клиенти</p>"), ["claim-needs-proof"]);
 });

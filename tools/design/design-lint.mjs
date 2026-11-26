@@ -10,7 +10,7 @@
 //   node tools/design/design-lint.mjs <папка|файл> [--json]
 //
 // Изход: 0 — няма HIGH · 1 — има HIGH · 2 — употреба. Движението (reduced-motion, строб) е в
-// motion-a11y.mjs — тук не се дублира. Заглушаване на един ред: `design-lint-disable-line <правило>`.
+// motion-a11y.mjs — тук не се дублира. Заглушаване на един ред: `design-lint-disable-line <правило> — <причина>`.
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, extname, basename, relative } from "node:path";
@@ -38,7 +38,7 @@ const PLACEHOLDER = W("\\b<lorem ipsum\\b>|\\b<dolor sit amet\\b>");
 // Скобите — само с главни букви: `[todoItem]` в код не е пълнеж, `[TODO]` в текста е.
 const PLACEHOLDER_TAG = /\[(?:ЗА ПОПЪЛВАНЕ|TODO|TBD|DA COMPLETARE)(?![\p{L}\p{N}_])[^\]\n]*\]/u;
 const CLAIMS = [
-  W("\\b<\\d[\\d\\s.,]*\\+?\\s*(?:доволни\\s+)?(?:клиенти|потребители|customers|users|clienti|utenti)\\b>"),
+  W("\\b<\\d[\\d\\s.,]{0,15}\\+?\\s*(?:доволни\\s+)?(?:клиенти|потребители|customers|users|clienti|utenti)\\b>"),
   W("(?:^|[\\s>„\"(])(?:#\\s?1|№\\s?1)(?=[\\s<,.!”\")]|$)"),
   W("\\b<(?:най-добрият|най-добрата|най-доброто|the best|il migliore|la migliore|i migliori)\\b>"),
   W("\\b<(?:гарантира(?:н|на|но|ме)?|guaranteed|garantit[oa])\\b>"),
@@ -64,10 +64,14 @@ function lineIndex(text) {
  *  в атрибут и `url(//хост)` остават. */
 export function maskComments(text, ext) {
   const blank = (m) => m.replace(/[^\n]/g, " ");
-  let t = text.replace(/\/\*[\s\S]*?\*\//g, blank);
+  // Низовете в кавички (на един ред) се прескачат: `accept="image/*"` или "src/**/*.ts" не отварят коментар,
+  // който да скрие всичко до следващото `*/` (шести преглед на PR #494). Кавичка без двойка на реда не е низ;
+  // апостроф в текст може само да остави коментар немаскиран — повече находки, никога по-малко.
+  const parts = [String.raw`"(?:\\.|[^"\\\n])*"`, String.raw`'(?:\\.|[^'\\\n])*'`, String.raw`\/\*[\s\S]*?\*\/`];
+  if ([".jsx", ".tsx", ".vue", ".svelte", ".astro", ".scss", ".mdx"].includes(ext)) parts.push(String.raw`(?<=^|[\s;{},])\/\/[^\n]*`);
+  let t = text.replace(new RegExp(parts.join("|"), "g"), (m) => (m[0] === '"' || m[0] === "'" ? m : blank(m)));
   if (ext !== ".css" && ext !== ".scss") t = t.replace(/<!--[\s\S]*?-->/g, blank);
   if (ext === ".ejs") t = t.replace(/<%#[\s\S]*?%>/g, blank);
-  if ([".jsx", ".tsx", ".vue", ".svelte", ".astro", ".scss", ".mdx"].includes(ext)) t = t.replace(/(^|[\s;{},])\/\/[^\n]*/g, (m, pre) => pre + blank(m.slice(pre.length)));
   return t;
 }
 
@@ -76,10 +80,10 @@ export function maskComments(text, ext) {
 // Заместителят важи само в :focus блок и само с видима стойност (border:none, transparent — не).
 // `border-*` — само страните и цвят/дебелина: border-radius/-collapse/-spacing не рисуват (пети преглед на PR #494).
 const BORDER_DRAWS = "border(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?(?:-(?:color|width))?";
-const CSS_ALT = new RegExp(String.raw`(?:^|[;{\s])(?:box-shadow|${BORDER_DRAWS}|background(?:-color)?|text-decoration(?:-line)?)\s*:\s*(?!none\b|0\s*[;}]|0$|transparent\b|inherit\b|initial\b|unset\b)[^;}]+`, "i");
+const CSS_ALT = new RegExp(String.raw`(?:^|[;{\s])(?:box-shadow|${BORDER_DRAWS}|background(?:-color)?|text-decoration(?:-line)?)\s*:(?!\s*(?:none\b|0\s*(?:[;}]|$)|transparent\b|inherit\b|initial\b|unset\b))[^;}]+`, "i");
 // Правило :focus-visible, което наистина рисува фокус (outline/box-shadow/border с видима стойност).
 // (outline-offset/outline-color сами не рисуват нищо.)
-const DRAWS = new RegExp(String.raw`(?:^|[;{\s])(?:outline|outline-style|box-shadow|${BORDER_DRAWS})\s*:\s*(?!none\b|0\s*[;}]|0$|transparent\b)[^;}]+`, "i");
+const DRAWS = new RegExp(String.raw`(?:^|[;{\s])(?:outline|outline-style|box-shadow|${BORDER_DRAWS})\s*:(?!\s*(?:none\b|0\s*(?:[;}]|$)|transparent\b))[^;}]+`, "i");
 const normSel = (x) => x.replace(/\s+/g, " ").trim();
 /** Базовите селектори, за които има :focus-visible правило, което рисува фокус (`a:focus-visible` → `a`). */
 function focusVisibleBases(text) {
@@ -96,8 +100,9 @@ function focusVisibleBases(text) {
   return bases;
 }
 // Само класове, които рисуват рамка/линия — `focus-visible:bg-…` не е фокус индикатор.
-// `ring-0`, `border-0`, `shadow-none`, `outline-none` не рисуват нищо.
-const TW_ALT = /\b(?:focus|focus-visible|focus-within):(?:ring-(?!0\b|inset\b|transparent\b)|ring\b(?!-)|border-(?!0\b|none\b|transparent\b)|border\b(?!-)|shadow-(?!none\b)|shadow\b(?!-)|underline\b|outline-(?!none\b|0\b))/;
+// `ring-0`, `border-0`, `shadow-none`, `outline-none` не рисуват нищо; `ring-<цвят>`, `ring-offset-*` и
+// `outline-offset-*` сами — също (шести преглед на PR #494). Рисува голото `ring`/`outline`, ширина или [произволна].
+const TW_ALT = /\b(?:focus|focus-visible|focus-within):(?:ring(?:-(?:[1-8]\b|\[)|\b(?!-))|border-(?!0\b|none\b|transparent\b|spacing|collapse|separate)|border\b(?!-)|shadow-(?!none\b)|shadow\b(?!-)|underline\b|outline(?:-(?:[1-8]\b|\[|solid\b|dashed\b|dotted\b|double\b)|\b(?!-)))/;
 const PROG_FOCUS = /tabIndex=\{?-1\}?|tabindex=["']-1["']|role=["'](?:dialog|alertdialog|region|log)["']/i;
 
 const CLASS_CALL = /(?:\b(?:cn|clsx|classnames|classNames|cva|twMerge|tv)\s*\(|\b(?:className|class)\s*=\s*\{)/g;
@@ -134,7 +139,8 @@ export function lintText(raw, file, opts = {}) {
     const key = `${rule}:${line}`;
     if (seen.has(key)) return;
     const src = lines[line - 1] || "";
-    if (src.includes("design-lint-disable-line") && new RegExp(`design-lint-disable-line[^\\n]*\\b${rule.replace(/-/g, "\\-")}\\b`).test(src)) return;
+    // Заглушава само с причина (поне една дума след правилото): `design-lint-disable-line focus-hidden — фокусът е на родителя`.
+    if (src.includes("design-lint-disable-line") && new RegExp(`design-lint-disable-line[^\\n]*?(?<![\\w-])${rule}(?![\\w-])[^\\n]*?\\p{L}{3}`, "u").test(src)) return;
     seen.add(key);
     out.push({ rule, sev: RULES[rule].sev, line, col, snippet: snippet.trim().slice(0, 120), why: RULES[rule].why });
   };
