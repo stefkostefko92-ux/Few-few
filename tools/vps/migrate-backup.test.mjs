@@ -320,3 +320,26 @@ test("Redis нощем е BGSAVE (SAVE само във FINAL); RECOVER_BINDS о�
   assert.doesNotMatch(src, /redis-cli SAVE 2>&1/, "хостовият Redis също минава през общия код");
   assert.match(src, /has_symlink_parent "\$\(dirname "\$gs"\)"/);
 });
+
+// Десети преглед на PR #312 (Кодаджията, средна · Вероятно): `pg_dump -d "$db"` приема име с „=“ или
+// postgres:// за conninfo — база, създадена от роля с CREATEDB, пренасочва дъмпа (и PGPASSWORD) навън.
+// Името минава като стойност на dbname в кавички — второ разгъване няма.
+test("името на базата влиза в pg_dump само като стойност на dbname (без conninfo инжекция)", () => {
+  const src = readFileSync(script, "utf8");
+  assert.doesNotMatch(src, /pg_dump [^\n]*-d "\$db"/, "голо -d \"$db\" няма");
+  assert.equal((src.match(/-d "\$\(pg_dbarg "\$db"\)"/g) || []).length, 2, "и двата pg_dump минават през pg_dbarg");
+  const fn = src.match(/^pg_dbarg\(\)\{[^\n]*\n/m)?.[0];
+  assert.ok(fn, "pg_dbarg() е в скрипта");
+  const out = (n) => spawnSync("bash", ["-c", `${fn}\npg_dbarg "$1"`, "x", n], { encoding: "utf8" }).stdout;
+  assert.equal(out("app"), "dbname='app'");
+  assert.equal(out("host=evil.example port=5432"), "dbname='host=evil.example port=5432'");
+  assert.equal(out("a'b\\c"), "dbname='a\\'b\\\\c'");
+});
+
+test("системните снимки на Docker не убиват нощния бекъп при преходна грешка", () => {
+  const src = readFileSync(script, "utf8");
+  for (const c of ["docker ps -a --no-trunc", "docker volume ls >", "docker network ls >", "docker images --digests"]) {
+    const line = src.split("\n").find((l) => l.includes(c));
+    assert.match(line, /\|\| (?:true|warn)/, c);
+  }
+});

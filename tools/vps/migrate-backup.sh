@@ -172,6 +172,9 @@ is_db_data_mount(){
     *) return 1 ;;
   esac
 }
+# Името на база като стойност на dbname в conninfo: голо `-d "$db"` с „=“ или postgres:// се разгръща
+# като conninfo (друг хост, PGPASSWORD навън) — второ разгъване на dbname няма (преглед на PR #312).
+pg_dbarg(){ local v=${1//\\/\\\\}; v=${v//\'/\\\'}; printf "dbname='%s'" "$v"; }
 # Има ли symlink в пътя (до корена) — root не пише през него (CWE-59).
 has_symlink_parent(){ local p=$1; while [ -n "$p" ] && [ "$p" != / ]; do [ -L "$p" ] && return 0; p="$(dirname "$p")"; done; return 1; }
 # Redis снимка: нощем/горещо BGSAVE и чакане LASTSAVE да се смени (SAVE блокира всички клиенти); във
@@ -598,7 +601,7 @@ dump_pg_container(){
     [ -n "$db" ] || continue
     f="$(uniq_path "$STAGE/db/pg-$c-$(safe "$db").dump")"
     # Дъмп, който pg_restore не може да прочете, не е дъмп — проверява се веднага.
-    if pg_exec "$c" pg_dump -U "$u" -Fc -d "$db" > "$f" 2>"$ERR" && docker exec -i "$c" pg_restore -l < "$f" >/dev/null 2>&1; then
+    if pg_exec "$c" pg_dump -U "$u" -Fc -d "$(pg_dbarg "$db")" > "$f" 2>"$ERR" && docker exec -i "$c" pg_restore -l < "$f" >/dev/null 2>&1; then
       DUMPS+=("postgres · $c · $db · $(du -h "$f" | cut -f1) · ok"); n=$((n + 1))
     else
       fail "Postgres $c/$db: дъмпът не мина — $(errline)"
@@ -639,7 +642,7 @@ dump_pg_host(){
     while IFS= read -r db; do
       [ -n "$db" ] || continue
       f="$(uniq_path "$STAGE/db/pg-$tag-$(safe "$db").dump")"
-      if runuser -u postgres -- env -i PATH="$PG_PATH" LC_ALL=C.UTF-8 pg_dump -p "$port" -Fc -d "$db" > "$f" 2>"$ERR" && runuser -u postgres -- env -i PATH="$PG_PATH" LC_ALL=C.UTF-8 pg_restore -l < "$f" >/dev/null 2>&1; then
+      if runuser -u postgres -- env -i PATH="$PG_PATH" LC_ALL=C.UTF-8 pg_dump -p "$port" -Fc -d "$(pg_dbarg "$db")" > "$f" 2>"$ERR" && runuser -u postgres -- env -i PATH="$PG_PATH" LC_ALL=C.UTF-8 pg_restore -l < "$f" >/dev/null 2>&1; then
         DUMPS+=("postgres · $tag · $db · $(du -h "$f" | cut -f1) · ok")
       else
         fail "Postgres $tag/$db: дъмпът не мина — $(errline)"; DUMPS+=("postgres · $tag · $db · — · ПРОВАЛ")
@@ -766,10 +769,11 @@ ufw status verbose > "$STAGE/system/ufw.txt" 2>/dev/null || true
 ip addr > "$STAGE/system/ip-addr.txt" 2>/dev/null || true
 ip route > "$STAGE/system/ip-route.txt" 2>/dev/null || true
 if [ "$DOCKER" = 1 ]; then
-  docker ps -a --no-trunc > "$STAGE/docker/ps.txt"
-  docker volume ls > "$STAGE/docker/volumes.txt"
-  docker network ls > "$STAGE/docker/networks.txt"
-  docker images --digests > "$STAGE/docker/images.txt"
+  # Само опис: преходна грешка на демона не бива да убие нощния бекъп под set -e (преглед на PR #312).
+  docker ps -a --no-trunc > "$STAGE/docker/ps.txt" 2>/dev/null || warn "docker ps не мина — описът липсва."
+  docker volume ls > "$STAGE/docker/volumes.txt" 2>/dev/null || true
+  docker network ls > "$STAGE/docker/networks.txt" 2>/dev/null || true
+  docker images --digests > "$STAGE/docker/images.txt" 2>/dev/null || true
   # inspect носи средата на контейнерите (тайни) — затова е САМО вътре в шифрования архив.
   if [ "${#CONTAINERS[@]}" -gt 0 ]; then
     docker inspect "${CONTAINERS[@]}" > "$STAGE/docker/inspect.json" 2>"$ERR" || warn "docker inspect: контейнер изчезна по време на бекъпа — $(errline)"
