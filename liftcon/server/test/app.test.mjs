@@ -209,12 +209,13 @@ test("GET /health → 200", async () => {
   }
 });
 
-test("лимитерът не расте безкрайно: при пълен речник с активни ключове отказва", () => {
-  const l = fixedWindowLimiter(5, 60_000, 2);
+test("лимитерът не расте безкрайно: при пълен речник изхвърля най-стария ключ", () => {
+  const l = fixedWindowLimiter(1, 60_000, 2);
   assert.equal(l.hit("a", 0), true);
+  assert.equal(l.hit("a", 0), false, "лимитът на ключа важи");
   assert.equal(l.hit("b", 0), true);
-  assert.equal(l.hit("c", 0), false);
-  assert.equal(l.hit("c", 60_001), true);
+  assert.equal(l.hit("c", 0), true, "новият ключ влиза, „a“ е изхвърлен");
+  assert.equal(l.hit("a", 1), true, "„a“ започва отначало — речникът държи най-много 2 ключа");
 });
 
 test("конфигурация: Brevo може да липсва в средата (настройва се от панела), но база без JWT_SECRET/SEAL_KEY — не", () => {

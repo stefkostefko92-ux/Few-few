@@ -34,12 +34,16 @@ export function richiedePermesso(p: Permesso) {
   };
 }
 
-/** CSRF: токенът на сесията в полето `_csrf` (или заглавие) + същият Origin. */
+/**
+ * CSRF: токенът на сесията в полето `_csrf` (или заглавие) + същият Origin. Без Origin заявката минава само
+ * с `Sec-Fetch-Site: same-origin` (браузърът го слага сам; страница от друг сайт не може да го подправи).
+ */
 export function controlloCsrf(origineConsentita: string) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (req.method === "GET" || req.method === "HEAD") return next();
     const origin = req.get("origin");
-    if (origin && origin !== origineConsentita) return res.status(403).type("text").send("Origine non consentita.");
+    const stessaOrigine = origin ? origin === origineConsentita : req.get("sec-fetch-site") === "same-origin";
+    if (!stessaOrigine) return res.status(403).type("text").send("Origine non consentita.");
     const a = auth(res);
     if (!a) return next(); // форма за вход: няма сесия; пазят я лимитът и Origin
     const dato = (typeof req.body?._csrf === "string" ? req.body._csrf : "") || req.get("x-csrf-token") || "";

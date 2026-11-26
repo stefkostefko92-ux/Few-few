@@ -29,7 +29,8 @@ export interface DefaultEmail {
   destinatario?: string | undefined;
 }
 
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+/** Строг формат: без кавички, ъглови скоби и интервали — имейлът влиза и в href="mailto:…" на сайта. */
+export const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 export function gestoreEmail(o: { store: Store; sigillo: Sigillo; env: DefaultEmail; fetch?: FetchFn }) {
   let cache: ConfigEmail | null = null;

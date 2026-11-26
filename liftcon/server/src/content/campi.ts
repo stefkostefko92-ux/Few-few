@@ -1,6 +1,7 @@
 // Описанието на редактируемото съдържание: едно място за полетата, тяхното четене от формата,
 // валидирането (ограниченията на сайта) и превръщането им в данни за генератора (overrides).
 import { htmlToMd, mdBlocco, mdInline, urlSicuro } from "./mdlite.js";
+import { EMAIL_RE } from "../email/configurazione.js";
 
 export type Tipo =
   | "testo" // обикновен текст (генераторът го екранира)
@@ -172,7 +173,7 @@ export function leggiForm(tipoEntita: string, body: Record<string, unknown>): { 
   }
   if (tipoEntita === "site") {
     if (!/^\+?[0-9 ]{6,30}$/.test(String(valori.telefono))) errori.telefono = "Numero non valido (solo cifre, spazi e +).";
-    if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(String(valori.email))) errori.email = "Email non valida.";
+    if (!EMAIL_RE.test(String(valori.email))) errori.email = "Email non valida.";
   }
   return { valori, errori };
 }

@@ -131,7 +131,8 @@ ${revisioni.length ? `<section class="scheda"><h2>Versioni salvate</h2><ul class
     if (Object.keys(errori).length) return mostra(res, id, valori, errori);
     const token = randomToken(12);
     try {
-      await d.pubblicatore.anteprima(token, { id, dati: { valori, nuova: Boolean(info.salvato?.nuova) } });
+      const out = await d.pubblicatore.anteprima(token, { id, dati: { valori, nuova: Boolean(info.salvato?.nuova) } });
+      if (out === null) return res.status(429).send("Un'altra anteprima o una pubblicazione è in corso: riprovi tra qualche secondo.");
     } catch (err) {
       d.logger.error({ event: "anteprima", esito: "errore", err: err instanceof Error ? err.message.slice(0, 300) : "?" });
       return res.status(500).send("Anteprima non riuscita: controlli i campi.");

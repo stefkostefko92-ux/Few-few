@@ -11,7 +11,12 @@ export function fixedWindowLimiter(max: number, windowMs: number, maxKeys = 10_0
       if (!cur || now - cur.start >= windowMs) {
         if (hits.size >= maxKeys) {
           for (const [k, v] of hits) if (now - v.start >= windowMs) hits.delete(k);
-          if (hits.size >= maxKeys) return false; // пълно с активни ключове → отказ (fail closed)
+          // Пълно с активни ключове: изхвърля се най-старият (Map пази реда на вмъкване). Отказ за всички би
+          // превърнал наводнението от много адреси в DoS за истинските посетители.
+          if (hits.size >= maxKeys) {
+            const primo = hits.keys().next().value;
+            if (primo !== undefined) hits.delete(primo);
+          }
         }
         hits.set(key, { start: now, count: 1 });
         return true;

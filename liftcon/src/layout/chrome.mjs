@@ -101,7 +101,7 @@ ${promo}
 Sede legale: ${esc(COMPANY.street)}, ${esc(COMPANY.postalCode)} ${esc(COMPANY.city)} (${esc(COMPANY.country)})<br>
 Partita IVA ${esc(COMPANY.vat)}<br>
 Telefono <a href="${CONTACT.phoneHref}">${esc(CONTACT.phone)}</a><br>
-Email <a href="mailto:${CONTACT.email}">${esc(CONTACT.email)}</a>
+Email <a href="mailto:${esc(CONTACT.email)}">${esc(CONTACT.email)}</a>
 </address>
 </div>
 ${col("Servizi", [...servizi.map((s) => [s.path, s.nome]), [R.servizi, "Tutti i servizi"]])}

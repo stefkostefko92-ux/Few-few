@@ -100,15 +100,15 @@ model Contenuto {
   dati         Json
   aggiornatoIl DateTime              @updatedAt
   autoreId     String?
-  revisioni    RevisioneContenuto[]
 
   @@index([tipo])
 }
 
+/// История на версиите — без връзка към Contenuto: „Ripristina“ (изтриване на промяната) не я трие.
+/// Пазят се последните 20 за всеки контент.
 model RevisioneContenuto {
   id          String    @id @default(cuid())
   contenutoId String
-  contenuto   Contenuto @relation(fields: [contenutoId], references: [id], onDelete: Cascade)
   dati        Json
   autoreId    String?
   creataIl    DateTime  @default(now())

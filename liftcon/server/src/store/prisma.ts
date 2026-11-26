@@ -15,6 +15,21 @@ export function prismaStore(db: PrismaClient = new PrismaClient()): Store & { cl
       perEmail: (email) => db.utente.findUnique({ where: { email: email.toLowerCase() } }),
       crea: (u) => db.utente.create({ data: { ...u, email: u.email.toLowerCase() } }),
       aggiorna: (id, patch) => db.utente.update({ where: { id }, data: patch }),
+      async registraFallimento(id, max, fino) {
+        const u = await db.utente.update({ where: { id }, data: { tentativiFalliti: { increment: 1 } }, select: { tentativiFalliti: true } });
+        if (u.tentativiFalliti < max) return false;
+        await db.utente.update({ where: { id }, data: { tentativiFalliti: 0, bloccatoFino: fino } });
+        return true;
+      },
+      async consumaPassoTotp(id, passo) {
+        const r = await db.utente.updateMany({ where: { id, OR: [{ totpUltimoPasso: null }, { totpUltimoPasso: { lt: passo } }] }, data: { totpUltimoPasso: passo } });
+        return r.count === 1;
+      },
+      async consumaCodice(id, h) {
+        // array_remove в един UPDATE: два паралелни входа с различни кодове не връщат изтрит код.
+        const n = await db.$executeRaw`UPDATE "Utente" SET "codiciRecupero" = array_remove("codiciRecupero", ${h}) WHERE "id" = ${id} AND ${h} = ANY("codiciRecupero")`;
+        return n === 1;
+      },
     },
     sessioni: {
       crea: (s) => db.sessione.create({ data: s }),
@@ -71,6 +86,8 @@ export function prismaStore(db: PrismaClient = new PrismaClient()): Store & { cl
         db.$transaction(async (tx) => {
           const c = await tx.contenuto.upsert({ where: { id }, create: { id, tipo, dati: json(dati), autoreId }, update: { dati: json(dati), autoreId } });
           await tx.revisioneContenuto.create({ data: { contenutoId: id, dati: json(dati), autoreId } });
+          const vecchie = await tx.revisioneContenuto.findMany({ where: { contenutoId: id }, orderBy: { creataIl: "desc" }, skip: 20, select: { id: true } });
+          if (vecchie.length) await tx.revisioneContenuto.deleteMany({ where: { id: { in: vecchie.map((v) => v.id) } } });
           return c;
         }),
       async elimina(id) {

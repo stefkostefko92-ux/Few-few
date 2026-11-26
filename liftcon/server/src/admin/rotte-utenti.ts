@@ -12,6 +12,7 @@ import { hashPassword, verificaPassword, problemaPassword, MESSAGGI_PASSWORD } f
 import { verifyTotp } from "../auth/totp.js";
 import { nuoviCodici } from "../auth/recupero.js";
 import { RUOLI, type Ruolo, type Utente } from "../store/types.js";
+import { EMAIL_RE } from "../email/configurazione.js";
 
 const ALFABETO = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const passwordTemporanea = (): string => Array.from({ length: 16 }, () => ALFABETO[randomInt(ALFABETO.length)]).join("");
@@ -57,7 +58,7 @@ export function rotteUtenti(d: AdminDeps): Router {
     const nome = String(req.body?.nome ?? "").trim().slice(0, 100);
     const email = String(req.body?.email ?? "").trim().toLowerCase().slice(0, 200);
     const ruolo = ruoloValido(req.body?.ruolo);
-    if (!nome || !/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email) || !ruolo || !puoGestire(a.utente, null, ruolo)) return res.redirect(303, "/admin/utenti?errore=Dati+non+validi+o+ruolo+non+consentito");
+    if (!nome || !EMAIL_RE.test(email) || !ruolo || !puoGestire(a.utente, null, ruolo)) return res.redirect(303, "/admin/utenti?errore=Dati+non+validi+o+ruolo+non+consentito");
     if (await d.store.utenti.perEmail(email)) return res.redirect(303, "/admin/utenti?errore=Email+gi%C3%A0+registrata");
     const pw = passwordTemporanea();
     const u = await d.store.utenti.crea({ nome, email, ruolo, passwordHash: await hashPassword(pw), cambiarePassword: true });

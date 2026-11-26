@@ -6,7 +6,8 @@ export const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => MAP[c] ??
 
 /** Позволени адреси: вътрешен път (/…) или https:// — без javascript:, data:, mailto: и т.н. */
 export function urlSicuro(u: string): boolean {
-  return /^\/[A-Za-z0-9\-._~/#?=&%]*$/.test(u) || /^https:\/\/[A-Za-z0-9.-]+(\/[A-Za-z0-9\-._~/#?=&%;:@+,]*)?$/.test(u);
+  // Вътрешен път: „/…“, но не „//…“ (протокол-относителен адрес към друг сайт).
+  return /^\/(?!\/)[A-Za-z0-9\-._~/#?=&%]*$/.test(u) || /^https:\/\/[A-Za-z0-9.-]+(\/[A-Za-z0-9\-._~/#?=&%;:@+,]*)?$/.test(u);
 }
 
 /** Ред текст → HTML (екраниран), с **удебелено** и [връзки](адрес). */

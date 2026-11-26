@@ -100,6 +100,12 @@ export interface Store {
     perEmail(email: string): Promise<Utente | null>;
     crea(u: NuovoUtente): Promise<Utente>;
     aggiorna(id: string, patch: Partial<Omit<Utente, "id" | "creatoIl">>): Promise<Utente>;
+    /** Атомарно +1 на грешните опити; при `max` — заключване до `fino` и нулиране. Връща дали е заключен. */
+    registraFallimento(id: string, max: number, fino: Date): Promise<boolean>;
+    /** Приема TOTP стъпката само ако е по-голяма от последната (атомарно — повторен код не минава). */
+    consumaPassoTotp(id: string, passo: number): Promise<boolean>;
+    /** Маха резервния код (HMAC) атомарно; false, ако вече го няма. */
+    consumaCodice(id: string, hmac: string): Promise<boolean>;
   };
   sessioni: {
     crea(s: Omit<Sessione, "id" | "creataIl" | "ultimoUso">): Promise<Sessione>;

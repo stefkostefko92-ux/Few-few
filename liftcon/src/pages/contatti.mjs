@@ -45,7 +45,7 @@ export function contattiPage(ctx) {
   const info = `<aside class="contact-card" aria-label="Recapiti">
 <h2>Recapiti</h2>
 <p class="contact-big"><a href="${CONTACT.phoneHref}">${esc(CONTACT.phone)}</a></p>
-<p><a href="mailto:${CONTACT.email}">${esc(CONTACT.email)}</a></p>
+<p><a href="mailto:${esc(CONTACT.email)}">${esc(CONTACT.email)}</a></p>
 <h3>Orari</h3>
 <dl class="hours">${join(CONTACT.hours, (h) => `<div><dt>${esc(h.label)}</dt><dd>${h.opens}–${h.closes}</dd></div>`)}</dl>
 <h3>Zona servita</h3>

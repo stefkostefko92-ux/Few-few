@@ -20,7 +20,8 @@ test("вход: грешна парола и непознат имейл дав�
     assert.match(b.text, /Email o password non corretti/);
     for (let i = 0; i < 4; i++) await c.req("/admin/login", { method: "POST", form: { email: "master@liftcon.it", password: "sbagliata davvero" } });
     const bloccato = await c.req("/admin/login", { method: "POST", form: { email: "master@liftcon.it", password } });
-    assert.equal(bloccato.status, 429, "дори вярната парола не минава по време на заключването");
+    assert.equal(bloccato.status, 401, "дори вярната парола не минава по време на заключването");
+    assert.match(bloccato.text, /Email o password non corretti/, "същият отговор като грешен имейл (без изброяване)");
     avanza(s.clock, 16 * 60_000);
     assert.equal((await c.req("/admin/login", { method: "POST", form: { email: "master@liftcon.it", password } })).status, 303);
   } finally {

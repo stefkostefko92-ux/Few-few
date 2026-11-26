@@ -35,7 +35,7 @@ export function privacyPage() {
     "Informativa privacy",
     "Come trattiamo i dati personali di chi visita questo sito o ci contatta, ai sensi dell'articolo 13 del Regolamento (UE) 2016/679 (GDPR).",
     `<h2>Titolare del trattamento</h2>
-<p>${titolare}. Contatto per la privacy: <a href="mailto:${CONTACT.email}">${esc(CONTACT.email)}</a>.</p>
+<p>${titolare}. Contatto per la privacy: <a href="mailto:${esc(CONTACT.email)}">${esc(CONTACT.email)}</a>.</p>
 <h2>Quali dati trattiamo e perché</h2>
 <h3>Richieste di contatto</h3>
 <p>Se ci scrive con il modulo, per email o ci chiama, trattiamo i dati che ci fornisce (nome, email, telefono, ruolo, comune dell'impianto, testo del messaggio) per rispondere alla richiesta e preparare una proposta d'incarico. Base giuridica: misure precontrattuali adottate su sua richiesta (art. 6, par. 1, lett. b GDPR). Se ci scrive per conto di un condominio, di un'azienda o di un altro cliente, trattiamo i suoi dati di contatto sulla base del nostro legittimo interesse a rispondere (art. 6, par. 1, lett. f GDPR). Senza questi dati non possiamo rispondere.</p>
@@ -52,7 +52,7 @@ export function privacyPage() {
 <ul><li>netcup GmbH (Germania): server che ospita il sito, la banca dati delle richieste e la posta elettronica.</li><li>Sendinblue SAS, marchio Brevo (Francia): invio delle email di avviso generate dal modulo di contatto.</li></ul>
 <p>Sono responsabili del trattamento ai sensi dell'articolo 28 GDPR. I dati restano nell'Unione europea, salvo il caso della mappa descritto sopra.</p>
 <h2>I suoi diritti</h2>
-<p>Può chiedere accesso, rettifica, cancellazione, limitazione, portabilità dei dati e opporsi al trattamento basato sul legittimo interesse e revocare il consenso dato per la mappa (articoli 7 e 15–22 GDPR), scrivendo a <a href="mailto:${CONTACT.email}">${esc(
+<p>Può chiedere accesso, rettifica, cancellazione, limitazione, portabilità dei dati e opporsi al trattamento basato sul legittimo interesse e revocare il consenso dato per la mappa (articoli 7 e 15–22 GDPR), scrivendo a <a href="mailto:${esc(CONTACT.email)}">${esc(
       CONTACT.email,
     )}</a>. Rispondiamo entro un mese.</p>
 <p>Ha diritto di proporre reclamo al Garante per la protezione dei dati personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">garanteprivacy.it</a>) o all'autorità di controllo bulgara, la Commissione per la protezione dei dati personali (<a href="https://www.cpdp.bg" target="_blank" rel="noopener">cpdp.bg</a>).</p>
@@ -94,7 +94,7 @@ export function noteLegaliPage() {
 <div><dt>EIK (Registro delle imprese bulgaro)</dt><dd>${esc(COMPANY.eik)}</dd></div>
 <div><dt>Partita IVA</dt><dd>${esc(COMPANY.vat)}</dd></div>
 <div><dt>Sede legale</dt><dd>${esc(COMPANY.street)}, ${esc(COMPANY.postalCode)} ${esc(COMPANY.city)} (${esc(COMPANY.country)})</dd></div>
-<div><dt>Email</dt><dd><a href="mailto:${CONTACT.email}">${esc(CONTACT.email)}</a></dd></div>
+<div><dt>Email</dt><dd><a href="mailto:${esc(CONTACT.email)}">${esc(CONTACT.email)}</a></dd></div>
 <div><dt>Telefono</dt><dd><a href="${CONTACT.phoneHref}">${esc(CONTACT.phone)}</a></dd></div>
 <div><dt>Responsabile dei contenuti</dt><dd>${esc(COMPANY.responsabile)}</dd></div>
 </dl>

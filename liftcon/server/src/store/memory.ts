@@ -53,6 +53,26 @@ export function memoryStore(): Store {
         utenti.set(i, nuovo);
         return nuovo;
       },
+      async registraFallimento(i, max, fino) {
+        const u = utenti.get(i);
+        if (!u) return false;
+        const n = u.tentativiFalliti + 1;
+        const blocca = n >= max;
+        utenti.set(i, { ...u, tentativiFalliti: blocca ? 0 : n, ...(blocca ? { bloccatoFino: fino } : {}) });
+        return blocca;
+      },
+      async consumaPassoTotp(i, passo) {
+        const u = utenti.get(i);
+        if (!u || (u.totpUltimoPasso !== null && u.totpUltimoPasso >= passo)) return false;
+        utenti.set(i, { ...u, totpUltimoPasso: passo });
+        return true;
+      },
+      async consumaCodice(i, h) {
+        const u = utenti.get(i);
+        if (!u || !u.codiciRecupero.includes(h)) return false;
+        utenti.set(i, { ...u, codiciRecupero: u.codiciRecupero.filter((x) => x !== h) });
+        return true;
+      },
     },
     sessioni: {
       async crea(s) {
