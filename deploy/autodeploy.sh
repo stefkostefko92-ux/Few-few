@@ -2131,6 +2131,12 @@ fivem_indexnow() {
   fi
 }
 
+# Непразен BREVO_API_KEY в .env (без празните кавички, които readEnv брои за празни).
+fivem_has_brevo_key() {
+  [ -r "$1" ] || return 1
+  grep -qE "^BREVO_API_KEY=[\"']?[^\"'[:space:]]" "$1" 2>/dev/null
+}
+
 deploy_fivem() {
   local d="$SRC/FiveM"
   [ -d "$d" ] || { warn "Няма FiveM/ в архива — пропускам."; return; }
@@ -2189,9 +2195,9 @@ DATABASE_URL=postgresql://fivem:${dbp}@db:5432/fivem
 PUBLIC_BASE_URL=https://${FIVEM_DOMAIN}
 ADMIN_PASSWORD_HASH=${hash}
 TRUST_PROXY_IP_HEADER=x-real-ip
-# Без RESEND_API_KEY уведомленията по чл. 16 и чл. 17 DSA НЕ тръгват —
-# липсата се логва, но обещанието остава неизпълнено. Попълни го.
-RESEND_API_KEY=
+# Без BREVO_API_KEY уведомленията по чл. 16 и чл. 17 DSA НЕ тръгват —
+# липсата се логва, но обещанието остава неизпълнено. Попълни го (Brevo → SMTP & API → API keys).
+BREVO_API_KEY=
 EMAIL_FROM=Thraex PVP <no-reply@${FIVEM_DOMAIN}>
 # По избор — без тях съответната платформа просто се пропуска.
 TWITCH_CLIENT_ID=
@@ -2204,9 +2210,17 @@ FIVEM_PING_TIMEOUT_MS=4000
 FIVEM_PING_CONCURRENCY=6
 EOF
     [ -n "$hash" ] && warn "Админ парола за FiveM: ${adp} — запиши я в password manager СЕГА, не се показва пак."
-    warn "Попълни RESEND_API_KEY в $FIVEM_STATE_DIR/.env, иначе решенията по DSA не се изпращат."
+    warn "Попълни BREVO_API_KEY в $FIVEM_STATE_DIR/.env, иначе решенията по DSA не се изпращат."
   fi
   chmod 600 "$FIVEM_STATE_DIR/.env" 2>/dev/null || true
+  # Имейлите минават през Brevo (собственикът, 25.11.2026). Новият код праща САМО през Brevo: без ключ
+  # уведомленията по чл. 16/17 DSA спират ТИХО, а health остава зелен (преглед на PR #489). Затова без
+  # BREVO_API_KEY FiveM НЕ се обновява — върви предишният release, който още праща писма, а политиката
+  # му още назовава стария доставчик. Пръв деплой: .env току-що е създаден — попълни ключа и пусни пак.
+  if ! fivem_has_brevo_key "$FIVEM_STATE_DIR/.env"; then
+    warn "FiveM НЕ е обновен: няма BREVO_API_KEY в $FIVEM_STATE_DIR/.env. Добави ключа (Brevo → SMTP & API → API keys), потвърди подателя в Brevo и пусни пак. RESEND_API_KEY махни едва след като новият release праща писма."
+    deploy_failed=1; return
+  fi
   # `-T`: без него, ако `$d/.env` вече е ДИРЕКТОРИЯ, връзката се създава ВЪТРЕ
   # в нея (`.env/.env`) и приложението тръгва без тайни, без грешка.
   ln -sfnT "$FIVEM_STATE_DIR/.env" "$d/.env"
