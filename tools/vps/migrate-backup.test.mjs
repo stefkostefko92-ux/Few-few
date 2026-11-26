@@ -276,3 +276,19 @@ test("бази със сходни имена не се презаписват �
   assert.equal((src.match(/f="\$\(uniq_path "\$STAGE\/db\/pg-/g) || []).length, 2, "и двата Postgres пътя минават през uniq_path");
   assert.match(src, /^uniq_path\(\)\{/m, "помощникът е в скрипта");
 });
+
+// Осми преглед на PR #312 (Кодаджията, средна · Вероятно): backup API на CPython повтаря стъпката при
+// SQLITE_BUSY без горна граница, а FIFO, подменен след проверката на подписа, блокира open() — нощният
+// бекъп висеше до 8-часовия таван на услугата. Всяко копие е с таймаут.
+test("копието на SQLite е с таймаут (заключена база или FIFO не спира нощния бекъп)", () => {
+  const src = readFileSync(script, "utf8");
+  assert.match(src, /timeout -k 10 "\$\{SQLITE_TIMEOUT:-300\}" python3 -I -c "\$SQLITE_PY"/);
+  assert.match(src, /timeout -k 10 "\$\{SQLITE_TIMEOUT:-300\}" sqlite3 -readonly/);
+});
+
+// Осми преглед (Кодаджията, ниска): жива Mongo в нощния режим даваше само warn → снимката беше
+// „nightly“ със суров, неконсистентен WiredTiger. В dumps е fail → partial и видим провал.
+test("жива Mongo в нощния режим е провал (partial), не тихо предупреждение", () => {
+  const src = readFileSync(script, "utf8");
+  assert.match(src, /mongo\) if \[ "\$MODE" = dumps \]; then fail "MongoDB \$c/);
+});

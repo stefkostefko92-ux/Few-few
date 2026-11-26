@@ -643,7 +643,10 @@ for c in "${CONTAINERS[@]}"; do
     my) dump_my_container "$c";;
     pgdown) fail "Postgres $c не отговаря на pg_isready — без дъмп; суровият том е в архива (консистентен само във FINAL).";;
     redis) save_redis_container "$c";;
-    mongo) warn "MongoDB $c: без логически дъмп — суровият том е в архива (консистентен само във FINAL; в горещ режим — по възможност).";;
+    # Нощем суров WiredTiger от жива база може да не се възстанови — провал (снимката става partial),
+    # не тихо предупреждение под таг nightly (преглед на PR #312). Докато няма mongodump.
+    mongo) if [ "$MODE" = dumps ]; then fail "MongoDB $c: няма логически дъмп — суровият том на жива база не е надежден бекъп; добави mongodump."
+           else warn "MongoDB $c: без логически дъмп — суровият том е в архива (консистентен само във FINAL; в горещ режим — по възможност)."; fi;;
   esac
 done
 dump_pg_host
@@ -672,14 +675,16 @@ backup_sqlite(){
   if [ -e "$f-wal" ]; then had_wal=1; fi
   if [ -e "$f-shm" ]; then had_shm=1; fi
   mkdir -p "$(dirname "$dst")"
+  # timeout: backup API повтаря стъпката при заключена база без горна граница, а FIFO, подменен след
+  # проверката на подписа, блокира open() — нощният бекъп иначе виси до тавана на услугата (преглед на PR #312).
   if command -v python3 >/dev/null 2>&1; then
-    python3 -I -c "$SQLITE_PY" "$f" "$dst" 2>"$ERR" || st=$?
+    timeout -k 10 "${SQLITE_TIMEOUT:-300}" python3 -I -c "$SQLITE_PY" "$f" "$dst" 2>"$ERR" || st=$?
   elif command -v sqlite3 >/dev/null 2>&1; then
     # Пътят влиза в dot-команда на sqlite3: кавичка или нов ред в чуждо име на файл би я разцепил
     # (а `.shell` изпълнява команди като root) — такъв файл не се копира, а влиза сурово.
     case "$dst" in
       *"'"*|*$'\n'*) st=2; printf 'името съдържа кавичка или нов ред — пропуснато' > "$ERR" ;;
-      *) sqlite3 -readonly "$f" ".backup '$dst'" 2>"$ERR" || st=$? ;;
+      *) timeout -k 10 "${SQLITE_TIMEOUT:-300}" sqlite3 -readonly "$f" ".backup '$dst'" 2>"$ERR" || st=$? ;;
     esac
   else
     st=127; printf 'няма python3 и sqlite3' > "$ERR"
