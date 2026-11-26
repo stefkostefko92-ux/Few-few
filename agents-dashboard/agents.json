@@ -7089,7 +7089,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 313
+        "lessons": 314
       },
       "evolution": [
         {
@@ -7511,9 +7511,20 @@
           "date": "2026-11-25",
           "event": "v28.7 — учене",
           "detail": "Научи: FiveM няма автоматичен откат — scripts/deploy.sh няма откат и last-good, а откатът е ръ… (+13 още)"
+        },
+        {
+          "version": "28.8.0",
+          "date": "2026-11-26",
+          "event": "v28.8 — учене",
+          "detail": "Научи: migrate-backup.sh (DUMP_TO, нощен offsite) копира SQLite през backup API само под ROOTS…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-26",
+          "type": "learning",
+          "summary": "Научи: „migrate-backup.sh (DUMP_TO, нощен offsite) копира SQLite през backup API само под ROOTS…\""
+        },
         {
           "date": "2026-11-25",
           "type": "quarantine",
