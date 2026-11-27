@@ -218,7 +218,7 @@ export default async function HomePage() {
           />
         </svg>
 
-        {/* От xl гербът-воден знак е СОБСТВЕНА клетка на мрежата (не absolute
+        {/* От xl знакът-воден знак е СОБСТВЕНА клетка на мрежата (не absolute
             над текста) — до увода и търсачката, над реда с чиповете. Не може да
             застъпи нищо при никоя ширина и размер на шрифта. Под xl го няма. */}
         <div className="container-content relative pb-10 pt-8 sm:pb-20 sm:pt-14 lg:pb-16 lg:pt-12 xl:grid xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center xl:gap-x-12">
@@ -259,15 +259,15 @@ export default async function HomePage() {
               Височина в px: не расте с шрифта от „Настройки за четене“. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/bobov-dol-grb-mark.png"
+            src="/brand/za-bobov-dol-mark.png"
             alt=""
             aria-hidden
             className="pointer-events-none hidden h-[320px] w-auto select-none opacity-[0.07] xl:block"
             width={320}
-            height={460}
+            height={320}
           />
           {/* Ежедневните неща, които ги няма в картите отдолу — само от sm.
-              От xl редът е под герба, на цялата ширина (не се пренася). */}
+              От xl редът е под знака, на цялата ширина (не се пренася). */}
           <nav aria-label="Всеки ден" className="relative mt-4 hidden sm:block xl:col-span-2">
             <ul className="flex flex-wrap gap-2">
               {QUICK_DAILY.map((item) => (

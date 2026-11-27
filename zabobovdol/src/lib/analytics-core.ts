@@ -82,7 +82,7 @@ export function classifyPageRequest(req: PageRequest): ViewDecision {
 export const KNOWN_SECTIONS = new Set([
   "biskvitki", "biznes", "danaci-srokove", "dezhurna-apteka", "dobrovolci",
   "dostapnost", "evroto", "galeriya", "grada", "grafik-smetosabirane", "imen-den",
-  "instaliraj", "istoriya", "izmami", "izvestiya", "kak-da", "kak-da-polzvam-sayta", "kontakti",
+  "instaliraj", "istoriya", "iztochnici", "izmami", "izvestiya", "kak-da", "kak-da-polzvam-sayta", "kontakti",
   "novini", "obyavi", "pechat", "pomeni", "pomoshti", "poveritelnost", "pravila",
   "prekysvaniya", "prozrachnost", "reklama", "sabitiya", "signali", "smetishta",
   "spodeleno-patuvane", "spomeni", "tarsene", "transport", "uslugi", "za-blizkite",
