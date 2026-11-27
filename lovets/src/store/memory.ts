@@ -24,6 +24,7 @@ export class MemoryStore implements ComplianceStore {
   private results: Row[] = [];
   private snapshots: Snapshot[] = [];
   private suppressed = new Set<string>();
+  private reasons = new Map<string, string>();
   private consents = new Map<string, ConsentInput[]>();
 
   async saveRegistryResults(
@@ -90,9 +91,16 @@ export class MemoryStore implements ComplianceStore {
   async addSuppression(
     fingerprint: string,
     _scope: SuppressionScope,
-    _reason: string,
+    reason: string,
   ): Promise<void> {
     this.suppressed.add(fingerprint);
+    // Като в базата: първият запис остава (upsert без update).
+    if (!this.reasons.has(fingerprint)) this.reasons.set(fingerprint, reason);
+  }
+
+  /** Само за тестовете. */
+  suppressionReason(fingerprint: string): string | undefined {
+    return this.reasons.get(fingerprint);
   }
 
   async consentsFor(fingerprint: string, channel?: Channel): Promise<ConsentRecord[]> {

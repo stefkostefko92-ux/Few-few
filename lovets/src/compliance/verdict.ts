@@ -63,6 +63,8 @@ const REQUIREMENT_TEXT: Record<RequirementCode, string> = {
   unsubscribe_link: 'Работещ начин за отказ (линк за отписване), който записва „не ме търсете“.',
   unsolicited_subject_marker:
     'В темата: „Непоискано търговско съобщение“ — да се разпознава още при получаване (ЗЕТ чл. 6, ал. 1).',
+  it_commercial_marker:
+    'Италия: ясно обозначено като търговско още от първото писмо — „Comunicazione commerciale“ в темата (d.lgs. 70/2003 чл. 8).',
   call_identity:
     'В началото на разговора: кой се обажда, от коя фирма, защо, откъде е номерът и че може да откаже.',
   manual_only: 'Само ръчно изпращане — без автоматизация (условията на LinkedIn §8.2).',
@@ -146,6 +148,7 @@ export function evaluateContact(t: ContactTarget, ctx: EvaluationContext): Verdi
       market,
       channel: t.channel,
       normalizedValue,
+      sourceUrl: t.sourceUrl,
       decision: 'blocked',
       reasons,
       requirements,
@@ -205,12 +208,15 @@ export function evaluateContact(t: ContactTarget, ctx: EvaluationContext): Verdi
   if (market === 'BG' && t.channel === 'email' && !hasConsent) {
     requirements.push(requirement('unsolicited_subject_marker'));
   }
+  if (market === 'IT' && t.channel === 'email')
+    requirements.push(requirement('it_commercial_marker'));
   if (t.channel === 'linkedin') requirements.push(requirement('manual_only'));
 
   return {
     market,
     channel: t.channel,
     normalizedValue,
+    sourceUrl: t.sourceUrl,
     decision: decide(reasons),
     reasons,
     requirements,
