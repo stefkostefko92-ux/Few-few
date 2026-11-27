@@ -27,6 +27,23 @@ import { lintText } from "../design/design-lint.mjs";
 
 const PLATFORMS = new Set(["instagram", "tiktok", "youtube", "facebook", "linkedin", "x", "threads"]);
 const HOOK_MAX = 120;
+// Брандът е slug в Piuma; медията — https адрес без празни места и без символи на обвивката. Командите
+// се пускат в Bash (стъпка 7 на умението), а брифът от клиент е недоверен вход (преглед на PR #506).
+const BRAND_RX = /^[a-z0-9-]{1,64}$/;
+const WEEK_RX = /^\d{4}-\d{2}-\d{2}$/;
+// `?`, `&`, `=`, `#` са позволени (подписани адреси на CDN) — командата ги носи в единични кавички.
+const SHELL_META = /[\s'"`$;|<>()\\{}!^[\]]/;
+const AI_NOTE = "Изображението е създадено с AI.";
+const hasMedia = (p) => Boolean(String(p?.media || "").trim());
+function safeMedia(m) {
+  const v = String(m || "");
+  if (!/^[\x21-\x7e]+$/.test(v) || SHELL_META.test(v)) return false;
+  try {
+    return new URL(v).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 const norm = (s) => String(s || "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 const blank = (s) => !String(s || "").trim();
 
@@ -37,11 +54,19 @@ export function checkWeek(plan) {
   const posts = Array.isArray(plan?.posts) ? plan.posts : [];
   if (blank(plan?.idea)) add("HIGH", "no-idea", "Липсва `idea` — седмицата е от ЕДНА идея; без нея е разпилян календар.");
   if (!posts.length) add("HIGH", "no-posts", "Няма постове.");
+  if (!WEEK_RX.test(String(plan?.week ?? ""))) add("HIGH", "bad-week", "`week` трябва да е понеделникът във вид ГГГГ-ММ-ДД (от него е името на пакета в .tmp/).");
+  const igMedia = posts.some((p) => p && String(p.platform || "").toLowerCase() === "instagram" && hasMedia(p));
+  if ((plan?.brand !== undefined || igMedia) && !BRAND_RX.test(String(plan?.brand ?? "")))
+    add("HIGH", "bad-brand", "`brand` трябва да е slug в Piuma (малки латински букви, цифри, тире) — влиза в команда за обвивката.");
 
   const days = new Set();
   const platforms = new Set();
   const byText = new Map();
   posts.forEach((p, i) => {
+    if (!p || typeof p !== "object" || Array.isArray(p)) {
+      add("HIGH", "bad-post", "Постът трябва да е обект.", `пост[${i}]`);
+      return;
+    }
     const plat = String(p?.platform || "").toLowerCase();
     const where = `ден ${p?.day ?? "?"} · ${plat || "?"}[${i}]`;
     if (!Number.isInteger(p?.day) || p.day < 1 || p.day > 7) add("HIGH", "bad-day", "`day` трябва да е цяло число 1–7.", where);
@@ -55,7 +80,9 @@ export function checkWeek(plan) {
       if (!norm(p.text).startsWith(norm(p.hook).slice(0, 40))) add("INFO", "hook-not-first", "Текстът не започва с hook-а — първият видим ред е друг.", where);
     }
     if (blank(p?.cta)) add("HIGH", "no-cta", "Липсва CTA — какво да направи човек след поста.", where);
-    if (p?.aiMedia && !p?.aiLabel) add("HIGH", "ai-label", "AI генерирана медия без етикет — AI Act чл. 50 и правилата на платформите искат „направено с AI“.", where);
+    if (hasMedia(p) && !safeMedia(p.media)) add("HIGH", "bad-media", "`media` трябва да е https адрес без празни места и без символи на обвивката (;, $, `, кавички…).", where);
+    if (plat === "instagram" && hasMedia(p) && !String(p.alt || "").trim()) add("HIGH", "no-alt-media", "Instagram пост с медия без `alt` — piuma.mjs draft го иска; без него командата пада.", where);
+    if (p?.aiMedia && !p?.aiLabel) add("HIGH", "ai-label", "AI генерирана медия без етикет — правилата на платформите го искат за реалистично AI съдържание (AI Act чл. 50(4) — за deepfake); ние етикетираме винаги.", where);
     const key = norm(p?.text);
     if (key) byText.set(key, [...(byText.get(key) || []), plat]);
     // Твърдения: същите правила като в design-lint (claim-needs-proof).
@@ -88,6 +115,7 @@ export function renderPack(plan) {
       if (p.link) lines.push(`**Връзка:** ${p.link}`);
       if (p.title) lines.push(`**Заглавие:** ${p.title}${p.thumbnailText ? ` · миниатюра: ${p.thumbnailText}` : ""}`);
       if (p.alt) lines.push(`**Alt:** ${p.alt}`);
+      if (p.aiMedia) lines.push(`**Етикет за AI:** ${plan.aiNote || AI_NOTE} (и етикетът на платформата при публикуване)`);
       lines.push("");
     }
   }
@@ -99,11 +127,14 @@ const shellQuote = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
 /** Командите към piuma.mjs — само Instagram постове с медия; само `draft` (Piuma не публикува без човек). */
 export function piumaCommands(plan, captionsDir) {
   const out = [];
+  // Само проверени стойности стават команда; всяка стойност е в кавички (защита в дълбочина).
+  if (!BRAND_RX.test(String(plan.brand ?? ""))) return out;
   (plan.posts || []).forEach((p, i) => {
-    if (String(p.platform).toLowerCase() !== "instagram" || !/^https:\/\//.test(String(p.media || ""))) return;
+    if (!p || String(p.platform).toLowerCase() !== "instagram" || !safeMedia(p.media) || !String(p.alt || "").trim()) return;
     const captionFile = join(captionsDir, `den-${p.day}-${i}.txt`);
-    const caption = [p.text, "", p.cta, p.hashtags?.length ? `\n${p.hashtags.join(" ")}` : ""].join("\n").trim();
-    const parts = ["node tools/social/piuma.mjs draft", `--brand ${plan.brand}`, `--media ${p.media}`, `--caption-file ${captionFile}`, `--alt ${shellQuote(p.alt || "")}`];
+    // piuma.mjs draft няма поле за AI етикет — редът е в самия текст, за да го види човекът, който одобрява.
+    const caption = [p.text, "", p.cta, p.aiMedia ? `\n${plan.aiNote || AI_NOTE}` : "", p.hashtags?.length ? `\n${p.hashtags.join(" ")}` : ""].join("\n").replace(/\n{3,}/g, "\n\n").trim();
+    const parts = ["node tools/social/piuma.mjs draft", `--brand ${shellQuote(plan.brand)}`, `--media ${shellQuote(p.media)}`, `--caption-file ${shellQuote(captionFile)}`, `--alt ${shellQuote(p.alt)}`];
     if (p.format === "reels") parts.push("--kind REELS");
     parts.push(`--topic ${shellQuote(plan.idea)}`);
     out.push({ day: p.day, captionFile, caption, command: parts.join(" ") });

