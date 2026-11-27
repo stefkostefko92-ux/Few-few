@@ -2346,6 +2346,22 @@ export function buildRouter(ctx) {
   );
 
   // ── Седмичен дайджест ──────────────────────────────────────────────────────
+  // ── Петъчният отчет „Бизнесът тази седмица" ───────────────────────
+  r.get(
+    '/api/alerts/business',
+    guard(J(async () => ({ ...ctx.alerts.business.status(cfg), preview: await ctx.alerts.businessText() })))
+  );
+  r.post(
+    '/api/alerts/business/send',
+    guard(
+      J(async (req) => {
+        audit.log({ action: 'alerts.business.sendNow', user: req.user });
+        return ctx.alerts.sendBusiness(Date.now(), { manual: true }); // { text, delivered, channels }
+      }),
+      { mutating: true }
+    )
+  );
+
   r.get(
     '/api/alerts/digest',
     guard(J(() => ({ ...ctx.alerts.digest.status(cfg), preview: ctx.alerts.digestText() })))
