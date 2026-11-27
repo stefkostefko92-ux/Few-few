@@ -13884,6 +13884,11 @@
       "activity": [
         {
           "date": "2026-11-27",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „followUp след deferReply в discord.js 14 е публичен и без наследен ephemeral; ако нито …\""
+        },
+        {
+          "date": "2026-11-27",
           "type": "learning",
           "summary": "Научи: „PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименув…\" · 1 в карантина"
         },
