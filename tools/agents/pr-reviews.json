@@ -505,6 +505,9 @@
     "0a03a93825db3b0e27c05d500e8f21c86d07a667": [
       "ai-djiyata",
       "kodadjiyata"
+    ],
+    "897b963594cce033948b016a6f56e912a498321d": [
+      "kodadjiyata"
     ]
   },
   "runs": [
@@ -2474,6 +2477,14 @@
       "agent": "ai-djiyata",
       "verdict": "поправки",
       "costUsd": 1.1,
+      "date": "2026-11-27"
+    },
+    {
+      "pr": 508,
+      "sha": "897b963594cce033948b016a6f56e912a498321d",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.07,
       "date": "2026-11-27"
     }
   ]
