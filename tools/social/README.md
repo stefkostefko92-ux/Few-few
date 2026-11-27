@@ -18,6 +18,17 @@ bash tools/social/clip.sh norm     cap.mp4 final.mp4      # -14 LUFS
 bash tools/social/clip.sh thumb    final.mp4 cover.jpg
 ```
 
+## `sedmitsa.mjs` — една идея → седмица постове (умението `ideya-sedmitsa`)
+
+```bash
+node tools/social/sedmitsa.mjs check  .tmp/sedmitsa/2026-11-30.json   # 0 = без HIGH; 1 = HIGH; 2 = файл/JSON
+node tools/social/sedmitsa.mjs render .tmp/sedmitsa/2026-11-30.json   # → .tmp/sedmitsa/2026-11-30.md + командите за Piuma
+```
+Проверява седмицата (идея, 7 дни, ≥3 канала, различен текст по платформа), поста (hook в началото и до
+120 знака, CTA, час, канал, етикет за AI медия), твърденията (правилата на `design-lint` →
+`marketing-claims-review`) и всичко от `post-lint`. Без мрежа; за Instagram с медия дава командите
+`piuma.mjs draft` — само чернови. Тестван (`sedmitsa.test.mjs`).
+
 ## `post-lint.mjs` — zero-dep линтер за план на постове (тестът в CI; CLI върху plan.json ръчно)
 ```bash
 node tools/social/post-lint.mjs posts.json    # или папка
