@@ -14,11 +14,11 @@ export default function Error({
       <div className="panel mx-auto max-w-xl px-6 py-8 text-center sm:px-10">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/brand/bobov-dol-grb-mark.png"
+          src="/brand/za-bobov-dol-mark.png"
           alt=""
           aria-hidden
           className="mx-auto h-20 w-auto"
-          width={56}
+          width={80}
           height={80}
         />
         <h1 className="mt-6 text-2xl font-bold text-slate-900 sm:text-3xl">

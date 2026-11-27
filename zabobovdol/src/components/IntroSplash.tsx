@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { SITE } from "@/lib/site";
 import { visitNumber, formatVisitNumber } from "@/lib/visit-client";
 
-// Начален екран при влизане в сайта: герб + силен надпис, стои няколко
+// Начален екран при влизане в сайта: знакът „БД“ + силен надпис, стои няколко
 // секунди и изчезва плавно. Показва се при всяко зареждане на сайта (не и в
 // административната част). Има бутон „Прескочи“ за удобство.
 export function IntroSplash() {
@@ -107,10 +107,10 @@ export function IntroSplash() {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/brand/bobov-dol-grb-mark.png"
-        alt="Герб на Бобов дол"
-        width={150}
-        height={216}
+        src="/brand/za-bobov-dol-mark.png"
+        alt="За Бобов дол"
+        width={160}
+        height={160}
         className="splash-crest h-32 w-auto drop-shadow-xl sm:h-40"
       />
       {/* Не е <h1> нарочно: това е временен надпис, а истинският <h1> е на

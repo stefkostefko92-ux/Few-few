@@ -78,6 +78,8 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       MAIL_FROM: ${MAIL_FROM:-Фактурист <no-reply@fakturist.eu>}
+      # Сборовете за петъчния отчет на vpsdash (`/internal/weekly`); празно — крайната точка я няма.
+      INTERNAL_STATS_TOKEN: ${INTERNAL_STATS_TOKEN:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # Портът е публикуван през Docker NAT; `uniquelocal` вярва само на nginx-а на хоста през тази мрежа.
       TRUST_PROXY: ${TRUST_PROXY:-uniquelocal}

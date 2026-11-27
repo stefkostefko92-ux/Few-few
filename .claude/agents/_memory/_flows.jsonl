@@ -1055,3 +1055,5 @@
 {"t":"start","ts":"2026-11-26T11:32:42.936Z","id":"r083abe71","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-26T11:32:42.936Z","id":"r083abe71","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"2c5f5d54"}
 {"t":"handoff","ts":"2026-11-26T11:34:03.291Z","id":"r083abe71","from":"razbivacha","to":"ai-djiyata","status":"блокер","run":"49f8de19"}
+{"t":"start","ts":"2026-11-27T06:03:05.407Z","id":"ra5b7b4d6","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-11-27T06:03:05.409Z","id":"ra5b7b4d6","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"6a065464"}

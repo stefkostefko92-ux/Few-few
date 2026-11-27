@@ -127,10 +127,10 @@ export async function SiteFooter() {
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/brand/bobov-dol-grb-mark.png"
+                  src="/brand/za-bobov-dol-mark.png"
                   alt=""
-                  width={34}
-                  height={49}
+                  width={48}
+                  height={48}
                   className="h-12 w-auto shrink-0"
                 />
                 <p className="leading-tight">

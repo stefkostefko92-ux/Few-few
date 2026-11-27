@@ -6,7 +6,7 @@
 ## Файлове
 - **`brochure-a5.pdf`** — готов за печат (2 страници: лице и гръб).
 - `brochure-front.png`, `brochure-back.png` — прегледи на двете страни.
-- `brochure-a5.html` — самостоятелен HTML (вграден QR + герб). Може да се отвори
+- `brochure-a5.html` — самостоятелен HTML (вграден QR + знакът „БД“). Може да се отвори
   в браузър и да се разпечата директно (Print → Save as PDF, размер A5, без полета,
   с фонове/графики).
 - `build-brochure.mjs` / `render-brochure.mjs` — за регенериране.
