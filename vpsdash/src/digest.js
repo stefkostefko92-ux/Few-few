@@ -90,9 +90,29 @@ export function composeDigest(d) {
   return lines.join('\n');
 }
 
+// Часът в дадена часова зона (`Europe/Sofia`) — петъчният отчет е по софийско
+// време, каквато и да е зоната на машината. Без зона — часовникът на машината.
+const WEEKDAYS = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+function slotParts(now, tz) {
+  if (!tz) {
+    const d = new Date(now);
+    return { weekday: d.getDay(), hour: d.getHours() };
+  }
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short', hour: 'numeric', hourCycle: 'h23' }).formatToParts(new Date(now));
+  const get = (type) => parts.find((p) => p.type === type)?.value;
+  return { weekday: WEEKDAYS[get('weekday')] ?? -1, hour: Number(get('hour')) };
+}
+
 export class DigestSchedule {
-  constructor(stateDir) {
-    this.file = path.join(stateDir, STATE);
+  // Подразбиращото се е машинният дайджест (понеделник 8:00, `alerts.digest`,
+  // digest.json). Петъчният бизнес отчет ползва същия каданс със свои настройки:
+  // { file: 'business.json', key: 'business', weekday: 5, hour: 17, tz: 'Europe/Sofia', requires }.
+  constructor(stateDir, opts = {}) {
+    this.file = path.join(stateDir, opts.file || STATE);
+    this.key = opts.key || 'digest';
+    this.defaults = { weekday: opts.weekday ?? 1, hour: opts.hour ?? 8 };
+    this.tz = opts.tz || null;
+    this.requires = typeof opts.requires === 'function' ? opts.requires : () => true;
     this.state = this.load();
   }
 
@@ -115,12 +135,12 @@ export class DigestSchedule {
   // Ден+час като графика на бекъпа: улучва се с часова проверка, догонва се при
   // пропуск (над 8 дни от последния — праща независимо от деня).
   due(cfg, now = Date.now()) {
-    const dg = cfg?.alerts?.digest || {};
-    if (dg.enabled === false) return false;
-    const weekday = Number.isInteger(dg.weekday) && dg.weekday >= 0 && dg.weekday <= 6 ? dg.weekday : 1; // понеделник
-    const hour = Number.isInteger(dg.hour) && dg.hour >= 0 && dg.hour <= 23 ? dg.hour : 8;
-    const d = new Date(now);
-    const slot = d.getDay() === weekday && d.getHours() === hour;
+    const dg = cfg?.alerts?.[this.key] || {};
+    if (dg.enabled === false || !this.requires(cfg)) return false;
+    const weekday = Number.isInteger(dg.weekday) && dg.weekday >= 0 && dg.weekday <= 6 ? dg.weekday : this.defaults.weekday;
+    const hour = Number.isInteger(dg.hour) && dg.hour >= 0 && dg.hour <= 23 ? dg.hour : this.defaults.hour;
+    const at = slotParts(now, this.tz);
+    const slot = at.weekday === weekday && at.hour === hour;
     if (!this.state.lastSentAt) return slot;
     const elapsed = now - new Date(this.state.lastSentAt).getTime();
     if (elapsed < 6.5 * 24 * HOUR_MS) return false; // още е рано, дори слотът да съвпада
@@ -135,11 +155,12 @@ export class DigestSchedule {
   }
 
   status(cfg) {
-    const dg = cfg?.alerts?.digest || {};
+    const dg = cfg?.alerts?.[this.key] || {};
     return {
-      enabled: dg.enabled !== false,
-      weekday: Number.isInteger(dg.weekday) ? dg.weekday : 1,
-      hour: Number.isInteger(dg.hour) ? dg.hour : 8,
+      enabled: dg.enabled !== false && this.requires(cfg),
+      weekday: Number.isInteger(dg.weekday) ? dg.weekday : this.defaults.weekday,
+      hour: Number.isInteger(dg.hour) ? dg.hour : this.defaults.hour,
+      ...(this.tz ? { tz: this.tz } : {}),
       lastSentAt: this.state.lastSentAt,
       lastText: this.state.lastText,
     };

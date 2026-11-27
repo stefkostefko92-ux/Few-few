@@ -31,6 +31,7 @@ import { saveConfig } from './config.js';
 import { Guardians } from './guardians.js';
 import { aptHealth, aptConditions } from './apthealth.js';
 import { composeDigest, DigestSchedule } from './digest.js';
+import { composeBusiness, businessData, BUSINESS_SCHEDULE } from './business.js';
 import { backupAge } from './drill.js';
 import { plural } from './text.js';
 
@@ -42,6 +43,7 @@ export class AlertEngine {
   constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic, revoked, shipper }) {
     this.guardians = new Guardians(cfg.paths.stateDir); // /etc дрейф + SSH входове
     this.digest = new DigestSchedule(cfg.paths.stateDir); // седмичният пулс към човека
+    this.business = new DigestSchedule(cfg.paths.stateDir, BUSINESS_SCHEDULE); // петъчните числа на бизнеса
     this.portBaseline = portBaseline; // базова линия за „НОВО изложен порт"
     this.drill = drill; // за алармите „липсващ/остарял бекъп" и „провалена проба"
     this.backupSchedule = backupSchedule; // за алармите на самия ГРАФИК
@@ -1260,6 +1262,7 @@ export class AlertEngine {
     this.ping({ ok: true });
     await this.expireMaintenance();
     await this.maybeDigest().catch(() => {});
+    await this.maybeBusiness().catch(() => {});
     return { firing: this.listActive(), events };
   }
 
@@ -1340,6 +1343,29 @@ export class AlertEngine {
     this.digest.record(text);
     this.audit?.log({ action: 'alerts.digest', delivered: results.filter((r) => r.ok && !r.skipped).length });
     this.log.push({ ts: new Date().toISOString(), key: 'digest', type: 'digest', severity: 'info', title: 'Седмичен отчет', body: text, sent: results.filter((r) => r.ok && !r.skipped).map((r) => r.channel) });
+    this.save();
+    return text;
+  }
+
+  // Петъчният отчет „Бизнесът тази седмица" (src/business.js): числата на
+  // продуктите (локалните им `/internal/weekly`), разходът на агентите и „Чака
+  // теб". Отделно съобщение от машинния дайджест; върви с force като него.
+  async maybeBusiness(now = Date.now()) {
+    if (!this.business.due(this.cfg, now)) return null;
+    return this.sendBusiness(now);
+  }
+
+  async businessText(now = Date.now()) {
+    return composeBusiness(await businessData(this.cfg, now));
+  }
+
+  async sendBusiness(now = Date.now()) {
+    const text = await this.businessText(now);
+    const results = await notify(this.cfg, { type: 'business', key: 'business', severity: 'info', title: 'Бизнесът тази седмица', body: text, force: true });
+    const sent = results.filter((r) => r.ok && !r.skipped);
+    this.business.record(text);
+    this.audit?.log({ action: 'alerts.business', delivered: sent.length });
+    this.log.push({ ts: new Date().toISOString(), key: 'business', type: 'business', severity: 'info', title: 'Бизнесът тази седмица', body: text, sent: sent.map((r) => r.channel) });
     this.save();
     return text;
   }
