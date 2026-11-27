@@ -78,6 +78,166 @@ $('#logout').addEventListener('click', async () => {
   showLogin();
 });
 
+// Последната проверка — черновата я пуска наново на сървъра (клиентът не носи присъда).
+let lastCheck = null;
+
+const DRAFT_ERRORS = {
+  not_email: 'Черновата е само за имейл.',
+  not_allowed: 'Проверката вече не е „Може“ — черновата е отказана.',
+  source_mismatch: 'Източникът се различава от проверения.',
+  source_stale:
+    'Адресът е видян преди повече от месец (чл. 14(3)(а) ОРЗД) — провери източника наново.',
+  seen_in_future: 'Датата „видян на“ е в бъдещето.',
+  notice_url_missing:
+    'Няма публично известие (LOVETS_NOTICE_URL) — без него писмото не може да тръгне.',
+  unsub_key_missing: 'Няма ключ за отписване (LOVETS_UNSUB_KEY) на сървъра.',
+  slots_invalid: 'Трябват точно 3 различни часа, поне час напред.',
+  tracking_or_html: 'Без HTML и без връзки с параметри (?, #, utm) — те проследяват.',
+  blocks_missing: 'Липсва задължителен блок в писмото.',
+};
+
+const toLocalInput = (iso) => {
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+function field(label, input) {
+  const l = el('label', label);
+  l.append(input);
+  return l;
+}
+
+function input(name, attrs = {}) {
+  const i = el(attrs.textarea ? 'textarea' : 'input');
+  i.name = name;
+  for (const [k, v] of Object.entries(attrs)) if (k !== 'textarea') i.setAttribute(k, v);
+  return i;
+}
+
+/** Формата за черновата на първия имейл — само при „Може“ за имейл. */
+async function draftForm(v, check) {
+  const form = el('form', undefined, 'draft');
+  const today = new Date().toISOString().slice(0, 10);
+  form.append(
+    el(
+      'p',
+      'Чернова на първия имейл — ти я прочиташ, копираш и пращаш от своята поща. Ловецът не праща нищо.',
+      'req-title',
+    ),
+    field(
+      'Тема (на какво е предложението)',
+      input('topic', { required: '', minlength: '3', maxlength: '160' }),
+    ),
+    field(
+      'Предложението (твоят текст, без HTML)',
+      input('offer', {
+        textarea: true,
+        required: '',
+        minlength: '20',
+        maxlength: '1500',
+        rows: '5',
+      }),
+    ),
+    field('Име на получателя (по избор)', input('recipientName', { maxlength: '120' })),
+    field(
+      'Подпис',
+      input('senderName', {
+        required: '',
+        minlength: '2',
+        maxlength: '120',
+        value: 'Екипът на Carbon Stealth',
+      }),
+    ),
+    field(
+      'Адресът е видян в източника на',
+      input('seenAt', { type: 'date', required: '', value: today, max: today }),
+    ),
+  );
+  const res = await api(`/api/drafts/slots?market=${v.market}`);
+  const slots = res.ok ? (await res.json()).slots : [];
+  for (let i = 0; i < 3; i++) {
+    form.append(
+      field(
+        `Час за разговор ${i + 1}`,
+        input(`slot${i}`, {
+          type: 'datetime-local',
+          required: '',
+          value: slots[i] ? toLocalInput(slots[i]) : '',
+        }),
+      ),
+    );
+  }
+  const submit = el('button', 'Направи черновата');
+  submit.type = 'submit';
+  const out = el('div');
+  out.setAttribute('aria-live', 'polite');
+  form.append(submit, el('p', '', 'msg'), out);
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(form);
+    const body = {
+      query: check.query,
+      market: v.market,
+      sourceUrl: check.sourceUrl,
+      seenAt: new Date(`${f.get('seenAt')}T12:00:00`).toISOString(),
+      topic: String(f.get('topic')),
+      offer: String(f.get('offer')),
+      senderName: String(f.get('senderName')),
+      slots: [0, 1, 2].map((i) => isoFromLocal(f.get(`slot${i}`))),
+    };
+    if (f.get('recipientName')) body.recipientName = String(f.get('recipientName'));
+    out.replaceChildren();
+    const r = await api('/api/drafts/first-email', body);
+    if (!r.ok) {
+      let code = '';
+      try {
+        code = (await r.clone().json()).code ?? '';
+      } catch {
+        /* празно */
+      }
+      return say(form, DRAFT_ERRORS[code] ?? (await errorText(r)));
+    }
+    say(form, '');
+    const d = await r.json();
+    const subject = el('input');
+    subject.readOnly = true;
+    subject.value = d.subject;
+    const text = el('textarea');
+    text.readOnly = true;
+    text.rows = 18;
+    text.value = d.text;
+    const copy = el('button', 'Копирай темата и текста');
+    copy.type = 'button';
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(`${d.subject}\n\n${d.text}`);
+        copy.textContent = 'Копирано';
+      } catch {
+        text.select();
+      }
+    });
+    out.append(field('Тема', subject), field('Текст', text), copy);
+    out.append(
+      el(
+        'p',
+        'Прати като обикновен текст (не HTML) от своята поща. Отказ по отговор → „Не ме търсете“ по-долу.',
+        'req-title',
+      ),
+    );
+    if (d.legalReview === 'it_pending') {
+      out.append(
+        el(
+          'p',
+          'Италианският текст е чернова — преди първото изпращане го преглеждат Преводача и италиански юрист.',
+          'r-action',
+        ),
+      );
+    }
+  });
+  return form;
+}
+
 function renderVerdict(v) {
   const [label, cls] = DECISION[v.decision];
   const card = el('article', undefined, `verdict ${cls}`);
@@ -94,6 +254,16 @@ function renderVerdict(v) {
     for (const r of v.requirements) req.append(el('li', r.text));
     card.append(req);
   }
+  if (v.decision === 'allowed' && v.channel === 'email' && lastCheck) {
+    const check = lastCheck;
+    const open = el('button', 'Чернова на първия имейл');
+    open.type = 'button';
+    open.addEventListener('click', async () => {
+      open.disabled = true;
+      card.append(await draftForm(v, check));
+    });
+    card.append(open);
+  }
   return card;
 }
 
@@ -107,6 +277,7 @@ $('#check-form').addEventListener('submit', async (e) => {
   if (f.get('businessLineConfirmed')) body.businessLineConfirmed = true;
   const out = $('#results');
   out.replaceChildren();
+  lastCheck = { query: body.query, sourceUrl: body.sourceUrl ?? null };
   const res = await api('/api/check', body);
   if (!res.ok) return out.append(el('p', await errorText(res), 'msg'));
   const { results } = await res.json();
