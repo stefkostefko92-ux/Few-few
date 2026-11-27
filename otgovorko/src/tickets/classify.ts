@@ -48,7 +48,11 @@ export function classify(m: {
 }
 
 /** Началното състояние по клас: спамът се затваря, dsar/legal чакат човек, останалите — чернова. */
-export function initialStatus(cls: TicketClass): 'new' | 'needs_human' | 'closed' {
+export function initialStatus(
+  cls: TicketClass,
+  fromAddress = 'x@x.x',
+): 'new' | 'needs_human' | 'closed' {
+  if (!fromAddress) return 'needs_human'; // без подател няма на кого да се отговори — човек решава
   if (cls === 'spam') return 'closed';
   if (NO_AI.has(cls)) return 'needs_human';
   return 'new';

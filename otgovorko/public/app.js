@@ -67,9 +67,13 @@ function showApp() {
 const when = (iso) =>
   new Date(iso).toLocaleString('bg-BG', { dateStyle: 'short', timeStyle: 'short' });
 
+let filterFrom = '';
+
 async function loadList() {
   const out = $('#list');
-  const res = await api('/api/tickets');
+  const res = await api(
+    filterFrom ? `/api/tickets?from=${encodeURIComponent(filterFrom)}` : '/api/tickets',
+  );
   if (!res.ok) return out.replaceChildren(el('p', await errorText(res), 'msg'));
   const { tickets } = await res.json();
   if (!tickets.length) return out.replaceChildren(el('p', 'Няма писма.', 'msg'));
@@ -182,16 +186,49 @@ async function openTicket(id) {
       }
     });
   } else if (t.status === 'sent') {
-    const sample = el('button', 'Направи го образец за гласа');
+    // Образецът влиза в черновата за ВСЕКИ следващ клиент — затова е обезличен текст, не копие.
+    const sampleText = el('textarea');
+    sampleText.rows = 6;
+    sampleText.value = t.draft ?? '';
+    const sl = el(
+      'label',
+      'Образец за гласа — махни имената, поръчките, сумите и адресите на клиента',
+      'wide',
+    );
+    sl.append(sampleText);
+    const sample = el('button', 'Запази като образец');
     sample.type = 'button';
     sample.addEventListener('click', async () => {
-      const r = await api(`/api/tickets/${t.id}/sample`, {});
+      const r = await api(`/api/tickets/${t.id}/sample`, { text: sampleText.value });
       msg.textContent = r.ok ? 'Добавено към образците.' : await errorText(r);
       if (r.ok) void loadVoice();
     });
-    form.append(sample, msg);
+    form.append(sl, sample, msg);
   }
   parts.push(form);
+
+  // Изтриване по искане на човека (чл. 17 ОРЗД) — с потвърждение.
+  const del = el('form', undefined, 'danger');
+  const sure = el('input');
+  sure.type = 'checkbox';
+  const dl = el(
+    'label',
+    'Потвърждавам: изтрий това писмо завинаги (искане за изтриване)',
+    'check wide',
+  );
+  dl.prepend(sure);
+  const delBtn = el('button', 'Изтрий писмото', 'secondary');
+  delBtn.type = 'submit';
+  const delMsg = el('p', '', 'msg');
+  del.append(dl, delBtn, delMsg);
+  del.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const r = await api(`/api/tickets/${t.id}`, sure.checked ? { confirm: true } : {}, 'DELETE');
+    if (!r.ok) return void (delMsg.textContent = await errorText(r));
+    box.replaceChildren(el('p', 'Писмото е изтрито.', 'msg'));
+    void loadList();
+  });
+  parts.push(del);
   box.replaceChildren(...parts);
   box.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -216,6 +253,12 @@ async function loadVoice() {
     box.append(row);
   }
 }
+
+$('#search-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  filterFrom = String(new FormData(e.target).get('from') ?? '').trim();
+  void loadList();
+});
 
 $('#voice-form').addEventListener('submit', async (e) => {
   e.preventDefault();

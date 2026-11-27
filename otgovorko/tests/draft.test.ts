@@ -163,3 +163,65 @@ test('dsar, legal и spam не стигат до модела; без Vertex п�
   );
   assert.equal((await s2.get(id))!.status, 'needs_human');
 });
+
+test('филтърът: гол домейн без https:// и без www. също е чужда връзка (прегледът на #509)', () => {
+  const o = { canary: CANARY, customer: 'ivan@firma.bg', allowedDomains: ['carbonstealth.eu'] };
+  for (const t of [
+    'Потвърдете на evil.example/login',
+    'Платете на evil-refund.com/pay днес',
+    'Вижте carbonstealth-support.com',
+  ]) {
+    assert.ok(checkDraft(t, o).includes('foreign_link'), t);
+  }
+  assert.deepEqual(
+    checkDraft('Вижте pomosht.carbonstealth.eu/faq и пишете на ivan@firma.bg.', o),
+    [],
+    'наш поддомейн и адресът на клиента минават',
+  );
+  assert.deepEqual(
+    checkDraft('Версия 2.5 е готова, т.е. всичко е наред.', o),
+    [],
+    'числа и съкращения не са домейни',
+  );
+});
+
+test('филтърът: чернова, която повтаря образец (8+ думи подред), се отказва — чужди данни не изтичат', () => {
+  const sample =
+    'Здравейте, госпожо Петрова! Поръчка 1042 за Пловдив ще пристигне в четвъртък сутринта, куриерът ще звънне предварително.';
+  const o = { canary: CANARY, customer: 'ivan@firma.bg', allowedDomains: [], samples: [sample] };
+  assert.ok(checkDraft(`Ето пример: ${sample}`, o).includes('sample_echo'));
+  assert.ok(
+    checkDraft(
+      'Поръчка 1042 за Пловдив ще пристигне в четвъртък сутринта, куриерът ще звънне.',
+      o,
+    ).includes('sample_echo'),
+  );
+  assert.deepEqual(
+    checkDraft('Здравейте, Иван! Поръчката Ви ще пристигне в петък.', o),
+    [],
+    'общите фрази не са повторение',
+  );
+});
+
+test('работникът: затворен по време на черновата остава затворен, дори моделът да падне', async () => {
+  const store = new MemoryTicketStore();
+  const { id } = await store.saveInbound(mail(), 'question', NOW);
+  const model = {
+    async complete() {
+      await store.setStatus(id, 'closed');
+      throw new Error('timeout');
+    },
+  };
+  assert.equal(
+    await draftOnce({
+      store,
+      model,
+      now: () => NOW,
+      canary: CANARY,
+      allowedDomains: [],
+      draftModel: 'm',
+    }),
+    'failed',
+  );
+  assert.equal((await store.get(id))!.status, 'closed');
+});

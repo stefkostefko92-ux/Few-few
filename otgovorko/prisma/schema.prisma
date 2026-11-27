@@ -54,8 +54,8 @@ model Ticket {
   fromEnc       String
   subjectEnc    String
   textEnc       String
-  /// JSON [{name, contentType, size}] — само имена, файловете не се пазят.
-  attachments   String       @default("[]")
+  /// JSON [{name, contentType, size}], шифрован — само имена, файловете не се пазят.
+  attachmentsEnc String
   draftEnc      String?
   draftAt       DateTime?
   sentHash      String?

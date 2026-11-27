@@ -44,6 +44,7 @@ export async function draftOnce(d: WorkerDeps): Promise<'idle' | 'drafted' | 'fa
       canary: d.canary,
       customer: t.from.address,
       allowedDomains: d.allowedDomains,
+      samples: samples.map((s) => s.text),
     });
     if (problems.length) {
       logger.warn({ ticket: t.id, problems }, 'draft rejected');

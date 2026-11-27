@@ -4,7 +4,7 @@ import type { ZodError } from 'zod';
 import { RISKY } from '../tickets/classify.js';
 import type { TicketStore, TicketView } from '../tickets/types.js';
 import { VOICE_KEY } from '../draft/worker.js';
-import { DraftBody, SentBody, VoiceBody } from './schemas.js';
+import { DeleteBody, DraftBody, ListQuery, SampleBody, SentBody, VoiceBody } from './schemas.js';
 
 function invalid(res: Response, error: ZodError): void {
   res
@@ -33,8 +33,14 @@ export function apiRoutes(deps: { tickets: TicketStore; now: () => Date }): Rout
 
   r.get('/me', (_req, res) => void res.json({ ok: true }));
 
-  r.get('/tickets', async (_req, res) => {
-    res.json({ tickets: (await tickets.list(200)).map(summary) });
+  /** `?from=адрес` — всички писма на един човек (искане по чл. 15 или 17); подателят е шифрован, затова
+   *  търсенето е след дешифриране, в паметта. */
+  r.get('/tickets', async (req, res) => {
+    const q = ListQuery.safeParse(req.query);
+    if (!q.success) return invalid(res, q.error);
+    const from = q.data.from?.toLowerCase();
+    const all = await tickets.list(from ? 100_000 : 200);
+    res.json({ tickets: (from ? all.filter((t) => t.from.address === from) : all).map(summary) });
   });
 
   r.get('/tickets/:id', async (req, res) => {
@@ -85,13 +91,27 @@ export function apiRoutes(deps: { tickets: TicketStore; now: () => Date }): Rout
     res.json({ ok: true });
   });
 
-  /** Пратен отговор → образец за гласа (до 5 влизат в промпта). */
+  /** Изтриване по искане (чл. 17 ОРЗД) — само с изрично потвърждение. */
+  r.delete('/tickets/:id', async (req, res) => {
+    const body = DeleteBody.safeParse(req.body);
+    if (!body.success) {
+      return void res.status(409).json({ error: 'Потвърди изтриването.', code: 'confirm_delete' });
+    }
+    res.status((await tickets.remove(req.params.id)) ? 200 : 404).json({ ok: true });
+  });
+
+  /**
+   * Пратен отговор → образец за гласа (до 5 влизат в промпта за ВСЯКО писмо). Затова образецът е текст,
+   * който собственикът е обезличил (без имена, поръчки, суми), не копие на писмото до клиента.
+   */
   r.post('/tickets/:id/sample', async (req, res) => {
+    const body = SampleBody.safeParse(req.body);
+    if (!body.success) return invalid(res, body.error);
     const t = await tickets.get(req.params.id);
-    if (!t || t.status !== 'sent' || !t.draft) {
+    if (!t || t.status !== 'sent') {
       return void res.status(409).json({ error: 'Образец може да е само пратен отговор.' });
     }
-    res.json({ id: await tickets.addSample(t.draft) });
+    res.json({ id: await tickets.addSample(body.data.text, deps.now()) });
   });
 
   r.get('/samples', async (_req, res) => void res.json({ samples: await tickets.samples(20) }));

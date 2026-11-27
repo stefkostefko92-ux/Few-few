@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { createInterface } from 'node:readline/promises';
+import { Writable } from 'node:stream';
 import { z } from 'zod';
 import { encryptSecret } from '../auth/crypto.js';
 import { PASSWORD_MIN_LENGTH, hashPassword } from '../auth/password.js';
@@ -17,9 +18,22 @@ async function main(): Promise<void> {
   try {
     if ((await db.owner.count()) > 0)
       throw new Error('Собственик вече има — Отговорко е за един човек.');
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    // Паролата не се показва на екрана (не остава в историята на терминала) и не се реже:
+    // /login я проверява дословно, затова и тук се хешира дословно (прегледът на #509).
+    let muted = false;
+    const output = new Writable({
+      write(chunk: Buffer, _enc, cb) {
+        if (!muted) process.stdout.write(chunk);
+        cb();
+      },
+    });
+    const rl = createInterface({ input: process.stdin, output, terminal: true });
     const email = z.email().parse((await rl.question('Имейл: ')).trim());
-    const password = (await rl.question(`Парола (поне ${PASSWORD_MIN_LENGTH} знака): `)).trim();
+    process.stdout.write(`Парола (поне ${PASSWORD_MIN_LENGTH} знака, не се показва): `);
+    muted = true;
+    const password = await rl.question('');
+    muted = false;
+    process.stdout.write('\n');
     rl.close();
     if (password.length < PASSWORD_MIN_LENGTH) throw new Error('Паролата е твърде къса.');
     const secret = generateTotpSecret();

@@ -26,12 +26,12 @@ export interface InboundMail {
 
 const MAX_TEXT = 20_000;
 const str = z.string().nullish();
-const Mailbox = z.object({ Address: z.string().min(3).max(320), Name: str }).passthrough();
+const Mailbox = z.object({ Address: z.string().max(320).nullish(), Name: str }).passthrough();
 const Item = z
   .object({
     MessageId: z.string().min(3).max(998),
     InReplyTo: str,
-    From: Mailbox,
+    From: Mailbox.nullish(),
     Subject: str,
     RawHtmlBody: str,
     RawTextBody: str,
@@ -87,11 +87,10 @@ export function parseBrevoPayload(body: unknown): { mails: InboundMail[]; invali
       continue;
     }
     const it = p.data;
-    const address = it.From.Address.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) {
-      invalid++;
-      continue;
-    }
+    // Без валиден подател писмото НЕ се губи (Brevo вече е получил 200 и няма да опита пак) —
+    // записва се с празен адрес и чака човек (може да е искане по чл. 15 или 17 ОРЗД).
+    const fromRaw = (it.From?.Address ?? '').trim().toLowerCase();
+    const address = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fromRaw) ? fromRaw : '';
     const body =
       it.ExtractedMarkdownMessage?.trim() ||
       it.RawTextBody?.trim() ||
@@ -100,7 +99,7 @@ export function parseBrevoPayload(body: unknown): { mails: InboundMail[]; invali
       messageId: it.MessageId.trim(),
       inReplyTo: it.InReplyTo?.trim() || null,
       fromAddress: address,
-      fromName: it.From.Name?.trim() || null,
+      fromName: it.From?.Name?.trim() || null,
       subject: clean(it.Subject ?? '').slice(0, 500),
       text: clean(body).slice(0, MAX_TEXT),
       spamScore: it.Spam?.Score ?? it.SpamScore ?? null,

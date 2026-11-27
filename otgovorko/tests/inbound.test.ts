@@ -49,12 +49,22 @@ test('парсер: Spam.Score (по документацията) или SpamSc
   assert.equal(onlyHtml.text, 'Ред 1\nРед 2');
 });
 
-test('парсер: без MessageId или подател — невалиден запис се брои, не чупи останалите', () => {
+test('парсер: без MessageId — невалиден; без подател — не се губи, а чака човек (прегледът на #509)', () => {
   const r = parseBrevoPayload({
-    items: [item(), item({ MessageId: '' }), item({ From: null }), 'боклук'],
+    items: [
+      item(),
+      item({ MessageId: '' }),
+      item({ From: null }),
+      item({ From: { Address: 'не-адрес' } }),
+      'боклук',
+    ],
   });
-  assert.equal(r.mails.length, 1);
-  assert.equal(r.invalid, 3);
+  assert.equal(r.mails.length, 3);
+  assert.equal(r.invalid, 2);
+  assert.deepEqual(
+    r.mails.slice(1).map((m) => m.fromAddress),
+    ['', ''],
+  );
   assert.deepEqual(parseBrevoPayload({ nope: 1 }), { mails: [], invalid: 0 });
 });
 
@@ -143,4 +153,45 @@ test('webhook: спам по оценка → клас spam, без чернов
   const all = await store.list(10);
   assert.equal(all.find((t) => t.subject === 'WIN')!.status, 'closed');
   assert.equal(all.find((t) => t.subject === 'Искане')!.status, 'needs_human');
+});
+
+test('webhook: грешен път с огромно или счупено тяло → 404, тялото не се чете (прегледът на #509, F1)', async () => {
+  const huge = '{"items":[' + '{},'.repeat(200_000) + '{}]}';
+  const r1 = await fetch(`${base}/inbound/brevo/${'x'.repeat(40)}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: huge,
+  });
+  assert.equal(r1.status, 404);
+  const r2 = await fetch(`${base}/inbound/brevo/${'x'.repeat(40)}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{счупено',
+  });
+  assert.equal(r2.status, 404);
+  const r3 = await fetch(`${base}/inbound/brevo/${PATH}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{счупено',
+  });
+  assert.equal(r3.status, 401, 'без токен — 401 преди парсера');
+  const gz = await fetch(`${base}/inbound/brevo/${PATH}`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'content-encoding': 'gzip',
+      authorization: `Bearer ${TOKEN}`,
+    },
+    body: new Uint8Array([31, 139, 8, 0]),
+  });
+  assert.equal(gz.status, 415, 'компресирано тяло не се разархивира');
+});
+
+test('webhook: писмо без валиден подател → билет „чака човек“', async () => {
+  await send(PATH, {
+    items: [item({ MessageId: '<nofrom@x>', From: { Address: 'боклук' }, Subject: 'Без подател' })],
+  });
+  const t = (await store.list(50)).find((x) => x.subject === 'Без подател')!;
+  assert.equal(t.status, 'needs_human');
+  assert.equal(t.from.address, '');
 });

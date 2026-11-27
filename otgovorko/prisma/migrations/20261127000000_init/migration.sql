@@ -32,7 +32,7 @@ CREATE TABLE "Ticket" (
     "fromEnc" TEXT NOT NULL,
     "subjectEnc" TEXT NOT NULL,
     "textEnc" TEXT NOT NULL,
-    "attachments" TEXT NOT NULL DEFAULT '[]',
+    "attachmentsEnc" TEXT NOT NULL,
     "draftEnc" TEXT,
     "draftAt" TIMESTAMP(3),
     "sentHash" TEXT,

@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { InboundMail } from '../inbound/brevo.js';
 import { initialStatus, type TicketClass } from './classify.js';
 import {
+  EDITABLE,
   LOCK_MINUTES,
   SENDABLE,
   type TicketStatus,
@@ -22,6 +23,7 @@ interface Row extends TicketView {
 export class MemoryTicketStore implements TicketStore {
   private rows: Row[] = [];
   private sampleRows: { id: string; text: string; at: number }[] = [];
+  private seq = 0;
   private settings = new Map<string, string>();
 
   private view(r: Row): TicketView {
@@ -38,7 +40,7 @@ export class MemoryTicketStore implements TicketStore {
       key,
       receivedAt: now,
       cls,
-      status: initialStatus(cls),
+      status: initialStatus(cls, mail.fromAddress),
       attempts: 0,
       from: { address: mail.fromAddress, name: mail.fromName },
       subject: mail.subject,
@@ -76,7 +78,8 @@ export class MemoryTicketStore implements TicketStore {
 
   async failDraft(id: string, maxAttempts: number) {
     const r = this.rows.find((x) => x.id === id);
-    if (!r) return;
+    // Само заключен за чернова: затворен междувременно остава затворен.
+    if (!r || r.status !== 'drafting') return;
     r.attempts++;
     r.lockedAt = null;
     r.status = r.attempts >= maxAttempts ? 'draft_failed' : 'new';
@@ -101,7 +104,7 @@ export class MemoryTicketStore implements TicketStore {
 
   async updateDraft(id: string, text: string) {
     const r = this.rows.find((x) => x.id === id);
-    if (!r || !SENDABLE.has(r.status)) return false;
+    if (!r || !EDITABLE.has(r.status)) return false;
     r.draft = text;
     return true;
   }
@@ -116,7 +119,14 @@ export class MemoryTicketStore implements TicketStore {
   async purgeBefore(cutoff: Date) {
     const before = this.rows.length;
     this.rows = this.rows.filter((r) => r.receivedAt.getTime() >= cutoff.getTime());
+    this.sampleRows = this.sampleRows.filter((s) => s.at >= cutoff.getTime());
     return before - this.rows.length;
+  }
+
+  async remove(id: string) {
+    const n = this.rows.length;
+    this.rows = this.rows.filter((r) => r.id !== id);
+    return this.rows.length < n;
   }
 
   async samples(limit: number) {
@@ -126,9 +136,10 @@ export class MemoryTicketStore implements TicketStore {
       .map(({ id, text }) => ({ id, text }));
   }
 
-  async addSample(text: string) {
+  async addSample(text: string, at = new Date()) {
     const id = randomUUID();
-    this.sampleRows.push({ id, text, at: Date.now() + this.sampleRows.length });
+    // `seq` пази реда при едно и също време (тестовете вървят за милисекунди).
+    this.sampleRows.push({ id, text, at: at.getTime() + this.seq++ / 1000 });
     return id;
   }
 

@@ -174,14 +174,27 @@ test('гласът и образците: само собственикът; о�
     tickets: { id: string; status: string }[];
   };
   const sent = list.tickets.find((t) => t.status === 'sent')!;
-  assert.equal((await api(`/api/tickets/${sent.id}/sample`, {})).status, 200);
+  assert.equal(
+    (await api(`/api/tickets/${sent.id}/sample`, {})).status,
+    400,
+    'образецът е текст от собственика, не копие',
+  );
+  assert.equal(
+    (
+      await api(`/api/tickets/${sent.id}/sample`, {
+        text: 'Здравейте! Проверяваме плащането и ще Ви пишем до 2 работни дни.',
+      })
+    ).status,
+    200,
+  );
   const samples = (await (await api('/api/samples')).json()) as {
     samples: { id: string; text: string }[];
   };
   assert.equal(samples.samples.length, 1);
   const draftOnly = list.tickets.find((t) => t.status !== 'sent')!;
   assert.equal(
-    (await api(`/api/tickets/${draftOnly.id}/sample`, {})).status,
+    (await api(`/api/tickets/${draftOnly.id}/sample`, { text: 'Някакъв текст за образец.' }))
+      .status,
     409,
     'непратен не става образец',
   );
@@ -246,4 +259,43 @@ test('в кода няма изпращач: нито fetch, нито SMTP, ни
     const src = readFileSync(f, 'utf8');
     assert.doesNotMatch(src, /\bfetch\(|nodemailer|smtp|sendmail|\/v3\/smtp|createTransport/i, f);
   }
+});
+
+test('срокът важи и за образците (чл. 5(1)(д) — прегледът на #509)', async () => {
+  const s = new MemoryTicketStore();
+  await s.addSample('стар образец', new Date('2026-04-01T10:00:00Z'));
+  await s.addSample('нов образец', new Date('2026-11-01T10:00:00Z'));
+  await purgeExpired(s, NOW, 180);
+  assert.deepEqual(
+    (await s.samples(10)).map((x) => x.text),
+    ['нов образец'],
+  );
+});
+
+test('изтриване на писмо по искане (чл. 17): само с потвърждение; търсене по подател', async () => {
+  await inbound({
+    MessageId: '<del-1@x>',
+    From: { Address: 'iztrii@firma.bg', Name: 'И' },
+    Subject: 'Изтрийте ме',
+  });
+  const found = (await (await api('/api/tickets?from=IZTRII@firma.bg')).json()) as {
+    tickets: { id: string; subject: string }[];
+  };
+  assert.equal(found.tickets.length, 1);
+  assert.equal(found.tickets[0]!.subject, 'Изтрийте ме');
+  const id = found.tickets[0]!.id;
+  assert.equal((await api(`/api/tickets/${id}`, {}, 'DELETE')).status, 409, 'без потвърждение');
+  assert.equal((await api(`/api/tickets/${id}`, { confirm: true }, 'DELETE')).status, 200);
+  assert.equal((await api(`/api/tickets/${id}`)).status, 404);
+});
+
+test('черновата се редактира само след като е готова — работникът не презаписва ръчен текст', async () => {
+  await inbound({ MessageId: '<edit-1@x>', Subject: 'Ново, без чернова' });
+  const t = (
+    (await (await api('/api/tickets')).json()) as {
+      tickets: { id: string; subject: string; status: string }[];
+    }
+  ).tickets.find((x) => x.subject === 'Ново, без чернова')!;
+  assert.equal(t.status, 'new');
+  assert.equal((await api(`/api/tickets/${t.id}/draft`, { text: 'ръчно' }, 'PUT')).status, 409);
 });

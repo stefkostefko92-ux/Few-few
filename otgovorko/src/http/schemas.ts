@@ -15,3 +15,10 @@ export const SentBody = z.object({
 });
 
 export const VoiceBody = z.object({ text: z.string().max(5_000) });
+
+/** Образецът е текст от собственика — обезличен, не копие на писмото до клиента. */
+export const SampleBody = z.object({ text: z.string().trim().min(10).max(5_000) });
+
+export const DeleteBody = z.object({ confirm: z.literal(true) });
+
+export const ListQuery = z.object({ from: z.email().max(320).optional() });

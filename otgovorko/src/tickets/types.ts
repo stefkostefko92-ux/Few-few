@@ -41,9 +41,12 @@ export interface TicketStore {
   updateDraft(id: string, text: string): Promise<boolean>;
   /** Само веднъж: от drafted/draft_failed/needs_human/new → sent. */
   markSent(id: string, text: string, hash: string, now: Date): Promise<boolean>;
+  /** Трие писмата И образците, по-стари от `cutoff` (срокът важи за всички лични данни). */
   purgeBefore(cutoff: Date): Promise<number>;
+  /** Изтриване по искане (чл. 17 ОРЗД). */
+  remove(id: string): Promise<boolean>;
   samples(limit: number): Promise<{ id: string; text: string }[]>;
-  addSample(text: string): Promise<string>;
+  addSample(text: string, at?: Date): Promise<string>;
   removeSample(id: string): Promise<boolean>;
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<void>;
@@ -51,6 +54,12 @@ export interface TicketStore {
 
 /** Заключен билет без отговор над толкова минути се връща в опашката (процесът е спрял по средата). */
 export const LOCK_MINUTES = 10;
+/** Черновата се редактира само когато вече я има (или няма да я има) — работникът не презаписва ръчен текст. */
+export const EDITABLE: ReadonlySet<TicketStatus> = new Set([
+  'drafted',
+  'draft_failed',
+  'needs_human',
+]);
 export const SENDABLE: ReadonlySet<TicketStatus> = new Set([
   'new',
   'drafted',

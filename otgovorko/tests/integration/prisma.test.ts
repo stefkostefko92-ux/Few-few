@@ -64,6 +64,7 @@ test(
       'Двойно',
       'Проверяваме',
       '<int-1@x>',
+      'razpechatka',
     ]) {
       assert.ok(!raw.includes(plain), `в базата има открит „${plain}“`);
     }
@@ -92,3 +93,31 @@ test('двама работници не взимат един и същ бил�
   const [a, b] = await Promise.all([store.claimNext(new Date()), store.claimNext(new Date())]);
   assert.equal([a, b].filter(Boolean).length, 1);
 });
+
+test(
+  'failDraft: 3 неуспеха → draft_failed; затворен по време на черновата остава затворен; образците се трият по срока',
+  { skip: !enabled },
+  async () => {
+    await db.$executeRawUnsafe('TRUNCATE "Ticket","Sample"');
+    const { id } = await store.saveInbound(mail('<int-4@x>'), 'question', new Date());
+    for (let i = 0; i < 3; i++) {
+      assert.equal((await store.claimNext(new Date()))?.id, id);
+      await store.failDraft(id, 3);
+    }
+    const t = (await store.get(id))!;
+    assert.equal(t.status, 'draft_failed');
+    assert.equal(t.attempts, 3);
+    const b = await store.saveInbound(mail('<int-5@x>'), 'question', new Date());
+    await store.claimNext(new Date());
+    await store.setStatus(b.id, 'closed');
+    await store.failDraft(b.id, 3);
+    assert.equal((await store.get(b.id))!.status, 'closed');
+    await store.addSample('стар', new Date('2026-01-01T00:00:00Z'));
+    await store.addSample('нов', new Date());
+    await purgeExpired(store, new Date(), 180);
+    assert.deepEqual(
+      (await store.samples(10)).map((s) => s.text),
+      ['нов'],
+    );
+  },
+);

@@ -1,5 +1,5 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
-import express, { Router } from 'express';
+import express, { Router, type NextFunction, type Request, type Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import { logger } from '../logger.js';
 import { parseBrevoPayload } from '../inbound/brevo.js';
@@ -25,11 +25,16 @@ export function inboundRoutes(deps: {
   r.use(
     rateLimit({ windowMs: 60_000, limit: 300, standardHeaders: 'draft-8', legacyHeaders: false }),
   );
-  r.post('/:path', express.json({ limit: '10mb' }), async (req, res) => {
+  // Пътят и токенът се проверяват ПРЕДИ тялото да се прочете: анонимен клиент не кара процеса да
+  // буферира и парсва 10 MB JSON (прегледът на #509, F1). `inflate: false` — компресирано тяло се
+  // отказва (415), вместо да се разархивира над тавана.
+  const gate = (req: Request, res: Response, next: NextFunction): void => {
     if (!same(String(req.params.path), deps.path)) return void res.status(404).end();
-    const auth = req.get('authorization') ?? '';
-    const m = /^Bearer\s+(\S+)$/.exec(auth);
+    const m = /^Bearer\s+(\S+)$/.exec(req.get('authorization') ?? '');
     if (!m || !same(m[1]!, deps.token)) return void res.status(401).end();
+    next();
+  };
+  r.post('/:path', gate, express.json({ limit: '10mb', inflate: false }), async (req, res) => {
     const { mails, invalid } = parseBrevoPayload(req.body);
     let accepted = 0;
     let duplicates = 0;

@@ -4,6 +4,7 @@ import type { AttachmentMeta, InboundMail } from '../inbound/brevo.js';
 import { initialStatus, type TicketClass } from './classify.js';
 import { messageKey } from './memory.js';
 import {
+  EDITABLE,
   LOCK_MINUTES,
   SENDABLE,
   type TicketStatus,
@@ -35,7 +36,7 @@ export class PrismaTicketStore implements TicketStore {
       from,
       subject: this.dec(t.subjectEnc),
       text: this.dec(t.textEnc),
-      attachments: JSON.parse(t.attachments) as AttachmentMeta[],
+      attachments: JSON.parse(this.dec(t.attachmentsEnc)) as AttachmentMeta[],
       draft: t.draftEnc ? this.dec(t.draftEnc) : null,
       draftAt: t.draftAt,
       sentAt: t.sentAt,
@@ -55,11 +56,12 @@ export class PrismaTicketStore implements TicketStore {
           messageKey: key,
           receivedAt: now,
           cls,
-          status: initialStatus(cls),
+          status: initialStatus(cls, mail.fromAddress),
           fromEnc: this.enc(JSON.stringify({ address: mail.fromAddress, name: mail.fromName })),
           subjectEnc: this.enc(mail.subject),
           textEnc: this.enc(mail.text),
-          attachments: JSON.stringify(mail.attachments),
+          // Имената на файловете също са лични данни („направление_Иванов.pdf“) — шифровани.
+          attachmentsEnc: this.enc(JSON.stringify(mail.attachments)),
         },
         select: { id: true },
       });
@@ -104,15 +106,18 @@ export class PrismaTicketStore implements TicketStore {
   }
 
   async failDraft(id: string, maxAttempts: number) {
-    const t = await this.db.ticket.update({
-      where: { id },
-      data: { attempts: { increment: 1 }, lockedAt: null },
-      select: { attempts: true },
-    });
-    await this.db.ticket.update({
-      where: { id },
-      data: { status: t.attempts >= maxAttempts ? 'draft_failed' : 'new' },
-    });
+    // Само заключен за чернова: затворен междувременно остава затворен (прегледът на #509).
+    // Първата заявка хваща последния опит; втората — всички по-ранни (първата вече е сменила статуса).
+    await this.db.$transaction([
+      this.db.ticket.updateMany({
+        where: { id, status: 'drafting', attempts: { gte: maxAttempts - 1 } },
+        data: { attempts: { increment: 1 }, lockedAt: null, status: 'draft_failed' },
+      }),
+      this.db.ticket.updateMany({
+        where: { id, status: 'drafting' },
+        data: { attempts: { increment: 1 }, lockedAt: null, status: 'new' },
+      }),
+    ]);
   }
 
   async setStatus(id: string, status: TicketStatus) {
@@ -131,7 +136,7 @@ export class PrismaTicketStore implements TicketStore {
 
   async updateDraft(id: string, text: string) {
     const r = await this.db.ticket.updateMany({
-      where: { id, status: { in: [...SENDABLE] } },
+      where: { id, status: { in: [...EDITABLE] } },
       data: { draftEnc: this.enc(text) },
     });
     return r.count === 1;
@@ -152,8 +157,15 @@ export class PrismaTicketStore implements TicketStore {
   }
 
   async purgeBefore(cutoff: Date) {
-    const r = await this.db.ticket.deleteMany({ where: { receivedAt: { lt: cutoff } } });
+    const [r] = await this.db.$transaction([
+      this.db.ticket.deleteMany({ where: { receivedAt: { lt: cutoff } } }),
+      this.db.sample.deleteMany({ where: { createdAt: { lt: cutoff } } }),
+    ]);
     return r.count;
+  }
+
+  async remove(id: string) {
+    return (await this.db.ticket.deleteMany({ where: { id } })).count === 1;
   }
 
   async samples(limit: number) {
@@ -161,9 +173,12 @@ export class PrismaTicketStore implements TicketStore {
     return rows.map((s) => ({ id: s.id, text: this.dec(s.textEnc) }));
   }
 
-  async addSample(text: string) {
+  async addSample(text: string, at = new Date()) {
     return (
-      await this.db.sample.create({ data: { textEnc: this.enc(text) }, select: { id: true } })
+      await this.db.sample.create({
+        data: { textEnc: this.enc(text), createdAt: at },
+        select: { id: true },
+      })
     ).id;
   }
 
