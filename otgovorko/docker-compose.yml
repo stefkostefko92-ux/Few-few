@@ -1,0 +1,85 @@
+# Отговорко в продукция: база + приложение (уеб + работникът за черновите в един процес). TLS, IP allowlist
+# за панела и публичният webhook са в nginx на ХОСТА — deploy/nginx/otgovorko.carbonstealth.eu.conf.
+# Тайните идват от `.env` до този файл (mode 600 на сървъра, никога в репото): POSTGRES_PASSWORD · JWT_SECRET ·
+# TOTP_KEY · DATA_KEY · APP_ORIGIN · INBOUND_PATH · INBOUND_TOKEN. По избор: VERTEX_PROJECT_ID (+ VERTEX_SA_FILE —
+# пътят на хоста до JSON на service account, mode 600) — без него черновите са изключени.
+name: otgovorko
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+x-hardening: &hardening
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  pids_limit: 256
+
+services:
+  db:
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    <<: *hardening
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs:
+      - /var/run/postgresql:size=4m
+      - /tmp:size=64m
+    mem_limit: 384m
+    cpus: 1
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: otgovorko
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}
+      POSTGRES_DB: otgovorko
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U otgovorko -d otgovorko']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  app:
+    build:
+      context: .
+      target: runner
+    <<: *hardening
+    cap_drop: [ALL]
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid
+    mem_limit: 384m
+    cpus: 1
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HTTP_PORT: '4380'
+      DATABASE_URL: postgresql://otgovorko:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}@db:5432/otgovorko
+      JWT_SECRET: ${JWT_SECRET:?липсва JWT_SECRET}
+      TOTP_KEY: ${TOTP_KEY:?липсва TOTP_KEY}
+      DATA_KEY: ${DATA_KEY:?липсва DATA_KEY}
+      APP_ORIGIN: ${APP_ORIGIN:?липсва APP_ORIGIN}
+      INBOUND_PATH: ${INBOUND_PATH:?липсва INBOUND_PATH}
+      INBOUND_TOKEN: ${INBOUND_TOKEN:?липсва INBOUND_TOKEN}
+      VERTEX_PROJECT_ID: ${VERTEX_PROJECT_ID:-}
+      VERTEX_REGION: ${VERTEX_REGION:-eu}
+      DRAFT_MODEL: ${DRAFT_MODEL:-claude-sonnet-5-5}
+      GOOGLE_APPLICATION_CREDENTIALS: ${VERTEX_SA_FILE:+/run/secrets/vertex.json}
+      ALLOWED_LINK_DOMAINS: ${ALLOWED_LINK_DOMAINS:-carbonstealth.eu}
+      RETENTION_DAYS: ${RETENTION_DAYS:-}
+      COOKIE_SECURE: 'true'
+      TRUST_PROXY: 'true'
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      # Без VERTEX_SA_FILE се монтира /dev/null и GOOGLE_APPLICATION_CREDENTIALS остава празно.
+      - ${VERTEX_SA_FILE:-/dev/null}:/run/secrets/vertex.json:ro
+    ports:
+      - '127.0.0.1:${HTTP_PORT:-4380}:4380'
+    depends_on:
+      db: { condition: service_healthy }
+    logging: *logging
+
+volumes:
+  db-data:

@@ -44,3 +44,14 @@ test("ядро → Ultrareview по избор: PR режим, само с „д
   assert.equal(ultrareviewHint(coreReport(["CSPos/src/app/login/page.tsx"])), "", "листа — нищо");
   assert.equal(ultrareviewHint(null), "");
 });
+
+test("лични данни без ключова дума: Ловец (допустимост, „не ме търсете“, отписване) и Отговорко (писмата) са ядро", () => {
+  for (const f of ["lovets/src/compliance/verdict.ts", "lovets/src/registry/keys.ts", "lovets/src/draft/first-email.ts",
+    "lovets/src/draft/unsubscribe.ts", "lovets/src/http/public-routes.ts", "lovets/src/store/prisma.ts", "lovets/src/check/service.ts",
+    "otgovorko/src/inbound/brevo.ts", "otgovorko/src/tickets/prisma.ts", "otgovorko/src/draft/guard.ts", "otgovorko/src/http/inbound-routes.ts"]) {
+    assert.ok(isCore(f), f);
+  }
+  for (const f of ["lovets/public/app.js", "lovets/tests/first-email.test.ts", "otgovorko/public/app.js", "lovets/SPEC.md"]) {
+    assert.equal(isCore(f), false, f);
+  }
+});
