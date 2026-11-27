@@ -1,0 +1,208 @@
+/* Общите части: карти, флаш, бутони, полета, сгъваеми. Знаците за вид и здраве — в marks.css. */
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+}
+
+.card > h2 {
+  margin-bottom: 0.75rem;
+}
+
+.card.narrow {
+  max-width: 460px;
+  margin: 8vh auto 0;
+}
+
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
+/* ── флаш: отговорът на последното действие ── */
+.flash {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.95rem;
+  border-radius: 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--rule);
+}
+
+.flash::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translateY(-1px);
+  background: var(--h-fresh);
+}
+
+.flash.err::before {
+  background: var(--rust);
+}
+
+/* ── бутони ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 42px;
+  padding: 0.55rem 1.05rem;
+  border-radius: 11px;
+  border: 1px solid var(--bone);
+  background: var(--bone);
+  color: var(--night);
+  font: 650 0.95rem/1.1 var(--font-ui);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: color-mix(in srgb, var(--bone) 88%, white);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--bone);
+  border-color: var(--rule);
+}
+
+.btn.ghost:hover {
+  border-color: var(--ash);
+}
+
+.btn.danger {
+  background: transparent;
+  color: var(--rust);
+  border-color: color-mix(in srgb, var(--rust) 45%, var(--rule));
+}
+
+.btn.danger:hover {
+  border-color: var(--rust);
+}
+
+.btn.small {
+  min-height: 34px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.btn.discord {
+  background: #5865f2;
+  border-color: #5865f2;
+  color: #fff;
+}
+
+button.link {
+  border: 0;
+  background: none;
+  color: var(--ash);
+  font: inherit;
+  cursor: pointer;
+  padding: 0.25rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+button.link:hover {
+  color: var(--bone);
+}
+
+form.inline {
+  display: inline;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* ── полета ── */
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 0.85rem 1rem;
+  align-items: end;
+}
+
+.fields .wide {
+  grid-column: 1 / -1;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--ash);
+  font-size: 0.85rem;
+  font-weight: 550;
+  min-width: 0;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+  background: var(--panel-2);
+  color: var(--bone);
+  font: 500 1rem var(--font-ui);
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.4;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--ash);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bone) 16%, transparent);
+}
+
+input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  padding: 0;
+  accent-color: var(--bone);
+}
+
+label.check {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--bone);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.hint {
+  color: var(--ash);
+  font-size: 0.85rem;
+  margin: 0.6rem 0 0;
+}
+
+/* ── сгъваеми ── */
+details > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}

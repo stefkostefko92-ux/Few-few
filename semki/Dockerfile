@@ -35,6 +35,8 @@ COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY prisma ./prisma
 COPY views ./views
+# Снимките на семената за Discord (scripts/render-seeds.ts) — ботът ги прикача под съобщенията.
+COPY assets ./assets
 COPY --from=build /app/public ./public
 COPY package.json ./package.json
 COPY docker-entrypoint.sh ./docker-entrypoint.sh

@@ -1,0 +1,33 @@
+<%# Полетата на правило — общи за новото и за редакцията. rule е null за новото. %>
+<label>Кога
+  <select id="<%= prefix %>-kind" name="kind" required>
+    <option value="PERCENT" <%= rule && rule.kind === 'PERCENT' ? 'selected' : '' %>>Праг в % (при ≤ X%)</option>
+    <option value="HOURS_LEFT" <%= rule && rule.kind === 'HOURS_LEFT' ? 'selected' : '' %>>Оставащо време (X часа до 0%)</option>
+  </select>
+</label>
+<label>X
+  <input id="<%= prefix %>-threshold" type="text" name="threshold" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= rule ? rule.thresholdInput : '' %>" placeholder="напр. 20" required>
+</label>
+<label>Семки
+  <select id="<%= prefix %>-type" name="seedTypeKey">
+    <option value="">Всички видове</option>
+    <% types.forEach(function (t) { %><option value="<%= t.key %>" <%= rule && rule.seedTypeKey === t.key ? 'selected' : '' %>><%= t.label %></option><% }) %>
+  </select>
+</label>
+<label>Канал
+  <select id="<%= prefix %>-channel" name="channelId" required>
+    <% channels.forEach(function (c) { %><option value="<%= c.id %>" <%= rule && rule.channelId === c.id ? 'selected' : '' %>><%= c.name %><%= c.usable ? '' : ' (ботът няма права)' %></option><% }) %>
+  </select>
+</label>
+<label>Роля за тагване
+  <select id="<%= prefix %>-role" name="roleId" required>
+    <% roles.forEach(function (x) { %><option value="<%= x.id %>" <%= rule && rule.roleId === x.id ? 'selected' : '' %>><%= x.name %><%= x.usable ? '' : ' (не се тагва)' %></option><% }) %>
+  </select>
+</label>
+<label>Повтаряй на всеки (мин)
+  <input id="<%= prefix %>-repeat" type="number" name="repeatMinutes" min="5" max="10080" step="1" inputmode="numeric" value="<%= rule ? rule.repeatInput : '' %>" placeholder="празно — само веднъж">
+</label>
+<label class="wide">Съобщение след тага (по избор)
+  <textarea id="<%= prefix %>-message" name="message" maxlength="500" rows="2" placeholder="Семките изтичат"><%= rule ? rule.messageInput : '' %></textarea>
+</label>
+<label class="check wide"><input id="<%= prefix %>-enabled" type="checkbox" name="enabled" value="on" <%= !rule || rule.enabled ? 'checked' : '' %>> Включено</label>

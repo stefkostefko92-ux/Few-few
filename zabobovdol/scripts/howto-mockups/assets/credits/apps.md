@@ -26,8 +26,9 @@
 
 - Източник: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, изтеглени еднократно на 2026-10-30 (18 плочки: z17 3×3 около
   Бобов дол (42,366° с.ш., 23,007° и.д.) и z12 3×3 между Бобов дол и Дупница), с UA „zabobovdol-howto-mockups/1.0“.
-- Данни © **OpenStreetMap contributors**, лиценз **ODbL 1.0** (https://www.openstreetmap.org/copyright). Картата е стил „Standard“
-  на OSM Foundation (CC BY-SA / ODbL за картографския стил). В картинките има видим надпис „© OpenStreetMap contributors“.
+- Данни © **OpenStreetMap contributors**, лиценз **ODbL 1.0** (https://www.openstreetmap.org/copyright). Плочките са
+  „Produced Work“ по ODbL — иска се само посочване; CC BY-SA 2.0 важи само за документацията на OSM (правният преглед
+  от 27.11.2026). В картинките има видим надпис „© OpenStreetMap contributors“, а /iztochnici дава ODbL и връзката.
 - Маршрутът в `transit.png` е нарисуван върху плочките по пътя Бобов дол – Мламолово – Дяково – Дупница (илюстративен; часовете са измислени).
 
 ## Измислено / примерно (не е от външен източник)

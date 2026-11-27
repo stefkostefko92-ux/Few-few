@@ -1,0 +1,169 @@
+/* Знаците за данните: петното на вида, чипът и лентата за здравето, силуетът на семето, входът. */
+
+/* ── вид: цветното петно (цветовете — SEED_COLORS в src/domain/chart.ts) ── */
+.swatch {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sw, #898781);
+}
+
+.swatch.line {
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.swatch.dashed {
+  background: repeating-linear-gradient(90deg, var(--ash) 0 4px, transparent 4px 8px);
+}
+
+.sw-amnesia {
+  --sw: #3987e5;
+}
+.sw-ak {
+  --sw: #d95926;
+}
+.sw-ogkush {
+  --sw: #199e70;
+}
+.sw-purple {
+  --sw: #9085e9;
+}
+.sw-skunk {
+  --sw: #c98500;
+}
+.sw-other {
+  --sw: #898781;
+}
+
+/* ── здраве: чип и лента за трайност ── */
+.h-fresh {
+  --h: var(--h-fresh);
+}
+.h-healthy {
+  --h: var(--h-healthy);
+}
+.h-aging {
+  --h: var(--h-aging);
+}
+.h-spoiling {
+  --h: var(--h-spoiling);
+}
+.h-rotting {
+  --h: var(--h-rotting);
+}
+.h-dead {
+  --h: var(--h-dead);
+}
+
+.health {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.12rem 0.55rem 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--h, var(--ash));
+  background: color-mix(in srgb, var(--h, var(--ash)) 13%, transparent);
+  white-space: nowrap;
+}
+
+.health::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* <progress> е лентата за трайност: семантика без JavaScript и без style="" (CSP). */
+progress.life {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 5px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--panel-2);
+  overflow: hidden;
+  color: var(--h, var(--bone));
+}
+progress.life::-webkit-progress-bar {
+  background: var(--panel-2);
+}
+progress.life::-webkit-progress-value {
+  background: var(--h, var(--bone));
+  border-radius: 99px;
+}
+progress.life::-moz-progress-bar {
+  background: var(--h, var(--bone));
+  border-radius: 99px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  color: var(--ash);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.warn-text {
+  color: var(--h-aging);
+}
+
+.empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--ash);
+}
+
+/* Силуетът на семето, докато 3D не е готово или без WebGL: цветът следва здравето. */
+.seed-fallback {
+  width: 34%;
+  aspect-ratio: 1.45;
+  border-radius: 58% 42% 46% 54% / 55% 50% 50% 45%;
+  background: radial-gradient(
+    60% 70% at 38% 32%,
+    color-mix(in srgb, var(--h) 35%, #c9b292),
+    color-mix(in srgb, var(--h) 25%, #5b4430) 70%
+  );
+  box-shadow: 0 10px 16px -8px #000;
+  transform: rotate(-12deg);
+}
+
+/* ── вход и съобщения ── */
+.login,
+.message {
+  display: grid;
+  justify-items: center;
+  gap: 0.9rem;
+  text-align: center;
+  padding: 2rem 1.5rem;
+}
+
+.login p,
+.message p {
+  margin: 0;
+  max-width: 40ch;
+}
+
+.login-seed {
+  width: 160px;
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #1f2722, transparent);
+}
+
+.login-seed .seed-fallback {
+  width: 46%;
+}

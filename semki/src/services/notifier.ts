@@ -12,13 +12,21 @@ import {
   type PendingItem,
 } from '../domain/alerts.js';
 import { buildAlertParts } from '../domain/messages.js';
+import type { SeedCard } from '../domain/cards.js';
 import type { Logger } from '../log.js';
 import { labelsOf, toBatchLike, toRuleLike } from './mapping.js';
 import { getSettings } from './rules.js';
 
 export interface AlertSender {
   // ping=false — съобщението споменава ролята, без да я тагва (тестът от дашборда).
-  send(channelId: string, roleId: string, content: string, ping?: boolean): Promise<void>;
+  // cards — снимките на семената под съобщението (по една за вид); без права за тях — само текст.
+  send(
+    channelId: string,
+    roleId: string,
+    content: string,
+    ping?: boolean,
+    cards?: readonly SeedCard[],
+  ): Promise<void>;
 }
 
 export interface TickResult {
@@ -128,7 +136,7 @@ export function createNotifier(deps: NotifierDeps): Notifier {
     const parts = buildAlertParts({ ...group, items }, labels, at);
     for (const [index, part] of parts.entries()) {
       try {
-        await deps.sender.send(group.channelId, group.roleId, part.content);
+        await deps.sender.send(group.channelId, group.roleId, part.content, true, part.cards);
       } catch (err) {
         // Освобождават се само неизпратените части — изпратените не се пингват втори път. Новата
         // двойка се маха, а напомнянето връща предишния час (иначе следващото чака цял интервал).

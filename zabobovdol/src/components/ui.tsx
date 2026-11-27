@@ -71,11 +71,11 @@ export function PageHero({
             съдържанието), само на широк екран; никога върху текста. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/brand/bobov-dol-grb-mark.png"
+          src="/brand/za-bobov-dol-mark.png"
           alt=""
           aria-hidden
           className="pointer-events-none absolute right-4 top-1/2 hidden h-40 max-h-[85%] w-auto -translate-y-1/2 select-none opacity-[0.06] lg:right-8 lg:block print:hidden"
-          width={140}
+          width={200}
           height={200}
         />
         <div className="relative">
