@@ -206,6 +206,18 @@ test('без проследяване: HTML, връзка с параметри 
     const r = composeFirstEmail(input(v, { offer }), CFG, NOW);
     assert.equal(!r.ok && r.code, 'tracking_or_html', offer);
   }
+  const lt = composeFirstEmail(
+    input(v, { offer: 'Отговаряме за <5 мин, цена < 10 € и 3<4 — това е текст, не HTML.' }),
+    CFG,
+    NOW,
+  );
+  assert.ok(lt.ok, '„<“ в обикновен текст не е HTML');
+  const comment = composeFirstEmail(
+    input(v, { offer: 'Нещо <!-- скрито --> тук и още малко текст.' }),
+    CFG,
+    NOW,
+  );
+  assert.equal(!comment.ok && comment.code, 'tracking_or_html', 'HTML коментар');
   const plain = composeFirstEmail(
     input(v, { offer: 'Примери: https://carbonstealth.eu/rilievi' }),
     CFG,

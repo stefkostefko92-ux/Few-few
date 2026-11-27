@@ -96,6 +96,12 @@ const DRAFT_ERRORS = {
   blocks_missing: 'Липсва задължителен блок в писмото.',
 };
 
+/** Днешната дата по МЕСТНО време (не UTC — в България 00:00–02:59 UTC е още вчера). */
+const localDay = (d = new Date()) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
 const toLocalInput = (iso) => {
   const d = new Date(iso);
   const pad = (n) => String(n).padStart(2, '0');
@@ -118,7 +124,7 @@ function input(name, attrs = {}) {
 /** Формата за черновата на първия имейл — само при „Може“ за имейл. */
 async function draftForm(v, check) {
   const form = el('form', undefined, 'draft');
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDay();
   form.append(
     el(
       'p',
@@ -180,7 +186,11 @@ async function draftForm(v, check) {
       query: check.query,
       market: v.market,
       sourceUrl: check.sourceUrl,
-      seenAt: new Date(`${f.get('seenAt')}T12:00:00`).toISOString(),
+      // Днешната дата → моментът на заявката (обяд днес би бил „в бъдещето“ преди обяд — прегледът на #508).
+      seenAt: (f.get('seenAt') === localDay()
+        ? new Date()
+        : new Date(`${f.get('seenAt')}T12:00:00`)
+      ).toISOString(),
       topic: String(f.get('topic')),
       offer: String(f.get('offer')),
       senderName: String(f.get('senderName')),

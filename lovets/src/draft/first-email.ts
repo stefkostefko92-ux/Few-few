@@ -89,7 +89,8 @@ const URL_RX = /\bhttps?:\/\/[^\s]+/gi;
 
 /** HTML, http:// или връзка с параметри/котва (носител на идентификатор) — забранени в писмото. */
 function hasTracking(s: string, known: string[] = []): boolean {
-  if (/<\s*[a-z!/]/i.test(s)) return true;
+  // Истински таг или коментар — не всяко „<“ („a<b“, „<5 мин“ са текст).
+  if (/<(\/?[a-z][a-z0-9-]*[\s>/]|!--)/i.test(s)) return true;
   // Нашите връзки (известието, отписването) и проверения източник не са проследяване — махат се преди проверката.
   const rest = known.filter(Boolean).reduce((acc, k) => acc.split(k).join(' '), s);
   for (const u of rest.match(URL_RX) ?? []) {
