@@ -1,0 +1,60 @@
+{
+  "name": "otgovorko",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Отговорко by Carbon Stealth VCC — поддръжка: писмото на клиента през Brevo входяща поща, чернова на отговор през Claude във Vertex AI в ЕС, одобрение от човек.",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "otgovorko"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "Carbon Stealth",
+    "поддръжка на клиенти",
+    "чернова на отговор",
+    "Brevo входяща поща",
+    "Vertex AI ЕС",
+    "GDPR"
+  ],
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "test": "tsx --test tests/*.test.ts",
+    "gate": "prisma generate && npm run lint && npm run typecheck && npm test && npm run build",
+    "prisma:migrate": "prisma migrate deploy",
+    "owner:create": "node dist/cli/create-owner.js",
+    "test:integration": "tsx --test --test-concurrency=1 tests/integration/*.test.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.5.0",
+    "@anthropic-ai/vertex-sdk": "^1.1.2",
+    "@prisma/client": "^6.19.3",
+    "argon2": "^0.45.2",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.5",
+    "helmet": "^8.3.0",
+    "jose": "^6.2.18",
+    "pino": "^10.4.0",
+    "prisma": "^6.19.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.5",
+    "prettier": "^3.10.1",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
+  }
+}
