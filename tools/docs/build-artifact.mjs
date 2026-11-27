@@ -46,10 +46,37 @@ const git = (args, cwd = ROOT) => {
   const r = spawnSync("git", args, { cwd, encoding: "utf8", maxBuffer: 1 << 28 });
   return r.status === 0 ? r.stdout : null;
 };
-/** Най-пресният връх на паметта (sha) или null. Никога не хвърля. */
+const LOCAL_MEMORY = MEMORY_REFS[0];
+const refSha = (ref, cwd) => (git(["rev-parse", "-q", "--verify", `${ref}^{commit}`], cwd) || "").trim() || null;
+/** `a` е строг предшественик на `b` (всичко от `a` е и в `b`, а `b` има още). */
+const strictlyBehind = (a, b, cwd) => a !== b && spawnSync("git", ["merge-base", "--is-ancestor", a, b], { cwd }).status === 0;
+
+/** Най-пресният връх на паметта (sha) или null. Никога не хвърля.
+ *  Локалният клон печели, освен ако е ИЗЦЯЛО зад отдалечения (нищо непуснато) — тогава отдалеченият е
+ *  по-пресен. Иначе застоял локален клон (27.11.2026: b70dc760 от 04.11 срещу caf797a4) показва флота три
+ *  седмици назад. Разклонени — локалният: там може да има непуснато учене. */
 export function memoryTip(cwd = ROOT) {
-  for (const ref of MEMORY_REFS) { const r = git(["rev-parse", "-q", "--verify", `${ref}^{commit}`], cwd); if (r) return r.trim(); }
-  return null;
+  const local = refSha(LOCAL_MEMORY, cwd), remote = refSha(MEMORY_REFS[1], cwd);
+  if (local && remote && strictlyBehind(local, remote, cwd)) return remote;
+  return local || remote;
+}
+
+/**
+ * След публикуване: изостаналият локален `agents/memory` се премества напред до публикувания връх.
+ * Куката artifact-sync (.claude/hooks) гледа САМО локалния клон — иначе след публикуване на отдалечения
+ * връх тя сравнява стария локален и иска публикуване завинаги. Мести само при строго изоставане (нищо
+ * локално не се губи), атомарно (update-ref със старата стойност) и никога клон, изваден в работно дърво.
+ * Връща какво е направено: "moved" | "same" | "skip:<защо>".
+ */
+export function fastForwardLocalMemory(sha, cwd = ROOT) {
+  const local = refSha(LOCAL_MEMORY, cwd);
+  if (!local) return "skip:няма локален клон";
+  if (local === sha) return "same";
+  if (!strictlyBehind(local, sha, cwd)) return "skip:локалният не е изцяло зад публикувания";
+  const trees = git(["worktree", "list", "--porcelain"], cwd) || "";
+  if (trees.split("\n").includes(`branch ${LOCAL_MEMORY}`)) return "skip:клонът е изваден в работно дърво";
+  const r = spawnSync("git", ["update-ref", "-m", "artifact: публикуван връх", LOCAL_MEMORY, sha, local], { cwd });
+  return r.status === 0 ? "moved" : "skip:update-ref отказа";
 }
 /** Файл, в който се помни кой връх на паметта е ПУБЛИКУВАН в артефакта (в .git — не се комитва). */
 export function statePath(cwd = ROOT) {
@@ -328,6 +355,8 @@ if (isMain(import.meta.url)) {
     if (!sha) { console.error("✗ няма връх на паметта за отбелязване"); process.exit(1); }
     writeFileSync(statePath(), JSON.stringify({ published: sha, url: ARTIFACT_URL, at: new Date().toISOString() }, null, 2) + "\n");
     console.log(`✓ артефактът е отбелязан като публикуван от ${sha.slice(0, 8)}`);
+    const ff = fastForwardLocalMemory(sha);
+    if (ff === "moved") console.log(`✓ локалният agents/memory е преместен напред до ${sha.slice(0, 8)} (беше изцяло зад него)`);
     process.exit(0);
   }
   const out = argv.find((a, i) => !a.startsWith("--") && argv[i - 1] !== "--ref") || join(ROOT, "galaxy-artifact.html");

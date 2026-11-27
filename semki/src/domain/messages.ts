@@ -1,5 +1,6 @@
 // Текстовете на бота: процент, оставащо време, известия и /infosemki — на български.
 import type { AlertGroup, AlertKind, BatchLike, RuleLike } from './alerts.js';
+import { seedCards, type SeedCard } from './cards.js';
 import { expiresAt, msLeft, percentAt } from './decay.js';
 
 export const MESSAGE_LIMIT = 2000;
@@ -85,6 +86,8 @@ export function chunkLines(lines: readonly string[], limit = MESSAGE_LIMIT): str
 export interface AlertPart {
   content: string;
   batchIds: number[];
+  // снимките под съобщението — по една за вид в тази част (src/domain/cards.ts)
+  cards: SeedCard[];
 }
 
 export function buildAlertParts(group: AlertGroup, labels: SeedLabels, now: Date): AlertPart[] {
@@ -96,7 +99,7 @@ export function buildAlertParts(group: AlertGroup, labels: SeedLabels, now: Date
   }
   const parts: AlertPart[] = [];
   const header = group.message ?? '**Семките изтичат**';
-  let current: AlertPart = { content: `<@&${group.roleId}> ${header}`, batchIds: [] };
+  let current: AlertPart = { content: `<@&${group.roleId}> ${header}`, batchIds: [], cards: [] };
   for (const { batch, rules } of byBatch.values()) {
     const thresholds = rules.map((r) => formatThreshold(r.kind, r.threshold)).join(', ');
     const line =
@@ -106,13 +109,17 @@ export function buildAlertParts(group: AlertGroup, labels: SeedLabels, now: Date
       );
     if (current.batchIds.length > 0 && current.content.length + 1 + line.length > MESSAGE_LIMIT) {
       parts.push(current);
-      current = { content: line, batchIds: [batch.id] };
+      current = { content: line, batchIds: [batch.id], cards: [] };
     } else {
       current.content += `\n${line}`;
       current.batchIds.push(batch.id);
     }
   }
   if (current.batchIds.length > 0) parts.push(current);
+  for (const part of parts) {
+    const inPart = part.batchIds.flatMap((id) => byBatch.get(id)?.batch ?? []);
+    part.cards = seedCards(inPart, labels, now);
+  }
   return parts;
 }
 
