@@ -5,8 +5,10 @@ import {
   buildAlertParts,
   buildInfoMessages,
   discordTime,
+  formatBatches,
   formatDuration,
   formatPercent,
+  formatSeeds,
   formatThreshold,
   MESSAGE_LIMIT,
 } from '../src/domain/messages.js';
@@ -23,9 +25,23 @@ const labels = {
   skunk: 'Skunk',
 };
 
-function batch(id: number, percent: number, seedTypeKey = 'amnesia'): BatchLike {
-  return { id, seedTypeKey, count: 5, percent, anchoredAt: t0, rate };
+function batch(id: number, percent: number, seedTypeKey = 'amnesia', count = 5): BatchLike {
+  return { id, seedTypeKey, count, percent, anchoredAt: t0, rate };
 }
+
+// Номерът на партидата не интересува хората в канала — показваме вида и колко семки има в нея.
+const NO_BATCH_NUMBER = /#\d/;
+// всяка партида е ред, започващ с точката на здравето (като в „Партиди“)
+const DOT_LINE = /^(🟢|🟡|🟠|🔴|🟤|⚫) /u;
+const bullets = (text: string) => text.split('\n').filter((l) => DOT_LINE.test(l));
+
+test('броят се казва с думи: 1 семка / 2 семки, 1 партида / 3 партиди', () => {
+  assert.equal(formatSeeds(1), '1 семка');
+  assert.equal(formatSeeds(2), '2 семки');
+  assert.equal(formatSeeds(21), '21 семки');
+  assert.equal(formatBatches(1), '1 партида');
+  assert.equal(formatBatches(3), '3 партиди');
+});
 
 test('процентът се показва с два знака, закръглен до стотни, с BG запетая', () => {
   assert.equal(formatPercent(87.4), '87,40%');
@@ -82,9 +98,11 @@ test('известието тагва ролята веднъж и описва 
   assert.equal(parts.length, 1);
   const msg = parts[0] ?? '';
   assert.ok(msg.startsWith('<@&222222222222222222>'));
-  assert.match(msg, /Amnesia/);
-  assert.match(msg, /#7/);
-  assert.match(msg, /×5/);
+  assert.match(
+    msg,
+    /🔴 \*\*Amnesia\*\* · \*\*5 семки\*\* · Разваля се · \*\*15,00%\*\* · остават 1 д 1 ч 0 мин · изтича <t:\d+:f> \(<t:\d+:R>\) · праг ≤ 20%/,
+  );
+  assert.doesNotMatch(msg, NO_BATCH_NUMBER);
   assert.match(msg, /15,00%/);
   assert.match(msg, /≤ 20%/);
   assert.match(msg, /<t:\d+:R>/);
@@ -111,8 +129,8 @@ test('дълго известие се дели на части до лимит�
   assert.ok(parts.length > 1);
   for (const p of parts) assert.ok(p.length <= MESSAGE_LIMIT, `дължина ${p.length}`);
   assert.equal(parts.filter((p) => p.includes('<@&222222222222222222>')).length, 1);
-  const all = parts.join('\n');
-  for (let i = 1; i <= 80; i++) assert.ok(all.includes(`#${i} `), `липсва #${i}`);
+  // всяка партида е на свой ред, нищо не се губи между частите
+  assert.equal(bullets(parts.join('\n')).length, 80);
 });
 
 test('частите на известието делят партидите без застъпване', () => {
@@ -136,21 +154,32 @@ test('частите на известието делят партидите б�
   const ids = parts.flatMap((p) => p.batchIds);
   assert.equal(ids.length, 60);
   assert.equal(new Set(ids).size, 60);
-  for (const p of parts) {
-    for (const id of p.batchIds) assert.ok(p.content.includes(`#${id} `));
-  }
+  for (const p of parts) assert.equal(bullets(p.content).length, p.batchIds.length);
 });
 
 test('/infosemki: празно, групирано по вид, първо изтичащите, изтеклите са отбелязани', () => {
   assert.deepEqual(buildInfoMessages([], labels, t0), ['Няма въведени семки.']);
-  const parts = buildInfoMessages([batch(1, 80), batch(2, 0, 'ak'), batch(3, 50)], labels, t0);
+  const parts = buildInfoMessages(
+    [batch(1, 80, 'amnesia', 4), batch(2, 0, 'ak', 1), batch(3, 50, 'amnesia', 7)],
+    labels,
+    t0,
+  );
   const text = parts.join('\n');
-  assert.match(text, /Amnesia/);
-  assert.match(text, /AK/);
-  assert.match(text, /80,00%/);
-  assert.match(text, /изтекла/);
-  // в рамките на вида: първо тази, която изтича най-скоро (#3 при 50% преди #1 при 80%)
-  assert.ok(text.indexOf('#3 ') < text.indexOf('#1 '));
+  assert.match(text, /^\*\*Общо\*\* — 12 семки в 3 партиди/);
+  // заглавието на вида — като в „Партиди“: колко семки в колко партиди и скоростта
+  assert.match(text, /\n\*\*Amnesia\*\* — 11 семки в 2 партиди · 0,6% на 60 мин\n/);
+  assert.match(text, /\n\*\*AK\*\* — 1 семка в 1 партида · 0,6% на 60 мин\n/);
+  // всяка партида — свой ред: здраве (точка + дума), брой семки, процент, колко остава, кога изтича
+  assert.match(
+    text,
+    /\n🟡 \*\*7 семки\*\* · Здрава · \*\*50,00%\*\* · остават 3 д 11 ч 20 мин · изтича <t:\d+:f> \(<t:\d+:R>\)\n/,
+  );
+  assert.match(text, /\n🟢 \*\*4 семки\*\* · Свежа · \*\*80,00%\*\* · остават /);
+  assert.match(text, /\n⚫ \*\*1 семка\*\* · Изтекла$/m);
+  assert.equal(bullets(text).length, 3);
+  assert.doesNotMatch(text, NO_BATCH_NUMBER);
+  // в рамките на вида: първо тази, която изтича най-скоро (50% преди 80%)
+  assert.ok(text.indexOf('50,00%') < text.indexOf('80,00%'));
   for (const p of parts) assert.ok(p.length <= MESSAGE_LIMIT);
 });
 
@@ -178,5 +207,5 @@ test('съобщението по избор заменя заглавието �
   );
   assert.ok(msg?.startsWith('<@&222222222222222222> Освежете семките до довечера!'));
   assert.doesNotMatch(msg ?? '', /Семките изтичат/);
-  assert.match(msg ?? '', /#3 /);
+  assert.match(msg ?? '', /🔴 \*\*Amnesia\*\* · \*\*5 семки\*\* · Разваля се · \*\*12,00%\*\*/);
 });
