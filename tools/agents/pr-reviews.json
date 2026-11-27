@@ -505,6 +505,19 @@
     "0a03a93825db3b0e27c05d500e8f21c86d07a667": [
       "ai-djiyata",
       "kodadjiyata"
+    ],
+    "897b963594cce033948b016a6f56e912a498321d": [
+      "kodadjiyata"
+    ],
+    "f45a0e12e1a4e8f72eb34407b53bedf2c4ea41df": [
+      "ai-djiyata",
+      "kodadjiyata"
+    ],
+    "5d2fe8adcb6cfb8f66280e7d105950728c94ee1e": [
+      "kodadjiyata",
+      "konveyera",
+      "pravniyat-razbirach",
+      "razbivacha"
     ]
   },
   "runs": [
@@ -2474,6 +2487,62 @@
       "agent": "ai-djiyata",
       "verdict": "поправки",
       "costUsd": 1.1,
+      "date": "2026-11-27"
+    },
+    {
+      "pr": 508,
+      "sha": "897b963594cce033948b016a6f56e912a498321d",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.07,
+      "date": "2026-11-27"
+    },
+    {
+      "pr": 510,
+      "sha": "f45a0e12e1a4e8f72eb34407b53bedf2c4ea41df",
+      "agent": "kodadjiyata",
+      "verdict": "чисто",
+      "costUsd": 0.7,
+      "date": "2026-11-27"
+    },
+    {
+      "pr": 510,
+      "sha": "f45a0e12e1a4e8f72eb34407b53bedf2c4ea41df",
+      "agent": "ai-djiyata",
+      "verdict": "чисто",
+      "costUsd": 0.91,
+      "date": "2026-11-27"
+    },
+    {
+      "pr": 509,
+      "sha": "5d2fe8adcb6cfb8f66280e7d105950728c94ee1e",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.49,
+      "date": "2026-11-27"
+    },
+    {
+      "pr": 509,
+      "sha": "5d2fe8adcb6cfb8f66280e7d105950728c94ee1e",
+      "agent": "razbivacha",
+      "verdict": "поправки",
+      "costUsd": 1.49,
+      "date": "2026-11-27"
+    },
+    {
+      "pr": 509,
+      "sha": "5d2fe8adcb6cfb8f66280e7d105950728c94ee1e",
+      "agent": "pravniyat-razbirach",
+      "verdict": "поправки",
+      "costUsd": 1.41,
+      "date": "2026-11-27"
+    },
+    {
+      "pr": 509,
+      "sha": "5d2fe8adcb6cfb8f66280e7d105950728c94ee1e",
+      "agent": "konveyera",
+      "verdict": "чисто",
+      "costUsd": 0.53,
       "date": "2026-11-27"
     }
   ]
