@@ -1278,7 +1278,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 811
+        "lessons": 812
       },
       "evolution": [
         {
@@ -2150,9 +2150,20 @@
           "date": "2026-11-27",
           "event": "v76.5 — учене",
           "detail": "Научи: В vpsdash notify.js Telegram се праща с parse_mode HTML, но title, body и nodeName мина… (+4 още)"
+        },
+        {
+          "version": "76.6.0",
+          "date": "2026-11-27",
+          "event": "v76.6 — учене",
+          "detail": "Научи: В live-run worktree при преглед на PR пускането на node --test и на node tools/agents/r…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „В live-run worktree при преглед на PR пускането на node --test и на node tools/agents/r…\""
+        },
         {
           "date": "2026-11-27",
           "type": "learning",
