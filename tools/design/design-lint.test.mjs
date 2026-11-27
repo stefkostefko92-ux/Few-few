@@ -74,7 +74,7 @@ test("твърдение, което иска доказателство, е MED
   assert.deepEqual(ids("<p>Свържете се с нас</p>"), []);
   assert.equal(RULES["claim-needs-proof"].sev, "MEDIUM");
   assert.deepEqual(ids('<svg viewBox="0 0 10 10"><path d="M0 0"/></svg>'), ["svg"]);
-  assert.equal(RULES.svg.sev, "INFO");
+  assert.equal(RULES.svg.sev, "MEDIUM");
 });
 
 test("design-lint-disable-line <правило> — <причина> заглушава точно това правило на точно този ред", () => {

@@ -94,8 +94,8 @@ hooks, skills).
 - **Promo clips are frozen — any product** (owner, 2026-10-15): no re-render, proposal or "replace
   the clip" step on any version/UI/copy change; only on the owner's explicit request. Not covered:
   video that is a product feature (e.g. Piuma's content engine).
-- **Never SVG — any product** (owner, 2026-11-04): drawings, charts, icons — never SVG. Illustrations → 3D
-  (three.js, bundled, no CDN); charts → `<canvas>`; icons → raster. Shipped SVG stays until the owner asks.
+- **Never SVG — any product** (owner, 2026-11-04): illustrations → 3D (three.js, bundled, no CDN), charts →
+  `<canvas>`, icons → raster. Shipped SVG too (2026-11-27): one PR per product, `docs/svg-migration.md`.
 - **CI unwatched while jobs don't start** (owner, 2026-11-02): no wait/re-run/fix/comment.
   Proof = local gate (product or `tools/agents/gate.mjs`) + `secret-scan`.
 - **Deploy commands ⇒ merge into `main` first — mandatory, every project** (owner, 2026-11-15): unmerged
