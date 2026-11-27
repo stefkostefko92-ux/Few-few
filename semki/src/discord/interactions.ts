@@ -7,21 +7,16 @@ import {
   type Interaction,
 } from 'discord.js';
 import type { PrismaClient } from '@prisma/client';
-import { seedCards, weakestCard, type SeedCard } from '../domain/cards.js';
-import {
-  batchStatus,
-  buildInfoMessages,
-  formatThreshold,
-  healthDot,
-  seedLabel,
-} from '../domain/messages.js';
+import { seedCards, type SeedCard } from '../domain/cards.js';
+import { buildInfoEmbeds, infoAsText } from '../domain/info.js';
+import { batchStatus, formatThreshold, healthDot, seedLabel } from '../domain/messages.js';
 import { isSeedKey } from '../domain/seeds.js';
 import { batchCreateSchema, seedKeySchema } from '../domain/validation.js';
 import type { Logger } from '../log.js';
 import { createBatch, listBatches, listSeedTypes } from '../services/batches.js';
 import { labelsOf } from '../services/mapping.js';
 import { CMD_DELETE, CMD_INFO, OPTION_COUNT, OPTION_PERCENT, OPTION_TYPE } from './commands.js';
-import { cardPayload, type CardPayload } from './cards.js';
+import { cardPayload, infoPayload, type CardPayload, type InfoPayload } from './cards.js';
 import { actorName, ensureManager, NO_PINGS } from './common.js';
 import { batchOptionLabel, createRemoveFlow } from './remove-flow.js';
 
@@ -97,18 +92,24 @@ export function createInteractionHandler(deps: InteractionDeps) {
     const batches = key?.success ? all.filter((b) => b.seedTypeKey === key.data) : all;
     const at = now();
     const labels = labelsOf(types);
-    const [first, ...rest] = buildInfoMessages(batches, labels, at);
-    // Списъкът е пълен (всички партиди, %, кога изтичат); снимката е една — на най-ниския процент,
-    // под последното съобщение.
-    const weakest = weakestCard(batches, labels, at);
-    const cards = weakest ? [weakest] : [];
-    await withCards(
-      (o) => i.editReply(o),
-      first ?? 'Няма въведени семки.',
-      rest.length === 0 ? cards : [],
-    );
-    for (const [n, content] of rest.entries())
-      await withCards((o) => i.followUp(o), content, n === rest.length - 1 ? cards : []);
+    // Карта за всеки вид: всички партиди на редове, снимката на най-ниската от вида (domain/info.ts).
+    type Reply = Partial<InfoPayload> & { allowedMentions: typeof NO_PINGS };
+    for (const [n, message] of buildInfoEmbeds(batches, labels, at).entries()) {
+      const send = (o: Reply) => (n === 0 ? i.editReply(o) : i.followUp(o));
+      try {
+        await send({ ...infoPayload(message), allowedMentions: NO_PINGS });
+      } catch (err) {
+        // Отказ от API (4xx) — нищо не е публикувано: същото съобщение като текст, справката не се губи.
+        if (!(err instanceof DiscordAPIError)) throw err;
+        deps.log.warn(
+          { code: err.code, status: err.status },
+          'Discord отказа картите на /infosemki',
+        );
+        const [first = '', ...rest] = infoAsText(message);
+        await send({ content: first, allowedMentions: NO_PINGS });
+        for (const content of rest) await i.followUp({ content, allowedMentions: NO_PINGS });
+      }
+    }
   }
 
   async function autocomplete(i: AutocompleteInteraction) {

@@ -1,0 +1,78 @@
+name: otgovorko
+
+on:
+  push:
+    paths:
+      - 'otgovorko/**'
+      - '.github/workflows/otgovorko.yml'
+  pull_request:
+    paths:
+      - 'otgovorko/**'
+      - '.github/workflows/otgovorko.yml'
+
+concurrency:
+  group: otgovorko-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: otgovorko
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: otgovorko/package-lock.json
+      - run: npm ci
+      # prisma generate + prettier + типове + unit тестове + билд.
+      - run: npm run gate
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: otgovorko
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: otgovorko
+          POSTGRES_PASSWORD: otgovorko
+          POSTGRES_DB: otgovorko_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U otgovorko"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # Името съдържа _test: тестът трие таблиците и отказва всяка друга база.
+      TEST_DATABASE_URL: postgresql://otgovorko:otgovorko@127.0.0.1:5432/otgovorko_test
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: otgovorko/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+      - run: npm run test:integration

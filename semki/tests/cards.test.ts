@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { seedCards, weakestCard } from '../src/domain/cards.js';
+import { seedCards, weakestLive } from '../src/domain/cards.js';
 import { HEALTH_LEGEND } from '../src/domain/health.js';
 import { buildAlertParts } from '../src/domain/messages.js';
 import { SEED_KEYS } from '../src/domain/seeds.js';
@@ -70,26 +70,12 @@ test('карти: изтеклите — „изтекла“; непознат 
   assert.deepEqual(seedCards([batch(2, 'haze', 50)], labels, now), []);
 });
 
-test('/infosemki: една снимка — партидата с най-нисък процент от всички видове', () => {
-  const card = weakestCard(
-    [batch(1, 'skunk', 80), batch(2, 'ak', 40), batch(3, 'purple', 12), batch(4, 'ak', 30)],
-    labels,
-    now,
-  );
-  assert.equal(card?.file, 'purple-spoiling.jpg');
-  assert.equal(card?.title, 'Най-нисък процент: Purple, 3 семки — 12,00% · Разваля се');
-  assert.equal(card?.text, '');
-  assert.equal(weakestCard([], labels, now), null);
-});
-
-test('/infosemki: изтеклите не скриват живите; ако всички са изтекли — снимката на изтекла', () => {
+test('най-слабата жива партида: най-нисък процент; изтеклите не се броят', () => {
   const old = new Date(now.getTime() - 10 * HOUR_MS);
-  const live = weakestCard([batch(1, 'ak', 2, 1, old), batch(2, 'ogkush', 55)], labels, now);
-  assert.equal(live?.file, 'ogkush-healthy.jpg');
-  const dead = weakestCard([batch(1, 'ak', 2, 1, old)], labels, now);
-  assert.equal(dead?.file, 'ak-dead.jpg');
-  assert.equal(dead?.title, 'Всички са изтекли: AK');
-  assert.equal(weakestCard([batch(9, 'haze', 5)], labels, now), null);
+  const live = [batch(1, 'ak', 40), batch(2, 'ak', 12), batch(3, 'ak', 2, 1, old)];
+  assert.equal(weakestLive(live, now)?.id, 2);
+  assert.equal(weakestLive([batch(3, 'ak', 2, 1, old)], now), undefined);
+  assert.equal(weakestLive([], now), undefined);
 });
 
 test('известието носи картите на видовете в своята част', () => {
@@ -132,10 +118,10 @@ test('прикачването: файл + карта със снимката; �
   assert.deepEqual(cardPayload([card], '/няма/такава'), { files: [], embeds: [] });
 });
 
-test('прикачването: карта без текст (/infosemki) не праща празно описание — Discord го отказва', () => {
-  const weakest = weakestCard([batch(1, 'ogkush', 60)], labels, now);
-  assert.ok(weakest);
-  const [embed] = cardPayload([weakest]).embeds;
+test('прикачването: карта без текст не праща празно описание — Discord го отказва', () => {
+  const [card] = seedCards([batch(1, 'ogkush', 60)], labels, now);
+  assert.ok(card);
+  const [embed] = cardPayload([{ ...card, text: '' }]).embeds;
   assert.ok(embed);
   assert.equal('description' in embed, false);
   assert.equal(embed.image?.url, 'attachment://ogkush-healthy.jpg');
