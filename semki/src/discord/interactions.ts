@@ -7,7 +7,7 @@ import {
   type Interaction,
 } from 'discord.js';
 import type { PrismaClient } from '@prisma/client';
-import { seedCards, type SeedCard } from '../domain/cards.js';
+import { seedCards, weakestCard, type SeedCard } from '../domain/cards.js';
 import { msLeft, percentAt } from '../domain/decay.js';
 import {
   batchStatus,
@@ -100,8 +100,10 @@ export function createInteractionHandler(deps: InteractionDeps) {
     const at = now();
     const labels = labelsOf(types);
     const [first, ...rest] = buildInfoMessages(batches, labels, at);
-    // снимките — под последното съобщение, по една за вид
-    const cards = seedCards(batches, labels, at);
+    // Списъкът е пълен (всички партиди, %, кога изтичат); снимката е една — на най-ниския процент,
+    // под последното съобщение.
+    const weakest = weakestCard(batches, labels, at);
+    const cards = weakest ? [weakest] : [];
     await withCards(
       (o) => i.editReply(o),
       first ?? 'Няма въведени семки.',

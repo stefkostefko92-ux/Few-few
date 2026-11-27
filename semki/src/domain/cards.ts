@@ -1,5 +1,5 @@
-// Картите под съобщенията в Discord: по една за всеки вид в съобщението, със снимката на семената в
-// здравето на най-слабата му партида (assets/seeds/<вид>-<здраве>.jpg — рисувани от същия 3D код като
+// Картите под съобщенията в Discord: в известията и при добавяне — по една за всеки вид в съобщението,
+// със снимката на семената в здравето на най-слабата му партида; в /infosemki — една, на най-ниския процент (assets/seeds/<вид>-<здраве>.jpg — рисувани от същия 3D код като
 // дашборда, scripts/render-seeds.ts). Чиста логика: кои карти, с какъв текст; прикачването е в discord/.
 import type { BatchLike } from './alerts.js';
 import { SEED_COLORS } from './chart.js';
@@ -52,4 +52,35 @@ export function seedCards(
       file: `${key}-${health.stage}.jpg`,
     };
   });
+}
+
+// /infosemki: една снимка — партидата с най-нисък процент сред живите (изтеклите са на 0% и иначе
+// винаги биха „печелили“); ако живи няма — изтеклата. Непознатите видове нямат снимка.
+export function weakestCard(
+  batches: readonly BatchLike[],
+  labels: SeedLabels,
+  now: Date,
+): SeedCard | null {
+  const known = batches.filter((b) => isSeedKey(b.seedTypeKey));
+  const live = known.filter((b) => msLeft(b, b.rate, now) > 0);
+  const pool = live.length > 0 ? live : known;
+  const weakest = [...pool].sort(
+    (a, b) => percentAt(a, a.rate, now) - percentAt(b, b.rate, now) || a.id - b.id,
+  )[0];
+  if (!weakest) return null;
+  const key = weakest.seedTypeKey;
+  const p = percentAt(weakest, weakest.rate, now);
+  const health = healthOf(p, live.length === 0);
+  const name = `${seedLabel(labels, key)} #${weakest.id}`;
+  return {
+    typeKey: key,
+    title:
+      live.length > 0
+        ? `Най-нисък процент: ${name} — ${formatPercent(p)} · ${health.label}`
+        : `Всички са изтекли: ${name}`,
+    text: '',
+    color: Number.parseInt((SEED_COLORS[key] ?? '#898781').slice(1), 16),
+    stage: health.stage,
+    file: `${key}-${health.stage}.jpg`,
+  };
 }

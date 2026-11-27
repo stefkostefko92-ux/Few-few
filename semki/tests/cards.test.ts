@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { seedCards } from '../src/domain/cards.js';
+import { seedCards, weakestCard } from '../src/domain/cards.js';
 import { HEALTH_LEGEND } from '../src/domain/health.js';
 import { buildAlertParts } from '../src/domain/messages.js';
 import { SEED_KEYS } from '../src/domain/seeds.js';
@@ -68,6 +68,28 @@ test('карти: изтеклите — „изтекла“; непознат 
   assert.equal(dead?.title, 'Purple — Изтекла');
   assert.equal(dead?.text, '1 партида, 1 семка · всички са изтекли');
   assert.deepEqual(seedCards([batch(2, 'haze', 50)], labels, now), []);
+});
+
+test('/infosemki: една снимка — партидата с най-нисък процент от всички видове', () => {
+  const card = weakestCard(
+    [batch(1, 'skunk', 80), batch(2, 'ak', 40), batch(3, 'purple', 12), batch(4, 'ak', 30)],
+    labels,
+    now,
+  );
+  assert.equal(card?.file, 'purple-spoiling.jpg');
+  assert.equal(card?.title, 'Най-нисък процент: Purple #3 — 12,00% · Разваля се');
+  assert.equal(card?.text, '');
+  assert.equal(weakestCard([], labels, now), null);
+});
+
+test('/infosemki: изтеклите не скриват живите; ако всички са изтекли — снимката на изтекла', () => {
+  const old = new Date(now.getTime() - 10 * HOUR_MS);
+  const live = weakestCard([batch(1, 'ak', 2, 1, old), batch(2, 'ogkush', 55)], labels, now);
+  assert.equal(live?.file, 'ogkush-healthy.jpg');
+  const dead = weakestCard([batch(1, 'ak', 2, 1, old)], labels, now);
+  assert.equal(dead?.file, 'ak-dead.jpg');
+  assert.equal(dead?.title, 'Всички са изтекли: AK #1');
+  assert.equal(weakestCard([batch(9, 'haze', 5)], labels, now), null);
 });
 
 test('известието носи картите на видовете в своята част', () => {

@@ -29,7 +29,8 @@ export function cardPayload(cards: readonly SeedCard[], dir = SEEDS_DIR): CardPa
     files: usable.map((c) => ({ attachment: path.join(dir, c.file), name: c.file })),
     embeds: usable.map((c) => ({
       title: c.title,
-      description: c.text,
+      // празно описание Discord го отказва — тогава картата е само заглавие и снимка
+      ...(c.text ? { description: c.text } : {}),
       color: c.color,
       image: { url: `attachment://${c.file}` },
     })),
