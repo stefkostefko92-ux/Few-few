@@ -20,7 +20,7 @@ async function main(): Promise<void> {
   // Само Guilds: каналите и ролите за дашборда идват от кеша; членовете се питат поотделно по REST.
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
   const guild = createGuildDirectory(client, config.DISCORD_GUILD_ID);
-  const sender = createAlertSender(client, config.DISCORD_GUILD_ID);
+  const sender = createAlertSender(client, config.DISCORD_GUILD_ID, log);
   const notifier = createNotifier({ db, sender, log });
 
   client.on(

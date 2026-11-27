@@ -1,27 +1,32 @@
 // Данните, които сървърът вгражда в страницата (<script type="application/json">). Проверяват се по
 // форма, преди да се ползват: счупен или непознат JSON значи „без рисунка“, не грешка в конзолата.
 
-export interface SeedData {
-  u: number;
-  angle: number;
-  radial: number;
-  rx: number;
-  ry: number;
-  rz: number;
+// Сцената на дашборда (src/domain/tiles.ts → sceneOf, плюс легендата по здраве).
+export interface SeedLayoutData {
+  x: number;
+  z: number;
+  yaw: number;
+  tilt: number;
 }
 
-export interface VialData {
+export interface SceneTileData {
   id: number;
-  level: number;
-  expired: boolean;
-  ticks: number[];
-  seeds: SeedData[];
+  type: string;
+  decay: number;
+  dead: boolean;
+  layout: SeedLayoutData[];
 }
 
-export interface ShelfData {
-  key: string;
-  color: string;
-  vials: VialData[];
+export interface LegendData {
+  stage: string;
+  decay: number;
+  dead: boolean;
+}
+
+export interface SceneData {
+  tiles: SceneTileData[];
+  legend: LegendData[];
+  legendType: string;
 }
 
 export interface ChartSeriesData {
@@ -64,25 +69,35 @@ function hasNums(o: Obj, keys: readonly string[]): boolean {
   return keys.every((k) => isNum(o[k]));
 }
 
-function isSeed(v: unknown): v is SeedData {
-  return isObj(v) && hasNums(v, ['u', 'angle', 'radial', 'rx', 'ry', 'rz']);
+function isLayout(v: unknown): v is SeedLayoutData {
+  return isObj(v) && hasNums(v, ['x', 'z', 'yaw', 'tilt']);
 }
 
-function isVial(v: unknown): v is VialData {
+function isTile(v: unknown): v is SceneTileData {
   return (
     isObj(v) &&
-    hasNums(v, ['id', 'level']) &&
-    isBool(v.expired) &&
-    Array.isArray(v.ticks) &&
-    v.ticks.every(isNum) &&
-    Array.isArray(v.seeds) &&
-    v.seeds.every(isSeed)
+    hasNums(v, ['id', 'decay']) &&
+    isStr(v.type) &&
+    isBool(v.dead) &&
+    Array.isArray(v.layout) &&
+    v.layout.length > 0 &&
+    v.layout.length <= 5 &&
+    v.layout.every(isLayout)
   );
 }
 
-function isShelf(v: unknown): v is ShelfData {
+function isLegend(v: unknown): v is LegendData {
+  return isObj(v) && isStr(v.stage) && isNum(v.decay) && isBool(v.dead);
+}
+
+function isScene(v: unknown): v is SceneData {
   return (
-    isObj(v) && isStr(v.key) && isColor(v.color) && Array.isArray(v.vials) && v.vials.every(isVial)
+    isObj(v) &&
+    Array.isArray(v.tiles) &&
+    v.tiles.every(isTile) &&
+    Array.isArray(v.legend) &&
+    v.legend.every(isLegend) &&
+    isStr(v.legendType)
   );
 }
 
@@ -129,9 +144,9 @@ function readJson(id: string): unknown {
   }
 }
 
-export function readShelves(id: string): ShelfData[] | null {
+export function readScene(id: string): SceneData | null {
   const raw = readJson(id);
-  return Array.isArray(raw) && raw.every(isShelf) ? raw : null;
+  return isScene(raw) ? raw : null;
 }
 
 export function readChart(id: string): ChartData | null {
