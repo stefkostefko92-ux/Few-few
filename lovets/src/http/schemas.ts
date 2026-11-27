@@ -48,6 +48,20 @@ export const SuppressionBody = z.object({
   reason: z.string().min(3).max(300),
 });
 
+export const FirstEmailBody = z.object({
+  query: z.string().min(3).max(300),
+  market,
+  sourceUrl: z.url().max(2000),
+  seenAt: isoDate,
+  topic: z.string().min(3).max(160),
+  offer: z.string().min(20).max(1500),
+  recipientName: z.string().max(120).optional(),
+  senderName: z.string().min(2).max(120),
+  slots: z.array(isoDate).length(3),
+});
+
+export const SlotsQuery = z.object({ market });
+
 export const ConsentBody = z.object({
   value: z.string().min(3).max(300),
   market: market.default('BG'),

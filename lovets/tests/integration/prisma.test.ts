@@ -10,6 +10,8 @@ import { hashPassword } from '../../src/auth/password.js';
 import { encryptSecret } from '../../src/auth/crypto.js';
 import { generateTotpSecret, totpCodeAt, totpStep } from '../../src/auth/totp.js';
 import type { AppConfig } from '../../src/config.js';
+import { makeUnsubToken } from '../../src/draft/unsubscribe.js';
+import { fingerprint } from '../../src/registry/fingerprint.js';
 
 /**
  * Целият поток срещу истински PostgreSQL (миграциите вече пуснати с `prisma migrate deploy`).
@@ -28,6 +30,10 @@ const config: AppConfig = {
   cookieSecure: false,
   httpPort: 0,
   trustProxy: false,
+  unsubKey: Buffer.alloc(32, 5).toString('base64'),
+  publicUrl: ORIGIN,
+  noticeUrl: 'https://carbonstealth.eu/privacy/prospects',
+  retentionMonths: 6,
 };
 
 let db: PrismaClient;
@@ -161,3 +167,27 @@ test('в базата няма открити адреси или номера',
     assert.ok(!dump.includes(plain), plain);
   }
 });
+
+test(
+  'отписване срещу истинската база: ред с фиксиран код, повторното не дублира, проверката блокира',
+  { skip: !enabled },
+  async () => {
+    const value = 'oferta@firma-u.bg';
+    const fp = fingerprint(value, config.pepper);
+    const t = makeUnsubToken([fp], config.unsubKey!);
+    const first = await fetch(`${base}/u/${t}`, { method: 'POST', redirect: 'manual' });
+    assert.equal(first.status, 200);
+    assert.equal(
+      (await fetch(`${base}/u/${t}`, { method: 'POST', redirect: 'manual' })).status,
+      200,
+    );
+    const rows = await db.suppression.findMany({ where: { fingerprint: fp } });
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0]!.reason, 'unsubscribe_link');
+    assert.equal(rows[0]!.scope, 'value');
+    assert.deepEqual(
+      await decisions({ query: value, market: 'BG', sourceUrl: 'https://firma-u.bg/k' }),
+      ['blocked'],
+    );
+  },
+);

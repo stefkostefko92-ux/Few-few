@@ -50,6 +50,7 @@ caveman-маниера: телеграфно, всеки технически т
 - **Loop architecture**: краят влива в началото безшевно → много висок сигнал за качество.
 - **Библиотека с формули за hook:** `tools/social/hooks.md` — форма + пример + кога вреди. Формула с маркер ДОК твърди факт и не излиза без доказателство и `marketing-claims-review`.
 - **Shorts от дълго видео:** `node tools/social/shorts-pick.mjs запис.srt --min 15 --max 60` — начало, край и hook на най-силните моменти; рендер `vertical916` от AI Studio. **Заглавие + миниатюра** като двойка: `post-lint.mjs` с `title` и `thumbnailText` (миниатюрата добавя, не повтаря).
+- **Седмица от една идея:** умението `ideya-sedmitsa` → план в `.tmp/sedmitsa/`, `node tools/social/sedmitsa.mjs check|render` (7 дни, ≥3 канала, hook+CTA, етикет за AI медия, твърдения → `marketing-claims-review`); Instagram с медия → само чернова в Piuma.
 - **Къде си тръгват зрителите:** `node tools/social/retention.mjs retention.csv [--hook 3] [--transcript t.srt]` — CSV със задържането, свален от собственика от YouTube Studio, по желание с транскрипт от `tools/research/video-notes.mjs`; казва най-голямото изтичане и какво се казва в този момент. Наши данни, нула мрежа — поправката се предлага за следващия клип, не „на око“.
 
 ## POSTING_PLAYBOOK
