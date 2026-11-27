@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 812
+        "lessons": 813
       },
       "evolution": [
         {
@@ -2133,9 +2133,20 @@
           "date": "2026-11-27",
           "event": "v76.6 — учене",
           "detail": "Научи: В live-run worktree при преглед на PR пускането на node --test и на node tools/agents/r… (+79 още)"
+        },
+        {
+          "version": "76.7.0",
+          "date": "2026-11-27",
+          "event": "v76.7 — учене",
+          "detail": "Научи: В live-run worktree за PR 508 lovets/node_modules липсва, а node tools/agents/rubric.mj…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „В live-run worktree за PR 508 lovets/node_modules липсва, а node tools/agents/rubric.mj…\""
+        },
         {
           "date": "2026-11-27",
           "type": "learning",
