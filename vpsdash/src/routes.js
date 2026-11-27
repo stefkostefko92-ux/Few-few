@@ -2356,7 +2356,7 @@ export function buildRouter(ctx) {
     guard(
       J(async (req) => {
         audit.log({ action: 'alerts.business.sendNow', user: req.user });
-        return { text: await ctx.alerts.sendBusiness() };
+        return ctx.alerts.sendBusiness(Date.now(), { manual: true }); // { text, delivered, channels }
       }),
       { mutating: true }
     )

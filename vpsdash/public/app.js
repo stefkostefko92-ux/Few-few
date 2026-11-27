@@ -1351,8 +1351,14 @@ function businessCard(d) {
       el('button', {
         class: 'btn btn-sm', text: '✉ Прати сега',
         onclick: async () => {
-          try { await api('/alerts/business/send', { method: 'POST' }); toast('Числата са пратени по каналите'); go('alerts'); }
-          catch (e) { toast(e.message, 'bad'); }
+          try {
+            const r = await api('/alerts/business/send', { method: 'POST' });
+            // Ръчното пращане не мести петъчния слот. Казва истината за доставката.
+            if (!r.channels) toast('Няма настроен канал — нищо не е пратено', 'bad');
+            else if (!r.delivered) toast('Нито един канал не прие отчета — провери каналите', 'bad');
+            else toast('Числата са пратени по каналите');
+            go('alerts');
+          } catch (e) { toast(e.message, 'bad'); }
         },
       }),
     ]),

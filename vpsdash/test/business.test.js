@@ -270,3 +270,73 @@ test('график: недоставен отчет не е „пратен" —
   s.record('ok');
   assert.equal(s.state.failedAttempts, 0);
 });
+
+// ── Пращането (AlertEngine.sendBusiness) — ръчното не пипа графика ─────────
+// Вторият преглед на PR #504: „Прати сега" в сряда отместваше lastSentAt и
+// изяждаше два петъчни слота; при паднал канал панелът казваше „пратено" и
+// пускаше 24 часови опита извън слота. Тялото (сумите) не влиза в дневника,
+// който агентският ключ чете през GET /api/alerts.
+async function sendEngine(t, { live }) {
+  const { AlertEngine } = await import('../src/alerts.js');
+  let hits = 0;
+  let url = 'http://127.0.0.1:1/'; // мъртъв канал
+  if (live) {
+    const srv = http.createServer((req, res) => {
+      hits++;
+      req.resume();
+      res.end('ok');
+    });
+    await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+    t.after(() => srv.close());
+    url = `http://127.0.0.1:${srv.address().port}/`;
+  }
+  const eng = new AlertEngine({
+    cfg: { paths: { stateDir: tmp() }, alerts: {}, notify: { webhook: { url } }, business: { sources: [], releaseDir: tmp() } },
+    metrics: { latest: null },
+    audit: null,
+  });
+  return { eng, hits: () => hits };
+}
+
+test('пращане: ръчното при паднал канал казва 0 доставени и НЕ пипа графика', async (t) => {
+  const { eng } = await sendEngine(t, { live: false });
+  const before = JSON.stringify(eng.business.state);
+  const r = await eng.sendBusiness(Date.parse('2026-11-25T08:00:00Z'), { manual: true });
+  assert.equal(r.delivered, 0);
+  assert.equal(r.channels, 1);
+  assert.match(r.text, /Бизнесът/);
+  assert.equal(JSON.stringify(eng.business.state), before, 'нито lastSentAt, нито failedAttempts');
+});
+
+test('пращане: ръчното при жив канал доставя, но петъчният слот остава непокътнат', async (t) => {
+  const { eng, hits } = await sendEngine(t, { live: true });
+  const r = await eng.sendBusiness(Date.parse('2026-11-25T08:00:00Z'), { manual: true }); // сряда
+  assert.equal(r.delivered, 1);
+  assert.equal(hits(), 1);
+  assert.equal(eng.business.state.lastSentAt ?? null, null, 'сряда не отмества петъка');
+  eng.cfg.business.sources = [{ name: 'Ф', url: 'http://127.0.0.1:1/x', tokenFile: '/x' }];
+  assert.equal(eng.business.due(eng.cfg, Date.parse('2026-11-27T15:05:00Z')), true, 'петък 17:05 — пак е на ред');
+});
+
+test('пращане: по график при паднал канал е опит (не „пратено"), при жив — записва се', async (t) => {
+  const dead = (await sendEngine(t, { live: false })).eng;
+  const at = Date.parse('2026-11-27T15:05:00Z');
+  const r = await dead.sendBusiness(at);
+  assert.equal(r.delivered, 0);
+  assert.equal(dead.business.state.lastSentAt ?? null, null);
+  assert.equal(dead.business.state.failedAttempts, 1);
+  const live = (await sendEngine(t, { live: true })).eng;
+  await live.sendBusiness(at);
+  assert.ok(live.business.state.lastSentAt, 'доставеното се записва');
+});
+
+test('пращане: сумите не влизат в дневника (GET /api/alerts е в AGENT_ALLOW)', async (t) => {
+  const { eng } = await sendEngine(t, { live: true });
+  const r = await eng.sendBusiness(Date.parse('2026-11-27T15:05:00Z'));
+  const entry = eng.log.at(-1);
+  assert.equal(entry.type, 'business');
+  assert.equal(entry.title, 'Бизнесът тази седмица');
+  assert.deepEqual(entry.sent, ['webhook']);
+  assert.ok(!('body' in entry) || !entry.body, 'без тялото на отчета');
+  assert.ok(!JSON.stringify(eng.log).includes(r.text.slice(0, 40)), 'текстът не е в дневника');
+});
