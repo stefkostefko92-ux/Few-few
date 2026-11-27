@@ -29,6 +29,7 @@ export const KNOWN_PROJECTS = [
   'fivem',
   'adblock',
   'linketto',
+  'liftcon',
   'vpsdashboard',
 ];
 
