@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 804
+        "lessons": 806
       },
       "evolution": [
         {
@@ -2139,9 +2139,20 @@
           "date": "2026-11-27",
           "event": "v75.8 — учене",
           "detail": "Научи: .pr-review/503.diff (fakturist /internal/weekly) е пълен — 12 diff заглавки при 12 файл…"
+        },
+        {
+          "version": "76.0.0",
+          "date": "2026-11-27",
+          "event": "v76.0 — учене",
+          "detail": "Научи: tools/agents/evals/usage.jsonl по замисъл държи по няколко реда за едно пускане (DoD ку… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „tools/agents/evals/usage.jsonl по замисъл държи по няколко реда за едно пускане (DoD ку…\" (+1 още)"
+        },
         {
           "date": "2026-11-27",
           "type": "learning",
