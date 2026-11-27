@@ -31,6 +31,7 @@ import { saveConfig } from './config.js';
 import { Guardians } from './guardians.js';
 import { aptHealth, aptConditions } from './apthealth.js';
 import { composeDigest, DigestSchedule } from './digest.js';
+import { composeBusiness, businessData, BUSINESS_SCHEDULE } from './business.js';
 import { backupAge } from './drill.js';
 import { plural } from './text.js';
 
@@ -42,6 +43,7 @@ export class AlertEngine {
   constructor({ cfg, metrics, audit, history, slo, logminer, drill, accesslog, portBaseline, backupSchedule, traffic, revoked, shipper }) {
     this.guardians = new Guardians(cfg.paths.stateDir); // /etc дрейф + SSH входове
     this.digest = new DigestSchedule(cfg.paths.stateDir); // седмичният пулс към човека
+    this.business = new DigestSchedule(cfg.paths.stateDir, BUSINESS_SCHEDULE); // петъчните числа на бизнеса
     this.portBaseline = portBaseline; // базова линия за „НОВО изложен порт"
     this.drill = drill; // за алармите „липсващ/остарял бекъп" и „провалена проба"
     this.backupSchedule = backupSchedule; // за алармите на самия ГРАФИК
@@ -1260,6 +1262,7 @@ export class AlertEngine {
     this.ping({ ok: true });
     await this.expireMaintenance();
     await this.maybeDigest().catch(() => {});
+    await this.maybeBusiness().catch(() => {});
     return { firing: this.listActive(), events };
   }
 
@@ -1342,6 +1345,41 @@ export class AlertEngine {
     this.log.push({ ts: new Date().toISOString(), key: 'digest', type: 'digest', severity: 'info', title: 'Седмичен отчет', body: text, sent: results.filter((r) => r.ok && !r.skipped).map((r) => r.channel) });
     this.save();
     return text;
+  }
+
+  // Петъчният отчет „Бизнесът тази седмица" (src/business.js): числата на
+  // продуктите (локалните им `/internal/weekly`), разходът на агентите и „Чака
+  // теб". Отделно съобщение от машинния дайджест; върви с force като него.
+  async maybeBusiness(now = Date.now()) {
+    if (!this.business.due(this.cfg, now)) return null;
+    return this.sendBusiness(now);
+  }
+
+  async businessText(now = Date.now()) {
+    return composeBusiness(await businessData(this.cfg, now));
+  }
+
+  // `manual` = „Прати сега" от панела: праща, но НЕ пипа графика — иначе натискане
+  // в сряда отмества lastSentAt и изяжда петъчния слот, а паднал канал пуска 24
+  // часови опита извън него. Връща колко канала са настроени и колко са доставили,
+  // за да не казва панелът „пратено", когато нищо не е стигнало.
+  async sendBusiness(now = Date.now(), { manual = false } = {}) {
+    const text = await this.businessText(now);
+    const results = await notify(this.cfg, { type: 'business', key: 'business', severity: 'info', title: 'Бизнесът тази седмица', body: text, force: true });
+    const sent = results.filter((r) => r.ok && !r.skipped);
+    const channels = Object.values(configuredChannels(this.cfg)).filter(Boolean).length;
+    if (!manual) {
+      // Нищо не стигна, а канали има → не е пратен: графикът опитва пак след час (до 24 пъти).
+      // Без нито един настроен канал няма какво да се догонва — записва се (прегледът е в панела).
+      if (sent.length || !channels) this.business.record(text);
+      else this.business.attempt(now);
+    }
+    this.audit?.log({ action: 'alerts.business', manual, delivered: sent.length });
+    // Без тялото: дневникът се чете и с агентския ключ (GET /api/alerts), а сумите
+    // на продуктите са за собственика. Текстът е в каналите и в прегледа на панела.
+    this.log.push({ ts: new Date().toISOString(), key: 'business', type: 'business', severity: 'info', title: 'Бизнесът тази седмица', manual, sent: sent.map((r) => r.channel) });
+    this.save();
+    return { text, delivered: sent.length, channels };
   }
 
   // Наличност по продукт за последните 7 дни — от собствените минутни агрегати.

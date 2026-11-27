@@ -1323,16 +1323,61 @@ function digestCard(d) {
   ]);
 }
 
+// Петъчният отчет — числата на бизнеса (src/business.js): само сборове от
+// локалния `/internal/weekly` на продуктите, разходът на агентите и „Чака теб".
+function businessCard(d) {
+  const out = el('div', {});
+  const days = ['неделя', 'понеделник', 'вторник', 'сряда', 'четвъртък', 'петък', 'събота'];
+  return el('div', { class: 'card', style: 'margin-bottom:16px' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Бизнесът тази седмица' }),
+      pill(d.enabled ? 'ok' : 'dim', d.enabled ? `${days[d.weekday]} в ${d.hour}:00` : 'изключен'),
+    ]),
+    el('div', { class: 'metric-sub', text:
+      'Всеки петък в 17:00 по софийско време по каналите тръгват числата: сборовете на продуктите от локалния ' +
+      'им /internal/weekly (никога имена), разходът на агентите и „Чака теб“. Недостъпен продукт се казва. Без ' +
+      'източник в business.sources отчетът е изключен.' }),
+    d.lastSentAt
+      ? el('div', { class: 'metric-sub', text: `${t('Последно пращане:')} ${t(fmtWhen(d.lastSentAt))}. ${t('Изпуснат слот се догонва.')}` })
+      : el('div', { class: 'metric-sub', text: 'Още не е пращан — ще тръгне в първия слот.' }),
+    el('div', { class: 'toolbar' }, [
+      el('button', {
+        class: 'btn btn-sm', text: '👁 Прегледай (без пращане)',
+        onclick: () => {
+          out.innerHTML = '';
+          out.appendChild(el('pre', { class: 'term-out', style: 'max-height:280px', text: d.preview || '(празно)' }));
+        },
+      }),
+      el('button', {
+        class: 'btn btn-sm', text: '✉ Прати сега',
+        onclick: async () => {
+          try {
+            const r = await api('/alerts/business/send', { method: 'POST' });
+            // Ръчното пращане не мести петъчния слот. Казва истината за доставката.
+            if (!r.channels) toast('Няма настроен канал — нищо не е пратено', 'bad');
+            else if (!r.delivered) toast('Нито един канал не прие отчета — провери каналите', 'bad');
+            else toast('Числата са пратени по каналите');
+            go('alerts');
+          } catch (e) { toast(e.message, 'bad'); }
+        },
+      }),
+    ]),
+    out,
+  ]);
+}
+
 async function renderAlerts() {
   const view = document.getElementById('view');
-  const [a, maint, digest] = await Promise.all([
+  const [a, maint, digest, business] = await Promise.all([
     api('/alerts'),
     api('/alerts/maintenance').catch(() => ({ maintenance: null })),
     api('/alerts/digest').catch(() => null),
+    api('/alerts/business').catch(() => null),
   ]);
   view.innerHTML = '';
   view.appendChild(maintenanceCard(maint.maintenance));
   if (digest) view.appendChild(digestCard(digest));
+  if (business) view.appendChild(businessCard(business));
 
   const chNames = { telegram: 'Telegram', ntfy: 'ntfy', webhook: 'Webhook', email: 'Имейл' };
   const anyChannel = Object.values(a.channels).some(Boolean);
