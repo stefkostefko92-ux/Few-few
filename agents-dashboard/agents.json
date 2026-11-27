@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 514
+        "lessons": 519
       },
       "evolution": [
         {
@@ -657,9 +657,20 @@
           "date": "2026-11-26",
           "event": "v46.7 — учене",
           "detail": "Научи: При транзакционни писма през Brevo полето contactPixelTrackingConsent=false само аноним… (+2 още)"
+        },
+        {
+          "version": "47.2.0",
+          "date": "2026-11-27",
+          "event": "v47.2 — учене",
+          "detail": "Научи: Garante Linee guida spam 2013 §2.2 третира фирмени адреси тип name.surname@company като… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „Garante Linee guida spam 2013 §2.2 третира фирмени адреси тип name.surname@company като…\" (+4 още)"
+        },
         {
           "date": "2026-11-26",
           "type": "learning",
