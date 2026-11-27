@@ -9,6 +9,8 @@ import {
   type GuildBasedChannel,
 } from 'discord.js';
 import type { MemberFacts } from '../domain/access.js';
+import type { SeedCard } from '../domain/cards.js';
+import { cardPayload } from './cards.js';
 import type { AlertSender } from '../services/notifier.js';
 
 export interface NamedItem {
@@ -35,6 +37,13 @@ const CHANNEL_PERMS = [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.Send
 function canWrite(g: Guild, channel: GuildBasedChannel): boolean {
   const me = g.members.me;
   return me !== null && (channel.permissionsFor(me)?.has(CHANNEL_PERMS) ?? false);
+}
+
+// Снимките искат Attach Files и Embed Links; без тях съобщението тръгва само с текст.
+const MEDIA_PERMS = [PermissionFlagsBits.AttachFiles, PermissionFlagsBits.EmbedLinks];
+function canAttach(g: Guild, channel: GuildBasedChannel): boolean {
+  const me = g.members.me;
+  return me !== null && (channel.permissionsFor(me)?.has(MEDIA_PERMS) ?? false);
 }
 
 function canPing(g: Guild, roleId: string): boolean {
@@ -96,7 +105,7 @@ export function createGuildDirectory(client: Client, guildId: string): GuildDire
 // иначе двойката (партида, правило) се води известена, а никой не е получил известие.
 export function createAlertSender(client: Client, guildId: string): AlertSender {
   return {
-    async send(channelId, roleId, content, ping = true) {
+    async send(channelId, roleId, content, ping = true, cards: readonly SeedCard[] = []) {
       const g = client.guilds.cache.get(guildId);
       const channel = g?.channels.cache.get(channelId) ?? (await client.channels.fetch(channelId));
       if (
@@ -117,7 +126,19 @@ export function createAlertSender(client: Client, guildId: string): AlertSender 
         );
       }
       // Тагва се само ролята на правилото — нищо друго от текста не пингва.
-      await channel.send({ content, allowedMentions: { parse: [], roles: ping ? [roleId] : [] } });
+      const base = { content, allowedMentions: { parse: [], roles: ping ? [roleId] : [] } };
+      const media = cards.length > 0 && canAttach(g, channel) ? cardPayload(cards) : null;
+      if (media && media.files.length > 0) {
+        try {
+          await channel.send({ ...base, ...media });
+          return;
+        } catch (err) {
+          // Отказ от API (снимките) — нищо не е публикувано: известието тръгва само с текст.
+          // Мрежова грешка може да е публикувала — не повтаряме, нотификаторът решава.
+          if (!(err instanceof DiscordAPIError)) throw err;
+        }
+      }
+      await channel.send(base);
     },
   };
 }

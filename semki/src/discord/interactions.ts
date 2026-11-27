@@ -1,11 +1,13 @@
 // Обработката на slash командите, автокомплийта и компонентите (менюто за триене).
 import {
+  DiscordAPIError,
   MessageFlags,
   type AutocompleteInteraction,
   type ChatInputCommandInteraction,
   type Interaction,
 } from 'discord.js';
 import type { PrismaClient } from '@prisma/client';
+import { seedCards, type SeedCard } from '../domain/cards.js';
 import { msLeft, percentAt } from '../domain/decay.js';
 import {
   batchStatus,
@@ -21,6 +23,7 @@ import type { Logger } from '../log.js';
 import { createBatch, listBatches, listSeedTypes } from '../services/batches.js';
 import { labelsOf } from '../services/mapping.js';
 import { CMD_DELETE, CMD_INFO, OPTION_COUNT, OPTION_PERCENT, OPTION_TYPE } from './commands.js';
+import { cardPayload, type CardPayload } from './cards.js';
 import { actorName, ensureManager, NO_PINGS } from './common.js';
 import { createRemoveFlow } from './remove-flow.js';
 
@@ -34,6 +37,25 @@ export interface InteractionDeps {
 export function createInteractionHandler(deps: InteractionDeps) {
   const now = deps.now ?? (() => new Date());
   const removal = createRemoveFlow({ db: deps.db, now });
+
+  // Отговор със снимките на семената отдолу; откаже ли Discord прикачването — само текстът.
+  type ReplyOptions = { content: string; allowedMentions: typeof NO_PINGS } & Partial<CardPayload>;
+  async function withCards(
+    send: (o: ReplyOptions) => Promise<unknown>,
+    content: string,
+    cards: readonly SeedCard[],
+  ): Promise<void> {
+    const media = cardPayload(cards);
+    if (media.files.length > 0) {
+      try {
+        await send({ content, allowedMentions: NO_PINGS, ...media });
+        return;
+      } catch (err) {
+        if (!(err instanceof DiscordAPIError)) throw err;
+      }
+    }
+    await send({ content, allowedMentions: NO_PINGS });
+  }
 
   async function addBatch(i: ChatInputCommandInteraction) {
     if (!(await ensureManager(deps.db, i))) return;
@@ -65,7 +87,7 @@ export function createInteractionHandler(deps: InteractionDeps) {
       const list = [...new Set(passed.map((r) => formatThreshold(r.kind, r.threshold)))].join(', ');
       lines.push(`Вече е под праг ${list} — за тях няма да има пинг.`);
     }
-    await i.editReply({ content: lines.join('\n'), allowedMentions: NO_PINGS });
+    await withCards((o) => i.editReply(o), lines.join('\n'), seedCards([batch], labels, at));
   }
 
   async function info(i: ChatInputCommandInteraction) {
@@ -74,9 +96,18 @@ export function createInteractionHandler(deps: InteractionDeps) {
     const key = filter ? seedKeySchema.safeParse(filter) : null;
     const [types, all] = await Promise.all([listSeedTypes(deps.db), listBatches(deps.db)]);
     const batches = key?.success ? all.filter((b) => b.seedTypeKey === key.data) : all;
-    const [first, ...rest] = buildInfoMessages(batches, labelsOf(types), now());
-    await i.editReply({ content: first ?? 'Няма въведени семки.', allowedMentions: NO_PINGS });
-    for (const content of rest) await i.followUp({ content, allowedMentions: NO_PINGS });
+    const at = now();
+    const labels = labelsOf(types);
+    const [first, ...rest] = buildInfoMessages(batches, labels, at);
+    // снимките — под последното съобщение, по една за вид
+    const cards = seedCards(batches, labels, at);
+    await withCards(
+      (o) => i.editReply(o),
+      first ?? 'Няма въведени семки.',
+      rest.length === 0 ? cards : [],
+    );
+    for (const [n, content] of rest.entries())
+      await withCards((o) => i.followUp(o), content, n === rest.length - 1 ? cards : []);
   }
 
   async function autocomplete(i: AutocompleteInteraction) {

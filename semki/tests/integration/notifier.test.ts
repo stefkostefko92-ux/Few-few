@@ -73,6 +73,8 @@ test('прагът в % пингва веднъж, когато времето �
   assert.ok(sent[0]?.content.startsWith(`<@&${ROLE.id}>`));
   assert.equal(sent[0]?.channelId, CHANNEL.id);
   assert.equal(sent[0]?.ping, true);
+  // под съобщението — снимката на вида в здравето на партидата (20% → „Разваля се“)
+  assert.deepEqual(sent[0]?.cards, ['amnesia-spoiling.jpg']);
   clock = at(11);
   assert.equal((await n.tick()).sent, 0);
   assert.equal(sent.length, 1);
@@ -291,7 +293,7 @@ test('партида, редактирана нагоре по време на �
   // Докато се праща първата група, някой вдига процента — втората група вече не е дължима.
   const sender = {
     async send(channelId: string, roleId: string, content: string, ping = true) {
-      sent.push({ channelId, roleId, content, ping });
+      sent.push({ channelId, roleId, content, ping, cards: [] });
       if (sent.length === 1) await updateBatch(db, batch.id, { count: 1, percent: 90 }, clock);
     },
   };
@@ -312,7 +314,7 @@ test('изтрито правило по време на цикъла не ба�
   const sent: SentMessage[] = [];
   const sender = {
     async send(channelId: string, roleId: string, content: string, ping = true) {
-      sent.push({ channelId, roleId, content, ping });
+      sent.push({ channelId, roleId, content, ping, cards: [] });
       // Трие се правилото на ДРУГАТА група — тя още не е изпратена.
       if (sent.length === 1) await db.alertRule.deleteMany({ where: { roleId: { not: roleId } } });
     },
