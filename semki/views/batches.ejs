@@ -1,108 +1,101 @@
 <%- include('partials/head') %>
-<h1>Семки</h1>
+<div class="page-head">
+  <h1>Партиди<small class="num"><%= rows.length %></small></h1>
+</div>
 
-<section class="card">
-  <h2>Нова партида</h2>
-  <form method="post" action="/batches" class="row">
+<details class="card add" id="new"<%= rows.length === 0 ? ' open' : '' %>>
+  <summary class="add-sum"><h2>Нова партида</h2><span class="muted small">вид, брой и трайност сега</span></summary>
+  <form method="post" action="/batches" class="add-form">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
-    <label>Вид
-      <select name="seedTypeKey" required>
-        <% types.forEach(function (t) { %><option value="<%= t.key %>"><%= t.label %></option><% }) %>
-      </select>
-    </label>
-    <label>Брой
-      <input type="number" name="count" min="1" max="100000" step="1" required inputmode="numeric">
-    </label>
-    <label>Трайност, %
-      <input type="text" name="percent" required inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" placeholder="напр. 87,4">
-    </label>
-    <button type="submit" class="btn">Добави</button>
-  </form>
-  <p class="muted small">Същото като <code>/amnesia брой дюрейшън</code> в Discord. Всяко добавяне е нова партида.</p>
-</section>
-
-<section class="card">
-  <div class="head-row">
-    <h2>Партиди <small><%= rows.length %></small></h2>
-    <div class="row">
-      <% if (rows.length > 0) { %>
-      <form method="post" action="/batches/delete-selected" id="bulk" data-confirm="Да изтрия ли отметнатите партиди?">
-        <input type="hidden" name="_csrf" value="<%= csrf %>">
-        <button type="submit" class="btn danger">Изтрий отметнатите</button>
-      </form>
-      <% } %>
-      <% if (rows.some(function (r) { return r.expired; })) { %>
-      <form method="post" action="/batches/delete-expired" data-confirm="Да изтрия ли всички изтекли партиди?">
-        <input type="hidden" name="_csrf" value="<%= csrf %>">
-        <button type="submit" class="btn ghost">Изтрий изтеклите</button>
-      </form>
-      <% } %>
+    <div class="fields">
+      <label>Вид
+        <select id="n-type" name="seedTypeKey" required>
+          <% types.forEach(function (t) { %><option value="<%= t.key %>"><%= t.label %></option><% }) %>
+        </select>
+      </label>
+      <label>Брой
+        <input id="n-count" type="number" name="count" min="1" max="100000" step="1" required inputmode="numeric" placeholder="напр. 10">
+      </label>
+      <label>Трайност, %
+        <input id="n-percent" type="text" name="percent" required inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="100">
+      </label>
+      <button type="submit" class="btn">Добави</button>
     </div>
+    <p class="hint">Като <code>/amnesia брой дюрейшън</code> в Discord. Всяко добавяне е нова партида.</p>
+  </form>
+</details>
+
+<% if (rows.length === 0) { %>
+<p class="empty">Няма въведени семки. Добави партида отгоре или с команда в Discord.</p>
+<% } else { %>
+<div class="toolbar">
+  <nav class="chips" aria-label="Към вид">
+    <% groups.forEach(function (g) { %><a class="chip" href="#t-<%= g.key %>"><span class="swatch sw-<%= g.key %>" aria-hidden="true"></span><%= g.label %> <span class="muted num"><%= g.rows.length %></span></a><% }) %>
+  </nav>
+  <div class="actions">
+    <form method="post" action="/batches/delete-selected" id="bulk" data-confirm="Да изтрия ли отметнатите партиди?">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button type="submit" class="btn danger small" id="bulk-btn">Изтрий отметнатите</button>
+    </form>
+    <% if (rows.some(function (r) { return r.expired; })) { %>
+    <form method="post" action="/batches/delete-expired" class="inline" data-confirm="Да изтрия ли всички изтекли партиди?">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button type="submit" class="btn ghost small">Изтрий изтеклите</button>
+    </form>
+    <% } %>
   </div>
-  <% if (rows.length === 0) { %>
-  <p class="muted">Няма въведени семки.</p>
-  <% } else { %>
-  <ul class="batches">
-    <% rows.forEach(function (r) { %>
-    <li class="batch <%= r.level %><%= r.expired ? ' expired' : '' %>">
-      <div class="b-main">
-        <label class="pick"><input type="checkbox" name="ids" value="<%= r.id %>" form="bulk" aria-label="Отметни партида #<%= r.id %>"></label>
-        <span class="id">#<%= r.id %></span>
-        <strong><%= r.typeLabel %></strong>
-        <span class="count">×<%= r.count %></span>
-        <span class="pct"><%= r.percentText %></span>
+</div>
+
+<% groups.forEach(function (g) { %>
+<section class="bgroup" id="t-<%= g.key %>" aria-labelledby="h-<%= g.key %>">
+  <header class="bgroup-head">
+    <h2 id="h-<%= g.key %>"><span class="swatch sw-<%= g.key %>" aria-hidden="true"></span><%= g.label %></h2>
+    <span class="muted small"><span class="num"><%= g.totalCount %></span> семки в <%= g.batchCount %> партиди · <%= g.rateText %></span>
+    <label class="check pick-all" hidden><input type="checkbox" data-pick-all="<%= g.key %>"> Отметни всички</label>
+    <form method="post" action="/types/<%= g.key %>/delete-all" class="inline push" data-confirm="Да изтрия ли всички <%= g.batchCount %> партиди <%= g.label %>?">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button type="submit" class="btn danger small">Изтрий всички <%= g.label %></button>
+    </form>
+  </header>
+  <ul class="rows">
+    <% g.rows.forEach(function (r) { %>
+    <li class="brow h-<%= r.health.stage %>" id="b<%= r.id %>">
+      <div class="brow-main">
+        <label class="pick"><input type="checkbox" name="ids" value="<%= r.id %>" form="bulk" data-type="<%= g.key %>" aria-label="Отметни партида #<%= r.id %>"></label>
+        <span class="brow-id num">#<%= r.id %></span>
+        <span class="brow-count num">×<%= r.count %></span>
+        <span class="health"><%= r.health.label %></span>
+        <span class="brow-life">
+          <span class="brow-pct num"><%= r.percentText %></span>
+          <progress class="life" max="100" value="<%= r.percent.toFixed(2) %>"><%= r.percentText %></progress>
+        </span>
+        <span class="brow-left num"><%= r.expired ? 'изтекла' : 'остават ' + r.leftText %></span>
+        <span class="brow-exp muted small num">изтича <%= r.expiresText %></span>
       </div>
-      <progress max="100" value="<%= r.percent.toFixed(2) %>" aria-label="Трайност <%= r.percentText %>"></progress>
-      <div class="b-meta">
-        <span><%= r.expired ? 'Изтекла' : 'Остават ' + r.leftText %></span>
-        <span>изтича <%= r.expiresText %></span>
-        <span class="muted">въведена от <%= r.createdByName %> (<%= r.sourceText %>), <%= r.createdText %></span>
-      </div>
-      <details>
-        <summary>Редакция</summary>
-        <form method="post" action="/batches/<%= r.id %>" class="row">
-          <input type="hidden" name="_csrf" value="<%= csrf %>">
-          <input type="hidden" name="percentShown" value="<%= r.percentInput %>">
-          <label>Брой <input type="number" name="count" min="1" max="100000" step="1" value="<%= r.count %>" required></label>
-          <label>Трайност сега, % <input type="text" name="percent" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= r.percentInput %>" required></label>
-          <button type="submit" class="btn">Запази</button>
-        </form>
-        <form method="post" action="/batches/<%= r.id %>/delete" class="inline" data-confirm="Да изтрия ли партида #<%= r.id %>?">
-          <input type="hidden" name="_csrf" value="<%= csrf %>">
-          <button type="submit" class="btn danger">Изтрий партидата</button>
-        </form>
+      <details class="brow-edit">
+        <summary class="btn ghost small">Редакция</summary>
+        <div class="edit-body">
+          <form method="post" action="/batches/<%= r.id %>" class="fields">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <input type="hidden" name="percentShown" value="<%= r.percentInput %>">
+            <label>Брой <input id="e-count-<%= r.id %>" type="number" name="count" min="1" max="100000" step="1" value="<%= r.count %>" required inputmode="numeric"></label>
+            <label>Трайност сега, % <input id="e-percent-<%= r.id %>" type="text" name="percent" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= r.percentInput %>" required></label>
+            <button type="submit" class="btn">Запази</button>
+          </form>
+          <div class="edit-foot">
+            <span class="muted small">Въведена от <%= r.createdByName %> (<%= r.sourceText %>), <%= r.createdText %></span>
+            <form method="post" action="/batches/<%= r.id %>/delete" class="inline" data-confirm="Да изтрия ли партида #<%= r.id %>?">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button type="submit" class="btn danger small">Изтрий партидата</button>
+            </form>
+          </div>
+        </div>
       </details>
     </li>
     <% }) %>
   </ul>
-  <% } %>
-  <p class="muted small">Часовете са в зона <%= timezone %>.</p>
 </section>
-
-<section class="card">
-  <h2>Видове: скорост на спада</h2>
-  <p class="muted small">Новата скорост важи от момента на запазване; текущите проценти на партидите се пазят.</p>
-  <div class="types">
-    <% types.forEach(function (t) { %>
-    <div class="type">
-      <form method="post" action="/types/<%= t.key %>">
-        <input type="hidden" name="_csrf" value="<%= csrf %>">
-        <h3><%= t.label %> <small><%= t.totalCount %> бр. в <%= t.batchCount %> партиди</small></h3>
-        <p class="muted small"><%= t.rateText %> · <%= t.fullText %></p>
-        <div class="row">
-          <label>Спад, % <input type="text" name="decayPercent" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= t.decayPercentInput %>" required></label>
-          <label>на минути <input type="number" name="decayMinutes" min="1" max="10080" step="1" value="<%= t.decayMinutes %>" required></label>
-          <button type="submit" class="btn ghost">Запази</button>
-        </div>
-      </form>
-      <% if (t.batchCount > 0) { %>
-      <form method="post" action="/types/<%= t.key %>/delete-all" class="inline" data-confirm="Да изтрия ли всички <%= t.batchCount %> партиди <%= t.label %>?">
-        <input type="hidden" name="_csrf" value="<%= csrf %>">
-        <button type="submit" class="btn danger">Изтрий всички <%= t.label %> (<%= t.batchCount %>)</button>
-      </form>
-      <% } %>
-    </div>
-    <% }) %>
-  </div>
-</section>
+<% }) %>
+<p class="muted small">Часовете са в зона <%= timezone %>. Скоростта на спада на всеки вид е в <a href="/settings#types">Настройки</a>.</p>
+<% } %>
 <%- include('partials/foot') %>

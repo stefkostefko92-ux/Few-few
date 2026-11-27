@@ -45,17 +45,18 @@ export interface SentMessage {
   roleId: string;
   content: string;
   ping: boolean;
+  cards: string[]; // файловете на снимките под съобщението
 }
 
 // fail: true — всяко изпращане пада; число N — първите N минават, следващите падат.
 export function fakeSender(sent: SentMessage[] = [], fail: boolean | number = false): AlertSender {
   let calls = 0;
   return {
-    async send(channelId, roleId, content, ping = true) {
+    async send(channelId, roleId, content, ping = true, cards = []) {
       calls += 1;
       if (fail === true || (typeof fail === 'number' && calls > fail))
         throw new Error('Missing Access');
-      sent.push({ channelId, roleId, content, ping });
+      sent.push({ channelId, roleId, content, ping, cards: cards.map((c) => c.file) });
     },
   };
 }

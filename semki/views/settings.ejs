@@ -1,49 +1,71 @@
 <%- include('partials/head') %>
-<h1>Настройки</h1>
+<div class="page-head">
+  <h1>Настройки</h1>
+</div>
 
-<form method="post" action="/settings">
+<form method="post" action="/settings" class="stack settings-form">
   <input type="hidden" name="_csrf" value="<%= csrf %>">
 
-  <section class="card">
-    <h2>Достъп</h2>
-    <p class="muted small">Собственикът на сървъра и всеки с право Administrator имат достъп винаги — така никой не се заключва навън.</p>
-    <div class="grid">
+  <section class="card" aria-labelledby="access-title">
+    <h2 id="access-title">Кой влиза</h2>
+    <div class="fields">
       <label>Роля за дашборда
-        <select name="dashboardRoleId">
-          <option value="">— само администратори —</option>
+        <select id="s-dashboard-role" name="dashboardRoleId">
+          <option value="">Само администратори</option>
           <% roles.forEach(function (r) { %><option value="<%= r.id %>" <%= settings.dashboardRoleId === r.id ? 'selected' : '' %>><%= r.name %></option><% }) %>
         </select>
       </label>
       <label>Роля за командите (добавяне и триене)
-        <select name="commandRoleId">
-          <option value="">— само администратори —</option>
+        <select id="s-command-role" name="commandRoleId">
+          <option value="">Само администратори</option>
           <% roles.forEach(function (r) { %><option value="<%= r.id %>" <%= settings.commandRoleId === r.id ? 'selected' : '' %>><%= r.name %></option><% }) %>
         </select>
       </label>
     </div>
-    <p class="muted small"><code>/infosemki</code> е видима за всички в сървъра.</p>
+    <p class="hint">Собственикът на сървъра и всеки с право Administrator влизат винаги — така никой не се заключва навън. <code>/infosemki</code> е видима за всички.</p>
   </section>
 
-  <section class="card">
-    <h2>Часови прозорец за тагване</h2>
-    <p class="muted small">Извън прозореца ботът не тагва; праг, минат през нощта, се пингва в началото на прозореца. Може и през полунощ (напр. 18:00–02:00).</p>
-    <div class="grid">
-      <label class="check"><input type="checkbox" name="quietEnabled" value="on" <%= settings.quietEnabled ? 'checked' : '' %>> Тагвай само в прозореца</label>
-      <label>От <input type="time" name="windowStart" value="<%= settings.windowStart %>" required></label>
-      <label>До <input type="time" name="windowEnd" value="<%= settings.windowEnd %>" required></label>
+  <section class="card" id="window" aria-labelledby="window-title">
+    <h2 id="window-title">Кога тагва</h2>
+    <div class="fields">
+      <label class="check wide"><input id="s-quiet" type="checkbox" name="quietEnabled" value="on" <%= settings.quietEnabled ? 'checked' : '' %>> Тагвай само в часовия прозорец</label>
+      <label>От <input id="s-start" type="time" name="windowStart" value="<%= settings.windowStart %>" required></label>
+      <label>До <input id="s-end" type="time" name="windowEnd" value="<%= settings.windowEnd %>" required></label>
       <label>Часова зона
-        <select name="timezone" required>
+        <select id="s-tz" name="timezone" required>
           <% timezones.forEach(function (tz) { %><option value="<%= tz %>" <%= settings.timezone === tz ? 'selected' : '' %>><%= tz %></option><% }) %>
         </select>
       </label>
     </div>
+    <p class="hint">Извън прозореца ботът не тагва; праг, минат през нощта, се тагва в началото на прозореца. Може и през полунощ, например 18:00–02:00.</p>
   </section>
 
-  <button type="submit" class="btn">Запази настройките</button>
+  <div class="actions"><button type="submit" class="btn">Запази настройките</button></div>
 </form>
 
-<section class="card">
-  <h2>Права на бота в Discord</h2>
-  <p class="small">За тагване ботът има нужда от <strong>View Channel</strong> и <strong>Send Messages</strong> в канала. Ролята за тагване трябва да е „Allow anyone to @mention this role“ — или ботът да има <strong>Mention @everyone, @here, and All Roles</strong>. Проверка: бутонът „Пробно съобщение“ в <a href="/alerts">Известия</a>.</p>
+<section class="card types-card" id="types" aria-labelledby="types-title">
+  <h2 id="types-title">Скорост на спада по видове</h2>
+  <p class="hint">Новата скорост важи от момента на запазване; текущите проценти на партидите се пазят.</p>
+  <ul class="type-rows">
+    <% types.forEach(function (t) { %>
+    <li>
+      <form method="post" action="/types/<%= t.key %>" class="type-row">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <div class="type-name">
+          <strong><span class="swatch sw-<%= t.key %>" aria-hidden="true"></span><%= t.label %></strong>
+          <span class="muted small"><%= t.fullText %> · <span class="num"><%= t.totalCount %></span> семки сега</span>
+        </div>
+        <label>Спад, % <input id="t-<%= t.key %>-pct" type="text" name="decayPercent" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="<%= t.decayPercentInput %>" required></label>
+        <label>на минути <input id="t-<%= t.key %>-min" type="number" name="decayMinutes" min="1" max="10080" step="1" value="<%= t.decayMinutes %>" required></label>
+        <button type="submit" class="btn ghost small">Запази</button>
+      </form>
+    </li>
+    <% }) %>
+  </ul>
+</section>
+
+<section class="card" aria-labelledby="perm-title">
+  <h2 id="perm-title">Права на бота в Discord</h2>
+  <p>За тагване ботът има нужда от <strong>View Channel</strong> и <strong>Send Messages</strong> в канала, а за снимките на семената под съобщенията — от <strong>Attach Files</strong> и <strong>Embed Links</strong> (без тях съобщението тръгва само с текст). Ролята за тагване трябва да е „Allow anyone to @mention this role“ — или ботът да има <strong>Mention @everyone, @here, and All Roles</strong>. Провери с „Пробно съобщение“ в <a href="/alerts">Известия</a>.</p>
 </section>
 <%- include('partials/foot') %>

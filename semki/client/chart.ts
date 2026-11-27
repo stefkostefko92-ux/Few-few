@@ -5,7 +5,8 @@
 import type { ChartData, ChartSeriesData } from './data.js';
 
 const MAX_ROWS = 8;
-const COLORS = { grid: '#2b352e', axis: '#95a399', surface: '#171d19' } as const;
+// Същите като токените в public/base.css (--rule, --ash, --panel).
+const COLORS = { grid: '#27312b', axis: '#9aa49c', surface: '#121815' } as const;
 
 function el(tag: string, cls: string, text?: string): HTMLElement {
   const e = document.createElement(tag);
