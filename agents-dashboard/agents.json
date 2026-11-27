@@ -2146,33 +2146,17 @@
           "detail": "Научи: В live-run worktree за PR 508 lovets/node_modules липсва, а node tools/agents/rubric.mj… (+80 още)"
         },
         {
-          "version": "76.8.0",
-          "date": "2026-11-27",
-          "event": "v76.8 — учене",
-          "detail": "Научи: При преглед на PR в live-run worktree командите node tools/agents/rubric.mjs и cd <прод…"
-        },
-        {
           "version": "76.9.0",
           "date": "2026-11-27",
           "event": "v76.9 — учене",
-          "detail": "Научи: В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват, затова п…"
+          "detail": "Научи: В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват, затова п… (+1 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват, затова п…\""
-        },
-        {
-          "date": "2026-11-27",
-          "type": "learning",
-          "summary": "Научи: „При преглед на PR в live-run worktree командите node tools/agents/rubric.mjs и cd <прод…\""
-        },
-        {
-          "date": "2026-11-27",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват (има само…\""
+          "summary": "Научи: „В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват, затова п…\" (+1 още) · 1 в карантина"
         },
         {
           "date": "2026-11-27",
@@ -13898,6 +13882,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „followUp след deferReply в discord.js 14 е публичен и без наследен ephemeral; ако нито …\""
+        },
         {
           "date": "2026-11-27",
           "type": "learning",
