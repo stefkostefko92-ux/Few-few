@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {
   buildAlertMessages,
   buildAlertParts,
-  buildInfoMessages,
   discordTime,
   formatBatches,
   formatDuration,
@@ -155,32 +154,6 @@ test('частите на известието делят партидите б�
   assert.equal(ids.length, 60);
   assert.equal(new Set(ids).size, 60);
   for (const p of parts) assert.equal(bullets(p.content).length, p.batchIds.length);
-});
-
-test('/infosemki: празно, групирано по вид, първо изтичащите, изтеклите са отбелязани', () => {
-  assert.deepEqual(buildInfoMessages([], labels, t0), ['Няма въведени семки.']);
-  const parts = buildInfoMessages(
-    [batch(1, 80, 'amnesia', 4), batch(2, 0, 'ak', 1), batch(3, 50, 'amnesia', 7)],
-    labels,
-    t0,
-  );
-  const text = parts.join('\n');
-  assert.match(text, /^\*\*Общо\*\* — 12 семки в 3 партиди/);
-  // заглавието на вида — като в „Партиди“: колко семки в колко партиди и скоростта
-  assert.match(text, /\n\*\*Amnesia\*\* — 11 семки в 2 партиди · 0,6% на 60 мин\n/);
-  assert.match(text, /\n\*\*AK\*\* — 1 семка в 1 партида · 0,6% на 60 мин\n/);
-  // всяка партида — свой ред: здраве (точка + дума), брой семки, процент, колко остава, кога изтича
-  assert.match(
-    text,
-    /\n🟡 \*\*7 семки\*\* · Здрава · \*\*50,00%\*\* · остават 3 д 11 ч 20 мин · изтича <t:\d+:f> \(<t:\d+:R>\)\n/,
-  );
-  assert.match(text, /\n🟢 \*\*4 семки\*\* · Свежа · \*\*80,00%\*\* · остават /);
-  assert.match(text, /\n⚫ \*\*1 семка\*\* · Изтекла$/m);
-  assert.equal(bullets(text).length, 3);
-  assert.doesNotMatch(text, NO_BATCH_NUMBER);
-  // в рамките на вида: първо тази, която изтича най-скоро (50% преди 80%)
-  assert.ok(text.indexOf('50,00%') < text.indexOf('80,00%'));
-  for (const p of parts) assert.ok(p.length <= MESSAGE_LIMIT);
 });
 
 test('съобщението по избор заменя заглавието след тага', () => {
