@@ -23,6 +23,7 @@ import { plural } from './text.js';
 const STATE = 'digest.json';
 const HOUR_MS = 3600000;
 const WEEK_MS = 7 * 24 * HOUR_MS;
+const MAX_ATTEMPTS = 24;
 
 function fmtBytes(n) {
   n = Number(n) || 0;
@@ -141,6 +142,14 @@ export class DigestSchedule {
     const hour = Number.isInteger(dg.hour) && dg.hour >= 0 && dg.hour <= 23 ? dg.hour : this.defaults.hour;
     const at = slotParts(now, this.tz);
     const slot = at.weekday === weekday && at.hour === hour;
+    // Неуспешен опит (нищо не стигна до каналите) не е „пратено": пак след час, до MAX_ATTEMPTS пъти;
+    // после — само в седмичния слот (по един опит на седмица, докато каналите са долу; без догонване,
+    // иначе „изпуснатото" би опитвало всеки час завинаги).
+    const { lastAttemptAt, lastSentAt, failedAttempts = 0 } = this.state;
+    if (lastAttemptAt && (!lastSentAt || Date.parse(lastAttemptAt) > Date.parse(lastSentAt))) {
+      if (now - Date.parse(lastAttemptAt) < HOUR_MS) return false;
+      return failedAttempts < MAX_ATTEMPTS ? true : slot;
+    }
     if (!this.state.lastSentAt) return slot;
     const elapsed = now - new Date(this.state.lastSentAt).getTime();
     if (elapsed < 6.5 * 24 * HOUR_MS) return false; // още е рано, дори слотът да съвпада
@@ -148,7 +157,15 @@ export class DigestSchedule {
     return slot;
   }
 
+  // Опит, който не стигна до нито един канал — без да се брои за пратен.
+  attempt(now = Date.now()) {
+    this.state.lastAttemptAt = new Date(now).toISOString();
+    this.state.failedAttempts = (this.state.failedAttempts || 0) + 1;
+    this.save();
+  }
+
   record(text) {
+    this.state.failedAttempts = 0;
     this.state.lastSentAt = new Date().toISOString();
     this.state.lastText = String(text).slice(0, 4000);
     this.save();

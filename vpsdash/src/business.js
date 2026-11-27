@@ -228,21 +228,43 @@ function costOf(rec, prices) {
   return ((rec.input || 0) * p.in) / 1e6 + ((rec.cacheRead || 0) * readPrice) / 1e6 + cacheWrite + ((rec.output || 0) * p.out) / 1e6;
 }
 
+// Дневникът е данни от диска: като cleanRecord в tools/lib/usage.mjs — низов id, броячите крайни и
+// неотрицателни, иначе записът е вън (нечислово поле правеше сумата NaN).
+const NUM_FIELDS = ['turns', 'input', 'cacheRead', 'cacheWrite', 'cacheWrite1h', 'output'];
+function cleanRecord(r) {
+  if (!r || typeof r !== 'object' || typeof r.id !== 'string' || !r.id) return null;
+  for (const k of NUM_FIELDS) if (k in r && !(Number.isFinite(r[k]) && r[k] >= 0)) return null;
+  for (const k of ['agent', 'model', 'ts']) if (k in r && typeof r[k] !== 'string') return null;
+  return r;
+}
+
+// `ts` в дневника е минутен низ без зона (t0.slice(0, 16), UTC) — чете се като UTC, не като местно време.
+const parseTs = (ts) => Date.parse(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(ts) ? `${ts}Z` : ts);
+
 export function agentsWeek(usageText, prices, now = Date.now()) {
   const from = now - 7 * DAY_MS;
+  // Едно пускане може да има няколко реда (DoD куката го връща и то спира пак със същия транскрипт):
+  // дедуп по id, по-новата версия на записа печели — точно като parseLedger.
+  const byId = new Map();
+  for (const line of String(usageText || '').split('\n')) {
+    if (!line.trim()) continue;
+    let r;
+    try {
+      r = cleanRecord(JSON.parse(line));
+    } catch {
+      continue;
+    }
+    if (!r) continue;
+    const prev = byId.get(r.id);
+    if (!prev || (r.v || 1) >= (prev.v || 1)) byId.set(r.id, r);
+  }
   const byAgent = new Map();
   let runs = 0;
   let usd = 0;
   let unpriced = 0;
-  for (const line of String(usageText || '').split('\n')) {
-    let r;
-    try {
-      r = JSON.parse(line);
-    } catch {
-      continue;
-    }
-    if (!r || typeof r !== 'object' || r.eval) continue; // живите проби не са разход на работа
-    const ts = Date.parse(r.ts);
+  for (const r of byId.values()) {
+    if (r.eval) continue; // живите проби не са разход на работа
+    const ts = parseTs(r.ts);
     if (!(ts >= from && ts <= now)) continue;
     runs++;
     const cost = costOf(r, prices);

@@ -1363,7 +1363,11 @@ export class AlertEngine {
     const text = await this.businessText(now);
     const results = await notify(this.cfg, { type: 'business', key: 'business', severity: 'info', title: 'Бизнесът тази седмица', body: text, force: true });
     const sent = results.filter((r) => r.ok && !r.skipped);
-    this.business.record(text);
+    // Нищо не стигна, а канали има → не е пратен: графикът опитва пак след час (до 24 пъти).
+    // Без нито един настроен канал няма какво да се догонва — записва се (прегледът е в панела).
+    const anyChannel = Object.values(configuredChannels(this.cfg)).some(Boolean);
+    if (sent.length || !anyChannel) this.business.record(text);
+    else this.business.attempt(now);
     this.audit?.log({ action: 'alerts.business', delivered: sent.length });
     this.log.push({ ts: new Date().toISOString(), key: 'business', type: 'business', severity: 'info', title: 'Бизнесът тази седмица', body: text, sent: sent.map((r) => r.channel) });
     this.save();

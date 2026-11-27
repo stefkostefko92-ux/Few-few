@@ -159,8 +159,9 @@ const PRICES = {
   ],
   cache: { read: 0.1, write: 1.25, write1h: 2 },
 };
+let recN = 0;
 const rec = (agent, ts, model, extra = {}) =>
-  JSON.stringify({ v: 2, agent, ts, model, input: 1000, cacheRead: 100000, cacheWrite: 20000, output: 3000, ...extra });
+  JSON.stringify({ v: 2, id: `r${String(++recN).padStart(9, '0')}`, agent, ts, model, input: 1000, cacheRead: 100000, cacheWrite: 20000, output: 3000, ...extra });
 
 test('агентите: само последните 7 дни; непознатият модел се брои „без цена", не се гадае', () => {
   const usage = [
@@ -170,7 +171,7 @@ test('агентите: само последните 7 дни; непознат
     rec('seo', '2026-11-10T10:00', 'opus-5-5'), // извън
     rec('dizayner', '2026-11-26T11:00', 'mistery-9'),
     '{не е JSON',
-    JSON.stringify({ v: 2, agent: 'x', ts: '2026-11-26T10:00', model: 'opus-5-5', eval: true, input: 1, output: 1 }), // живи проби не се броят
+    JSON.stringify({ v: 2, id: 'evalevalev', agent: 'x', ts: '2026-11-26T10:00', model: 'opus-5-5', eval: true, input: 1, output: 1 }), // живи проби не се броят
   ].join('\n');
   const a = agentsWeek(usage, PRICES, Date.parse('2026-11-27T15:00:00Z'));
   assert.equal(a.runs, 4);
@@ -227,4 +228,45 @@ test('график: петък 17:00 София (UTC+2 зимно); догонв
   const old = new DigestSchedule(tmp());
   assert.equal(old.status({}).weekday, 1);
   assert.equal(old.status({}).hour, 8);
+});
+
+// ── Прегледът на PR #504 (Кодаджията) ─────────────────────────────
+test('агентите: повторен id е ЕДНО пускане — по-късният (по-новата версия) печели, като parseLedger', () => {
+  const lines = [
+    JSON.stringify({ v: 2, id: 'aaaaaaaaaa', agent: 'kodadjiyata', ts: '2026-11-26T10:00', model: 'opus-5-5', input: 1, cacheRead: 0, cacheWrite: 0, output: 1 }),
+    JSON.stringify({ v: 2, id: 'aaaaaaaaaa', agent: 'kodadjiyata', ts: '2026-11-26T10:00', model: 'opus-5-5', input: 1000, cacheRead: 100000, cacheWrite: 20000, output: 3000 }),
+    JSON.stringify({ v: 2, id: 'bbbbbbbbbb', agent: 'seo', ts: '2026-11-26T10:00', model: 'opus-5-5', input: 'много', output: 1 }), // нечислово → вън
+    JSON.stringify({ v: 2, agent: 'seo', ts: '2026-11-26T10:00', model: 'opus-5-5', input: 1, output: 1 }), // без id → вън
+  ].join('\n');
+  const a = agentsWeek(lines, PRICES, Date.parse('2026-11-27T15:00:00Z'));
+  assert.equal(a.runs, 1);
+  assert.ok(Math.abs(a.usd - 0.204) < 1e-9, String(a.usd));
+});
+
+test('агентите: ts без зона е UTC, не местното време на машината', (t) => {
+  const tz = process.env.TZ;
+  process.env.TZ = 'Pacific/Kiritimati'; // UTC+14 — без поправката прозорецът се мести с 14 часа
+  t.after(() => {
+    if (tz === undefined) delete process.env.TZ;
+    else process.env.TZ = tz;
+  });
+  const line = JSON.stringify({ v: 2, id: 'cccccccccc', agent: 'x', ts: '2026-11-20T15:30', model: 'opus-5-5', input: 1, output: 1 });
+  // Точно на ръба: 7×24 ч преди 2026-11-27T15:30Z — вътре, независимо от TZ на процеса.
+  assert.equal(agentsWeek(line, PRICES, Date.parse('2026-11-27T15:30:00Z')).runs, 1);
+  assert.equal(agentsWeek(line, PRICES, Date.parse('2026-11-27T15:31:00Z')).runs, 0);
+});
+
+test('график: недоставен отчет не е „пратен" — опит пак след час, до 24 пъти; доставеният нулира', () => {
+  const s = new DigestSchedule(tmp(), BUSINESS_SCHEDULE);
+  const cfg = { alerts: {}, business: { sources: [{ name: 'Ф', url: 'http://127.0.0.1:1/x', tokenFile: '/x' }] } };
+  s.state.lastSentAt = '2026-11-20T15:10:00Z';
+  const at = Date.parse('2026-11-27T15:10:00Z'); // петък 17:10 София
+  assert.equal(s.due(cfg, at), true);
+  s.attempt(at); // каналите паднаха
+  assert.equal(s.due(cfg, at + 20 * 60000), false, 'не веднага пак');
+  assert.equal(s.due(cfg, at + 61 * 60000), true, 'след час — пак, макар слотът да е минал');
+  for (let i = 1; i < 24; i++) s.attempt(at + i * 61 * 60000);
+  assert.equal(s.due(cfg, at + 25 * 61 * 60000), false, 'след 24 неуспеха — спира до следващия слот/догонване');
+  s.record('ok');
+  assert.equal(s.state.failedAttempts, 0);
 });
