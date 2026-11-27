@@ -159,6 +159,7 @@ export const LEGAL_NAV: NavItem[] = [
   { href: "/poveritelnost", label: "Поверителност" },
   { href: "/biskvitki", label: "Бисквитки" },
   { href: "/dostapnost", label: "Достъпност" },
+  { href: "/iztochnici", label: "Източници" },
 ];
 
 // Групите във футъра. Пълният списък на разделите е в хедъра („Всички

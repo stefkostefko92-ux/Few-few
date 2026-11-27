@@ -51,6 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/pravila", STATIC_LASTMOD, "yearly", 0.3),
     page("/poveritelnost", STATIC_LASTMOD, "yearly", 0.3),
     page("/biskvitki", STATIC_LASTMOD, "yearly", 0.3),
+    page("/iztochnici", STATIC_LASTMOD, "yearly", 0.2),
     // Нови във вълната за растеж.
     page("/instaliraj", WAVE_LASTMOD, "monthly", 0.6),
     page("/za-blizkite", WAVE_LASTMOD, "monthly", 0.6),

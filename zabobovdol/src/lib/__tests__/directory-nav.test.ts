@@ -146,7 +146,7 @@ test("футърът: групи без повторения, правните �
   for (const l of LEGAL_NAV) assert.ok(!hrefs.includes(l.href), `${l.href} е и в групите`);
   assert.deepEqual(
     LEGAL_NAV.map((i) => i.href),
-    ["/pravila", "/poveritelnost", "/biskvitki", "/dostapnost"],
+    ["/pravila", "/poveritelnost", "/biskvitki", "/dostapnost", "/iztochnici"],
   );
   assert.equal(FOOTER_NAV.length, hrefs.length + LEGAL_NAV.length);
 });

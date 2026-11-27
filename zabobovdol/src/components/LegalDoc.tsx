@@ -1,5 +1,5 @@
-// Шаблонът на четирите правни документа (Общи условия, Поверителност,
-// Бисквитки, Достъпност): мета ред с датата и печат, връзки между
+// Шаблонът на правните документи (Общи условия, Поверителност,
+// Бисквитки, Достъпност, Източници): мета ред с датата и печат, връзки между
 // документите, съдържание с котви (на lg — лепкава колона вдясно, на
 // телефон — сгънато над текста) и заглавен ред на таблиците.
 // Стилът е от globals.css (.panel, .chip, .label-caps, .table-stack…).
@@ -15,6 +15,7 @@ export const LEGAL_DOCS = [
   { href: "/poveritelnost", label: "Поверителност" },
   { href: "/biskvitki", label: "Бисквитки" },
   { href: "/dostapnost", label: "Достъпност" },
+  { href: "/iztochnici", label: "Източници" },
 ] as const;
 
 export type LegalPath = (typeof LEGAL_DOCS)[number]["href"];
@@ -23,7 +24,7 @@ export type LegalPath = (typeof LEGAL_DOCS)[number]["href"];
 export type Toc = Readonly<Record<string, string>>;
 
 /**
- * Връзките към четирите документа (текущият — запълнен, с aria-current).
+ * Връзките към правните документи (текущият — запълнен, с aria-current).
  * Не се печатат.
  */
 function LegalDocsNav({ current, className = "" }: { current: LegalPath; className?: string }) {
@@ -48,7 +49,7 @@ function LegalDocsNav({ current, className = "" }: { current: LegalPath; classNa
 
 /**
  * Редът под увода в PageHero: „Последна актуализация: 24 октомври 2026 г.“,
- * бутон за печат и (от sm) връзките към четирите документа. На телефон
+ * бутон за печат и (от sm) връзките към правните документи. На телефон
  * връзките са в края на документа (LegalLayout), за да е героят нисък.
  * `updated` е датата като „2026-10-24“ — същата като в JSON-LD.
  */
