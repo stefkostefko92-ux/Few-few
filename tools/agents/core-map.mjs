@@ -23,6 +23,8 @@ export const CORE_EXTRA = [
   [/^treydar\/src\/(exchange|executor|position|sizing)/i, "трейдинг: поръчки и размер на позицията"],
   [/^CSPos\/(src\/lib\/(money|vat|euro|db)|desktop\/main)/i, "каса: пари, ДДС, евро, офлайн база"],
   [/^medqr\/src\/(db|crypto|share)/i, "медицински профил (чл. 9 GDPR)"],
+  [/^lovets\/src\/(compliance|registry|check|draft|store)\/|^lovets\/src\/http\/public-routes/i, "лични данни: допустимост на контакт, „не ме търсете“, отписване (ОРЗД чл. 14, 21)"],
+  [/^otgovorko\/src\/(inbound|tickets|draft)\/|^otgovorko\/src\/http\/inbound-routes/i, "лични данни: писмата на клиентите, шифроване, чернова през модела"],
 ];
 export const TEST_RE = /(\.test\.|\.spec\.|__tests__\/|\/tests?\/|\/e2e\/)/i;
 
