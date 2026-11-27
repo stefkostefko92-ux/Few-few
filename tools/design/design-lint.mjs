@@ -25,7 +25,7 @@ export const RULES = {
   "img-no-alt": { sev: "HIGH", why: "картинка без alt — WCAG 1.1.1; декоративна → alt=\"\"" },
   "placeholder-copy": { sev: "HIGH", why: "текст-пълнеж — без измислено съдържание; попълни истинското или махни блока" },
   "claim-needs-proof": { sev: "MEDIUM", why: "твърдение, което иска доказателство — умение marketing-claims-review" },
-  svg: { sev: "INFO", why: "SVG — правилото на собственика „никога SVG“ (3D, <canvas>, растер); наличният остава" },
+  svg: { sev: "MEDIUM", why: "SVG — правилото на собственика „никога SVG“: смени го (3D, <canvas>, растер); от 2026-11-27 и наличният" },
 };
 
 const FONT_HOSTS = /(?:https?:)?\/\/(?:fonts\.googleapis\.com|fonts\.gstatic\.com|api\.fontshare\.com|cdn\.fontshare\.com|use\.typekit\.net|p\.typekit\.net|fonts\.bunny\.net|fast\.fonts\.net|use\.fontawesome\.com|kit\.fontawesome\.com)/i;

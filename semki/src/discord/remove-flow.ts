@@ -14,7 +14,14 @@ import {
 } from 'discord.js';
 import type { PrismaClient } from '@prisma/client';
 import { expiresAt, msLeft, percentAt } from '../domain/decay.js';
-import { formatDuration, formatPercent, seedLabel, type SeedLabels } from '../domain/messages.js';
+import { healthOf } from '../domain/health.js';
+import {
+  formatDuration,
+  formatPercent,
+  formatSeeds,
+  seedLabel,
+  type SeedLabels,
+} from '../domain/messages.js';
 import { idParamSchema, seedKeySchema } from '../domain/validation.js';
 import {
   deleteBatch,
@@ -94,11 +101,13 @@ export class PendingRemovals {
   }
 }
 
-function optionLabel(b: BatchView, labels: SeedLabels, at: Date): string {
+// Партидата в менюто и в автодовършването — като ред в „Партиди“, без номера (той е само стойността).
+export function batchOptionLabel(b: BatchView, labels: SeedLabels, at: Date): string {
   const left = msLeft(b, b.rate, at);
+  const p = percentAt(b, b.rate, at);
+  const head = `${seedLabel(labels, b.seedTypeKey)} · ${formatSeeds(b.count)} · ${healthOf(p, left <= 0).label}`;
   return (
-    `#${b.id} ${seedLabel(labels, b.seedTypeKey)} ×${b.count} · ` +
-    `${formatPercent(percentAt(b, b.rate, at))} · ${left > 0 ? formatDuration(left) : 'изтекла'}`
+    left > 0 ? `${head} · ${formatPercent(p)} · остават ${formatDuration(left)}` : head
   ).slice(0, 100);
 }
 
@@ -126,7 +135,7 @@ export function buildRemovalMenu(
     .setMaxValues(shown.length)
     .addOptions(
       shown.map((b) => ({
-        label: optionLabel(b, labels, at),
+        label: batchOptionLabel(b, labels, at),
         value: String(b.id),
         default: picked.includes(b.id),
       })),
@@ -171,15 +180,15 @@ export function createRemoveFlow(deps: RemoveFlowDeps) {
     if (amount !== null) {
       const r = await removeSeeds(deps.db, id, amount);
       if (!r) {
-        await i.editReply({ content: `Няма партида #${id}.`, allowedMentions: NO_PINGS });
+        await i.editReply({ content: 'Тази партида вече я няма.', allowedMentions: NO_PINGS });
         return;
       }
-      const name = `**${seedLabel(labels, r.batch.seedTypeKey)}** #${r.batch.id}`;
+      const name = `**${seedLabel(labels, r.batch.seedTypeKey)}**`;
       await i.editReply({
         content:
           r.kind === 'partial'
-            ? `Махнати ${r.removed} бр. от ${name} — остават ×${r.batch.count}.`
-            : `Изтрита партида ${name} ×${r.batch.count} (махнати всички).`,
+            ? `Махнати ${formatSeeds(r.removed)} от партида ${name} — остават ${formatSeeds(r.batch.count)}.`
+            : `Изтрита партида ${name} — ${formatSeeds(r.batch.count)} (махнати всички).`,
         allowedMentions: NO_PINGS,
       });
       return;
@@ -187,8 +196,8 @@ export function createRemoveFlow(deps: RemoveFlowDeps) {
     const removed = await deleteBatch(deps.db, id);
     await i.editReply({
       content: removed
-        ? `Изтрита партида **${seedLabel(labels, removed.seedTypeKey)}** #${removed.id} ×${removed.count}.`
-        : `Няма партида #${id}.`,
+        ? `Изтрита партида **${seedLabel(labels, removed.seedTypeKey)}** — ${formatSeeds(removed.count)}.`
+        : 'Тази партида вече я няма.',
       allowedMentions: NO_PINGS,
     });
   }
@@ -265,7 +274,7 @@ export function createRemoveFlow(deps: RemoveFlowDeps) {
     await i.editReply({ content: `Изтрити партиди: ${removed.length}.`, components: [] });
     if (removed.length > 0) {
       const list = removed
-        .map((b) => `${seedLabel(labels, b.seedTypeKey)} #${b.id} ×${b.count}`)
+        .map((b) => `${seedLabel(labels, b.seedTypeKey)} — ${formatSeeds(b.count)}`)
         .join(', ');
       // Видимо за всички в канала, както триенето на една партида.
       await i.followUp({

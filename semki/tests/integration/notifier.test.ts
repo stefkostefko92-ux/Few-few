@@ -212,7 +212,7 @@ test('редакция нагоре връща прага в играта', asyn
   clock = at(1 + 50); // 50% → 20% за 50 ч
   await notifier(sent).tick();
   assert.equal(sent.length, 1);
-  assert.match(sent[0]?.content ?? '', /×3/);
+  assert.match(sent[0]?.content ?? '', /\*\*3 семки\*\* · /);
 });
 
 test('смяна на скоростта пази текущия процент', async () => {
@@ -265,15 +265,17 @@ test('провал по средата на дълго известие: изп�
   const partial = await notifier(first, 1).tick(); // първата част минава, втората пада
   assert.ok(partial.failed > 0);
   assert.equal(first.length, 1);
-  const sentIds = [...(first[0]?.content ?? '').matchAll(/#(\d+) /g)].map((m) => Number(m[1]));
-  assert.ok(sentIds.length > 0 && sentIds.length < 40);
-  assert.equal(await db.notification.count(), sentIds.length);
+  // всяка партида е ред с точката на здравето; номерата не се показват, затова броим редовете
+  const lines = (text: string) =>
+    text.split('\n').filter((l) => /^(🟢|🟡|🟠|🔴|🟤|⚫) /u.test(l)).length;
+  const sent = lines(first[0]?.content ?? '');
+  assert.ok(sent > 0 && sent < 40);
+  assert.equal(await db.notification.count(), sent);
 
   const rest: SentMessage[] = [];
   await notifier(rest).tick();
-  const restIds = rest.flatMap((m) => [...m.content.matchAll(/#(\d+) /g)].map((x) => Number(x[1])));
-  assert.equal(restIds.length + sentIds.length, 40);
-  assert.ok(restIds.every((id) => !sentIds.includes(id)));
+  // пингнатите в първия цикъл не идват пак: общо точно 40 реда и 40 записа (по един на партида)
+  assert.equal(rest.reduce((n, m) => n + lines(m.content), 0) + sent, 40);
   assert.equal(await db.notification.count(), 40);
 });
 

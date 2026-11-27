@@ -7,14 +7,12 @@ import {
   type Interaction,
 } from 'discord.js';
 import type { PrismaClient } from '@prisma/client';
-import { seedCards, type SeedCard } from '../domain/cards.js';
-import { msLeft, percentAt } from '../domain/decay.js';
+import { seedCards, weakestCard, type SeedCard } from '../domain/cards.js';
 import {
   batchStatus,
   buildInfoMessages,
-  formatDuration,
-  formatPercent,
   formatThreshold,
+  healthDot,
   seedLabel,
 } from '../domain/messages.js';
 import { isSeedKey } from '../domain/seeds.js';
@@ -25,7 +23,7 @@ import { labelsOf } from '../services/mapping.js';
 import { CMD_DELETE, CMD_INFO, OPTION_COUNT, OPTION_PERCENT, OPTION_TYPE } from './commands.js';
 import { cardPayload, type CardPayload } from './cards.js';
 import { actorName, ensureManager, NO_PINGS } from './common.js';
-import { createRemoveFlow } from './remove-flow.js';
+import { batchOptionLabel, createRemoveFlow } from './remove-flow.js';
 
 export interface InteractionDeps {
   db: PrismaClient;
@@ -82,7 +80,7 @@ export function createInteractionHandler(deps: InteractionDeps) {
     );
     const labels = labelsOf(await listSeedTypes(deps.db));
     const lines = [
-      `Добавена партида **${seedLabel(labels, batch.seedTypeKey)}** #${batch.id} ${batchStatus(batch, at)}`,
+      `Добавена партида **${seedLabel(labels, batch.seedTypeKey)}**: ${healthDot(batch, at)} ${batchStatus(batch, at)}`,
     ];
     if (passed.length > 0) {
       const list = [...new Set(passed.map((r) => formatThreshold(r.kind, r.threshold)))].join(', ');
@@ -100,8 +98,10 @@ export function createInteractionHandler(deps: InteractionDeps) {
     const at = now();
     const labels = labelsOf(types);
     const [first, ...rest] = buildInfoMessages(batches, labels, at);
-    // снимките — под последното съобщение, по една за вид
-    const cards = seedCards(batches, labels, at);
+    // Списъкът е пълен (всички партиди, %, кога изтичат); снимката е една — на най-ниския процент,
+    // под последното съобщение.
+    const weakest = weakestCard(batches, labels, at);
+    const cards = weakest ? [weakest] : [];
     await withCards(
       (o) => i.editReply(o),
       first ?? 'Няма въведени семки.',
@@ -113,24 +113,14 @@ export function createInteractionHandler(deps: InteractionDeps) {
 
   async function autocomplete(i: AutocompleteInteraction) {
     if (i.commandName !== CMD_DELETE) return i.respond([]);
-    const query = String(i.options.getFocused()).trim().toLowerCase().replace(/^#/, '');
+    const query = String(i.options.getFocused()).trim().toLowerCase();
     const at = now();
     const [types, batches] = await Promise.all([listSeedTypes(deps.db), listBatches(deps.db)]);
     const labels = labelsOf(types);
     const choices = batches
-      .map((b) => {
-        const left = msLeft(b, b.rate, at);
-        const name =
-          `#${b.id} ${seedLabel(labels, b.seedTypeKey)} ×${b.count} · ` +
-          `${formatPercent(percentAt(b, b.rate, at))} · ${left > 0 ? formatDuration(left) : 'изтекла'}`;
-        return { name: name.slice(0, 100), value: b.id };
-      })
-      // Само цифри — по номера на партидата (иначе „12“ хваща и „87,12%“); иначе — по текста.
-      .filter((c) =>
-        /^\d+$/.test(query)
-          ? String(c.value).startsWith(query)
-          : !query || c.name.toLowerCase().includes(query),
-      )
+      // Без номера — вид, брой семки, здраве, процент; търси се по този текст („ak“, „202“, „свежа“).
+      .map((b) => ({ name: batchOptionLabel(b, labels, at), value: b.id }))
+      .filter((c) => !query || c.name.toLowerCase().includes(query))
       .slice(0, 25);
     await i.respond(choices);
   }
