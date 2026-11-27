@@ -138,7 +138,7 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 
 ## Skills — `.claude/skills/`
 
-Ours (BG, vetted; 66; metadata only until triggered): procedures (deploy · quality-gate · verify · commit-pr …), guardrails (fiscal-bg · stripe-payment · revolut-payment · gdpr-launch · owasp-review …), SEO/perf, domain, **външни, адаптирани** (17) и **правни** (15) — пълният ростер е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
+Ours (BG, vetted; 67; metadata only until triggered): procedures (deploy · quality-gate · verify · commit-pr …), guardrails (fiscal-bg · stripe-payment · revolut-payment · gdpr-launch · owasp-review …), SEO/perf, domain, **външни, адаптирани** (17) и **правни** (15) — пълният ростер е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale**; външно — само с изрично „да“ от собственика (`tools/agents/CLAUDE.md`).
 
 **Guard hooks (8):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` (before the write) ·
