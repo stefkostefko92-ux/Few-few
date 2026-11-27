@@ -131,3 +131,12 @@ test('прикачването: файл + карта със снимката; �
   assert.deepEqual(cardPayload([{ ...card, file: '../secret.jpg' }]), { files: [], embeds: [] });
   assert.deepEqual(cardPayload([card], '/няма/такава'), { files: [], embeds: [] });
 });
+
+test('прикачването: карта без текст (/infosemki) не праща празно описание — Discord го отказва', () => {
+  const weakest = weakestCard([batch(1, 'ogkush', 60)], labels, now);
+  assert.ok(weakest);
+  const [embed] = cardPayload([weakest]).embeds;
+  assert.ok(embed);
+  assert.equal('description' in embed, false);
+  assert.equal(embed.image?.url, 'attachment://ogkush-healthy.jpg');
+});
