@@ -5,19 +5,23 @@ import type { BatchLike } from './alerts.js';
 import { SEED_COLORS } from './chart.js';
 import { msLeft, percentAt } from './decay.js';
 import { healthOf, type HealthStage } from './health.js';
-import { formatPercent, seedLabel, type SeedLabels } from './messages.js';
+import {
+  formatBatches,
+  formatPercent,
+  formatSeeds,
+  seedLabel,
+  type SeedLabels,
+} from './messages.js';
 import { isSeedKey } from './seeds.js';
 
 export interface SeedCard {
   typeKey: string;
   title: string; // „Purple — Гние“
-  text: string; // „2 партиди, 9 семки · най-слабата #8 — 9,50%“
+  text: string; // „2 партиди, 9 семки · най-слабата: 3 семки — 9,50%“
   color: number; // цветът на вида за лентата на картата
   stage: HealthStage;
   file: string; // „purple-rotting.jpg“
 }
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 export function seedCards(
   batches: readonly BatchLike[],
@@ -38,14 +42,14 @@ export function seedCards(
     const p = weakest ? percentAt(weakest, weakest.rate, now) : 0;
     const health = healthOf(p, !weakest);
     const seeds = ofType.reduce((s, b) => s + b.count, 0);
-    const head = `${plural(ofType.length, 'партида', 'партиди')}, ${plural(seeds, 'семка', 'семки')}`;
+    const head = `${formatBatches(ofType.length)}, ${formatSeeds(seeds)}`;
     return {
       typeKey: key,
       title: `${seedLabel(labels, key)} — ${health.label}`,
       text: weakest
         ? ofType.length > 1
-          ? `${head} · най-слабата #${weakest.id} — ${formatPercent(p)}`
-          : `${head} · #${weakest.id} — ${formatPercent(p)}`
+          ? `${head} · най-слабата: ${formatSeeds(weakest.count)} — ${formatPercent(p)}`
+          : `${head} — ${formatPercent(p)}`
         : `${head} · всички са изтекли`,
       color: Number.parseInt((SEED_COLORS[key] ?? '#898781').slice(1), 16),
       stage: health.stage,
@@ -71,13 +75,12 @@ export function weakestCard(
   const key = weakest.seedTypeKey;
   const p = percentAt(weakest, weakest.rate, now);
   const health = healthOf(p, live.length === 0);
-  const name = `${seedLabel(labels, key)} #${weakest.id}`;
   return {
     typeKey: key,
     title:
       live.length > 0
-        ? `Най-нисък процент: ${name} — ${formatPercent(p)} · ${health.label}`
-        : `Всички са изтекли: ${name}`,
+        ? `Най-нисък процент: ${seedLabel(labels, key)}, ${formatSeeds(weakest.count)} — ${formatPercent(p)} · ${health.label}`
+        : `Всички са изтекли: ${seedLabel(labels, key)}`,
     text: '',
     color: Number.parseInt((SEED_COLORS[key] ?? '#898781').slice(1), 16),
     stage: health.stage,

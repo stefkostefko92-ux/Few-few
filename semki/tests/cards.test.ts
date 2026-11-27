@@ -56,9 +56,9 @@ test('карти: по една за вид, по реда на видовете
   const ak = cards[0];
   assert.ok(ak);
   assert.equal(ak.title, 'AK — Гние');
-  assert.equal(ak.text, '3 партиди, 9 семки · най-слабата #3 — 9,00%');
+  assert.equal(ak.text, '3 партиди, 9 семки · най-слабата: 2 семки — 9,00%');
   assert.equal(ak.color, 0xd95926);
-  assert.equal(cards[1]?.text, '1 партида, 3 семки · #1 — 80,00%');
+  assert.equal(cards[1]?.text, '1 партида, 3 семки — 80,00%');
 });
 
 test('карти: изтеклите — „изтекла“; непознат вид — без карта', () => {
@@ -77,7 +77,7 @@ test('/infosemki: една снимка — партидата с най-нис�
     now,
   );
   assert.equal(card?.file, 'purple-spoiling.jpg');
-  assert.equal(card?.title, 'Най-нисък процент: Purple #3 — 12,00% · Разваля се');
+  assert.equal(card?.title, 'Най-нисък процент: Purple, 3 семки — 12,00% · Разваля се');
   assert.equal(card?.text, '');
   assert.equal(weakestCard([], labels, now), null);
 });
@@ -88,7 +88,7 @@ test('/infosemki: изтеклите не скриват живите; ако в
   assert.equal(live?.file, 'ogkush-healthy.jpg');
   const dead = weakestCard([batch(1, 'ak', 2, 1, old)], labels, now);
   assert.equal(dead?.file, 'ak-dead.jpg');
-  assert.equal(dead?.title, 'Всички са изтекли: AK #1');
+  assert.equal(dead?.title, 'Всички са изтекли: AK');
   assert.equal(weakestCard([batch(9, 'haze', 5)], labels, now), null);
 });
 
