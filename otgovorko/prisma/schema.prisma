@@ -1,0 +1,80 @@
+// Отговорко — схемата. Писмата (подател, тема, текст, чернова) са шифровани в приложението
+// (AES-256-GCM, DATA_KEY) преди запис; тук са само шифри. Срок: RETENTION_DAYS (180) от получаването.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Owner {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  passwordHash   String
+  /// AES-256-GCM с TOTP_KEY
+  totpSecretEnc  String
+  totpLastStep   Int?
+  /// Вдига се при изход — всички издадени сесии стават невалидни.
+  sessionVersion Int      @default(0)
+  createdAt      DateTime @default(now())
+}
+
+enum TicketClass {
+  question
+  technical
+  payment
+  complaint
+  dsar
+  legal
+  spam
+}
+
+enum TicketStatus {
+  new
+  drafting
+  drafted
+  draft_failed
+  needs_human
+  sent
+  closed
+}
+
+model Ticket {
+  id            String       @id @default(uuid())
+  /// SHA-256 на Message-ID — идемпотентност без самия идентификатор.
+  messageKey    String       @unique
+  receivedAt    DateTime
+  cls           TicketClass
+  status        TicketStatus @default(new)
+  attempts      Int          @default(0)
+  lockedAt      DateTime?
+  fromEnc       String
+  subjectEnc    String
+  textEnc       String
+  /// JSON [{name, contentType, size}] — само имена, файловете не се пазят.
+  attachments   String       @default("[]")
+  draftEnc      String?
+  draftAt       DateTime?
+  sentHash      String?
+  sentAt        DateTime?
+  createdAt     DateTime     @default(now())
+
+  @@index([status, receivedAt])
+  @@index([receivedAt])
+}
+
+/// Отговор на собственика, маркиран като образец за гласа (до 5 в промпта).
+model Sample {
+  id        String   @id @default(uuid())
+  textEnc   String
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

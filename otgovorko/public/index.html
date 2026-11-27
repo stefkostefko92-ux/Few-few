@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="keywords"
+      content="Carbon Stealth, Отговорко, поддръжка на клиенти, чернова на отговор, Brevo входяща поща, Vertex AI ЕС"
+    />
+    <title>Отговорко — писмата на клиентите</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Отговорко</h1>
+      <p class="sub">Поддръжка · само за собственика · Отговорко не праща нищо</p>
+      <button id="logout" type="button" hidden>Изход</button>
+    </header>
+
+    <main>
+      <section id="login" hidden>
+        <h2>Вход</h2>
+        <form id="login-form">
+          <label>Имейл <input name="email" type="email" autocomplete="username" required /></label>
+          <label
+            >Парола <input name="password" type="password" autocomplete="current-password" required
+          /></label>
+          <label
+            >Код от приложението
+            <input
+              name="code"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="6"
+              required
+          /></label>
+          <button type="submit">Влез</button>
+          <p class="msg" role="alert"></p>
+        </form>
+      </section>
+
+      <div id="app" hidden>
+        <section>
+          <h2>Писмата</h2>
+          <p class="sub">
+            Черновата се пише до 2 минути от писмото. Пари, жалби, лични данни и правни писма искат
+            второ потвърждение; искания за лични данни и правни писма чакат теб без AI чернова.
+          </p>
+          <div id="list" aria-live="polite"></div>
+        </section>
+
+        <section id="detail" hidden aria-live="polite"></section>
+
+        <section>
+          <details>
+            <summary>Как пишем (гласът) и образците</summary>
+            <form id="voice-form">
+              <label class="wide"
+                >Как пишем — тон, обръщение, подпис, какво никога не обещаваме
+                <textarea name="text" rows="6" maxlength="5000"></textarea>
+              </label>
+              <button type="submit">Запази</button>
+              <p class="msg" role="status"></p>
+            </form>
+            <div id="samples"></div>
+          </details>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <a href="https://carbonstealth.eu" target="_blank" rel="noopener"
+        >Created and Designed by Carbon Stealth VCC</a
+      >
+      <span>· писмата се пазят 180 дни</span>
+    </footer>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
