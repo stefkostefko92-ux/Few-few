@@ -20,6 +20,12 @@ test('nginx презаписва X-Forwarded-For с реалния адрес н
   }
 });
 
+test('/internal/ (сборовете за vpsdash) не стига до приложението през nginx', () => {
+  assert.match(conf, /location \^~ \/internal\/ \{\s*return 404;\s*\}/);
+  // В сървъра за 443 (този на порт 80 само пренасочва); `^~` печели над регексите независимо от реда.
+  assert.ok(conf.indexOf('location ^~ /internal/') > conf.indexOf('listen 443'), 'в HTTPS сървъра');
+});
+
 test('пътищата за вход имат таван по реалния сокет в nginx', () => {
   assert.match(conf, /limit_req_zone\s+\S+\s+zone=fakturist_auth:/);
   assert.match(
