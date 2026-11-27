@@ -16593,7 +16593,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 260
+        "lessons": 261
       },
       "evolution": [
         {
@@ -16709,9 +16709,20 @@
           "date": "2026-11-27",
           "event": "v35.8 — учене",
           "detail": "Научи: validate-findings.cjs от cloudflare/security-audit-skill проверява само формата — прием… (+2 още)"
+        },
+        {
+          "version": "35.9.0",
+          "date": "2026-11-27",
+          "event": "v35.9 — учене",
+          "detail": "Научи: Express маршрут от вида r.post('/:x', express.json({limit}), handler) парсва тялото пре…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „Express маршрут от вида r.post('/:x', express.json({limit}), handler) парсва тялото пре…\""
+        },
         {
           "date": "2026-11-27",
           "type": "learning",
