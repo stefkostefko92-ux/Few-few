@@ -501,6 +501,10 @@
     "e196f1081ef090141eadc611fca92689818efa1a": [
       "kodadjiyata",
       "vps-adjiyata"
+    ],
+    "0a03a93825db3b0e27c05d500e8f21c86d07a667": [
+      "ai-djiyata",
+      "kodadjiyata"
     ]
   },
   "runs": [
@@ -2455,6 +2459,22 @@
       "verdict": "поправки",
       "costUsd": 1.77,
       "date": "2026-11-26"
+    },
+    {
+      "pr": 506,
+      "sha": "0a03a93825db3b0e27c05d500e8f21c86d07a667",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1,
+      "date": "2026-11-27"
+    },
+    {
+      "pr": 506,
+      "sha": "0a03a93825db3b0e27c05d500e8f21c86d07a667",
+      "agent": "ai-djiyata",
+      "verdict": "поправки",
+      "costUsd": 1.1,
+      "date": "2026-11-27"
     }
   ]
 }
