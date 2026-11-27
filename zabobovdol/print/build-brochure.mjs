@@ -1,4 +1,4 @@
-// Генерира самостоятелен HTML за брошурата (с вграден истински QR код и герб),
+// Генерира самостоятелен HTML за брошурата (с вграден истински QR код и знака „БД“),
 // после render-brochure.mjs го превръща в PDF/PNG.
 //
 // За регенериране:  npm i qrcode playwright   после
@@ -20,7 +20,8 @@ const qrDataUrl = await QRCode.toDataURL(URL, {
 });
 
 const crest = `data:image/png;base64,${readFileSync(
-  join(ROOT, "public/brand/bobov-dol-grb.png"),
+  // Собственият знак — не общинският герб (правният преглед от 27.11.2026).
+  join(ROOT, "public/brand/za-bobov-dol-mark.png"),
 ).toString("base64")}`;
 
 const nfcWaves = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 8a10 10 0 0 1 0 8M9.5 6.5a14 14 0 0 1 0 11"/><path d="M14 4.5a18 18 0 0 1 0 15"/></svg>`;
@@ -56,7 +57,7 @@ const html = `<!doctype html>
   .page.front{page-break-after:always;}
   .hero{height:58mm;background:linear-gradient(160deg,#2a3da6 0%,var(--brand) 45%,var(--brand2) 100%);color:#fff;position:relative;padding:8mm 10mm 0;text-align:center;}
   .hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.6mm;background:var(--gold);}
-  .crest{height:24mm;width:auto;background:#fff;border-radius:3.2mm;padding:2.2mm;box-shadow:0 2mm 6mm rgba(0,0,0,.25);}
+  .crest{height:24mm;width:24mm;border-radius:5.3mm;box-shadow:0 2mm 6mm rgba(0,0,0,.25);}
   .wordmark{font-size:8.6mm;font-weight:800;letter-spacing:.2mm;margin-top:3.4mm;line-height:1;}
   .slogan{font-size:3.5mm;color:#cdd6f5;margin-top:2.2mm;letter-spacing:.3mm;text-transform:uppercase;}
   .body{padding:6mm 10mm 0;text-align:center;}
@@ -106,7 +107,7 @@ const html = `<!doctype html>
 <body>
   <section class="page front">
     <div class="hero">
-      <img class="crest" src="${crest}" alt="Герб на Бобов дол">
+      <img class="crest" src="${crest}" alt="За Бобов дол">
       <div class="wordmark">За Бобов дол</div>
       <div class="slogan">Всичко за Бобов дол на едно място</div>
     </div>
