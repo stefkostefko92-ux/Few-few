@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { APIEmbed } from 'discord.js';
 import type { SeedCard } from '../domain/cards.js';
+import type { InfoMessage } from '../domain/info.js';
 
 // dist/discord/ и src/discord/ са на две нива под корена на продукта.
 export const SEEDS_DIR = path.resolve(
@@ -35,4 +36,29 @@ export function cardPayload(cards: readonly SeedCard[], dir = SEEDS_DIR): CardPa
       image: { url: `attachment://${c.file}` },
     })),
   };
+}
+
+export interface InfoPayload {
+  content?: string;
+  embeds: APIEmbed[];
+  files: Array<{ attachment: string; name: string }>;
+}
+
+// /infosemki: картите на видовете — снимката (ако файлът я има) под текста, бележката отдолу.
+export function infoPayload(message: InfoMessage, dir = SEEDS_DIR): InfoPayload {
+  const files: InfoPayload['files'] = [];
+  const embeds = message.embeds.map((e): APIEmbed => {
+    const image =
+      e.image && FILE_NAME.test(e.image) && existsSync(path.join(dir, e.image)) ? e.image : null;
+    if (image && !files.some((f) => f.name === image))
+      files.push({ attachment: path.join(dir, image), name: image });
+    return {
+      title: e.title,
+      description: e.description,
+      color: e.color,
+      ...(e.footer ? { footer: { text: e.footer } } : {}),
+      ...(image ? { image: { url: `attachment://${image}` } } : {}),
+    };
+  });
+  return { ...(message.content ? { content: message.content } : {}), embeds, files };
 }

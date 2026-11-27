@@ -154,33 +154,3 @@ export function buildAlertParts(group: AlertGroup, labels: SeedLabels, now: Date
 export function buildAlertMessages(group: AlertGroup, labels: SeedLabels, now: Date): string[] {
   return buildAlertParts(group, labels, now).map((p) => p.content);
 }
-
-export function buildInfoMessages(
-  batches: readonly BatchLike[],
-  labels: SeedLabels,
-  now: Date,
-): string[] {
-  if (batches.length === 0) return ['Няма въведени семки.'];
-  const order = Object.keys(labels);
-  const typeKeys = [...new Set(batches.map((b) => b.seedTypeKey))].sort(
-    (a, b) => rank(order, a) - rank(order, b),
-  );
-  const seedsIn = (list: readonly BatchLike[]) =>
-    `${formatSeeds(list.reduce((sum, b) => sum + b.count, 0))} в ${formatBatches(list.length)}`;
-  const lines = [`**Общо** — ${seedsIn(batches)}`];
-  for (const key of typeKeys) {
-    const ofType = batches
-      .filter((b) => b.seedTypeKey === key)
-      .sort((a, b) => expiresAt(a, a.rate).getTime() - expiresAt(b, b.rate).getTime());
-    const rate = ofType[0]?.rate;
-    const speed = rate ? ` · ${formatNumber(rate.decayPercent)}% на ${rate.decayMinutes} мин` : '';
-    lines.push('', `**${seedLabel(labels, key)}** — ${seedsIn(ofType)}${speed}`);
-    for (const b of ofType) lines.push(`${healthDot(b, now)} ${batchStatus(b, now)}`);
-  }
-  return chunkLines(lines);
-}
-
-function rank(order: readonly string[], key: string): number {
-  const i = order.indexOf(key);
-  return i === -1 ? order.length : i;
-}
