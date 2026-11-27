@@ -30,7 +30,8 @@ npm run test:integration   # срещу истински PostgreSQL; TEST_DATABA
 - `src/discord/` — клиентът, slash командите и правата за тях; `cards.ts` прикача снимките.
 - `src/web/` — Express: Discord OAuth2, сесия, CSRF, страниците на дашборда.
 - `client/` — браузърният код (TypeScript, `tsconfig.client.json`): `seeds3d.ts` (3D семената с three.js:
-  купчинка на каменна маса, студийна светлина, власинки плесен), `seed-shape.ts` (формата и как се
+  купчинка на каменна маса, студийна светлина), `seed-parts.ts` (стаята за отраженията, мрежата на семето,
+  власинките плесен), `seed-shape.ts` (формата и как се
   набръчква — чиста математика), `seed-textures.ts` (обвивката, плесента, гниенето — Canvas), `strains.ts`
   (обликът на всеки вид), `noise.ts`, `tiles.ts` (свързването с плочките), `chart.ts` (прогнозата на
   Canvas), `data.ts` (проверка на вградения JSON), `manage.ts` („Партиди“), `render-entry.ts` (за

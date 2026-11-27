@@ -52,6 +52,7 @@ export function createInteractionHandler(deps: InteractionDeps) {
         return;
       } catch (err) {
         if (!(err instanceof DiscordAPIError)) throw err;
+        deps.log.warn({ code: err.code, status: err.status }, 'Discord отказа снимките');
       }
     }
     await send({ content, allowedMentions: NO_PINGS });

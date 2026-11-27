@@ -10,6 +10,7 @@ import {
 } from 'discord.js';
 import type { MemberFacts } from '../domain/access.js';
 import type { SeedCard } from '../domain/cards.js';
+import type { Logger } from '../log.js';
 import { cardPayload } from './cards.js';
 import type { AlertSender } from '../services/notifier.js';
 
@@ -103,7 +104,7 @@ export function createGuildDirectory(client: Client, guildId: string): GuildDire
 
 // Изпращането пада с ясна грешка, ако ботът не може да пише в канала или тагът не би пингнал:
 // иначе двойката (партида, правило) се води известена, а никой не е получил известие.
-export function createAlertSender(client: Client, guildId: string): AlertSender {
+export function createAlertSender(client: Client, guildId: string, log: Logger): AlertSender {
   return {
     async send(channelId, roleId, content, ping = true, cards: readonly SeedCard[] = []) {
       const g = client.guilds.cache.get(guildId);
@@ -133,9 +134,10 @@ export function createAlertSender(client: Client, guildId: string): AlertSender 
           await channel.send({ ...base, ...media });
           return;
         } catch (err) {
-          // Отказ от API (снимките) — нищо не е публикувано: известието тръгва само с текст.
-          // Мрежова грешка може да е публикувала — не повтаряме, нотификаторът решава.
+          // Отказ от API (4xx за снимките) — нищо не е публикувано: известието тръгва само с текст.
+          // Друга грешка (мрежа, 5xx) отива нагоре — нотификаторът решава дали да опита пак.
           if (!(err instanceof DiscordAPIError)) throw err;
+          log.warn({ code: err.code, status: err.status, channelId }, 'Discord отказа снимките');
         }
       }
       await channel.send(base);

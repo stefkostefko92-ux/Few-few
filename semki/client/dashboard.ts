@@ -44,12 +44,10 @@ if (quick instanceof HTMLFormElement) {
 const loadedAt = Date.now();
 const busy = () => {
   const a = document.activeElement;
-  if (
-    a instanceof HTMLInputElement ||
-    a instanceof HTMLTextAreaElement ||
-    a instanceof HTMLSelectElement
-  )
-    return true;
+  // избран вид (радио) или отметка не са писане — иначе фокусът спира опресняването завинаги
+  const typing =
+    a instanceof HTMLInputElement ? a.type !== 'radio' && a.type !== 'checkbox' : false;
+  if (typing || a instanceof HTMLTextAreaElement || a instanceof HTMLSelectElement) return true;
   const count = document.getElementById('q-count');
   return count instanceof HTMLInputElement && count.value !== '';
 };
