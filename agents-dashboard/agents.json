@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 805
+        "lessons": 806
       },
       "evolution": [
         {
@@ -2133,9 +2133,20 @@
           "date": "2026-11-27",
           "event": "v75.9 — учене",
           "detail": "Научи: В three.js всеки нов светлинен източник с castShadow получава свой WebGLRenderTarget с … (+72 още)"
+        },
+        {
+          "version": "76.0.0",
+          "date": "2026-11-27",
+          "event": "v76.0 — учене",
+          "detail": "Научи: В semki етикетите на видовете семки са само от сийда — seedType.update пипа единствено …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „В semki етикетите на видовете семки са само от сийда — seedType.update пипа единствено …\""
+        },
         {
           "date": "2026-11-27",
           "type": "learning",
