@@ -91,8 +91,6 @@ GDPR-native data handling.
 
 - [Carbon Stealth main site](https://carbonstealth.eu/): Parent company catalog of digital products beyond Supreme Bot — includes ERP systems, gaming platforms, e-commerce solutions, carbon fiber composites
 - [Support Discord](https://supremebot.carbonstealth.eu/support): Community support server (this address redirects to the current invite)
-- General contact: discord@carbonstealth.eu
-- Privacy and DPO matters: privacy@carbonstealth.eu
-- Security disclosures: security@carbonstealth.eu
+- Contact (general, privacy and security): info@carbonstealth.eu
 - Italian customer support: +39 379 296 9699
 - Bulgarian customer support: +359 877 414 874

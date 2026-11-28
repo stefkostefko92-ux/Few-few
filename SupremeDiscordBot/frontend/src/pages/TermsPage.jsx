@@ -4,7 +4,7 @@ import { SUPPORT_URL } from "../lib/support";
 
 export default function TermsPage() {
   const COMPANY    = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
-  const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
+  const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "info@carbonstealth.eu";
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
@@ -19,7 +19,7 @@ export default function TermsPage() {
           These Terms of Service ("Terms") constitute a legally binding agreement between{" "}
           <strong>{COMPANY}</strong> ("we", "us", "our"), a company registered in{" "}
           {COUNTRY} — UIC (ЕИК) 208725180, VAT BG208725180, registered address ul. Samuil 3,
-          2670 Bobov dol, Bulgaria, e-mail legal@carbonstealth.eu — and you ("User", "you"),
+          2670 Bobov dol, Bulgaria, e-mail info@carbonstealth.eu — and you ("User", "you"),
           the individual or legal entity accessing or using the Supreme Bot platform ("Service").
         </p>
         <p>

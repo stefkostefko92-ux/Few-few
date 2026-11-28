@@ -152,7 +152,7 @@ function docsLinks() {
 // (LandingParts.jsx) се рисува в браузъра; обхождач без JavaScript вижда само тази снимка.
 // Същите данни като видимия footer: имейл, правни страници, седалище.
 function contactFooter() {
-  return `<footer><p>Supreme Bot by Carbon Stealth VCC — ul. Samuil 3, 2670 Bobov dol, Bulgaria. Contact: <a href="mailto:legal@carbonstealth.eu">legal@carbonstealth.eu</a></p>
+  return `<footer><p>Supreme Bot by Carbon Stealth VCC — ul. Samuil 3, 2670 Bobov dol, Bulgaria. Contact: <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a></p>
     <ul><li><a href="/terms">Terms of Service</a></li><li><a href="/privacy">Privacy Policy</a></li><li><a href="/cookies">Cookie Policy</a></li><li><a href="/accessibility">Accessibility</a></li></ul></footer>`;
 }
 

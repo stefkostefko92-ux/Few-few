@@ -82,7 +82,7 @@ Three categories:
    > (Audit stage 13, 2026-08-12)
 
 3. **User reports:**
-   - `security@carbonstealth.eu` (public contact)
+   - `info@carbonstealth.eu` (public contact)
    - Bug bounty submissions (not yet formalized)
    - Support tickets with security concern
 
@@ -174,7 +174,7 @@ Three categories:
 - Legal name: Carbon Stealth VCC
 - Registration: EIK 208725180, VAT BG208725180
 - Address: ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria
-- Contact: [Stefan Lyubomirov Kostadinov, privacy@carbonstealth.eu, +359 XX XXX XXXX]
+- Contact: [Stefan Lyubomirov Kostadinov, info@carbonstealth.eu, +359 XX XXX XXXX]
 
 **Breach details:**
 - Date/time of breach: [ISO 8601 timestamp]
@@ -196,7 +196,7 @@ Three categories:
 - Mitigation: [actions planned]
 - Communication to subjects: [yes/no, with justification]
 
-**DPO contact:** privacy@carbonstealth.eu (interim — DPO not formally appointed per Article 37 thresholds)
+**DPO contact:** info@carbonstealth.eu (interim — DPO not formally appointed per Article 37 thresholds)
 
 ## Template — Notification to Data Subjects
 
@@ -217,7 +217,7 @@ On [date], we detected a security incident that may have affected your account d
 
 **For more information:**
 - Detailed technical post: https://supremebot.carbonstealth.eu/status
-- Contact: security@carbonstealth.eu
+- Contact: info@carbonstealth.eu
 - To request deletion of your data: https://supremebot.carbonstealth.eu/dashboard/privacy-settings
 
 We sincerely apologize for this incident and are taking steps to prevent recurrence.

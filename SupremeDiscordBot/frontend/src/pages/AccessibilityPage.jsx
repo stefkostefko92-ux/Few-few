@@ -5,7 +5,7 @@ import Seo from "../components/Seo";
 
 export default function AccessibilityPage() {
   const COMPANY = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
-  const EMAIL = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
+  const EMAIL = import.meta.env.VITE_CONTACT_EMAIL || "info@carbonstealth.eu";
 
   return (
     <div className="min-h-screen bg-cs-bg text-cs-text" role="main" id="main-content">

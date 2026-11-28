@@ -59,7 +59,7 @@ export default class ErrorBoundary extends Component {
             <a href="/" className="cs-btn-secondary">{L.home}</a>
           </div>
           <p className="text-cs-dim text-xs mt-6">
-            {L.support}: discord@carbonstealth.eu
+            {L.support}: info@carbonstealth.eu
           </p>
         </div>
       </div>

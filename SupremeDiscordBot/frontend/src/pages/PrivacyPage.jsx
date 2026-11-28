@@ -4,7 +4,7 @@ import { SUPPORT_URL } from "../lib/support";
 
 export default function PrivacyPage() {
   const COMPANY    = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
-  const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
+  const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "info@carbonstealth.eu";
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (

@@ -785,7 +785,7 @@ export const DOCS_PAGES = [
           "`/privacy info` shows what the bot stores about you: tickets, ticket messages, applications, role snapshots, verification attempts and game progress, with counts, and links to the policy.",
           "`/privacy delete` asks for confirmation with a button, then anonymises your profile and the author signature on your ticket messages, and deletes your sessions, API keys, role snapshots, verification attempts and membership records across all servers that use Supreme Bot. It cannot be undone. The erasure is all or nothing: if a step fails, no data is removed, you are asked to try again, and the failure is recorded in the audit log.",
         ],
-        note: "The text of tickets stays as the server's own record. To have it erased too, write to privacy@carbonstealth.eu. An active paid subscription must be cancelled first, in Discord under User Settings → Subscriptions.",
+        note: "The text of tickets stays as the server's own record. To have it erased too, write to info@carbonstealth.eu. An active paid subscription must be cancelled first, in Discord under User Settings → Subscriptions.",
       },
       {
         id: "owners-export",
@@ -819,14 +819,14 @@ export const DOCS_PAGES = [
         id: "your-role",
         heading: "Your role as server owner",
         body: [
-          "You decide which features run on your server and what you log. For the activity log the dashboard reminds you that you are the data controller for it: enable it only with a lawful basis, and tell your members. For legal questions, read the [Privacy Policy](/privacy) or write to privacy@carbonstealth.eu.",
+          "You decide which features run on your server and what you log. For the activity log the dashboard reminds you that you are the data controller for it: enable it only with a lawful basis, and tell your members. For legal questions, read the [Privacy Policy](/privacy) or write to info@carbonstealth.eu.",
         ],
       },
     ],
     faq: [
       { q: "Does the bot read my members' messages?", a: "It sees messages to run features such as the bait channel, sticky messages and the game. Server Season counts the event and never stores the text. Ticket messages are stored, because they are the ticket's record." },
-      { q: "A member asks me to delete their data. What do I do?", a: "Point them to `/privacy delete`. For the text of a ticket, they can write to privacy@carbonstealth.eu." },
-      { q: "Is there a button to delete all data of my server?", a: "Not in the dashboard. Removing the bot starts the 30-day purge. For anything else, write to privacy@carbonstealth.eu." },
+      { q: "A member asks me to delete their data. What do I do?", a: "Point them to `/privacy delete`. For the text of a ticket, they can write to info@carbonstealth.eu." },
+      { q: "Is there a button to delete all data of my server?", a: "Not in the dashboard. Removing the bot starts the 30-day purge. For anything else, write to info@carbonstealth.eu." },
       { q: "How long are Free-plan transcripts available?", a: "30 days after the ticket closes." },
     ],
     related: ["/docs/premium", "/docs/tickets", "/privacy", "/terms"],

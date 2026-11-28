@@ -162,7 +162,7 @@ for 30 days after the paid period ends.
 
 **Signed electronically upon Customer's acceptance of the Supreme Bot Terms of Service.**
 
-For questions regarding this DPA: **dpo@carbonstealth.eu** (or privacy@carbonstealth.eu until a DPO is formally designated)
+For questions regarding this DPA: **info@carbonstealth.eu**
 
 ---
 

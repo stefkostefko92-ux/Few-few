@@ -361,7 +361,7 @@ export default function Layout() {
                   Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov dol, Bulgaria
                   <br />
                   EIK 208725180, VAT BG208725180,{" "}
-                  <a href="mailto:legal@carbonstealth.eu" className="text-cs-muted underline underline-offset-2 decoration-cs-dim/60 hover:text-cs-cyan">legal@carbonstealth.eu</a>
+                  <a href="mailto:info@carbonstealth.eu" className="text-cs-muted underline underline-offset-2 decoration-cs-dim/60 hover:text-cs-cyan">info@carbonstealth.eu</a>
                 </address>
               </div>
             </div>

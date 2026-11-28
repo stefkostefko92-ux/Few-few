@@ -2,7 +2,7 @@
 
 **GDPR Article 33(5) — record of all personal data breaches**
 **Controller/Processor:** Carbon Stealth VCC · EIK 208725180
-**Contact:** privacy@carbonstealth.eu
+**Contact:** info@carbonstealth.eu
 **Maintained since:** 2026-08-07
 
 ---
