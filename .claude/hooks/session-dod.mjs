@@ -52,6 +52,9 @@ function liveGateMessage() {
 }
 
 function main() {
+  // Студио пулт (28.11.2026): там главната нишка е диспечерът, не работна сесия — напомнянето за commit и
+  // живия гейт не е за него. STUDIOPULT е в средата на процеса на CLI (задава я само пултът).
+  if (process.env.STUDIOPULT === "1") process.exit(0);
   let payload = {};
   try { payload = JSON.parse(readFileSync(0, "utf8")); } catch { /* fail-open */ }
   let status = "";

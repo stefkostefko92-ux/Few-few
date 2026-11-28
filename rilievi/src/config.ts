@@ -58,6 +58,15 @@ const schema = z
      */
     INTERVENTI_SEAL_KEY: hexKey('INTERVENTI_SEAL_KEY'),
     /**
+     * Ключът на модулите на доставчиците — в репото те са само шифровани (src/ordini/moduli-sigillo.ts).
+     * В продукция без него процесът не тръгва (`assertModuli`); локално без него се чете незашифрованото
+     * копие, ако го има на машината. Четенето е в src/ordini/moduli.ts (`chiaveModuli`) — тук само формата.
+     */
+    MODULI_KEY: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      hexKey('MODULI_KEY').optional(),
+    ),
+    /**
      * Пощата е по избор: без SMTP поканите и връзките за нова парола се показват на екрана за копиране,
      * а „Забравена парола“ казва да се поиска връзка от администратор.
      */

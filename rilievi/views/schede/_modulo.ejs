@@ -36,6 +36,7 @@
   <div class="modulo__head">
     <p class="modulo__title"><strong><%= slot.modulo.titolo %></strong><% if (slot.modulo.fornitore) { %> · <%= slot.modulo.fornitore %><% } %></p>
     <p class="field__hint"><%= t('ordini.hint') %></p>
+    <% const avviso = avvisoModulo(slot.modulo); if (avviso) { %><p class="field__hint"><%= t(avviso.chiave, { fornitore: avviso.fornitore }) %></p><% } %>
   </div>
   <% slot.modulo.gruppi.forEach((group, g) => { %>
   <fieldset class="modulo__group">

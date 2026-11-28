@@ -1091,3 +1091,7 @@
 {"t":"handoff","ts":"2026-11-28T08:34:39.154Z","id":"rde01527a","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"c93440b0"}
 {"t":"start","ts":"2026-11-28T08:36:40.958Z","id":"ra9059636","flow":"авто","lead":"ai-djiyata","auto":true}
 {"t":"handoff","ts":"2026-11-28T08:36:40.958Z","id":"ra9059636","from":"ai-djiyata","to":"kodadjiyata","status":"има бележки","run":"dfab5379"}
+{"t":"start","ts":"2026-11-28T09:14:25.626Z","id":"r50087700","flow":"авто","lead":"ai-studio","auto":true}
+{"t":"handoff","ts":"2026-11-28T09:14:25.627Z","id":"r50087700","from":"ai-studio","to":"човек","status":"наред","run":"66be00fa"}
+{"t":"start","ts":"2026-11-28T09:26:50.852Z","id":"r3142bbd9","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-28T09:26:50.853Z","id":"r3142bbd9","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"c92d57fc"}

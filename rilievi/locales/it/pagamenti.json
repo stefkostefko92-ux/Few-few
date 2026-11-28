@@ -154,7 +154,15 @@
         "nonLetto": "Da 30 giorni Revolut non risponde su questo ordine (chiave o ambiente cambiati?). Non sappiamo se è stato pagato: controlla nel conto Revolut."
       },
       "fatturareTitolo": "Da fatturare",
-      "fatturareTesto": "Pagamenti completati senza fattura segnata. La fattura va emessa entro {giorni} giorni dal pagamento, fuori dal portale.",
+      "fatturareTesto": "Pagamenti completati senza fattura segnata. Il pagamento è un acconto: la fattura va emessa fuori dal portale entro {giorni} giorni dal pagamento (art. 25, c. 7 e art. 113, c. 4 della legge bulgara sull'IVA) — vedi «Entro il». Con l'inversione contabile la fattura va intestata al nome e all'indirizzo dati dal VIES (art. 18 Reg. UE 282/2011), anche se il cliente ha scritto altro. Per segnarla scrivi il numero e la data della fattura: servono anche per la nota di credito.",
+      "fatturareRegimi": {
+        "inversione": "Inversione contabile: fattura senza aliquota e senza IVA, con la dicitura «{dicitura}» / «inversione contabile», il motivo (art. 21, c. 2 della legge bulgara sull'IVA; art. 196 della Direttiva 2006/112/CE) e la partita IVA del cliente confermata dal VIES (art. 114 della legge bulgara sull'IVA).",
+        "ivaBg": "IVA bulgara (cliente in Bulgaria): in fattura l'aliquota 20 % e l'importo dell'IVA.",
+        "ivaBgUe": "IVA bulgara (partita IVA non valida nel VIES): in fattura l'aliquota 20 % e l'importo dell'IVA, sui dati dichiarati dal cliente."
+      },
+      "fatturaEntro": "Entro il",
+      "fatturaScaduta": "Termine superato",
+      "fatturaData": "Data della fattura",
       "fatturareNessuno": "Nessun pagamento da fatturare.",
       "segnaFatturato": "Segna come fatturato",
       "fatturato": "Pagamento segnato come fatturato.",
@@ -190,12 +198,13 @@
         "rimborso": "Rimborsato",
         "fatturato": "Fatturato il",
         "fattura": "Fattura n.",
+        "fatturaData": "Data fattura",
         "ordine": "Ordine Revolut",
         "vies": "Consultazione VIES",
         "viesData": "Data VIES"
       },
-      "fatturaNumero": "Numero fattura (facoltativo)",
-      "fatturaNumeroErrore": "Il numero della fattura può avere lettere, cifre, spazi e i segni . / - _ #, fino a 40 caratteri.",
+      "fatturaNumero": "Numero della fattura",
+      "fatturaNumeroErrore": "Scrivi il numero della fattura (lettere, cifre, spazi e i segni . / - _ #, fino a 40 caratteri) e la sua data, non nel futuro.",
       "fatturaNumeroBreve": "N. fattura"
     },
     "mail": {
@@ -212,6 +221,8 @@
       "masterSubject": "Nuovo pagamento: {azienda} — {totale} € — da fatturare",
       "masterBody": "Nuovo pagamento ricevuto su Revolut.\n\nAzienda: {azienda}\nPiano: {piano}, {durata}, dal {inizio} al {fine} compreso\nImponibile: {imponibile} € — IVA: {iva} € — Totale: {totale} €\nRegime: {regime}\n\nDati per la fattura\nRagione sociale: {ragioneSociale}\nSede: {sede}\nPartita IVA: {partitaIva}\nOrdine Revolut: {ordine}\n\nLa fattura va emessa entro {giorni} giorni dal pagamento. Quando l'hai emessa, segnala qui:\n{link}",
       "masterCredito": "Passaggio a un livello superiore: nel periodo sono compresi i giorni già pagati e non usati dei pagamenti precedenti, per un valore di {credito} € IVA esclusa.",
+      "masterViesNome": "Attenzione: il nome nel VIES non corrisponde a quello dichiarato. Dichiarato: {dichiarato}. Nel VIES: {vies} — {indirizzo}. Con l'inversione contabile la fattura va al nome e all'indirizzo del VIES: controlla con il cliente prima di emetterla.",
+      "masterViesAssente": "Attenzione: il VIES non comunica il nome per questa partita IVA. Dichiarato: {dichiarato}. Controlla nome e indirizzo con il cliente prima di emettere la fattura.",
       "masterRicalcolato": "Attenzione: l'abbonamento è cambiato tra l'offerta e il pagamento, quindi il periodo è stato ricalcolato al momento del pagamento e può essere diverso da quello scritto nell'offerta.",
       "verificaSubject": "Pagamento da verificare: {azienda}",
       "verificaBody": "Un pagamento è stato completato su Revolut, ma il periodo NON è stato dato.\n\nMotivo: {motivo}\n\nAzienda: {azienda}\nPiano: {piano}, {durata}\nTotale pagato: {totale} €\nOrdine Revolut: {ordine}\n\nRimborsa il cliente (art. 12.9) oppure imposta l'abbonamento a mano, poi segna il rimborso qui:\n{link}",

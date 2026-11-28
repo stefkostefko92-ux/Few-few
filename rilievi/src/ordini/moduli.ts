@@ -10,6 +10,7 @@ import {
   type ModuloField,
   type ModuloOverlay,
 } from './moduli-schema.js';
+import { apriModulo, CHIAVE_MODULI } from './moduli-sigillo.js';
 
 export * from './moduli-schema.js';
 
@@ -128,13 +129,55 @@ export const GEAT: ModuloAcro = load(
   moduloSchema(acroField, 'acroform'),
 );
 
+/** Всички модули на портала — проверката при старт, шифроването и тестовете четат оттук. */
+export const MODULI_TUTTI: readonly Modulo[] = [
+  PELAZZA,
+  MOVILIFT,
+  ARGANI,
+  SG,
+  MASTECH_NG120,
+  MASTECH_QI,
+  EQ_GEARED,
+  EQ_GEARLESS,
+  EQ_OLEO,
+  AMI_RTBS,
+  DMG_PITAGORA,
+  DMG_FIXTURES,
+  GEAT,
+];
+
+/** Ключът на шифрованите модули от средата (moduli-sigillo.ts); празно — няма ключ (местна работа). */
+export function chiaveModuli(): string | null {
+  const valore = process.env.MODULI_KEY?.trim() ?? '';
+  if (valore === '') return null;
+  if (!CHIAVE_MODULI.test(valore))
+    throw new Error('MODULI_KEY трябва да е 64 hex знака (32 байта)');
+  return valore;
+}
+
+/**
+ * Байтовете на празния модул: с ключ — шифрованият файл от репото (той решава: забравено незашифровано
+ * копие до него не го засенчва); без ключ — незашифрованото копие, което е само на машината на разработчика
+ * (не е в git, `.gitignore`).
+ */
+export function bytesModulo(file: string, chiave: string | null, base: URL = ASSETS): Buffer {
+  if (chiave) return apriModulo(readFileSync(new URL(`sigillati/${file}.enc`, base)), chiave, file);
+  try {
+    return readFileSync(new URL(file, base));
+  } catch {
+    throw new Error(
+      `${file}: липсва MODULI_KEY — модулите на доставчиците са в репото само шифровани (DEPLOY.md, т. 1)`,
+    );
+  }
+}
+
 const bytes = new Map<string, Uint8Array>();
 
 /** Празният официален PDF — проверен по SHA-256 (при старт, после от паметта). */
 export function moduloPdf(modulo: Modulo): Uint8Array {
   const cached = bytes.get(modulo.id);
   if (cached) return cached;
-  const data = readFileSync(new URL(modulo.file, ASSETS));
+  const data = bytesModulo(modulo.file, chiaveModuli());
   const sha = createHash('sha256').update(data).digest('hex');
   if (sha !== modulo.sha256) {
     throw new Error(`${modulo.file}: друга версия на модула (SHA-256 ${sha}) — картата не пасва`);
@@ -146,22 +189,25 @@ export function moduloPdf(modulo: Modulo): Uint8Array {
 
 /** Проверка при старт: модулите са на мястото си и са точно версията на картите. */
 export function assertModuli(): void {
-  for (const modulo of [
-    PELAZZA,
-    MOVILIFT,
-    ARGANI,
-    SG,
-    MASTECH_NG120,
-    MASTECH_QI,
-    EQ_GEARED,
-    EQ_GEARLESS,
-    EQ_OLEO,
-    AMI_RTBS,
-    DMG_PITAGORA,
-    DMG_FIXTURES,
-    GEAT,
-  ])
-    moduloPdf(modulo);
+  for (const modulo of MODULI_TUTTI) moduloPdf(modulo);
+}
+
+/** Листовете, които сме начертали наново по модула на доставчик (2SG): наши, но по неговия модул. */
+const RIDISEGNATI: ReadonlySet<string> = new Set([SG.id]);
+
+/**
+ * Бележката до модула във формата (условията 2026-11-29, чл. 6.8; собственикът, 26 ноември 2026): модулът е на
+ * доставчика си и се ползва само за запитване или поръчка към него. Нашите листове (AMI 100, аргано — без
+ * `fornitore`) — без бележка. Върху самия PDF на доставчика не се пише нищо.
+ */
+export function avvisoModulo(
+  modulo: Pick<Modulo, 'id' | 'fornitore'>,
+): { chiave: 'ordini.avviso.terzo' | 'ordini.avviso.ridisegnato'; fornitore: string } | null {
+  if (!modulo.fornitore) return null;
+  return {
+    chiave: RIDISEGNATI.has(modulo.id) ? 'ordini.avviso.ridisegnato' : 'ordini.avviso.terzo',
+    fornitore: modulo.fornitore,
+  };
 }
 
 /** „Modulo ordine quadro (Scelta v2.6) · MoviLift“ — без доставчик само заглавието. */

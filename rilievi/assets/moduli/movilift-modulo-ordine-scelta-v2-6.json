@@ -2,7 +2,7 @@
   "id": "movilift-modulo-ordine-scelta-v2-6",
   "fornitore": "MoviLift",
   "titolo": "Modulo ordine quadro (Scelta v2.6)",
-  "fonte": "MODULO_ORDINE_MOVI.pdf caricato dal proprietario del portale il 13/10/2026 (cifratura RC4 rimossa con pypdf 6.17: l'autore consente la compilazione dei campi)",
+  "fonte": "MODULO_ORDINE_MOVI.pdf caricato dal proprietario del portale il 13/10/2026: file protetto (RC4, senza password di apertura) che permette la compilazione dei campi; copia di lavoro senza la protezione creata con pypdf 6.17 per la compilazione automatica. Autorizzazione del titolare: registro delle autorizzazioni, fuori dal repository",
   "file": "movilift-modulo-ordine-scelta-v2-6.pdf",
   "sha256": "13f698745c72bd52e5ae912ae6e552507b3a639d33b33db6ac6392c47c2a6c55",
   "tipo": "acroform",

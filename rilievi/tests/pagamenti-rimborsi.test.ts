@@ -6,7 +6,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { mezzanotteRoma } from '../src/master/tempo.js';
-import { importoDa, rimborsoDovuto } from '../src/pagamenti/rimborsi.js';
+import {
+  importoDa,
+  notePerRimborso,
+  ripartoDovuto,
+  rimborsoDovuto,
+} from '../src/pagamenti/rimborsi.js';
 
 const piano = {
   inizio: mezzanotteRoma('2026-11-01'),
@@ -79,6 +84,74 @@ describe('the refund due for the days not used', () => {
       rimborsoDovuto({ ...piano, regimeIva: 'iva-bg' }, mezzanotteRoma('2026-11-11')),
       35500 + 7100,
     );
+  });
+});
+
+// The credit converted from an older payment (art. 12.4) was invoiced on THAT invoice, in ITS VAT regime: the part of
+// the refund that gives it back goes to that invoice, with that regime's VAT — never with the regime of the new
+// payment (the owner, 28 November 2026 — the review of the Tax adviser, M2).
+describe('the refund of a plan with converted credit, by origin', () => {
+  const nuovo = { ...piano, id: 'nuovo', creditoCent: 36500, regimeIva: 'iva-bg-ue' };
+  const prima = mezzanotteRoma('2026-10-15');
+
+  it('splits own value and credit, each with the VAT of its invoice', () => {
+    const fonti = [{ id: 'vecchio', regimeIva: 'inversione', imponibileCent: 50000 }];
+    assert.deepEqual(ripartoDovuto(nuovo, fonti, prima), [
+      { pagamentoId: 'nuovo', nettoCent: 36500, totaleCent: 43800 },
+      { pagamentoId: 'vecchio', nettoCent: 36500, totaleCent: 36500 },
+    ]);
+    assert.equal(rimborsoDovuto(nuovo, prima, fonti), 43800 + 36500);
+    // The other way round: the old invoice had Bulgarian VAT, the new one the reverse charge.
+    const inverso = { ...nuovo, regimeIva: 'inversione' };
+    const conIva = [{ id: 'vecchio', regimeIva: 'iva-bg-ue', imponibileCent: 50000 }];
+    assert.equal(rimborsoDovuto(inverso, prima, conIva), 36500 + 43800);
+  });
+
+  it('keeps the share of whole days and the order of the sources', () => {
+    // 355 of 365 days left: 710,00 € in all, 355,00 € of them the new plan's own.
+    const al = mezzanotteRoma('2026-11-11');
+    const fonti = [
+      { id: 'a', regimeIva: 'inversione', imponibileCent: 20000 },
+      { id: 'b', regimeIva: 'iva-bg-ue', imponibileCent: 50000 },
+    ];
+    assert.deepEqual(ripartoDovuto(nuovo, fonti, al), [
+      { pagamentoId: 'nuovo', nettoCent: 35500, totaleCent: 42600 },
+      { pagamentoId: 'a', nettoCent: 20000, totaleCent: 20000 },
+      { pagamentoId: 'b', nettoCent: 15500, totaleCent: 18600 },
+    ]);
+  });
+
+  it('without the sources, or beyond them, leaves the credit on the payment itself', () => {
+    assert.deepEqual(ripartoDovuto(nuovo, [], prima), [
+      { pagamentoId: 'nuovo', nettoCent: 73000, totaleCent: 87600 },
+    ]);
+    const piccola = [{ id: 'vecchio', regimeIva: 'inversione', imponibileCent: 10000 }];
+    assert.deepEqual(ripartoDovuto(nuovo, piccola, prima), [
+      { pagamentoId: 'nuovo', nettoCent: 63000, totaleCent: 75600 },
+      { pagamentoId: 'vecchio', nettoCent: 10000, totaleCent: 10000 },
+    ]);
+  });
+
+  it('puts the sum MASTER gave back on the invoices of the parts, the rest on the payment itself', () => {
+    const parti = [
+      { pagamentoId: 'nuovo', nettoCent: 36500, totaleCent: 43800 },
+      { pagamentoId: 'vecchio', nettoCent: 36500, totaleCent: 36500 },
+    ];
+    assert.deepEqual(notePerRimborso(80300, parti, 'nuovo'), [
+      { pagamentoId: 'nuovo', cent: 43800 },
+      { pagamentoId: 'vecchio', cent: 36500 },
+    ]);
+    assert.deepEqual(notePerRimborso(10000, parti, 'nuovo'), [
+      { pagamentoId: 'nuovo', cent: 10000 },
+    ]);
+    assert.deepEqual(notePerRimborso(90000, parti, 'nuovo'), [
+      { pagamentoId: 'nuovo', cent: 43800 + 9700 },
+      { pagamentoId: 'vecchio', cent: 36500 },
+    ]);
+    // Nothing due by the days (an expired plan, a payment to be checked): all on the payment itself.
+    assert.deepEqual(notePerRimborso(5000, [], 'nuovo'), [{ pagamentoId: 'nuovo', cent: 5000 }]);
+    assert.deepEqual(notePerRimborso(0, parti, 'nuovo'), []);
+    assert.deepEqual(ripartoDovuto(nuovo, [], nuovo.fine), []);
   });
 });
 

@@ -22,7 +22,7 @@ import {
 import { logger } from '../logger.js';
 import { CONDIZIONI_PATH, CONDIZIONI_PDF_PATH } from '../seo/paths.js';
 import { paginaStructuredData } from '../seo/structured-data.js';
-import { contestoDi, iniziaFirma } from './condizioni-firma.js';
+import { iniziaFirma } from './condizioni-firma.js';
 import { renderAccetta, testo } from './condizioni-vista.js';
 import { publicCache, siteLocals } from './site.js';
 
@@ -180,7 +180,7 @@ condizioniRouter.post(ACCETTA_PATH, requireUser, requireCsrf, async (req, res) =
     await renderAccetta(req, res, 422, { errori, valori, errore: null });
     return;
   }
-  if (stato.regole) await accettaRegole(user, contestoDi(req));
+  if (stato.regole) await accettaRegole(user);
   if (stato.condizioni === 'accetta' && dichiarati && stato.azienda) {
     await iniziaFirma(req, res, { aziendaId: stato.azienda.id, dichiarati, next, valori });
     return;

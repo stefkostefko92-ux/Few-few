@@ -3,6 +3,7 @@ import { allarme } from '../allarmi/servizio.js';
 import { writeAudit } from '../audit.js';
 import { prisma } from '../db.js';
 import { errorMessage, logger } from '../logger.js';
+import { businessDay } from '../time.js';
 import { entroIlDa, scomponiRimborso } from './note-credito-importi.js';
 import { daPeriodo } from './situazione.js';
 
@@ -29,27 +30,38 @@ export async function registraNotaCredito(
   tx: Prisma.TransactionClient,
   v: NuovaNota,
 ): Promise<boolean> {
+  return (await registraNotaCreditoCent(tx, v)) > 0;
+}
+
+/**
+ * Като `registraNotaCredito`, но връща записаната сума в центове (0 — нищо): известието се реже до остатъка на
+ * фактурата, и който дели връщане между няколко фактури, вижда какво не е влязло (ревюто на Кодаджията).
+ */
+export async function registraNotaCreditoCent(
+  tx: Prisma.TransactionClient,
+  v: NuovaNota,
+): Promise<number> {
   // Редът на плащането е заключен: две известия едновременно не надхвърлят заедно фактурата.
   await tx.$queryRaw`SELECT id FROM "Pagamento" WHERE id = ${v.pagamentoId} FOR UPDATE`;
   const p = await tx.pagamento.findUnique({
     where: { id: v.pagamentoId },
     select: { regimeIva: true, ambiente: true, totaleCent: true },
   });
-  if (!p || !daPeriodo(p.ambiente)) return false;
+  if (!p || !daPeriodo(p.ambiente)) return 0;
   // Известията към една фактура не я надхвърлят (спор за друга сума; спор след вече върнато).
   const gia = await tx.notaCredito.aggregate({
     where: { pagamentoId: v.pagamentoId },
     _sum: { totaleCent: true },
   });
   const totale = Math.min(Math.trunc(v.totaleCent), p.totaleCent - (gia._sum.totaleCent ?? 0));
-  if (!(totale > 0)) return false;
+  if (!(totale > 0)) return 0;
   if (v.rimborsoId && (await tx.notaCredito.findUnique({ where: { rimborsoId: v.rimborsoId } })))
-    return false;
+    return 0;
   if (
     v.contestazioneId &&
     (await tx.notaCredito.findUnique({ where: { contestazioneId: v.contestazioneId } }))
   )
-    return false;
+    return 0;
   const { imponibile, iva } = scomponiRimborso(totale, p.regimeIva);
   await tx.notaCredito.create({
     data: {
@@ -64,7 +76,7 @@ export async function registraNotaCredito(
       entroIl: entroIlDa(v.eventoAt),
     },
   });
-  return true;
+  return totale;
 }
 
 const conPagamento = {
@@ -76,6 +88,7 @@ const conPagamento = {
       partitaIva: true,
       regimeIva: true,
       fatturaNumero: true,
+      fatturaData: true,
       fatturataAt: true,
       completatoAt: true,
     },
@@ -113,6 +126,17 @@ export function numeroDocumento(raw: unknown): string | null {
     .replace(/\s+/g, ' ')
     .trim();
   return v.length >= 1 && v.length <= 40 && /^[\p{L}\p{N} ./_#-]+$/u.test(v) ? v : null;
+}
+
+/**
+ * Денят на документа („2026-11-14“ — фактурата, кредитното известие) — не в бъдещето и не преди портала. Пази се
+ * като пладне по UTC: денят е един и същ в Рим и в София.
+ */
+export function giornoDocumento(raw: unknown): Date | null {
+  if (typeof raw !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+  const d = new Date(`${raw}T12:00:00Z`);
+  if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== raw) return null;
+  return raw >= '2026-01-01' && raw <= businessDay() ? d : null;
 }
 
 /** MASTER записва, че известието е издадено: номерът и денят му. Веднъж; после не се пипа. */

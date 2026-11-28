@@ -81,8 +81,14 @@ export function prezziStructuredData(
                   price: euro(o.prezzoCent),
                   priceCurrency: 'EUR',
                   valueAddedTaxIncluded: false,
-                  billingDuration: o.mesi,
-                  unitCode: 'MON',
+                  // Il prezzo è per tutto il periodo, pagato una volta: niente `unitCode` sul prezzo (si leggerebbe
+                  // «al mese»), ma il periodo come quantità di riferimento e durata (revisione legale, 28/11/2026).
+                  referenceQuantity: {
+                    '@type': 'QuantitativeValue',
+                    value: o.mesi,
+                    unitCode: 'MON',
+                  },
+                  billingDuration: { '@type': 'QuantitativeValue', value: o.mesi, unitCode: 'MON' },
                 },
               })),
             },

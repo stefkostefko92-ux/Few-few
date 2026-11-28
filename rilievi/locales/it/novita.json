@@ -25,6 +25,16 @@
       "ok": "Ho capito"
     },
     "voci": {
+      "2026-11-28-versione-5-9": {
+        "area": "Portale",
+        "titolo": "Versione 5.9: cartelli nuovi, account cancellabili, nuove condizioni",
+        "testo": "I cinque modelli del cartello di fermo impianto sono disegnati da noi da capo: stessi nomi e stessi colori, e il modello scelto nelle impostazioni resta. Un account disattivato ora si può cancellare dalla sua pagina, con la tua password: restano solo i nomi scritti nei documenti firmati e le voci del registro. Le condizioni di servizio del 29 novembre 2026 e le regole d'uso sono aggiornate: la prova gratuita spetta una sola volta, le firme sullo schermo sono firme elettroniche semplici, le copie di sicurezza sono anche su un secondo server. L'amministratore di ogni azienda accetta le nuove condizioni con il codice che arriva per email; ogni persona rilegge le regole d'uso al primo accesso."
+      },
+      "2026-11-26-versione-5-8": {
+        "area": "Portale",
+        "titolo": "Versione 5.8: i moduli dei fornitori e le nuove condizioni",
+        "testo": "Accanto a ogni modulo d'ordine di un fornitore il portale ora ricorda di chi è il modulo: lo usi solo per chiedere un preventivo o fare un ordine a quel fornitore. La pagina «Invia al fornitore» lo ricorda anche lei. Le condizioni di servizio del 29 novembre 2026 lo scrivono all'articolo 6 e dicono che possiamo aggiornare o togliere un modulo, anche su richiesta del fornitore; i dati che hai già scritto restano nella scheda. L'amministratore di ogni azienda accetta le nuove condizioni con il codice che arriva per email."
+      },
       "2026-11-21-versione-5-7": {
         "area": "Portale",
         "titolo": "Versione 5.7: etichetta QR e tabelle più comode",

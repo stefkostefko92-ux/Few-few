@@ -120,6 +120,18 @@
       <input type="hidden" name="active" value="<%= target.deactivatedAt ? '1' : '0' %>">
       <div class="toolbar"><button class="btn<%= target.deactivatedAt ? '' : ' btn--danger' %>" type="submit"><%= t(target.deactivatedAt ? 'users.reactivate' : 'users.deactivate') %></button></div>
     </form>
+    <% if (target.deletable) { %>
+    <h3 class="section__title" id="h-cancella"><%= t('users.cancella.title') %></h3>
+    <p class="muted"><%= t('users.cancella.text') %></p>
+    <form method="post" action="/utenti/<%= target.id %>/elimina" class="stack-gap" aria-labelledby="h-cancella">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="cancella-password"><%= t('users.cancella.password') %></label>
+        <input class="input" id="cancella-password" name="password" type="password" autocomplete="current-password" required maxlength="256"<% if (error === 'users.cancella.errorePassword') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+      </div>
+      <div class="toolbar"><button class="btn btn--danger" type="submit"><%= t('users.cancella.submit') %></button></div>
+    </form>
+    <% } %>
     <% } else { %>
     <p class="muted"><%= t('users.selfAccessNote') %></p>
     <% } %>

@@ -46,6 +46,18 @@ export function canSetActive(actor: Actor, target: Target): boolean {
   return actor.id !== target.id && canManageAccount(actor, target);
 }
 
+/**
+ * Изтриването на акаунта (Allegato A, A.9; правният преглед, 28 ноември 2026): който може да го деактивира, и
+ * само деактивиран — първо се спира, после се трие. Никога MASTER и никога себе си (`canSetActive`).
+ */
+export function canDeleteAccount(
+  actor: Actor,
+  target: Target,
+  deactivatedAt: Date | null,
+): boolean {
+  return deactivatedAt !== null && !target.master && canSetActive(actor, target);
+}
+
 /** Новата роля в членството: под ролята на човека в същата фирма (за MASTER — всичко под MASTER). */
 export function canAssignRole(actor: Actor, aziendaId: string, role: Role): boolean {
   const own = roleIn(actor, aziendaId);

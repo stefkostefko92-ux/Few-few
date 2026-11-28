@@ -24,6 +24,7 @@ export const MEMBERSHIP_SELECT = {
       abbonamentoProva: true,
       abbonamentoCambioAt: true,
       cambioFineAt: true,
+      cambioRevocatoAt: true,
     },
   },
 } as const;
@@ -43,6 +44,7 @@ interface MembershipRow {
     abbonamentoProva?: boolean;
     abbonamentoCambioAt?: Date | null;
     cambioFineAt?: Date | null;
+    cambioRevocatoAt?: Date | null;
   };
 }
 
@@ -81,10 +83,19 @@ export function activeMemberships(
       ...(row.azienda.abbonamentoProva && !row.azienda.abbonamentoCambioAt
         ? { abbonamentoProva: true as const }
         : {}),
-      // Само четене — не докато тече смяната на доставчика (чл. 12.7 и 17.3: услугата продължава изцяло).
+      // Само четене — не докато тече смяната на доставчика (чл. 12.7 и 17.3: услугата продължава изцяло), освен
+      // след оттеглено искане: тогава ново искане не вдига четенето (чл. 12.7, B.6 — условията 2026-11-29).
       ...(row.azienda.abbonamentoFino &&
       row.azienda.abbonamentoFino.getTime() <= now &&
-      !(row.azienda.cambioFineAt && row.azienda.cambioFineAt.getTime() > now)
+      !(
+        row.azienda.cambioFineAt &&
+        row.azienda.cambioFineAt.getTime() > now &&
+        // Брои само оттегляне при изтекъл план (в „само четене“): след нов платен план знакът не тежи.
+        !(
+          row.azienda.cambioRevocatoAt &&
+          row.azienda.cambioRevocatoAt.getTime() >= row.azienda.abbonamentoFino.getTime()
+        )
+      )
         ? { solaLettura: true as const }
         : {}),
     }))

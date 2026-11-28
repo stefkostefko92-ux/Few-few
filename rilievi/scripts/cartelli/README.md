@@ -1,50 +1,39 @@
 # The sign templates for print
 
-`assets/cartelli/*.jpg` are the five templates the owner sent on 30 October 2026, upscaled for print.
-The originals were 794–1518 px on the long side (about 100 dpi on A4); the sign printed soft and showed
-the JPEG blocks. `upscale.py` runs Real-ESRGAN x4plus on each one, mixes it 3:1 with a plain Lanczos
-enlargement and brings it down with Lanczos to the smallest whole factor (`scala`) that gives at least
-3000 px on the long side:
+`assets/cartelli/*.jpg` are the five templates of the stop sign "Avviso di fermo impianto", drawn from scratch
+by `disegna.py` (owner's decision of 28 November 2026: the earlier pictures were copies of someone else's signs
+and are gone). Nothing in them comes from outside:
 
-| Template       | Original    | `scala` | Now         |
-| -------------- | ----------- | ------- | ----------- |
-| rosso          | 1518 × 1094 | 2       | 3036 × 2188 |
-| giallo-nero    | 1518 × 1094 | 2       | 3036 × 2188 |
-| fuori-servizio | 1216 × 918  | 3       | 3648 × 2754 |
-| blu            | 794 × 918   | 4       | 3176 × 3672 |
-| grafite-oro    | 930 × 918   | 4       | 3720 × 3672 |
+- the shapes (bands, rules, hazard stripes, the "forbidden" sign with the lift) are drawn by the code;
+- the lettering is Fira Sans / Fira Sans Condensed (SIL OFL 1.1, `node_modules/@fontsource`);
+- the only photographs are our own 3D renders in `public/img/site/` (`vano-*.webp`, `bottoniera-*.webp`),
+  toned to the colours of each template.
 
-It is the same picture, 1:1: nothing is redrawn or added; the model rebuilds the edges of the letters and
-of the photos and drops the compression blocks. Alone, it also smears the fine detail of the photos into
-flat strokes (a painted look on the smallest template, "blu", 4×); the quarter of plain enlargement keeps
-their texture and costs the letters almost nothing. Every coordinate in the maps (`*.json`) stays in the pixels
-of the original; `src/cartelli/modelli.ts` multiplies them by `scala` where it cleans the sample text.
-The script also writes the new `sha256` and `scala` into each map.
+No sample data is printed: the places for date, address, city, place and the message to the people are empty,
+so every `copri` in the maps is `[]` (the portal then uses the JPEG as it is).
+
+| Template       | Map         | `scala` | Picture     | Photo              |
+| -------------- | ----------- | ------- | ----------- | ------------------ |
+| rosso          | 1750 × 1220 | 2       | 3500 × 2440 | vano-2400          |
+| giallo-nero    | 1750 × 1220 | 2       | 3500 × 2440 | vano-2400          |
+| fuori-servizio | 1750 × 1220 | 2       | 3500 × 2440 | bottoniera-1600    |
+| blu            | 1220 × 1750 | 2       | 2440 × 3500 | vano-2400          |
+| grafite-oro    | 1220 × 1750 | 2       | 2440 × 3500 | vano-portrait-1200 |
+
+The picture is `scala` times the map (about 300 dpi on A4); every coordinate in the maps (`*.json`) is in map
+pixels, and `src/cartelli/modelli.ts` multiplies by `scala` where it needs picture pixels. The map is also what
+`src/cartelli/pdf.ts` draws on: logo and company data on top, the four values under the captions
+DATA / INDIRIZZO / CITTÀ / UBICAZIONE IMPIANTO, then the message to the people.
 
 ## Running it again
 
-The model: Real-ESRGAN by Xintao Wang et al., BSD 3-Clause
-(https://github.com/xinntao/Real-ESRGAN/blob/master/LICENSE), weights
-`RealESRGAN_x4plus.pth` from https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth,
-SHA-256 `4fa0d38905f75ac06eb49a7951b426670021be3018265fd191d2125df9d682f1` (the script refuses any other
-file). The network is written out in `upscale.py` (no Real-ESRGAN or BasicSR package); the weights are
-loaded with `weights_only=True`. Used: Python 3.13, torch 2.15.0 (CPU), numpy 2.5.4, Pillow 13.0.0.
-
 ```bash
 cd rilievi
-python3 -m venv /tmp/sr-venv
-/tmp/sr-venv/bin/pip install --index-url https://download.pytorch.org/whl/cpu torch==2.15.0
-/tmp/sr-venv/bin/pip install numpy==2.5.4 pillow==13.0.0
-mkdir -p /tmp/sr-model /tmp/cartelli-originali
-curl -fL -o /tmp/sr-model/RealESRGAN_x4plus.pth \
-  https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth
-# The originals are in the history, at the commit that added them:
-for id in rosso giallo-nero fuori-servizio blu grafite-oro; do
-  git show 498abbbda81bad9791eaf72352604d5e55d1df9c:rilievi/assets/cartelli/$id.jpg > /tmp/cartelli-originali/$id.jpg
-done
-/tmp/sr-venv/bin/python -I scripts/cartelli/upscale.py /tmp/sr-model/RealESRGAN_x4plus.pth \
-  /tmp/cartelli-originali assets/cartelli
+python3 -I scripts/cartelli/disegna.py          # writes assets/cartelli/*.jpg and *.json
+npx prettier --write assets/cartelli/*.json     # the maps are kept in the format of the repo
 ```
 
-About 15 minutes on 4 CPU cores. Another CPU or another torch can change a few pixel values and so the
-SHA-256: the committed JPEGs are the reference, and the portal checks them by SHA-256 at start.
+Needs Python 3 with Pillow 13 (used: 13.0.0) and `npm ci` done (the fonts). Deterministic: the same bytes at
+every run on the same Pillow/FreeType; another build can change a few pixel values and so the SHA-256. The
+committed JPEGs are the reference, and the portal checks them by SHA-256 at start. The script writes the new
+`sha256` into each map; run it, look at the five PDFs (`src/cartelli/pdf.ts`), then commit both.

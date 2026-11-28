@@ -35,6 +35,8 @@ LE_DIR="${RILIEVI_LE_DIR:-/etc/letsencrypt}"
 HEALTH_WAIT="${RILIEVI_HEALTH_WAIT:-90}"
 MIGRATION_WAIT="${RILIEVI_MIGRATION_WAIT:-1800}"
 KEEP_BACKUPS="${RILIEVI_KEEP_BACKUPS:-5}"
+# Дните на копията преди миграция: същите 14 като дневните (backup.sh, RILIEVI_KEEP_DAILY) — обещани в условията.
+BACKUP_DAYS=14
 SKIP_BACKUP="${RILIEVI_SKIP_BACKUP:-0}"
 LAST_GOOD="${RILIEVI_LAST_GOOD:-$SHARED/last-good}"
 LOCK="${RILIEVI_LOCK:-/run/lock/rilievi-deploy.lock}"
@@ -193,6 +195,17 @@ check_secrets() {
     fail 1 "JWT_SECRET трябва да е 64 hex знака (openssl rand -hex 32) — DEPLOY.md, т. 1."
   printf '%s' "$(env_value INTERVENTI_SEAL_KEY)" | grep -Eqx '[0-9a-fA-F]{64}' ||
     fail 1 "INTERVENTI_SEAL_KEY трябва да е 64 hex знака — DEPLOY.md, т. 1 (не се сменя, ако вече има потвърдени листове)."
+  # Модулите на доставчиците са в репото само шифровани (src/ordini/moduli-sigillo.ts): без ключа новият
+  # портал не отваря нито един. Ключът е при собственика — не се измисля тук.
+  printf '%s' "$(env_value MODULI_KEY)" | grep -Eqx '[0-9a-fA-F]{64}' ||
+    fail 1 "MODULI_KEY липсва или не е 64 hex знака — сложи го веднъж: sudo bash $APP_DIR/deploy/moduli-chiave.sh (DEPLOY.md, т. 1)."
+}
+
+# Шифрованите модули на новия release се отварят с MODULI_KEY от .env — проверено с новия образ, докато
+# старите контейнери още работят (иначе новият портал не би тръгнал).
+check_moduli() {
+  docker compose run --rm --no-deps --entrypoint node app dist/scripts/moduli-verifica.js ||
+    fail 1 "модулите на доставчиците не се отварят с MODULI_KEY от .env — работещите контейнери не са пипани. Провери ключа: sudo bash $APP_DIR/deploy/moduli-chiave.sh"
 }
 
 # Има ли база за бекъп — решава се преди build-а: при пръв деплой томът още не съществува.
@@ -231,6 +244,9 @@ backup_db() {
   fi
   find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -printf '%T@ %p\n' | sort -rn |
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
+  # Никое копие не стои повече от 14 дни (условията, A.11 и M.1; регистърът, T5) — и тези преди деплой.
+  # Току-що направеното остава винаги: то е по-ново от прага.
+  find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' ! -newer "$file" -mmin +$((BACKUP_DAYS * 24 * 60)) -delete
 }
 
 # Миграция, която още тече (entrypoint-ът на app я прилага): ред в _prisma_migrations без край, без
@@ -455,6 +471,7 @@ main() {
   plan_backup
   log "build…"
   docker compose build app worker || fail 1 "build се провали — работещите контейнери не са пипани."
+  check_moduli
   backup_db
   install_maint || warn "страницата за поддръжка не е в $MAINT_DIR — докато приложението тръгва, nginx връща 404 вместо нея"
   log "up (entrypoint-ът прилага миграциите)…"
