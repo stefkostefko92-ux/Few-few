@@ -1106,3 +1106,5 @@
 {"t":"start","ts":"2026-11-28T10:47:26.624Z","id":"r3c7e1afd","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-28T10:47:26.624Z","id":"r3c7e1afd","from":"razbivacha","to":"vps-adjiyata","status":"блокер","run":"cf8cea02"}
 {"t":"handoff","ts":"2026-11-28T10:49:06.288Z","id":"r3c7e1afd","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"c7765735"}
+{"t":"start","ts":"2026-11-28T12:11:08.375Z","id":"ra73769d3","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-11-28T12:11:08.375Z","id":"ra73769d3","from":"dizayner","to":"човек","status":"има бележки","run":"5086d412"}
