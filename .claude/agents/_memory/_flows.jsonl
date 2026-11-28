@@ -1063,3 +1063,9 @@
 {"t":"handoff","ts":"2026-11-27T21:06:52.082Z","id":"r45c03919","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"4dddc851"}
 {"t":"start","ts":"2026-11-27T21:54:51.659Z","id":"r402f418b","flow":"авто","lead":"diskordjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-27T21:54:51.659Z","id":"r402f418b","from":"diskordjiyata","to":"kodadjiyata","status":"има бележки","run":"508da2c0"}
+{"t":"start","ts":"2026-11-28T09:03:26.126Z","id":"rec3948bf","flow":"авто","lead":"diskordjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-28T09:03:26.127Z","id":"rec3948bf","from":"diskordjiyata","to":"kodadjiyata","status":"има бележки","run":"7ea95156"}
+{"t":"handoff","ts":"2026-11-28T09:46:34.787Z","id":"rec3948bf","from":"diskordjiyata","to":"kodadjiyata","status":"има бележки","run":"82bfffda"}
+{"t":"handoff","ts":"2026-11-28T09:47:15.794Z","id":"rec3948bf","from":"kodadjiyata","to":"друг","status":"има бележки","run":"6b519380","toRaw":"Изпитателя"}
+{"t":"start","ts":"2026-11-28T10:00:36.932Z","id":"r41a5d5ca","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-28T10:00:36.933Z","id":"r41a5d5ca","from":"kodadjiyata","to":"друг","status":"има бележки","run":"d8f693ce","toRaw":"Изпитателя"}
