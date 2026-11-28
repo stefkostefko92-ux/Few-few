@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-11-28:** Одит на покритието на таблото не бива да се чете само от frontend/src/api/index.js; част от страниците викат backend директно с default api (напр. TagsPage /canned), затова grep на api.(get|post|put|patch|delete)( в pages/ и components/ е задължителен. _(паритет бот срещу табло в SupremeDiscordBot; verified; SupremeDiscordBot/frontend/src/pages/TagsPage.jsx:12,32-44 (маршрутът /canned липсва в api/index.js))_
 - **2026-11-25:** PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименуван във всичките 8 dashboard локала и се ползва само от PrivacySettingsPage.jsx, така че няма риск от липсващ превод. _(преглед на PR-и, които преименуват i18n ключове или подпроцесори в SupremeDiscordBot; verified; Grep "privacy.sub\." в SupremeDiscordBot/frontend/src → 8 локала + PrivacySettingsPage.jsx:116)_
 
 - **2026-11-12:** Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dns, grantXpOnce, pushPollUpdate), затова се пренастройват в beforeEach, иначе .catch върху undefined дава фалшив 500 _(backend vitest с vi.mock и resetAllMocks в SupremeDiscordBot; verified; SupremeDiscordBot/backend/src/__tests__/launchAutomation.test.js и launchWebhooks.test.js (beforeEach))_
