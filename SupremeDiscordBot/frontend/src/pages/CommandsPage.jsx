@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useT } from "../contexts/I18nContext";
 import PageHeader from "../components/PageHeader";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Terminal, LayoutDashboard } from "lucide-react";
+import { Search, Terminal, LayoutDashboard } from "../components/icons";
 import { getCommandsCatalog } from "../api";
 import { COMMANDS_L10N, localizeCatalog } from "../i18n/commandsCatalog";
 

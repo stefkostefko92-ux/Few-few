@@ -1,7 +1,7 @@
 // frontend/src/pages/MessagesPage.jsx
 // Съобщения — това, което ботът публикува сам: закачено на дъното на канал или
 // по график. До 12.11.2026 бяха два от шестте раздела на „Автоматизация“.
-import { Pin, CalendarClock } from "lucide-react";
+import { Pin, CalendarClock } from "../components/icons";
 import PageHeader from "../components/PageHeader";
 import PageTabs, { TabPanel, useTab } from "../components/PageTabs";
 import StickyTab from "../components/automation/StickyTab";

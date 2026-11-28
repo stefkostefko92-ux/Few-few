@@ -2,7 +2,7 @@
 // Public "how-to-choose" guide — Growth Level-2 (docs/PRODUCT_ROADMAP.md),
 // targets "best discord ticket bot" search intent. Names Ticket Tool and
 // Appy Bot neutrally (no disparagement) and links to the sourced comparisons.
-import { BookOpen, ExternalLink } from "lucide-react";
+import { BookOpen, ExternalLink } from "../components/icons";
 import PublicPageLayout, { BOT_INVITE_URL } from "../components/PublicPageLayout";
 import Seo from "../components/Seo";
 import { BEST_TICKET_BOT_GUIDE as d } from "../data/growthContent";

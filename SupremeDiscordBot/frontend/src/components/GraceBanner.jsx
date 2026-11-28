@@ -14,7 +14,7 @@
 // accessUntil е null, значи този компонент така или иначе мълчи.
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Clock } from "lucide-react";
+import { Clock } from "./icons";
 import { getServer } from "../api";
 import { useT } from "../contexts/I18nContext";
 

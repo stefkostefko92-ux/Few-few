@@ -1,7 +1,7 @@
 // frontend/src/pages/adminShared.jsx
 // Общи градивни части на админ конзолата (AdminPage.jsx, AdminManageTabs.jsx).
 // Конзолата е EN-only (изключена от i18n) — както останалите ѝ табове.
-import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight } from "../components/icons";
 import Modal from "../components/Modal";
 
 /** Грешка от сървъра като текст (interceptor-ът вече нормализира Zod обекти). */

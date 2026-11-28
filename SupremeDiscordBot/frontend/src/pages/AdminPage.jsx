@@ -6,7 +6,7 @@ import {
   BarChart2, Users, Server, DollarSign, FileText,
   Shield, Ban, Search, Trash2, RotateCcw, Edit, MessageSquare,
   Star, AlertTriangle, CheckCircle, Sparkles, TrendingUp, ExternalLink, Download, LogOut, Gamepad2, LifeBuoy,
-} from "lucide-react";
+} from "../components/icons";
 import api, {
   getAnalytics, getRevenue, getAdminUsers, getAdminUser,
   getPayments, getAuditLogs, getAdminServers, getAdminServer,
@@ -20,7 +20,7 @@ import { useToast } from "../contexts/ToastContext";
 import { SystemTab, SecurityTab, BillingTab, FleetTab, ComplianceTab, SeasonTab, LoadError } from "./AdminOpsTabs";
 import { ConfirmModal, Pager } from "./adminShared";
 import { GameAdminTab, SupportTab } from "./AdminManageTabs";
-import { Activity, ShieldCheck, CreditCard, Bot, FileCheck } from "lucide-react";
+import { Activity, ShieldCheck, CreditCard, Bot, FileCheck } from "../components/icons";
 
 // Админ конзолата е EN-only (изключена от i18n) — суров сървърен текст + резерва.
 const adminErr = (err) => err?.response?.data?.error || "Action failed. Please try again.";

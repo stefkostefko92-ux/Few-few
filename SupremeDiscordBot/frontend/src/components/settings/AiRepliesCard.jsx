@@ -3,7 +3,7 @@
 // сървъра. НЕ чете статиите от базата знания (services/aiReply.js праща само
 // указанията и съобщението) — стои до тях, защото и двете са „автоматичен първи
 // отговор“, и текстът на картата го казва изрично.
-import { Zap } from "lucide-react";
+import { Zap } from "../icons";
 import SettingsCard, { SaveBar, SettingsSkeleton } from "./SettingsCard";
 import { useServerSettings } from "../../hooks/useServerSettings";
 import { useT } from "../../contexts/I18nContext";

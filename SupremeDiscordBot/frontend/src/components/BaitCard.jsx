@@ -5,7 +5,7 @@
 // се изваждат автоматично. Изпълнява ботът (bot/src/utils/bait.js).
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Fish } from "lucide-react";
+import { Fish } from "./icons";
 import DiscordChannelSelect from "./DiscordPicker";
 import { getBait, updateBait } from "../api";
 import { useT } from "../contexts/I18nContext";

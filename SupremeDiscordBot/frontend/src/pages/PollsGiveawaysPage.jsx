@@ -1,7 +1,7 @@
 // frontend/src/pages/PollsGiveawaysPage.jsx
 // Анкети и раздавания — двете неща, с които екипът занимава общността.
 // До 12.11.2026 бяха два от шестте раздела на „Автоматизация“.
-import { BarChart3, Gift } from "lucide-react";
+import { BarChart3, Gift } from "../components/icons";
 import PageHeader from "../components/PageHeader";
 import PageTabs, { TabPanel, useTab } from "../components/PageTabs";
 import PollsTab from "../components/automation/PollsTab";

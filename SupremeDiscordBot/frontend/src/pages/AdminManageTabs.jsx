@@ -7,7 +7,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Gamepad2, Search, Server, LifeBuoy, ExternalLink, Trash2, Sparkles, SlidersHorizontal, RotateCcw, XCircle } from "lucide-react";
+import { Gamepad2, Search, Server, LifeBuoy, ExternalLink, Trash2, Sparkles, SlidersHorizontal, RotateCcw, XCircle } from "../components/icons";
 import {
   getAdminServers, getAdminGameMembers, getAdminMemberCompanions, adminAdjustMember, adminGrantCompanion, adminRevokeCompanion,
   adminResetGame, getAdminGameSeason, getAdminTickets, deleteAdminTicket, getAdminPanels, getAdminForms,

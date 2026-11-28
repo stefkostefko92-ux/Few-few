@@ -4,7 +4,7 @@
 // системна клавиатура с emoji). Custom emojis (name:id) се пишат ръчно в
 // текстовото поле — picker-ът покрива стандартните Unicode emoji.
 import { useEffect, useRef, useState } from "react";
-import { SmilePlus } from "lucide-react";
+import { SmilePlus } from "./icons";
 import { useT } from "../contexts/I18nContext";
 
 const CATEGORIES = [

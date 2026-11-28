@@ -6,7 +6,7 @@
 // Deliberately a DIFFERENT component from ../pages/CommandsPage.jsx (that one
 // is the authenticated in-dashboard reference at /dashboard/:serverId/commands,
 // fed by the API). This page renders the catalog directly — no auth, no fetch.
-import { Terminal, LayoutDashboard, BookOpen } from "lucide-react";
+import { Terminal, LayoutDashboard, BookOpen } from "../components/icons";
 import { COMMAND_CATALOG } from "../data/commandsCatalog";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";

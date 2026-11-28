@@ -5,7 +5,7 @@
 // в данните: казва точно какво прави.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Check, ChevronDown, LogOut, Search, Shield, KeyRound } from "lucide-react";
+import { Check, ChevronDown, LogOut, Search, Shield, KeyRound } from "./icons";
 import { useT } from "../contexts/I18nContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 
@@ -50,7 +50,7 @@ export function ServerSwitcher({ servers, serverId, serverName, serverIcon, clas
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls="server-switcher-list"
-        className="w-full flex items-center gap-2.5 h-10 pl-1.5 pr-3 rounded-lg border border-cs-line bg-cs-surface/70 hover:border-cs-cyan/40 transition-colors"
+        className="w-full flex items-center gap-2.5 h-10 pl-1.5 pr-3 cs-knob"
       >
         <ServerAvatar icon={serverId ? serverIcon : null} name={label} />
         <span className="min-w-0 flex-1 text-left">
@@ -60,7 +60,7 @@ export function ServerSwitcher({ servers, serverId, serverName, serverIcon, clas
         <ChevronDown className={`w-4 h-4 text-cs-dim flex-none transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
       {open && (
-        <ul id="server-switcher-list" className="absolute left-0 top-full mt-2 w-72 max-h-[60vh] overflow-y-auto rounded-xl border border-cs-line bg-cs-surface shadow-cs-lift p-1.5 z-50">
+        <ul id="server-switcher-list" className="absolute left-0 top-full mt-2 w-72 max-h-[60vh] overflow-y-auto cs-dropdown z-50">
           <li>
             <Link to="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-cs-muted no-underline hover:bg-cs-panel hover:text-cs-text">
               {t("nav.allServers")}
@@ -135,7 +135,7 @@ function PageSearch({ items }) {
       />
       {shown && (
         results.length ? (
-          <ul id="page-search-list" role="listbox" aria-label={t("nav.searchLabel")} className="absolute left-0 right-0 top-full mt-2 rounded-xl border border-cs-line bg-cs-surface shadow-cs-lift p-1.5 z-50">
+          <ul id="page-search-list" role="listbox" aria-label={t("nav.searchLabel")} className="absolute left-0 right-0 top-full mt-2 cs-dropdown z-50">
             {results.map((r, i) => {
               const Icon = r.icon;
               return (
@@ -155,7 +155,7 @@ function PageSearch({ items }) {
             })}
           </ul>
         ) : (
-          <p role="status" className="absolute left-0 right-0 top-full mt-2 rounded-xl border border-cs-line bg-cs-surface px-4 py-3 text-sm text-cs-dim z-50">
+          <p role="status" className="absolute left-0 right-0 top-full mt-2 cs-dropdown px-4 py-3 text-sm text-cs-dim z-50">
             {t("nav.noResults")}
           </p>
         )
@@ -198,7 +198,7 @@ function UserMenu({ user, onLogout }) {
         <ChevronDown className={`w-4 h-4 text-cs-dim transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
       {open && (
-        <ul id="user-menu-list" className="absolute right-0 top-full mt-2 w-60 rounded-xl border border-cs-line bg-cs-surface shadow-cs-lift p-1.5 z-50">
+        <ul id="user-menu-list" className="absolute right-0 top-full mt-2 w-60 cs-dropdown z-50">
           <li>
             <Link to="/dashboard/privacy-settings" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-cs-text no-underline hover:bg-cs-panel">
               <Shield className="w-4 h-4 text-cs-dim" aria-hidden="true" /> {t("nav.privacy")}
@@ -222,7 +222,7 @@ function UserMenu({ user, onLogout }) {
 
 export default function DashboardTopbar({ servers, serverId, serverName, serverIcon, searchItems, user, onLogout }) {
   return (
-    <header className="hidden md:flex items-center gap-3 lg:gap-4 h-16 px-4 lg:px-6 border-b border-cs-line bg-cs-bg/90 backdrop-blur sticky top-0 z-30">
+    <header className="hidden md:flex items-center gap-3 lg:gap-4 h-16 px-4 lg:px-6 border-b cs-bar sticky top-0 z-30">
       <ServerSwitcher servers={servers} serverId={serverId} serverName={serverName} serverIcon={serverIcon} className="w-56 lg:w-64 flex-none" />
       <PageSearch items={searchItems} />
       <div className="ml-auto flex items-center gap-1">

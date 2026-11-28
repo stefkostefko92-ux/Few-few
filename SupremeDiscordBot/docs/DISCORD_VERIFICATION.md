@@ -198,7 +198,7 @@ Members**. **Presence НЕ се иска** и не се включва — ня�
 > monitoring 90 days. Deletion on request: `/privacy delete` in Discord for any
 > user (identity anonymized, transcripts regenerated), dashboard self-service
 > (GDPR Art. 15 export / Art. 17 deletion), admin console for requests received
-> by e-mail at privacy@carbonstealth.eu (target ≤72 h).
+> by e-mail at info@carbonstealth.eu (target ≤72 h).
 
 **Sharing with third parties:**
 

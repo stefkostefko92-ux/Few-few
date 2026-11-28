@@ -23,7 +23,6 @@ export default defineConfig({
         // Rolldown's advancedChunks.groups (test-based) — the forward-compatible API.
         advancedChunks: {
           groups: [
-            { name: "icons", test: /[\\/]node_modules[\\/]lucide-react[\\/]/ },
             { name: "vendor", test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|@tanstack[\\/]react-query|axios)[\\/]/ },
           ],
         },

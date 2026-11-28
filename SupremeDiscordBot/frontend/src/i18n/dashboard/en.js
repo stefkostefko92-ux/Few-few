@@ -1379,4 +1379,12 @@ export default {
   "game.runNow.error.BOT_ACTION_FAILED": "The bot could not post in that channel. Check its permissions there.",
   "tickets.manage.queued": "Discord allows only a few renames per channel in a short time. The new name will apply in a few minutes.",
   "tickets.manage.movedWithWarnings": "Ticket moved, but Discord refused part of it (category or permissions). Check the channel.",
+  "banner.label": "Discord banner",
+  "banner.hint": "The picture under the panel text in Discord. The ready-made banners have no text or logo, so they fit any server.",
+  "banner.none": "No banner",
+  "banner.custom": "Your own image",
+  "banner.reactor": "Reactor",
+  "banner.armor": "Armor",
+  "banner.shield": "Shield",
+  "banner.gold": "Gold",
 };

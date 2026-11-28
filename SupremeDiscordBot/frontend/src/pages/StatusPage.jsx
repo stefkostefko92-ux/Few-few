@@ -1,7 +1,7 @@
 // frontend/src/pages/StatusPage.jsx
 // Public-facing service status dashboard — no auth required.
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, XCircle, AlertTriangle, Server, Database, Bot } from "lucide-react";
+import { CheckCircle2, XCircle, AlertTriangle, Server, Database, Bot } from "../components/icons";
 import { getStatus } from "../api";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";

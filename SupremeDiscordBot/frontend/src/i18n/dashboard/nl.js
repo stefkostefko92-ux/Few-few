@@ -1368,4 +1368,12 @@ export default {
   "game.runNow.error.BOT_ACTION_FAILED": "De bot kon niet in dat kanaal posten. Controleer daar zijn rechten.",
   "tickets.manage.queued": "Discord staat maar een paar naamswijzigingen per kanaal in korte tijd toe. De nieuwe naam gaat over een paar minuten in.",
   "tickets.manage.movedWithWarnings": "Ticket verplaatst, maar Discord weigerde een deel (categorie of rechten). Controleer het kanaal.",
+  "banner.label": "Discord-banner",
+  "banner.hint": "De afbeelding onder de paneltekst in Discord. De kant-en-klare banners hebben geen tekst of logo en passen daardoor bij elke server.",
+  "banner.none": "Geen banner",
+  "banner.custom": "Eigen afbeelding",
+  "banner.reactor": "Reactor",
+  "banner.armor": "Pantser",
+  "banner.shield": "Schild",
+  "banner.gold": "Goud",
 };

@@ -1368,4 +1368,12 @@ export default {
   "game.runNow.error.BOT_ACTION_FAILED": "Il bot non è riuscito a pubblicare in quel canale. Controlla i suoi permessi lì.",
   "tickets.manage.queued": "Discord consente pochi cambi di nome per canale in poco tempo. Il nuovo nome verrà applicato tra qualche minuto.",
   "tickets.manage.movedWithWarnings": "Ticket spostato, ma Discord ha rifiutato una parte (categoria o permessi). Controlla il canale.",
+  "banner.label": "Banner Discord",
+  "banner.hint": "L'immagine sotto il testo del pannello su Discord. I banner pronti non hanno testo né logo, quindi vanno bene per qualsiasi server.",
+  "banner.none": "Nessun banner",
+  "banner.custom": "Immagine tua",
+  "banner.reactor": "Reattore",
+  "banner.armor": "Armatura",
+  "banner.shield": "Scudo",
+  "banner.gold": "Oro",
 };

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star, Ticket, RefreshCw, MessageSquare, Search, Plus } from "lucide-react";
+import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star, Ticket, RefreshCw, MessageSquare, Search, Plus } from "../components/icons";
 import { timeAgo } from "../utils/timeAgo";
 import { getTickets, closeTicket, claimTicket, exportTicketPDF, replyToTicket } from "../api";
 import Modal from "../components/Modal";
@@ -173,7 +173,7 @@ export default function TicketsPage() {
                 type="button"
                 aria-pressed={on}
                 onClick={() => { setStatusFilter(st); setPage(1); }}
-                className={`inline-flex items-center gap-1.5 min-h-[34px] px-3 rounded-lg text-[13px] font-medium border transition-colors ${
+                className={`inline-flex items-center gap-1.5 min-h-[34px] px-3 rounded text-[13px] font-medium border transition-colors ${
                   on ? "bg-cs-cyan/10 text-cs-cyan border-cs-cyan/45" : "text-cs-muted border-cs-line hover:text-cs-text hover:border-cs-borderHi"
                 }`}
               >
@@ -300,18 +300,18 @@ export default function TicketsPage() {
                             {String(ticket.creator?.username || "?").charAt(0).toUpperCase()}
                           </span>
                         )}
-                        <span className="text-cs-text">{ticket.creator?.username ?? t("common.unknownUser")}</span>
+                        <span className="text-cs-text block max-w-[12rem] truncate" title={ticket.creator?.username ?? undefined}>{ticket.creator?.username ?? t("common.unknownUser")}</span>
                       </div>
                     </td>
                     <td className="text-cs-muted">{ticket.panel?.name ?? "—"}</td>
                     <td>
-                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${st.cls}`}>
+                      <span className={`inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${st.cls}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} aria-hidden="true" />
                         {t(`status.${ticket.status.toLowerCase()}`)}
                       </span>
                     </td>
                     <td>
-                      <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${PRIORITY_COLORS[pr] || PRIORITY_COLORS.NORMAL}`}>
+                      <span className={`inline-flex rounded-sm border px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${PRIORITY_COLORS[pr] || PRIORITY_COLORS.NORMAL}`}>
                         {t(`priority.${pr.toLowerCase()}`)}
                       </span>
                     </td>
@@ -338,11 +338,6 @@ export default function TicketsPage() {
                     </td>
                     <td>
                       <div className="flex items-center justify-end gap-0.5">
-                        {(ticket.status === "OPEN" || ticket.status === "CLAIMED") && (
-                          <button type="button" className="cs-btn-ghost cs-btn-sm whitespace-nowrap" onClick={() => setManaging(ticket)}>
-                            {t("tickets.manage.open")}
-                          </button>
-                        )}
                         {(ticket.status === "OPEN" || ticket.status === "CLAIMED") && (
                           <button
                             onClick={() => { setReplyingId(ticket.id); setReplyText(""); }}
@@ -395,6 +390,13 @@ export default function TicketsPage() {
                             className="rounded-md text-cs-muted hover:text-danger hover:bg-danger/10 transition-colors p-1.5"
                           >
                             <X className="w-4 h-4" />
+                          </button>
+                        )}
+                        {/* „Управлявай“ — винаги най-вдясно, за да стои на едно място във всеки ред,
+                            колкото и икони да има вляво от него (ревю на Дизайнера, 28.11.2026). */}
+                        {(ticket.status === "OPEN" || ticket.status === "CLAIMED") && (
+                          <button type="button" className="cs-btn-secondary cs-btn-sm whitespace-nowrap ml-1.5" onClick={() => setManaging(ticket)}>
+                            {t("tickets.manage.open")}
                           </button>
                         )}
                       </div>

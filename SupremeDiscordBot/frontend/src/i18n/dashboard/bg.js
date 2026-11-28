@@ -1368,4 +1368,12 @@ export default {
   "game.runNow.error.BOT_ACTION_FAILED": "Ботът не можа да пише в този канал. Провери правата му там.",
   "tickets.manage.queued": "Discord позволява малко преименувания на канал за кратко време. Новото име ще влезе след няколко минути.",
   "tickets.manage.movedWithWarnings": "Тикетът е преместен, но Discord отказа част от промяната (категория или права). Провери канала.",
+  "banner.label": "Банер в Discord",
+  "banner.hint": "Картинката под текста на панела в Discord. Готовите банери са без текст и лого, затова пасват на всеки сървър.",
+  "banner.none": "Без банер",
+  "banner.custom": "Собствена картинка",
+  "banner.reactor": "Реактор",
+  "banner.armor": "Броня",
+  "banner.shield": "Щит",
+  "banner.gold": "Злато",
 };

@@ -369,7 +369,7 @@ export const COMMAND_CATALOG = [
         dashboard: "Privacy settings page (dashboard account)",
         permission: "Everyone" },
       { name: "/privacy delete", signature: "/privacy delete",
-        description: "Deletes / anonymises the data Supreme Bot holds about you across all servers (confirmation button). Ticket text stays as the server's record — email privacy@carbonstealth.eu for full erasure.",
+        description: "Deletes / anonymises the data Supreme Bot holds about you across all servers (confirmation button). Ticket text stays as the server's record — email info@carbonstealth.eu for full erasure.",
         dashboard: "Privacy settings page · Delete account",
         permission: "Everyone" },
     ],

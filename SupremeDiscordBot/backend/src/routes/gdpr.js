@@ -400,7 +400,7 @@ router.post("/report-abuse", async (req, res, next) => {
     });
 
     // Surface the report to operators immediately. Sentry is the alerting
-    // channel in production (routes to abuse@carbonstealth.eu via its rules);
+    // channel in production (routes to info@carbonstealth.eu via its rules);
     // the console line guarantees a record even when Sentry is not configured.
     console.warn(`[DSA] Abuse report ${report.id}: type=${targetType} target=${targetId || "n/a"} reporter=${req.user.id}`);
     if (process.env.SENTRY_DSN) {

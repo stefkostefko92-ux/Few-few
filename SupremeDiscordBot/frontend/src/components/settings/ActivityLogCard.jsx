@@ -1,7 +1,7 @@
 // frontend/src/components/settings/ActivityLogCard.jsx
 // Дневник на сървъра: кои събития отиват в кой канал на Discord. Нищо от това
 // не се пази при нас — ботът само публикува в избрания канал.
-import { Activity } from "lucide-react";
+import { Activity } from "../icons";
 import DiscordChannelSelect from "../DiscordPicker";
 import SettingsCard from "./SettingsCard";
 import { LOG_CATEGORIES } from "./fields";

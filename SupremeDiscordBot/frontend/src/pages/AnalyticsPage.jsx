@@ -2,7 +2,7 @@
 import { Fragment } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Users, TrendingUp, Ticket, FileText, Award, RefreshCw } from "lucide-react";
+import { Users, TrendingUp, Ticket, FileText, Award, RefreshCw } from "../components/icons";
 import {
   getAnalyticsOverview, getAnalyticsHeatmap,
   getAnalyticsLeaderboard, getAnalyticsFunnel,

@@ -25,7 +25,7 @@ import { useMemo, useRef, useState, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { AlertTriangle, X, ChevronDown, Search } from "lucide-react";
+import { AlertTriangle, X, ChevronDown, Search } from "./icons";
 import api from "../api";
 import { useT } from "../contexts/I18nContext";
 
@@ -275,7 +275,7 @@ export function DiscordRoleSelect({ multi = false, value, onChange, id, requireA
              който живее полето му. fixed + портал = никой overflow не го реже. */
           data-picker-portal=""
           style={{ position: "fixed", left: pos.left, width: pos.width, top: pos.top, bottom: pos.bottom, maxHeight: pos.maxH, zIndex: 60 }}
-          className="overflow-y-auto rounded-xl border border-cs-border bg-cs-bg shadow-2xl"
+          className="overflow-y-auto cs-dropdown"
         >
           <div className="sticky top-0 bg-cs-bg border-b border-cs-border p-2">
             <div className="relative">

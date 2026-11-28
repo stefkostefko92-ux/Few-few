@@ -4,7 +4,7 @@ import { SUPPORT_URL } from "../lib/support";
 
 export default function CookiesPage() {
   const COMPANY    = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
-  const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
+  const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "info@carbonstealth.eu";
 
   return (
     <LegalPage title="Cookie Policy" updated="23 October 2026">

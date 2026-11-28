@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ChannelName } from "../components/DiscordPicker";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare, Users, History } from "lucide-react";
+import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare, Users, History } from "../components/icons";
 import { getApplications, getApplication, reviewApplication, deleteApplication, openApplicationDiscussion } from "../api";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";

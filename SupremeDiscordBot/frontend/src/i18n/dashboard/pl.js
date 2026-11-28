@@ -1368,4 +1368,12 @@ export default {
   "game.runNow.error.BOT_ACTION_FAILED": "Bot nie mógł napisać na tym kanale. Sprawdź tam jego uprawnienia.",
   "tickets.manage.queued": "Discord pozwala na niewiele zmian nazwy kanału w krótkim czasie. Nowa nazwa zacznie obowiązywać za kilka minut.",
   "tickets.manage.movedWithWarnings": "Zgłoszenie przeniesione, ale Discord odrzucił część zmiany (kategoria lub uprawnienia). Sprawdź kanał.",
+  "banner.label": "Baner w Discordzie",
+  "banner.hint": "Obraz pod tekstem panelu w Discordzie. Gotowe banery nie mają tekstu ani logo, więc pasują do każdego serwera.",
+  "banner.none": "Bez banera",
+  "banner.custom": "Własny obraz",
+  "banner.reactor": "Reaktor",
+  "banner.armor": "Pancerz",
+  "banner.shield": "Tarcza",
+  "banner.gold": "Złoto",
 };

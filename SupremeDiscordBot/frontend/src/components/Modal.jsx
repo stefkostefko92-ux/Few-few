@@ -3,7 +3,7 @@
 // labelled by its title, Escape-to-close, focus moved in on open and
 // restored on close, and Tab focus trapped within the dialog.
 import { useEffect, useRef, useId } from "react";
-import { X } from "lucide-react";
+import { X } from "./icons";
 import { useT } from "../contexts/I18nContext";
 
 const FOCUSABLE =

@@ -8,7 +8,7 @@ import { SUPPORT_URL, SUPPORT_LABEL } from "../lib/support";
 
 export default function EulaPage() {
   const COMPANY = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
-  const EMAIL   = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
+  const EMAIL   = import.meta.env.VITE_CONTACT_EMAIL || "info@carbonstealth.eu";
   const SUPPORT = SUPPORT_URL;
   const COUNTRY = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 

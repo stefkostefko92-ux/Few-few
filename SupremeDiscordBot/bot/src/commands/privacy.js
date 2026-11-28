@@ -11,7 +11,7 @@
 // Обхватът на самообслужването е „identity" (профил, подпис на съобщенията,
 // сесии, ключове, снимки на роли, опити за верификация, членство). Текстът на
 // тикетите е запис на сървърния оператор (контролър) — за пълно изтриване се
-// пише на privacy@carbonstealth.eu (обработва се от админ конзолата).
+// пише на info@carbonstealth.eu (обработва се от админ конзолата).
 import {
   ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, MessageFlags, SlashCommandBuilder,
 } from "discord.js";
@@ -22,7 +22,7 @@ import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supremebot.carbonstealth.eu";
 const PRIVACY_URL = `${DASHBOARD_URL}/privacy`;
-const PRIVACY_EMAIL = "privacy@carbonstealth.eu";
+const PRIVACY_EMAIL = "info@carbonstealth.eu";
 // Охлаждане по потребител (10 min) — изтриването е идемпотентно, но всяко
 // повикване пише одитен ред; без дросел командата е усилвател на шум.
 const COOLDOWN_MS = 10 * 60 * 1000;

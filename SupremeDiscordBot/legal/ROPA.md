@@ -4,7 +4,7 @@
 **Controller/Processor:** Carbon Stealth VCC  
 **EIK:** 208725180 · **VAT (ЗДДС):** BG208725180  
 **Address:** ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria  
-**Contact:** privacy@carbonstealth.eu  
+**Contact:** info@carbonstealth.eu  
 **Last updated:** 2026-10-10  
 **Version:** 1.7 — Activity 18 extended: companion stats and battles between members (battle records with both Discord IDs, the sparks reward and the sparks lost by the loser, 30-day retention), a per-member battle opt-out, and members' Discord display names shown live (not stored) on the operator's Game page  
 **Version:** 1.6 — Activity 18 (Server Season game: activity-based progress, sparks, companions, server quests, counting, trivia — off by default, enabled per server by the operator) added  
@@ -21,7 +21,7 @@
 - **Registration:** EIK 208725180, VAT BG208725180, Bulgaria
 - **Representative:** Stefan Lyubomirov Kostadinov (Managing Director)
 - **Data Protection Officer:** Not yet appointed (threshold Article 37 not yet met; volunteer designation planned)
-- **DPO email:** privacy@carbonstealth.eu (interim)
+- **DPO email:** info@carbonstealth.eu (interim)
 
 ## Data subject rights — channels (Discord Developer Terms §5(b), GDPR Art. 15–17)
 
@@ -29,7 +29,7 @@
 |---|---|---|---|
 | `/privacy info` · `/privacy delete` in Discord | any Discord user the bot has data about (no dashboard account needed) | identity: profile, message author signature, sessions, API keys, role snapshots, verification attempts, memberships; game (Activity 18): progress counters, reward keys, companions, purchases, quest contributions, trivia answers (wins and catches anonymised) | audit `DSR_ERASED` (via: bot) |
 | Dashboard → Privacy settings | dashboard users | Art. 15 export, Art. 17 account deletion, Art. 7(3) consent withdrawal | audit `GDPR_*` |
-| privacy@carbonstealth.eu → Admin console → Compliance | anyone; handled by Main Owner with a fresh second factor | identity or full (also ticket message text and application answers → "[erased]") | audit `DSR_ERASED` (via: admin, note = request reference) |
+| info@carbonstealth.eu → Admin console → Compliance | anyone; handled by Main Owner with a fresh second factor | identity or full (also ticket message text and application answers → "[erased]") | audit `DSR_ERASED` (via: admin, note = request reference) |
 
 Target: handled promptly, ≤72 h. Staff accounts and accounts with active paid subscriptions are refused until demoted/cancelled.
 

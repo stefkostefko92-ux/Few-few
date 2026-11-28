@@ -20,7 +20,7 @@ import {
   LayoutDashboard, Ticket, FileText, Layout as LayoutIcon, Users, ShieldCheck, Gamepad2,
   MessageSquareText, Webhook, Lightbulb, LineChart, BookOpen, Settings, Key, Star, LifeBuoy,
   Fish, ScrollText, UserPlus, BarChart3, Megaphone,
-} from "lucide-react";
+} from "./icons";
 
 import { SUPPORT_URL } from "../lib/support";
 import { BackupIcon } from "./RasterIcon";

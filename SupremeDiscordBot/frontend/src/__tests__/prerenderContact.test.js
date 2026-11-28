@@ -14,7 +14,7 @@ describe("prerender — контакт и правни връзки в сним�
     const m = pre.match(/function contactFooter\(\)\s*\{[\s\S]*?\n\}/);
     expect(m, "няма function contactFooter()").not.toBeNull();
     const body = m[0];
-    expect(body).toContain('href="mailto:legal@carbonstealth.eu"');
+    expect(body).toContain('href="mailto:info@carbonstealth.eu"');
     for (const p of ["/terms", "/privacy", "/cookies", "/accessibility"]) expect(body).toContain(`href="${p}"`);
     expect(body).toContain("Carbon Stealth VCC");
     expect(body).toContain("Samuil 3");

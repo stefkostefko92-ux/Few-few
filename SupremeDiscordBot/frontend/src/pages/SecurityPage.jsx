@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import QRCode from "qrcode";
-import { ShieldCheck, ShieldAlert, Copy, RefreshCw, Trash2 } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Copy, RefreshCw, Trash2 } from "../components/icons";
 import { getMfaStatus, mfaSetup, mfaEnable, mfaDisable, mfaRegenerateCodes } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
@@ -123,9 +123,9 @@ export default function SecurityPage() {
 
       {/* Състояние */}
       <div className="cs-card mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           {enabled ? <ShieldCheck className="w-6 h-6 text-success" /> : <ShieldAlert className="w-6 h-6 text-cs-dim" />}
-          <div>
+          <div className="min-w-0">
             <p className="font-semibold text-cs-text">{enabled ? t("security.statusEnabled") : t("security.statusDisabled")}</p>
             <p className="text-xs text-cs-dim">
               {enabled

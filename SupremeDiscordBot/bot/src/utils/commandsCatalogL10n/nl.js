@@ -77,7 +77,7 @@ export default {
     "/wyr": "Wat heb je liever… — plaatst een vraag met twee keuzes en stemknoppen 🅰️/🅱️ uit onze SFW-verzameling.",
     "/tod": "Truth or dare — een willekeurige SFW-opdracht voor jou uit onze verzameling.",
     "/privacy info": "Toont wat Supreme Bot over je bewaart (tickets, berichten, aanmeldingen, momentopnamen van rollen) en waar het privacybeleid staat.",
-    "/privacy delete": "Verwijdert / anonimiseert de gegevens die Supreme Bot op alle servers over je bewaart (bevestigingsknop). De tickettekst blijft als vastlegging van de server — mail voor volledige verwijdering naar privacy@carbonstealth.eu.",
+    "/privacy delete": "Verwijdert / anonimiseert de gegevens die Supreme Bot op alle servers over je bewaart (bevestigingsknop). De tickettekst blijft als vastlegging van de server — mail voor volledige verwijdering naar info@carbonstealth.eu.",
   },
   features: {
     "Create verification panel": ["Verificatiepaneel maken", "Knop / reken-captcha / reactie. Stel de toegekende rollen, minimale accountleeftijd en wachttijden in."],

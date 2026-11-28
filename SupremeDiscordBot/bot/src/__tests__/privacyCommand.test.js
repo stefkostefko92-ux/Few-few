@@ -78,7 +78,7 @@ describe("изпълнение", () => {
     expect(apiGet).toHaveBeenCalledWith("/bot/dsr/123456789012345678");
     const body = i.editReply.mock.calls[0][0];
     expect(JSON.stringify(body)).toContain("/privacy");
-    expect(JSON.stringify(body)).toContain("privacy@carbonstealth.eu");
+    expect(JSON.stringify(body)).toContain("info@carbonstealth.eu");
   });
 
   it("delete без потвърждение (timeout) не трие", async () => {

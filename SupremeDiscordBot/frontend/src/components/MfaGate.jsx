@@ -9,7 +9,7 @@
 //      успешно потвърждение потребителят повтаря действието (нищо не се
 //      преиграва автоматично — разрушително действие не бива да „се случи само“).
 import { useEffect, useState } from "react";
-import { KeyRound } from "lucide-react";
+import { KeyRound } from "./icons";
 import { mfaVerify } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";

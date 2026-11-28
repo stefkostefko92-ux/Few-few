@@ -82,7 +82,7 @@ export function LandingFooter({ lang, ui, guides, nav, supportUrl, company }) {
         <div className="mt-6 flex flex-col sm:flex-row sm:items-start justify-between gap-3 text-xs text-cs-dim leading-relaxed">
           <p>
             © 2026 {company}. EIK 208725180, VAT BG208725180.<br />
-            ul. Samuil 3, 2670 Bobov dol, Bulgaria. <a href="mailto:legal@carbonstealth.eu" className="text-cs-muted underline hover:text-cs-text">legal@carbonstealth.eu</a>
+            ul. Samuil 3, 2670 Bobov dol, Bulgaria. <a href="mailto:info@carbonstealth.eu" className="text-cs-muted underline hover:text-cs-text">info@carbonstealth.eu</a>
           </p>
           <p>{ui.made} <a href="https://carbonstealth.eu" target="_blank" rel="noopener" className="text-cs-cyan underline">Carbon Stealth VCC</a></p>
         </div>

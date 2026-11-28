@@ -4,7 +4,7 @@
 // search intent. Every competitor claim in growthContent.js was verified live
 // against appy.bot on 2026-08-05 (UCPD / Dir. 2006/114/EC discipline —
 // factual, dated, sourced; no disparagement).
-import { CheckCircle2, ExternalLink } from "lucide-react";
+import { CheckCircle2, ExternalLink } from "../components/icons";
 import PublicPageLayout, { BOT_INVITE_URL } from "../components/PublicPageLayout";
 import Seo from "../components/Seo";
 import { APPY_COMPARE, CHECKED_DATE } from "../data/growthContent";

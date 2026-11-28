@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Key, Plus, Trash2, Copy, Eye, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Key, Plus, Trash2, Copy, Eye, CheckCircle2, AlertTriangle } from "../components/icons";
 import { getApiKeys, createApiKey, revokeApiKey, getApiScopes } from "../api";
 import { useT } from "../contexts/I18nContext";
 import PageHeader from "../components/PageHeader";

@@ -4,7 +4,7 @@
 // nginx (because index.html was served), but the client side correctly
 // indicates "not found" status to the user.
 
-import { Home, AlertCircle, Compass } from "lucide-react";
+import { Home, AlertCircle, Compass } from "../components/icons";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";
 import { SUPPORT_URL } from "../lib/support";

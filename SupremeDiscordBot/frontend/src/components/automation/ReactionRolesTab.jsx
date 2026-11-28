@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2, Plus, SmilePlus, Pencil, Send } from "lucide-react";
+import { Trash2, Plus, SmilePlus, Pencil, Send } from "../icons";
 import { getReactionRoles, createReactionRole, updateReactionRole, deleteReactionRole, spawnReactionRole } from "../../api";
 import Modal from "../Modal";
 import ConfirmDialog from "../ConfirmDialog";

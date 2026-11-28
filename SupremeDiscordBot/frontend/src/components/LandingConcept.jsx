@@ -10,8 +10,9 @@
 // беше измислено; на нейното място стои истинската карта по-долу.
 import {
   ChevronRight, ShieldCheck, Server, BadgeCheck, Play, Plus, Check, Lock, ArrowRight,
-  Ticket, FileText, SmilePlus, Gift, ScrollText, CalendarClock, Webhook,
-} from "lucide-react";
+  Ticket, FileText, SmilePlus, Gift, ScrollText, CalendarClock, Webhook, Discord,
+} from "./icons";
+import HeroReactor from "./HeroReactor.jsx";
 import { BOT_KEYS } from "../i18n/landingConcept";
 
 // Всяка карта води към страницата на функцията (английски — както футъра).
@@ -31,12 +32,9 @@ const BOT_ICONS = {
 };
 const TRUST_ICONS = [ShieldCheck, Server, BadgeCheck];
 
+// Логото на Discord — растерна клетка от атласа (правилото „никога SVG“).
 export function DiscordIcon({ className = "w-5 h-5" }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.211.375-.445.864-.608 1.249a18.365 18.365 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.036 19.736 19.736 0 0 0-4.885 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.371-.291a.074.074 0 0 1 .077-.01c3.927 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.098.245.198.372.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.04.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-    </svg>
-  );
+  return <Discord className={className} aria-hidden="true" />;
 }
 
 // ─── Героят ──────────────────────────────────────────────────────────────────
@@ -79,6 +77,9 @@ export function ConceptHero({ c, inviteUrl, onDashboard, notice = null }) {
         </div>
 
         <div className="relative mx-auto w-full max-w-[34rem] lg:max-w-none">
+          {/* 3D реакторът („Токсична броня“) кръжи ЗАД стражаря — зарежда се лениво,
+              само ако браузърът е свободен и човекът не е поискал по-малко движение. */}
+          <HeroReactor className="absolute -inset-[14%] pointer-events-none" />
           {/* Артът е декорация (празен alt): заглавието вече казва всичко. */}
           <div aria-hidden="true" className="hero-art relative aspect-[692/616]">
             <img
@@ -95,7 +96,7 @@ export function ConceptHero({ c, inviteUrl, onDashboard, notice = null }) {
             href={inviteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="hero-art-card absolute flex items-center gap-3 rounded-xl border border-cs-line bg-cs-surface/85 backdrop-blur-md pl-3 pr-5 py-3 no-underline shadow-cs-lift hover:border-cs-cyan/50 transition-colors"
+            className="hero-art-card absolute flex items-center gap-3 cs-dropdown pl-3 pr-5 py-3 no-underline hover:border-cs-cyan/60 transition-colors"
           >
             <span className="w-11 h-11 rounded-lg bg-[#5865F2] text-white flex items-center justify-center flex-none">
               <DiscordIcon className="w-6 h-6" />

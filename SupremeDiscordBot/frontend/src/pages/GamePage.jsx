@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil, Sparkles, Target } from "lucide-react";
+import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil, Sparkles, Target } from "../components/icons";
 import { useT } from "../contexts/I18nContext";
 import PageHeader from "../components/PageHeader";
 import PageTabs, { TabPanel, useTab } from "../components/PageTabs";

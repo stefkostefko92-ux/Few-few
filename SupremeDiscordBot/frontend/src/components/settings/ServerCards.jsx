@@ -2,7 +2,7 @@
 // Картите на страницата „Настройки“: канали за тикетите, език на бота,
 // разпределяне на тикети и собствен бот. Всичко друго, което живееше тук до
 // 12.11.2026, има своя страница (Посрещане и роли, Дневник, AI отговори).
-import { Hash, Globe, RefreshCw, Bot } from "lucide-react";
+import { Hash, Globe, RefreshCw, Bot } from "../icons";
 import DiscordChannelSelect, { DiscordRoleSelect } from "../DiscordPicker";
 import SettingsCard from "./SettingsCard";
 import { useT } from "../../contexts/I18nContext";

@@ -6,7 +6,7 @@ expect from us.
 
 ## Reporting a vulnerability
 
-Please report security issues privately to **security@carbonstealth.eu**.
+Please report security issues privately to **info@carbonstealth.eu**.
 
 Do **not** open public GitHub issues for security vulnerabilities.
 
@@ -291,4 +291,4 @@ declares `permissions`.
 Supreme Bot is GDPR-native and EU-hosted. Custom bot tokens are encrypted at
 rest with AES-256-GCM; sessions use HTTP-only, Secure, SameSite cookies. For
 data-protection matters (Articles 15–17, 20 GDPR), contact
-**privacy@carbonstealth.eu** or the DPO at **dpo@carbonstealth.eu**.
+**info@carbonstealth.eu**.

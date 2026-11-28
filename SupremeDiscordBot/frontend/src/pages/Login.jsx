@@ -6,7 +6,7 @@ import { useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Check, Minus, Lock, Zap, ScrollText, Shield, Building2, MessageCircle, Activity,
-} from "lucide-react";
+} from "../components/icons";
 import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";

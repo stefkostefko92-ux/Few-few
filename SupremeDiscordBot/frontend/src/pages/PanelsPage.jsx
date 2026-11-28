@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Send, Pencil, Copy, Layout as LayoutIcon } from "lucide-react";
+import { Plus, Trash2, Send, Pencil, Copy, Layout as LayoutIcon } from "../components/icons";
 import { getPanels, createPanel, updatePanel, deletePanel, spawnPanel, spawnPanelGroup, duplicatePanel, getForms } from "../api";
+import BannerPicker from "../components/BannerPicker";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge } from "../components/PremiumBadge";
 import Modal from "../components/Modal";
@@ -56,6 +57,7 @@ const STYLE_COLORS = {
 // Етикетът на първия бутон е на езика на таблото — отива направо в Discord.
 const defaultForm = (t) => ({
   name: "", title: "", description: "", color: "#5865F2",
+  imageUrl: "", // банерът в Discord (BannerPicker)
   // Legacy
   namingTemplate: "ticket-{username}",
   maxOpenPerUser: 1,
@@ -96,6 +98,7 @@ function panelToForm(panel) {
     title: panel.title,
     description: panel.description || "",
     color: panel.color || "#5865F2",
+    imageUrl: panel.imageUrl || "",
     namingTemplate: panel.namingTemplate || "ticket-{username}",
     maxOpenPerUser: panel.maxOpenPerUser || 1,
     defaultPriority: panel.defaultPriority || "NORMAL",
@@ -413,8 +416,9 @@ export default function PanelsPage() {
                     ))}
                   </div>
 
-                  {/* Spawn input */}
-                  <div className="flex items-center gap-1">
+                  {/* Spawn input — пренася бутона на нов ред на телефон: главните
+                      букви на бронята са по-широки и той излизаше от картата. */}
+                  <div className="flex flex-wrap items-center gap-2">
                     <div className="flex-1 min-w-[11rem] sm:flex-none sm:w-44">
                       <DiscordChannelSelect kind="text" ariaLabel={t("panels.spawnChannelAria")} value={spawnInputs[panel.id] || ""}
                         onChange={(v) => setSpawnInputs((s) => ({ ...s, [panel.id]: v }))} />
@@ -511,6 +515,9 @@ export default function PanelsPage() {
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   placeholder={t("panels.ph.clickButton")} />
               </label>
+
+              <BannerPicker idPrefix="panel-banner" value={form.imageUrl}
+                onChange={(v) => setForm((f) => ({ ...f, imageUrl: v }))} />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block">

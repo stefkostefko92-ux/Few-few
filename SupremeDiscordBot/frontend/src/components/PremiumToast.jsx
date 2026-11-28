@@ -3,7 +3,7 @@
 // (emitted by the axios interceptor) and shows a dismissible toast + CTA.
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Star, X, AlertTriangle } from "lucide-react";
+import { Star, X, AlertTriangle } from "./icons";
 import { useT } from "../contexts/I18nContext";
 
 export default function PremiumToast() {

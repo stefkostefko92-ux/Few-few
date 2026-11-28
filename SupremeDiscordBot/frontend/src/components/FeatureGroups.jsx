@@ -7,7 +7,7 @@
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock, Webhook, Sparkles,
   SmilePlus, ScrollText, UserPlus, BookOpen, ClipboardList, Gamepad2, Fish,
-} from "lucide-react";
+} from "./icons";
 
 export const FEATURE_ICONS = {
   ticket: Ticket,

@@ -77,7 +77,7 @@ export default {
     "/wyr": "Preferiresti…: pubblica una domanda a due scelte con pulsanti di voto 🅰️/🅱️ dalla nostra raccolta SFW.",
     "/tod": "Obbligo o verità: una sfida SFW a caso per te dalla nostra raccolta.",
     "/privacy info": "Mostra cosa conserva Supreme Bot su di te (ticket, messaggi, candidature, istantanee dei ruoli) e dove si trova l’informativa sulla privacy.",
-    "/privacy delete": "Cancella / anonimizza i dati che Supreme Bot conserva su di te in tutti i server (pulsante di conferma). Il testo dei ticket resta come registro del server; per la cancellazione completa scrivi a privacy@carbonstealth.eu.",
+    "/privacy delete": "Cancella / anonimizza i dati che Supreme Bot conserva su di te in tutti i server (pulsante di conferma). Il testo dei ticket resta come registro del server; per la cancellazione completa scrivi a info@carbonstealth.eu.",
   },
   features: {
     "Create verification panel": ["Creare un pannello di verifica", "Pulsante / captcha matematico / reazione. Imposta i ruoli assegnati, l’età minima dell’account e i tempi di attesa."],
