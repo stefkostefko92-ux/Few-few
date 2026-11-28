@@ -150,7 +150,7 @@ export default function Layout() {
         {t("nav.skipToContent")}
       </a>
       {/* Mobile top bar — brand + hamburger, visible only on small screens */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-cs-bg border-b border-cs-line h-14 flex items-center justify-between px-4">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 cs-bar border-b h-14 flex items-center justify-between px-4">
         <button
           ref={toggleBtnRef}
           onClick={() => setMobileOpen((v) => !v)}
@@ -187,7 +187,7 @@ export default function Layout() {
           }
         }}
         className={`
-          w-64 bg-cs-deep flex flex-col border-r border-cs-line flex-shrink-0
+          w-64 cs-rail flex flex-col border-r flex-shrink-0
           fixed md:static inset-y-0 left-0 z-50
           transform transition-transform duration-200
           ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
@@ -258,7 +258,7 @@ export default function Layout() {
         </nav>
 
         {/* Профилът — на телефон (на десктоп е в горната лента). */}
-        <div className="md:hidden p-3 border-t border-cs-line bg-cs-surface">
+        <div className="md:hidden p-3 border-t border-black cs-plate">
           {/* ДВА реда, не един. Лентата е 256px; аватар (36) + четири икони по
               32 + пет междини по 12 = 224 → за името оставаха 7px и то се
               режеше до една буква („Z“), а ролята — до „0“. (17.09.2026) */}
@@ -340,7 +340,7 @@ export default function Layout() {
             Връзките са ПРЕВЕДЕНИ — дотук бяха зашити на английски, само
             „Настройки за бисквитки“ беше на езика на човека. Реквизитите на
             фирмата са на редове, не в моно низ с точки по средата. */}
-        <footer className="border-t border-cs-line bg-cs-deep mt-auto">
+        <footer className="border-t mt-auto cs-bar">
           <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex items-start gap-3 min-w-0">
               <SupremeLogo size={28} />
@@ -421,10 +421,10 @@ function readCollapsedGroups() {
   }
 }
 
-const NAV_BASE = "flex items-center gap-3 mx-3 px-3 py-2 rounded-lg text-sm transition-colors no-underline";
-const NAV_IDLE = "text-cs-muted hover:text-cs-text hover:bg-cs-surface font-medium";
+const NAV_BASE = "relative flex items-center gap-3 mx-3 px-3 py-2 rounded text-sm transition-colors no-underline";
+const NAV_IDLE = "text-cs-muted hover:text-cs-text hover:bg-cs-cyan/[0.05] font-medium";
 
-// Активната страница — лайм хапче с фина лайм рамка, както в концепцията;
+// Активната страница — лаймово гнездо с ядро вдясно („Токсична броня“, 28.11.2026);
 // иконата светва заедно с текста.
 function NavItem({ to, icon: Icon, end, children }) {
   return (
@@ -433,7 +433,7 @@ function NavItem({ to, icon: Icon, end, children }) {
       end={end}
       className={({ isActive }) =>
         `${NAV_BASE} ${isActive
-          ? "bg-cs-cyan/10 text-cs-cyan font-semibold ring-1 ring-inset ring-cs-cyan/35"
+          ? "cs-nav-on text-cs-cyan font-semibold pr-7"
           : NAV_IDLE}`
       }
     >

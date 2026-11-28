@@ -18,6 +18,31 @@
 @tailwind utilities;
 
 @layer base {
+  /* ─── „Токсична броня“ (собственикът, 28.11.2026) ─────────────────────────
+     Цветовете са същите (tailwind.config.js → cs.*); сменя се МАТЕРИАЛЪТ:
+     панелите са метални плочи с нитове и скосен ръб, полетата — вдлъбнати
+     слотове, бутоните — метални ключове, акцентът свети като токсично ядро.
+     Зърното е растер (/tex/grain.png), не CSS филтър — евтино за телефона.
+     Тук са само производни нюанси на палитрата, не нови цветове. */
+  :root {
+    --plate-hi: #0f221e;           /* горният ръб на плочата (cs.panel, изсветлен) */
+    --plate-lo: #071311;           /* долният (cs.surface, потъмнен) */
+    --plate-edge: #24382f;         /* ръбът на плочата (между cs.line и cs.border) */
+    --rivet: #5b6f55;              /* нитовете (cs.border) */
+    --brush: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 3px);
+    --rivet-dot: #5b6f55 0 1.6px, rgba(0, 0, 0, 0.65) 2.1px, transparent 2.8px;
+    --rivets:
+      radial-gradient(circle at 9px 9px, var(--rivet-dot)),
+      radial-gradient(circle at calc(100% - 9px) 9px, var(--rivet-dot)),
+      radial-gradient(circle at 9px calc(100% - 9px), var(--rivet-dot)),
+      radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), var(--rivet-dot));
+    --plate: linear-gradient(180deg, var(--plate-hi), var(--plate-lo));
+    --plate-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -2px 0 rgba(0, 0, 0, 0.55),
+                    0 0 0 1px #000, 0 10px 24px rgba(0, 0, 0, 0.5);
+    --recess: inset 0 2px 6px rgba(0, 0, 0, 0.85), inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+    --toxic: 0 0 18px rgba(143, 230, 0, 0.28);
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html {
@@ -47,8 +72,11 @@
     inset: 0;
     z-index: -1;
     background:
-      /* По-тъмна завеса по концепцията: секциите стоят на почти черно (#010706),
-         мъглявината остава само като едва видима текстура. */
+      /* Броня: зърно отгоре, токсично сияние от горния ляв ъгъл, после старата
+         тъмна завеса над мъглявината (тя остава едва видима текстура). */
+      url("/tex/grain.png") repeat,
+      radial-gradient(60% 45% at 0% 0%, rgba(143, 230, 0, 0.09), transparent 70%),
+      radial-gradient(45% 40% at 100% 100%, rgba(240, 194, 76, 0.04), transparent 70%),
       linear-gradient(180deg, rgba(1, 7, 6, 0.84) 0%, rgba(1, 7, 6, 0.93) 50%, rgba(1, 7, 6, 0.97) 100%),
       url("/bg-cosmos.jpg") center center / cover no-repeat;
     pointer-events: none;
@@ -65,20 +93,33 @@
   /* Заглавието на всяка страница в таблото — едно и също (концепцията,
      10.10.2026): 28–30 px, получерно, стегнато. Идентификаторът печели срещу
      старите класове по страниците, без да се пипат двайсет файла. */
-  #main-content h1 { font-size: 1.75rem; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
-  @media (min-width: 640px) { #main-content h1 { font-size: 1.875rem; } }
+  /* Броня (28.11.2026): заглавието на страницата е щамповано — Montserrat Black,
+     главни, с лек цветен отпечатък (злато вляво, лайм вдясно — статичен, без мигане). */
+  #main-content h1 {
+    font-family: "Montserrat", "Inter Tight", sans-serif; font-weight: 900; text-transform: uppercase;
+    font-size: 1.6rem; line-height: 1.12; letter-spacing: 0.015em; text-wrap: balance;
+    text-shadow: -1px 0 rgba(240, 194, 76, 0.45), 1px 0 rgba(143, 230, 0, 0.55);
+  }
+  @media (min-width: 640px) { #main-content h1 { font-size: 1.75rem; } }
+  /* Дашбордът стои на собствен непрозрачен фон — той носи зърното и сиянието. */
+  #main-content {
+    background-image:
+      url("/tex/grain.png"),
+      radial-gradient(70% 40% at 0% 0%, rgba(143, 230, 0, 0.07), transparent 70%),
+      radial-gradient(50% 35% at 100% 100%, rgba(240, 194, 76, 0.035), transparent 70%);
+  }
   /* Заглавията на картите — по подразбиране 18 px, получерни (23.10.2026). Без
      това h2 без собствен размер наследяваше 30-те px на лендинга („Общи“,
      „Бърз старт“ крещяха колкото заглавието на страницата). :where() държи
      правилото слабо: изричен клас (text-sm, !text-base) на страницата печели. */
-  :where(#main-content) h2 { font-size: 1.125rem; line-height: 1.5rem; font-weight: 600; letter-spacing: -0.01em; }
+  :where(#main-content) h2 { font-family: "Montserrat", "Inter Tight", sans-serif; font-size: 1.0625rem; line-height: 1.5rem; font-weight: 800; letter-spacing: 0; }
   :where(#main-content) h3 { font-size: 1rem; line-height: 1.5rem; font-weight: 600; }
 
   a { color: inherit; }
 
   ::-webkit-scrollbar       { @apply w-1.5 h-1.5; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #263420; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #36503f, #24382f); border-radius: 2px; }
   ::-webkit-scrollbar-thumb:hover { background: #8fe600; }
 
   ::selection { background: #8fe600; color: #000; }
@@ -99,53 +140,113 @@
 }
 
 @layer components {
-  /* ─── Cards / surfaces ─── */
-  /* Премиум ниво (10.10.2026): по-голям радиус, фина светлина по горния ръб
-     (дълбочина без сенки) и БЕЗ hover на всяка карта — реакция само там,
-     където картата е действие (cs-card-link). */
-  /* Концепцията (10.10.2026): тъмна зелено-синкава плоча, фина линия
-     (`cs-line`) и радиус 12 px — рамката е декорация, не граница на контрола. */
+  /* ─── Плочи (карти) — „Токсична броня“, 28.11.2026 ─────────────────────────
+     Метална плоча: четкан метал + градиент отгоре надолу, нит във всеки ъгъл,
+     светъл горен ръб и тъмен долен (скос), черен контур. Нитовете и метала са
+     СЛОЕВЕ НА ФОНА (background-image), а не ::before — така картата не става
+     `position: relative` и нищо абсолютно вътре не сменя опората си, а
+     `bg-cs-*` утилитите по страниците (само background-color) не ги махат. */
   .cs-card {
-    @apply bg-cs-surface border border-cs-line rounded-xl p-6
-           transition-colors duration-200;
-    box-shadow: inset 0 1px 0 rgba(240, 240, 235, 0.035);
+    @apply border rounded-md p-6 transition-[border-color,box-shadow] duration-200;
+    border-color: var(--plate-edge);
+    background-color: #071311;
+    background-image: var(--rivets), var(--brush), var(--plate);
+    box-shadow: var(--plate-shadow);
   }
   .cs-card-link { @apply cursor-pointer; }
+  .cs-card-link:hover { border-color: rgba(143, 230, 0, 0.45); box-shadow: var(--plate-shadow), var(--toxic); }
+  /* Открояващата се плоча (планът Premium, избраното): токсично ядро отгоре. */
   .plan-card-hi {
-    background: linear-gradient(180deg, rgba(143, 230, 0, 0.08), rgba(143, 230, 0, 0.02) 45%, transparent), #061010;
-    box-shadow: 0 0 0 1px rgba(143, 230, 0, 0.22), 0 0 36px rgba(143, 230, 0, 0.12);
+    background-image: var(--rivets), radial-gradient(80% 60% at 50% 0%, rgba(143, 230, 0, 0.14), transparent 70%), var(--brush), var(--plate);
+    border-color: rgba(143, 230, 0, 0.45) !important;
+    box-shadow: var(--plate-shadow), 0 0 36px rgba(143, 230, 0, 0.16);
   }
-  .cs-card-link:hover { @apply border-cs-cyan/40 bg-cs-panel/60; }
 
+  /* Вдлъбнат панел вътре в плоча (списъци, кутии с код, предварителен преглед). */
   .cs-panel {
-    @apply bg-cs-panel border border-cs-line rounded-xl;
+    @apply border rounded-md;
+    border-color: #000;
+    background-color: #040c0b;
+    background-image: var(--brush);
+    box-shadow: var(--recess);
   }
 
-  /* Икона в квадрат с лайм рамка и слабо сияние — картите „осем бота“,
-     функциите и бързите действия в таблото. */
+  /* Обща плоча за ленти и вградени блокове (страничната лента, горната лента). */
+  .cs-plate {
+    background-color: #071311;
+    background-image: var(--brush), var(--plate);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  }
+
+  /* Икона във вдлъбнато гнездо; лаймът свети като ядро в него. */
   .cs-icon-tile {
-    @apply flex-none w-11 h-11 rounded-lg border border-cs-cyan/45 bg-cs-cyan/[0.06]
-           text-cs-cyan flex items-center justify-center;
-    box-shadow: 0 0 18px rgba(143, 230, 0, 0.12), inset 0 0 12px rgba(143, 230, 0, 0.06);
+    @apply flex-none w-11 h-11 rounded-md border text-cs-cyan flex items-center justify-center;
+    border-color: rgba(143, 230, 0, 0.45);
+    background: radial-gradient(circle at 50% 45%, rgba(143, 230, 0, 0.16), rgba(143, 230, 0, 0.03) 70%), #040c0b;
+    box-shadow: var(--recess), 0 0 16px rgba(143, 230, 0, 0.16);
   }
 
-  /* Заглавията на секциите в лендинга — широки главни (Montserrat Black). */
+  /* Заглавията на секциите в лендинга — широки главни (Montserrat Black) с отпечатък. */
   .cs-section-title {
     @apply font-wide font-black uppercase text-cs-text
-           text-[1.65rem] sm:text-[2rem] lg:text-[2.25rem] leading-[1.06] tracking-[-0.005em] text-balance;
+           text-[1.65rem] sm:text-[2rem] lg:text-[2.25rem] leading-[1.06] tracking-[0.01em] text-balance;
+    text-shadow: -1.5px 0 rgba(240, 194, 76, 0.4), 1.5px 0 rgba(143, 230, 0, 0.5);
   }
   .cs-section-sub { @apply text-cs-muted text-base sm:text-lg mt-2; }
 
-  /* ─── Buttons ─── */
-  /* Бутоните: обикновен регистър, един ред, ясно действие (не крещят с главни
-     букви; на 1440 px hero бутоните се чупеха на два реда — 10.10.2026). */
+  /* Страничната релса и горната лента: четкан метал, черен шев, токсична нишка по ръба. */
+  .cs-rail {
+    background-color: #030a09;
+    background-image: var(--brush), linear-gradient(180deg, #0b1a17, #030a09 40%, #020605);
+    border-color: #000 !important;
+    box-shadow: inset -1px 0 0 rgba(143, 230, 0, 0.14), 1px 0 0 #000;
+  }
+  .cs-bar {
+    background-color: #050d0c;
+    background-image: var(--brush), linear-gradient(180deg, #0b1a17, #040c0b);
+    border-color: #000 !important;
+    box-shadow: inset 0 -1px 0 rgba(143, 230, 0, 0.12), 0 1px 0 #000, 0 8px 20px rgba(0, 0, 0, 0.35);
+  }
+  /* Падащите менюта (сървър, търсене, профил) — плоча с лаймов контур. */
+  .cs-dropdown {
+    @apply rounded-md border p-1.5;
+    border-color: rgba(143, 230, 0, 0.28);
+    background-color: #071311;
+    background-image: var(--brush), var(--plate);
+    box-shadow: var(--plate-shadow), 0 18px 40px rgba(0, 0, 0, 0.7);
+  }
+  /* Ключ: бутон без главни букви (превключвател, избор) — същият метал като вторичния. */
+  .cs-knob {
+    @apply rounded border transition-[border-color,box-shadow];
+    border-color: #36503f;
+    background: var(--brush), linear-gradient(180deg, #1a2c27, #0b1a17);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -2px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px #000;
+  }
+  .cs-knob:hover { border-color: rgba(143, 230, 0, 0.55); }
+  /* Активният пункт в лентата: лаймово гнездо + ядро вдясно, което дишa бавно
+     (2.6 s, без мигане; при „намалено движение“ е неподвижно). */
+  .cs-nav-on {
+    background: linear-gradient(180deg, rgba(143, 230, 0, 0.16), rgba(143, 230, 0, 0.05));
+    box-shadow: inset 0 0 0 1px rgba(143, 230, 0, 0.38), 0 0 14px rgba(143, 230, 0, 0.14);
+  }
+  .cs-nav-on::after {
+    content: ""; position: absolute; right: 10px; top: 50%; width: 6px; height: 6px; margin-top: -3px;
+    border-radius: 50%; background: #8fe600; box-shadow: 0 0 8px #8fe600;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cs-nav-on::after { animation: cs-core 2.6s ease-in-out infinite; }
+  }
+
+  /* ─── Бутони — метални ключове ─── */
+  /* Главни, Montserrat 800, един ред. Лаймовият е светещ ключ с релеф; натискане
+     = слиза с 1px и релефът се обръща. Без движение при „намалено движение“. */
   .cs-btn {
     @apply inline-flex items-center justify-center gap-2
-           min-h-[44px] px-5 py-2.5 font-semibold text-[15px] leading-none
+           min-h-[44px] px-5 py-2.5 font-wide font-extrabold text-[13px] leading-none uppercase tracking-[0.05em]
            whitespace-nowrap
-           transition-all duration-200
+           transition-[background-color,border-color,color,box-shadow,transform] duration-150
            cursor-pointer select-none
-           rounded-lg
+           rounded
            border
            focus-visible:outline-none
            focus-visible:ring-2 focus-visible:ring-cs-cyan
@@ -163,99 +264,121 @@
   }
 
   .cs-btn-primary {
-    @apply cs-btn bg-cs-cyan text-black border-cs-cyan
-           hover:bg-[#a6f52b] hover:border-[#a6f52b]
-           active:scale-[0.98]
-           shadow-cs-cyan-sm hover:shadow-cs-cyan;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 15px rgba(143, 230, 0, 0.15);
+    @apply cs-btn text-black;
+    border-color: #4e8000;
+    background: linear-gradient(180deg, #a8f033, #8fe600 45%, #6cb000);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 0 18px rgba(143, 230, 0, 0.32);
   }
+  .cs-btn-primary:hover { background: linear-gradient(180deg, #bdf75a, #a6f52b 45%, #7cc400); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 0 26px rgba(143, 230, 0, 0.5); }
+  .cs-btn-primary:active { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35), 0 0 12px rgba(143, 230, 0, 0.3); }
 
   .cs-btn-secondary {
-    @apply cs-btn bg-cs-surface/60 text-cs-text border-cs-border backdrop-blur
-           hover:border-cs-cyan hover:text-cs-cyan;
+    @apply cs-btn text-cs-text hover:text-cs-cyan;
+    border-color: #36503f;
+    background: var(--brush), linear-gradient(180deg, #1a2c27, #0b1a17);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -2px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px #000;
   }
+  .cs-btn-secondary:hover { border-color: rgba(143, 230, 0, 0.6); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -2px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px #000, 0 0 14px rgba(143, 230, 0, 0.18); }
+  .cs-btn-secondary:active { transform: translateY(1px); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.7); }
 
   .cs-btn-ghost {
-    @apply cs-btn bg-transparent text-cs-muted border-transparent
-           hover:text-cs-cyan hover:bg-cs-cyanGlow;
+    @apply cs-btn bg-transparent text-cs-muted border-transparent hover:text-cs-cyan;
   }
+  .cs-btn-ghost:hover { background: rgba(143, 230, 0, 0.08); box-shadow: inset 0 0 0 1px rgba(143, 230, 0, 0.25); }
 
   .cs-btn-danger {
-    @apply cs-btn bg-transparent text-danger border-danger/40
-           hover:bg-danger hover:text-white hover:border-danger;
+    @apply cs-btn text-danger hover:text-white;
+    border-color: rgba(239, 68, 68, 0.55);
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.02));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 0 1px #000;
   }
+  .cs-btn-danger:hover { border-color: #ef4444; background: linear-gradient(180deg, #f05252, #c62828); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 16px rgba(239, 68, 68, 0.35); }
 
-  .cs-btn-sm { @apply min-h-[36px] px-3 py-1.5 text-[13px]; }
-  .cs-btn-lg { @apply min-h-[52px] px-6 text-base; }
+  .cs-btn-sm { @apply min-h-[36px] px-3 py-1.5 text-[12px] tracking-[0.03em]; }
+  .cs-btn-lg { @apply min-h-[52px] px-6 text-[14px]; }
 
-  /* ─── Inputs ─── */
+  /* ─── Полета — вдлъбнати слотове ─── */
+  /* Рамката остава cs-border (≥3:1 спрямо фона — WCAG 1.4.11); вдлъбнатината е сянка. */
   .cs-input {
-    @apply w-full bg-cs-bg border border-cs-border px-4 py-2.5
+    @apply w-full border border-cs-border px-4 py-2.5
            text-cs-text placeholder-cs-dim
            font-sans text-sm
-           focus:outline-none focus:border-cs-cyan focus:shadow-cs-cyan-sm
-           transition-colors rounded-lg;
+           focus:outline-none focus:border-cs-cyan
+           transition-[border-color,box-shadow] rounded;
+    background-color: #020605;
+    box-shadow: var(--recess);
   }
+  .cs-input:focus { box-shadow: var(--recess), 0 0 0 1px rgba(143, 230, 0, 0.35), 0 0 14px rgba(143, 230, 0, 0.2); }
   .cs-select { @apply cs-input appearance-none cursor-pointer pr-10; }
   .cs-textarea { @apply cs-input font-mono text-xs leading-relaxed resize-y; }
 
-  /* ─── Badges ─── */
+  /* ─── Значки — малки щамповани плочки ─── */
   .cs-badge {
     @apply inline-flex items-center gap-1
-           text-xs font-semibold leading-5
-           px-2.5 py-0.5 border rounded-full;
+           text-xs font-bold leading-5
+           px-2 py-0.5 border rounded-sm;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.6);
   }
-  .cs-badge-cyan    { @apply cs-badge bg-cs-cyanGlow text-cs-cyan   border-cs-cyan/40; }
-  .cs-badge-premium { @apply cs-badge bg-premium/10  text-premium   border-premium/40; }
-  .cs-badge-manual  { @apply cs-badge bg-manual/10   text-manual    border-manual/40; }
-  .cs-badge-success { @apply cs-badge bg-success/10  text-success   border-success/40; }
-  .cs-badge-danger  { @apply cs-badge bg-danger/10   text-danger    border-danger/40; }
+  .cs-badge-cyan    { @apply cs-badge bg-cs-cyanGlow text-cs-cyan   border-cs-cyan/50; }
+  .cs-badge-premium { @apply cs-badge bg-premium/10  text-premium   border-premium/50; }
+  .cs-badge-manual  { @apply cs-badge bg-manual/10   text-manual    border-manual/50; }
+  .cs-badge-success { @apply cs-badge bg-success/10  text-success   border-success/50; }
+  .cs-badge-danger  { @apply cs-badge bg-danger/10   text-danger    border-danger/50; }
   .cs-badge-muted   { @apply cs-badge bg-cs-panel    text-cs-muted  border-cs-border; }
 
   /* ─── Labels / microcopy ─── */
   .cs-label {
-    @apply block text-[13px] font-medium text-cs-muted mb-2;
+    @apply block text-[13px] font-semibold text-cs-muted mb-2;
   }
 
   /* ─── Page header ─── */
   .cs-heading {
     @apply relative inline-block pb-3 mb-6;
   }
+  /* Под заглавието — светеща лента, като индикатор на заредено оръжие. */
   .cs-heading::after {
     content: "";
-    @apply absolute bottom-0 left-0 w-16 h-[2px] bg-cs-cyan;
+    @apply absolute bottom-0 left-0 w-16 h-[3px] rounded-sm bg-cs-cyan;
+    box-shadow: 0 0 10px rgba(143, 230, 0, 0.7);
   }
 
-  /* Надписът над заглавие — главни, разредени, лайм (по концепцията). */
+  /* Надписът над заглавие — главни, разредени, лайм, с нит отпред. */
   .cs-eyebrow {
-    @apply inline-block text-xs font-bold uppercase tracking-[0.16em] text-cs-cyan mb-3;
+    @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-cs-cyan mb-3;
+  }
+  .cs-eyebrow::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%; flex: none;
+    background: #8fe600; box-shadow: 0 0 8px #8fe600;
   }
 
-  /* ─── Data table ─── */
+  /* ─── Data table — редовете са вдлъбнати процепи ─── */
   .cs-table {
     @apply w-full border-collapse text-sm;
   }
   .cs-table thead th {
-    @apply text-left px-4 py-3 border-b border-cs-line
-           text-xs font-semibold text-cs-dim bg-transparent;
+    @apply text-left px-4 py-3 border-b border-black
+           text-[11px] font-bold uppercase tracking-[0.05em] text-cs-dim;
+    background: rgba(0, 0, 0, 0.35);
   }
   .cs-table td { font-variant-numeric: tabular-nums; }
   .cs-table tbody td {
     @apply px-4 py-3.5 border-b border-cs-line/70;
   }
-  .cs-table tbody tr { @apply transition-colors; }
-  .cs-table tbody tr:hover { @apply bg-cs-panel/50; }
+  .cs-table tbody tr { @apply transition-[background-color,box-shadow]; }
+  .cs-table tbody tr:hover { background: rgba(143, 230, 0, 0.04); box-shadow: inset 3px 0 0 #8fe600; }
 
-  /* ─── Stat tile ─── */
+  /* ─── Stat tile — числото свети като показател на ядро ─── */
   .cs-stat {
     @apply cs-card relative;
   }
   .cs-stat-label {
-    @apply text-[13px] font-medium text-cs-muted mb-2;
+    @apply text-[12px] font-bold uppercase tracking-[0.08em] text-cs-muted mb-2;
   }
   .cs-stat-value {
-    @apply text-4xl font-display font-extrabold tracking-tight-4 text-cs-text;
+    @apply text-4xl font-wide font-black text-cs-cyan;
+    letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 16px rgba(143, 230, 0, 0.45);
   }
 
   /* ─── Modal / overlay ─── */
@@ -263,11 +386,14 @@
     @apply fixed inset-0 bg-black/85 backdrop-blur-sm z-50
            flex items-center justify-center p-4
            animate-fade-in;
+    background-image: url("/tex/grain.png");
   }
   .cs-modal {
     /* max-h + overflow: дълги форми (панелния редактор) скролват ВЪТРЕ в
        диалога — overlay-ят е fixed и страничният скрол не помага. */
-    @apply cs-card w-full max-w-md shadow-cs-lift max-h-[90vh] overflow-y-auto;
+    @apply cs-card w-full max-w-md max-h-[90vh] overflow-y-auto;
+    border-color: rgba(143, 230, 0, 0.35);
+    box-shadow: var(--plate-shadow), 0 0 0 1px rgba(143, 230, 0, 0.12), 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 40px rgba(143, 230, 0, 0.1);
   }
 }
 
@@ -285,6 +411,8 @@
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* Supreme Bot logo animations                                                 */
 /* ─────────────────────────────────────────────────────────────────────────── */
+
+@keyframes cs-core { 50% { box-shadow: 0 0 2px #8fe600; } }
 
 @keyframes supreme-rotate-cw {
   from { transform: rotate(0deg); }

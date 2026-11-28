@@ -413,8 +413,9 @@ export default function PanelsPage() {
                     ))}
                   </div>
 
-                  {/* Spawn input */}
-                  <div className="flex items-center gap-1">
+                  {/* Spawn input — пренася бутона на нов ред на телефон: главните
+                      букви на бронята са по-широки и той излизаше от картата. */}
+                  <div className="flex flex-wrap items-center gap-2">
                     <div className="flex-1 min-w-[11rem] sm:flex-none sm:w-44">
                       <DiscordChannelSelect kind="text" ariaLabel={t("panels.spawnChannelAria")} value={spawnInputs[panel.id] || ""}
                         onChange={(v) => setSpawnInputs((s) => ({ ...s, [panel.id]: v }))} />
