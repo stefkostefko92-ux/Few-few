@@ -2,7 +2,7 @@
 // Self-service GDPR rights: data export, account deletion, consent withdrawal.
 
 import { useState } from "react";
-import { Download, Trash2, AlertTriangle, Shield, FileText } from "lucide-react";
+import { Download, Trash2, AlertTriangle, Shield, FileText } from "../components/icons";
 import { useAuth } from "../contexts/AuthContext";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useT } from "../contexts/I18nContext";

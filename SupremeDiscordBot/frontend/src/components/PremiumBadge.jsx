@@ -1,5 +1,5 @@
 // frontend/src/components/PremiumBadge.jsx
-import { Star, Lock } from "lucide-react";
+import { Star, Lock } from "./icons";
 import { Link, useParams } from "react-router-dom";
 import { useT } from "../contexts/I18nContext";
 

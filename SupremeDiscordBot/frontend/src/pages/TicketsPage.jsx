@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star, Ticket, RefreshCw, MessageSquare, Search, Plus } from "lucide-react";
+import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star, Ticket, RefreshCw, MessageSquare, Search, Plus } from "../components/icons";
 import { timeAgo } from "../utils/timeAgo";
 import { getTickets, closeTicket, claimTicket, exportTicketPDF, replyToTicket } from "../api";
 import Modal from "../components/Modal";

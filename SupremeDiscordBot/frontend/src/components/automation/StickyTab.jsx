@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import DiscordChannelSelect, { ChannelName } from "../DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Pin, Trash2, Plus } from "lucide-react";
+import { Pin, Trash2, Plus } from "../icons";
 import { getStickies, upsertSticky, deleteSticky } from "../../api";
 import ConfirmDialog from "../ConfirmDialog";
 import { useT } from "../../contexts/I18nContext";

@@ -11,7 +11,7 @@
 //     НЕ се дублира логика за резолюция на плана в клиента.
 //   • Тарифата НЕ се предава само с цвят — винаги с текст и иконка (WCAG 1.4.1).
 //   • Всеки видим низ минава през `t()` (гейтван паритет на 8 локала).
-import { Crown, Star, Bot, Server as ServerIcon, CircleDot } from "lucide-react";
+import { Crown, Star, Bot, Server as ServerIcon, CircleDot } from "./icons";
 import { useT } from "../contexts/I18nContext";
 
 // Акцентът на всяка тарифа. Стойностите са СЪЩИТЕ токени като в tailwind.config

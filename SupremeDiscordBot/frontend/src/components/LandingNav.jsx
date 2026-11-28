@@ -10,7 +10,7 @@
 // Връзките са в реда от 1280 px нагоре: под това преведените етикети
 // (+ езиците) не се събират и редът се пренасяше на два (мерено, 10.10.2026).
 import { useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X } from "./icons";
 import { DiscordIcon } from "./LandingConcept";
 
 export default function LandingNav({ links, ui, onSignIn, inviteUrl, addLabel, extra = null, menuFooter = null }) {

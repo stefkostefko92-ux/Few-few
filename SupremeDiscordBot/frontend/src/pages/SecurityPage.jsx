@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import QRCode from "qrcode";
-import { ShieldCheck, ShieldAlert, Copy, RefreshCw, Trash2 } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Copy, RefreshCw, Trash2 } from "../components/icons";
 import { getMfaStatus, mfaSetup, mfaEnable, mfaDisable, mfaRegenerateCodes } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";

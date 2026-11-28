@@ -8,7 +8,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, MessageSquareText } from "lucide-react";
+import { Plus, Trash2, Pencil, MessageSquareText } from "../components/icons";
 import api from "../api";
 import Modal from "../components/Modal";
 import EmptyState from "../components/EmptyState";

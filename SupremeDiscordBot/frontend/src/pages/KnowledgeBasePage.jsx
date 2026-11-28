@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Lightbulb, CheckCircle2, XCircle, X as XIcon, Zap } from "lucide-react";
+import { Plus, Trash2, Pencil, Lightbulb, CheckCircle2, XCircle, X as XIcon, Zap } from "../components/icons";
 import {
   getKbArticles, createKbArticle, updateKbArticle, toggleKbArticle, deleteKbArticle,
 } from "../api";

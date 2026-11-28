@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Cookie, Check } from "lucide-react";
+import { Cookie, Check } from "./icons";
 import { useT } from "../contexts/I18nContext";
 import { COOKIE_CONSENT, cookieConsentLocale } from "../i18n/cookieConsent";
 

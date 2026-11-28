@@ -6,7 +6,7 @@
 // prefers-reduced-motion се показва крайното състояние. Само opacity/transform.
 // Текстът е в i18n/landingTicket.js (собствен lazy чънк заедно с компонента).
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Check, Sparkles, Star } from "lucide-react";
+import { ArrowRight, Check, Sparkles, Star } from "./icons";
 import { TICKET_COPY } from "../i18n/landingTicket";
 
 const STEP_MS = 900;

@@ -4,7 +4,7 @@
 // за обхождачите без JavaScript. Четимостта е целта: една колона до ~70 знака,
 // съдържание вдясно на широк екран, номера само където редът има значение.
 import { useParams } from "react-router-dom";
-import { ChevronRight, Info } from "lucide-react";
+import { ChevronRight, Info } from "../components/icons";
 import PublicPageLayout, { BOT_INVITE_URL } from "../components/PublicPageLayout";
 import Seo from "../components/Seo";
 import NotFoundPage from "./NotFoundPage";

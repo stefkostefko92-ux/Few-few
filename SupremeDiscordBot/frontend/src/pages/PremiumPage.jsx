@@ -15,7 +15,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Star, Zap, Check, ExternalLink, CreditCard, Download, Crown, Building2, Server as ServerIcon, Trash2 } from "lucide-react";
+import { Star, Zap, Check, ExternalLink, CreditCard, Download, Crown, Building2, Server as ServerIcon, Trash2 } from "../components/icons";
 import {
   getBillingStatus, getBillingConfig, openPortal, exportTicketsCSV, exportApplicationsCSV,
   getServers, getMyAgency, attachAgencyServer, detachAgencyServer, openAgencyPortal,

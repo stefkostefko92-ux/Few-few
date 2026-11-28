@@ -2,7 +2,7 @@
 // Public, educational guide — Growth Level-2 (docs/PRODUCT_ROADMAP.md),
 // zero-competition niche ("GDPR discord bot", "EU hosting discord bot").
 // Deliberately names NO competitors — pure explanation + our own posture.
-import { ShieldCheck, ExternalLink } from "lucide-react";
+import { ShieldCheck, ExternalLink } from "../components/icons";
 import PublicPageLayout, { BOT_INVITE_URL } from "../components/PublicPageLayout";
 import Seo from "../components/Seo";
 import { GDPR_GUIDE as d } from "../data/growthContent";

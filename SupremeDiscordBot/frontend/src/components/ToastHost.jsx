@@ -3,7 +3,7 @@
 // aria-live="polite" so screen readers announce new toasts without
 // interrupting; each toast auto-closes after 5s (ToastContext) and also
 // has a manual close button (WCAG 2.2.2 — no timing trap, user control).
-import { CheckCircle2, AlertCircle, X } from "lucide-react";
+import { CheckCircle2, AlertCircle, X } from "./icons";
 import { useToastList } from "../contexts/ToastContext";
 import { useT } from "../contexts/I18nContext";
 

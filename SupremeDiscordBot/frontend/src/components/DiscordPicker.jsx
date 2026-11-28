@@ -25,7 +25,7 @@ import { useMemo, useRef, useState, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { AlertTriangle, X, ChevronDown, Search } from "lucide-react";
+import { AlertTriangle, X, ChevronDown, Search } from "./icons";
 import api from "../api";
 import { useT } from "../contexts/I18nContext";
 

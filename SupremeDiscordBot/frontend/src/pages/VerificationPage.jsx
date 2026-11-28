@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import DiscordChannelSelect, { DiscordRoleSelect } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Send, Pencil, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, Send, Pencil, ShieldCheck } from "../components/icons";
 import {
   getVerificationPanels, createVerificationPanel, updateVerificationPanel,
   deleteVerificationPanel, spawnVerificationPanel,

@@ -8,7 +8,7 @@ import { Outlet, NavLink, useParams, useNavigate, useLocation } from "react-rout
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard, Shield, LogOut, ExternalLink, Menu, X as CloseIcon, KeyRound, ChevronDown,
-} from "lucide-react";
+} from "./icons";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
 import { getServers, getServer, logout } from "../api";

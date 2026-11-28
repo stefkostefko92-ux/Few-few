@@ -11,7 +11,7 @@
 // показва се крайното състояние, бутонът сменя сцената мигновено.
 // Нищо не мига (WCAG 2.3.1): само opacity/transform, ≥300 ms.
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check } from "./icons";
 import { BAIT_COPY } from "../i18n/landingBait";
 
 // Фази на сцената: idle → typing → posted → hooked → gone
@@ -96,12 +96,7 @@ export default function BaitShowcase({ locale = "en", href = "/features/discord-
               <span className="bt-topic">{t.topic}</span>
               {/* Плувката: потъва, когато някой захапе */}
               <span className="bt-bobber">
-                <svg viewBox="0 0 24 40" width="16" height="27">
-                  <line x1="12" y1="0" x2="12" y2="8" className="bt-bobber-line" />
-                  <path d="M12 8c5 0 8 5 8 11H4c0-6 3-11 8-11z" fill="#e5483b" />
-                  <path d="M4 19h16c0 6-3 11-8 11s-8-5-8-11z" fill="#f4f1ea" />
-                  <line x1="12" y1="30" x2="12" y2="38" className="bt-bobber-line" />
-                </svg>
+                <img src="/art/bait-bobber.png" alt="" width="16" height="27" decoding="async" />
                 <span className="bt-ripple" />
               </span>
             </div>
@@ -138,13 +133,7 @@ export default function BaitShowcase({ locale = "en", href = "/features/discord-
                   </div>
                   <div className="bt-rig">
                     <span className="bt-line" />
-                    <svg className="bt-hook" viewBox="0 0 40 84" width="36" height="76">
-                      {/* примамката — оранжева капка на влакното */}
-                      <path className="bt-lure" d="M32 2c5 6 7 11 7 15a7 7 0 0 1-14 0c0-4 2-9 7-15z" />
-                      <circle cx="32" cy="27" r="3.5" fill="none" strokeWidth="3" />
-                      <path d="M32 31v32a12 12 0 0 1-24 0" fill="none" strokeWidth="3.5" strokeLinecap="round" />
-                      <path d="M8 63l-5-8" fill="none" strokeWidth="3.5" strokeLinecap="round" />
-                    </svg>
+                    <img className="bt-hook" src="/art/bait-hook.png" alt="" width="36" height="76" decoding="async" />
                   </div>
                 </div>
                 <div className="bt-removed">

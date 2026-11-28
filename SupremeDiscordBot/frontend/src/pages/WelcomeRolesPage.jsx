@@ -3,7 +3,7 @@
 // поздравът, автоматичните роли, запазването на роли и ролите с реакция.
 // До 12.11.2026 първите три бяха дъното на „Настройки“, а четвъртото — раздел
 // на „Автоматизация“.
-import { MessageSquareHeart, UserPlus, History, SmilePlus } from "lucide-react";
+import { MessageSquareHeart, UserPlus, History, SmilePlus } from "../components/icons";
 import PageHeader from "../components/PageHeader";
 import PageTabs, { TabPanel, useTab } from "../components/PageTabs";
 import { SaveBar, SettingsSkeleton } from "../components/settings/SettingsCard";

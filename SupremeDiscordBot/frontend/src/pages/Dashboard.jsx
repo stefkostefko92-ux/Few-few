@@ -1,7 +1,7 @@
 // frontend/src/pages/Dashboard.jsx
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { PlusCircle, AlertCircle, RefreshCw, Star } from "lucide-react";
+import { PlusCircle, AlertCircle, RefreshCw, Star } from "../components/icons";
 import { getServers } from "../api";
 import { useT } from "../contexts/I18nContext";
 import PageHeader from "../components/PageHeader";

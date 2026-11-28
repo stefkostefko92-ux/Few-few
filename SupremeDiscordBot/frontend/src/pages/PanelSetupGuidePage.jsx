@@ -6,7 +6,7 @@
 // All values come from src/data/growthContent.js — the SAME object the
 // prerender snapshot uses — so the live page can never drift from the crawled
 // HTML.
-import { LayoutPanelTop, ExternalLink } from "lucide-react";
+import { LayoutPanelTop, ExternalLink } from "../components/icons";
 import PublicPageLayout, { BOT_INVITE_URL } from "../components/PublicPageLayout";
 import Seo from "../components/Seo";
 import { PANEL_SETUP_GUIDE as d } from "../data/growthContent";

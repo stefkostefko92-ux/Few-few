@@ -5,7 +5,7 @@
 // (the visible FAQ below keeps content parity with the structured data, as
 // Google requires).
 import { useMemo, useRef, lazy, Suspense } from "react";
-import { Check } from "lucide-react";
+import { Check } from "../components/icons";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo, { SITE, landingPath } from "../components/Seo";
 import GameShowcase from "../components/GameShowcase";

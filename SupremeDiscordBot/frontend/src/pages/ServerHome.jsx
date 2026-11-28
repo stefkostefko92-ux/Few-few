@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Ticket, FileText, LineChart, Bot, CheckCircle2, Circle, ArrowRight, UserCheck,
   Inbox, Timer, ClipboardList, Activity, Plus, Send, ChevronRight, AlertCircle, Star,
-} from "lucide-react";
+} from "../components/icons";
 import { getServer, getPanels, getForms, getDashboard, getStatus } from "../api";
 import StatTile from "../components/StatTile";
 import ServerMeta from "../components/ServerCrest";

@@ -11,7 +11,7 @@
 // бъде спряна". Скриването му би било услуга към нас, не към клиента.
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { AlertTriangle, CreditCard } from "lucide-react";
+import { AlertTriangle, CreditCard } from "./icons";
 import { getServer, openPortal } from "../api";
 import { useT } from "../contexts/I18nContext";
 

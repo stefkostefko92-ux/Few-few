@@ -5,7 +5,7 @@
 // голямо число изглежда разхлабено), същият sans като останалия интерфейс — без
 // display/serif „декорация"; статусният цвят идва с иконка и знак, не само с
 // цвят; „—" при липсваща стойност вместо подвеждаща нула.
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "./icons";
 
 export default function StatTile({ icon: Icon, label, value, unit, deltaPct, hint, invertDelta = false }) {
   const has = value !== null && value !== undefined;

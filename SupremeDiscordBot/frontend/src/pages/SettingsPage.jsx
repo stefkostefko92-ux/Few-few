@@ -4,7 +4,7 @@
 // До 12.11.2026 тук живееха седем несвързани карти в една дълга форма;
 // посрещането, ролите, дневникът и AI отговорите вече са при функцията си.
 import { Link, useParams } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "../components/icons";
 import PageHeader from "../components/PageHeader";
 import { SaveBar, SettingsSkeleton } from "../components/settings/SettingsCard";
 import { TicketChannelsCard, BotLanguageCard, RoundRobinCard, WhiteLabelCard } from "../components/settings/ServerCards";

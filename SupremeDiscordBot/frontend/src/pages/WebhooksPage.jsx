@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Webhook as WebhookIcon, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, Trash2, Pencil, Webhook as WebhookIcon, CheckCircle2, XCircle } from "../components/icons";
 import {
   getWebhooks, createWebhook, updateWebhook, deleteWebhook, getWebhookEvents,
 } from "../api";

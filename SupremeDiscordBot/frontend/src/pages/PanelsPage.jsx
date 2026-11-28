@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../components/DiscordPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Send, Pencil, Copy, Layout as LayoutIcon } from "lucide-react";
+import { Plus, Trash2, Send, Pencil, Copy, Layout as LayoutIcon } from "../components/icons";
 import { getPanels, createPanel, updatePanel, deletePanel, spawnPanel, spawnPanelGroup, duplicatePanel, getForms } from "../api";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumBadge } from "../components/PremiumBadge";

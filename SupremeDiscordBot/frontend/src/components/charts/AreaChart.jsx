@@ -1,56 +1,134 @@
 // frontend/src/components/charts/AreaChart.jsx
-// Двусерийна площна графика (отворени/затворени тикети по дни) — inline SVG,
-// нула зависимости.
+// Двусерийна площна графика (отворени/затворени тикети по дни) — <canvas>, нула
+// зависимости. Беше inline SVG; правилото на собственика „никога SVG — графиките
+// са <canvas>“ (2026-11-04/27). Поведението е същото, а мащабът — по-честен:
+// рисува се в истинските пиксели на кутията (SVG-то се свиваше равномерно и
+// текстът ставаше дребен на тясно).
 //
 // Дисциплина (dataviz): една ос (никога dual-axis), плътни косъмни решетъчни
 // линии, 2px щрихи, легенда ЗАДЪЛЖИТЕЛНО при ≥2 серии + директни етикети на
 // края на всяка серия (вторично кодиране — двойката е в 6–8 tritan лентата),
 // crosshair + tooltip по подразбиране, и table view близнак, за да не е
 // tooltip-ът единственият начин да прочетеш стойност.
-import { useId, useMemo, useState } from "react";
-import { Table2, LineChart as LineIcon } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Table2, LineChart as LineIcon } from "../icons";
 import { SERIES, GRID, AXIS_TEXT } from "./palette";
 import { useT } from "../../contexts/I18nContext";
 
 const PAD = { top: 14, right: 54, bottom: 24, left: 34 };
+const FONT = '"Inter Tight", Inter, system-ui, sans-serif';
+
+/** Точките на двете серии в пикселите на кутията (чиста функция — тества се отделно). */
+export function layoutPoints(data, W, H) {
+  const plotW = Math.max(1, W - PAD.left - PAD.right);
+  const plotH = Math.max(1, H - PAD.top - PAD.bottom);
+  const max = Math.max(1, ...data.map((d) => Math.max(d.opened || 0, d.closed || 0)));
+  const step = data.length > 1 ? plotW / (data.length - 1) : 0;
+  const y = (v) => PAD.top + plotH - (v / max) * plotH;
+  const pts = data.map((d, i) => ({ ...d, x: PAD.left + i * step, yOpened: y(d.opened || 0), yClosed: y(d.closed || 0) }));
+  return { pts, max, plotW, plotH, step };
+}
+
+function hexA(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+}
 
 export default function AreaChart({ data = [], height = 220, className = "" }) {
   const { t } = useT();
-  const gid = useId().replace(/:/g, "");
   const [hover, setHover] = useState(null); // индекс на активната точка
   const [asTable, setAsTable] = useState(false);
-  const W = 720, H = height;
+  const [width, setWidth] = useState(0);
+  const boxRef = useRef(null);
+  const canvasRef = useRef(null);
+  const H = height;
 
-  const { pts, max, plotW, plotH } = useMemo(() => {
-    const plotW = W - PAD.left - PAD.right;
-    const plotH = H - PAD.top - PAD.bottom;
-    const max = Math.max(1, ...data.map((d) => Math.max(d.opened || 0, d.closed || 0)));
-    const step = data.length > 1 ? plotW / (data.length - 1) : 0;
-    const y = (v) => PAD.top + plotH - (v / max) * plotH;
-    const pts = data.map((d, i) => ({
-      ...d,
-      x: PAD.left + i * step,
-      yOpened: y(d.opened || 0),
-      yClosed: y(d.closed || 0),
-    }));
-    return { pts, max, plotW, plotH };
-  }, [data, H]);
+  // Ширината на кутията — платното се рисува в нея 1:1 (× devicePixelRatio).
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return undefined;
+    const measure = () => setWidth(Math.round(el.clientWidth));
+    measure();
+    if (typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [asTable]);
+
+  const geo = useMemo(() => layoutPoints(data, width || 720, H), [data, width, H]);
+
+  useEffect(() => {
+    const cv = canvasRef.current;
+    if (!cv || !width || !data.length) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(width * dpr);
+    cv.height = Math.round(H * dpr);
+    const ctx = cv.getContext("2d");
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, H);
+    const { pts, max, plotH } = geo;
+    const bottom = PAD.top + plotH;
+    ctx.font = `10px ${FONT}`;
+    ctx.textBaseline = "middle";
+
+    // Решетка: плътни косъмни линии (никога пунктир) + стойност на оста — 3 нива.
+    for (const f of [0, 0.5, 1]) {
+      const y = Math.round(PAD.top + plotH - f * plotH) + 0.5;
+      ctx.strokeStyle = GRID; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(width - PAD.right, y); ctx.stroke();
+      ctx.fillStyle = AXIS_TEXT; ctx.textAlign = "right";
+      ctx.fillText(String(Math.round(max * f)), PAD.left - 8, y);
+    }
+
+    const trace = (key) => { pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p[key]) : ctx.moveTo(p.x, p[key]))); };
+    const fill = (key, color, a0) => {
+      const g = ctx.createLinearGradient(0, PAD.top, 0, bottom);
+      g.addColorStop(0, hexA(color, a0)); g.addColorStop(1, hexA(color, 0.02));
+      ctx.beginPath(); trace(key);
+      ctx.lineTo(pts.at(-1).x, bottom); ctx.lineTo(pts[0].x, bottom); ctx.closePath();
+      ctx.fillStyle = g; ctx.fill();
+    };
+    const stroke = (key, color) => {
+      ctx.beginPath(); trace(key);
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.stroke();
+    };
+    fill("yClosed", SERIES.closed.stroke, 0.26);
+    fill("yOpened", SERIES.opened.stroke, 0.34);
+    stroke("yClosed", SERIES.closed.stroke);
+    stroke("yOpened", SERIES.opened.stroke);
+
+    // Директни етикети на края — вторичното кодиране до легендата.
+    const last = pts.at(-1);
+    ctx.font = `11px ${FONT}`; ctx.textAlign = "left";
+    ctx.fillStyle = SERIES.opened.stroke; ctx.fillText(String(last.opened), last.x + 8, last.yOpened);
+    ctx.fillStyle = SERIES.closed.stroke; ctx.fillText(String(last.closed), last.x + 8, last.yClosed);
+
+    // Оста X: само първи/среден/последен ден — иначе етикетите се сблъскват.
+    ctx.font = `10px ${FONT}`; ctx.fillStyle = AXIS_TEXT;
+    const fmtDay = (s) => { const d = new Date(s); return `${d.getDate()}/${d.getMonth() + 1}`; };
+    [0, Math.floor(pts.length / 2), pts.length - 1].forEach((i) => {
+      ctx.textAlign = i === 0 ? "left" : i === pts.length - 1 ? "right" : "center";
+      ctx.fillText(fmtDay(pts[i].day), pts[i].x, H - 7);
+    });
+
+    // Мерник + маркери; 2px пръстен в цвета на повърхността при застъпване.
+    if (hover != null && pts[hover]) {
+      const p = pts[hover];
+      ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(Math.round(p.x) + 0.5, PAD.top); ctx.lineTo(Math.round(p.x) + 0.5, bottom); ctx.stroke();
+      for (const [key, color] of [["yClosed", SERIES.closed.stroke], ["yOpened", SERIES.opened.stroke]]) {
+        ctx.beginPath(); ctx.arc(p.x, p[key], 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#061010"; ctx.stroke();
+      }
+    }
+  }, [geo, hover, width, H, data.length]);
 
   if (!data.length) {
     return <div className={`text-sm text-cs-muted py-10 text-center ${className}`}>{t("overview.byPanel.empty")}</div>;
   }
 
-  const line = (key) => pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)} ${p[key].toFixed(1)}`).join(" ");
-  const area = (key) =>
-    `${line(key)} L${pts.at(-1).x.toFixed(1)} ${(PAD.top + plotH).toFixed(1)} L${pts[0].x.toFixed(1)} ${(PAD.top + plotH).toFixed(1)} Z`;
-
-  // 4 хоризонтални нива — повече решетка на 220px е шум.
-  const ticks = [0, 0.5, 1].map((f) => ({ v: Math.round(max * f), y: PAD.top + plotH - f * plotH }));
-  const last = pts.at(-1);
-  const fmtDay = (s) => {
-    const d = new Date(s);
-    return `${d.getDate()}/${d.getMonth() + 1}`;
-  };
+  const { pts, max, step } = geo;
 
   if (asTable) {
     return (
@@ -89,68 +167,25 @@ export default function AreaChart({ data = [], height = 220, className = "" }) {
         <ChartToggle asTable={asTable} onToggle={() => setAsTable(true)} />
       </div>
 
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="w-full"
-        style={{ height }}
-        role="img"
-        aria-label={`Ticket activity: ${data.length} days, peak ${max} per day. Switch to table view for exact values.`}
-        onMouseLeave={() => setHover(null)}
-        onMouseMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect();
-          const x = ((e.clientX - r.left) / r.width) * W;
-          const step = pts.length > 1 ? (plotW / (pts.length - 1)) : 1;
-          const i = Math.round((x - PAD.left) / step);
-          setHover(i >= 0 && i < pts.length ? i : null);
-        }}
-      >
-        <defs>
-          <linearGradient id={`g-open-${gid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={SERIES.opened.stroke} stopOpacity="0.34" />
-            <stop offset="100%" stopColor={SERIES.opened.stroke} stopOpacity="0.02" />
-          </linearGradient>
-          <linearGradient id={`g-close-${gid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={SERIES.closed.stroke} stopOpacity="0.26" />
-            <stop offset="100%" stopColor={SERIES.closed.stroke} stopOpacity="0.02" />
-          </linearGradient>
-        </defs>
+      <div ref={boxRef} className="w-full" style={{ height }}>
+        <canvas
+          ref={canvasRef}
+          className="block w-full"
+          style={{ height }}
+          role="img"
+          aria-label={`Ticket activity: ${data.length} days, peak ${max} per day. Switch to table view for exact values.`}
+          onMouseLeave={() => setHover(null)}
+          onMouseMove={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            const i = step > 0 ? Math.round((e.clientX - r.left - PAD.left) / step) : 0;
+            setHover(i >= 0 && i < pts.length ? i : null);
+          }}
+        />
+      </div>
 
-        {/* Решетка: плътни косъмни линии (никога пунктир) + стойност на оста */}
-        {ticks.map((t) => (
-          <g key={t.y}>
-            <line x1={PAD.left} y1={t.y} x2={W - PAD.right} y2={t.y} stroke={GRID} strokeWidth="1" />
-            <text x={PAD.left - 8} y={t.y + 3.5} textAnchor="end" fontSize="10" fill={AXIS_TEXT} className="tabular-nums">{t.v}</text>
-          </g>
-        ))}
-
-        <path d={area("yClosed")} fill={`url(#g-close-${gid})`} />
-        <path d={area("yOpened")} fill={`url(#g-open-${gid})`} />
-        <path d={line("yClosed")} fill="none" stroke={SERIES.closed.stroke} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-        <path d={line("yOpened")} fill="none" stroke={SERIES.opened.stroke} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-
-        {/* Директни етикети на края — вторичното кодиране до легендата */}
-        <text x={last.x + 8} y={last.yOpened + 3.5} fontSize="11" fill={SERIES.opened.stroke} className="tabular-nums">{last.opened}</text>
-        <text x={last.x + 8} y={last.yClosed + 3.5} fontSize="11" fill={SERIES.closed.stroke} className="tabular-nums">{last.closed}</text>
-
-        {/* Оста X: само първи/среден/последен ден — иначе етикетите се сблъскват */}
-        {[0, Math.floor(pts.length / 2), pts.length - 1].map((i) => (
-          <text key={i} x={pts[i].x} y={H - 7} textAnchor={i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle"}
-            fontSize="10" fill={AXIS_TEXT}>{fmtDay(pts[i].day)}</text>
-        ))}
-
-        {/* Crosshair + маркери; 2px пръстен в цвета на повърхността при застъпване */}
-        {hover != null && (
-          <g pointerEvents="none">
-            <line x1={pts[hover].x} y1={PAD.top} x2={pts[hover].x} y2={PAD.top + plotH} stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
-            <circle cx={pts[hover].x} cy={pts[hover].yClosed} r="4.5" fill={SERIES.closed.stroke} stroke="#061010" strokeWidth="2" />
-            <circle cx={pts[hover].x} cy={pts[hover].yOpened} r="4.5" fill={SERIES.opened.stroke} stroke="#061010" strokeWidth="2" />
-          </g>
-        )}
-      </svg>
-
-      {/* Tooltip извън SVG — по-лесно се стилизира и не се реже от viewBox */}
+      {/* Подсказката е под платното — по-лесно се стилизира и не се реже */}
       <div className="h-5 mt-1 text-xs text-cs-muted tabular-nums" aria-live="polite">
-        {hover != null && (
+        {hover != null && pts[hover] && (
           <span>
             {pts[hover].day} · <span style={{ color: SERIES.opened.stroke }}>{pts[hover].opened} {t("overview.chart.opened").toLowerCase()}</span>
             {" · "}<span style={{ color: SERIES.closed.stroke }}>{pts[hover].closed} {t("overview.chart.closed").toLowerCase()}</span>

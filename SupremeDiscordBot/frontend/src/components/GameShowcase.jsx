@@ -6,7 +6,7 @@
 // генерирани от mascot/ — нула чужда IP): фиксирани размери (нула CLS), lazy
 // + async декодиране (извън LCP пътя). Единственото движение е hover увеличение,
 // а index.css неутрализира всяко движение при prefers-reduced-motion.
-import { Gamepad2, Check, ArrowRight } from "lucide-react";
+import { Gamepad2, Check, ArrowRight } from "./icons";
 
 // По един от всяка редкост + сезонен — разнообразие на цветове и форми.
 export const SHOWCASE_COMPANIONS = [

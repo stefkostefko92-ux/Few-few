@@ -3,7 +3,7 @@
 // Заключена карта (план, който не носи функцията) остава четима и води към
 // страницата с плановете — преди беше само избледняла, без изход.
 import { Link, useParams } from "react-router-dom";
-import { Star, Save } from "lucide-react";
+import { Star, Save } from "../icons";
 import { useT } from "../../contexts/I18nContext";
 
 export default function SettingsCard({ icon: Icon, iconClass = "text-cs-cyan", title, description = null, lockedLabel = null, children }) {

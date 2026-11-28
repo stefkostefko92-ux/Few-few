@@ -5,7 +5,7 @@
 // в данните: казва точно какво прави.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Check, ChevronDown, LogOut, Search, Shield, KeyRound } from "lucide-react";
+import { Check, ChevronDown, LogOut, Search, Shield, KeyRound } from "./icons";
 import { useT } from "../contexts/I18nContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 

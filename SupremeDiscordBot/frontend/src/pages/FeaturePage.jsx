@@ -5,7 +5,7 @@
 // обходения HTML. Структурата е нарочно „отговор отпред": H1 → един абзац с
 // прекия отговор → стъпки → таблица Free/Premium → FAQ → свързани страници.
 import { useParams } from "react-router-dom";
-import { Sparkles, ChevronRight } from "lucide-react";
+import { Sparkles, ChevronRight } from "../components/icons";
 import PublicPageLayout, { BOT_INVITE_URL } from "../components/PublicPageLayout";
 import Seo from "../components/Seo";
 import NotFoundPage from "./NotFoundPage";

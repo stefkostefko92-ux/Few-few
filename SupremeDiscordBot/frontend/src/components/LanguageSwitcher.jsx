@@ -4,7 +4,7 @@
 // на новия език без презареждане. Изборът пътува с потребителя, не със сесията.
 import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Globe, Check, ChevronDown } from "lucide-react";
+import { Globe, Check, ChevronDown } from "./icons";
 import { updateMe } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";

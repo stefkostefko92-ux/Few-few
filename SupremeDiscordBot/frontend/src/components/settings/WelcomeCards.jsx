@@ -1,7 +1,7 @@
 // frontend/src/components/settings/WelcomeCards.jsx
 // Какво става, когато някой влезе в сървъра: поздравът, ролите, които получава,
 // и ролите, които му се връщат, ако се е върнал.
-import { MessageSquareHeart, UserPlus, History } from "lucide-react";
+import { MessageSquareHeart, UserPlus, History } from "../icons";
 import DiscordChannelSelect, { DiscordRoleSelect } from "../DiscordPicker";
 import SettingsCard from "./SettingsCard";
 import { useT } from "../../contexts/I18nContext";
