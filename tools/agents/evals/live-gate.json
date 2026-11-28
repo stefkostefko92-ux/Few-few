@@ -1,9 +1,9 @@
 {
   "date": "2026-11-28",
-  "ref": "a4552724c6f5da1d5fe8024d35fd9724078042f7",
+  "ref": "22df8cdd626d626cf03e366349eb0ab7b6ced421",
   "cli": "2.1.332 (Claude Code)",
   "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
-  "costUsd": 10.25,
+  "costUsd": 10.02,
   "criticalAt": "2026-11-28",
   "probe": [
     {
@@ -22,7 +22,7 @@
       "problems": []
     }
   ],
-  "inputsHash": "eaa75fc9071153c4930548c3256b05bc880d83b7c21d5f0203de768bb8f28859",
+  "inputsHash": "e9004086d1079a3fb66446a7b15c82547fab96963eb78b565c27ac64dc15ca0b",
   "files": {
     ".claude/agents/3d-maniac.md": "bdec637b2b2ca2d29db8fdc0049e65598aaf2cf0bc4552f6a5c8718e75ed162d",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -72,7 +72,7 @@
     ".claude/hooks/guard-config.mjs": "b14433069e4af13b1dc84f7d76dbc5129cdd03688c45bfa9c2292827a3bd4cdd",
     ".claude/hooks/guard-dangerous.mjs": "522f11cdcd478d6f3b42e5ebbcc478ff283cd7c8aaa413d7420b1bb8cccb9419",
     ".claude/hooks/guard-engagement.mjs": "0706e7055fe799f7e0f5fd9c1a87314a0cc63905da2108c61830e52ee201dc37",
-    ".claude/hooks/guard-exfil.mjs": "55eb94830ffefc43e8b4a4888a3fe965d23cacfcc1ad2c054c0eb95cb8f3fe87",
+    ".claude/hooks/guard-exfil.mjs": "da5d6410bfa158e4b66972d94959a79757cbddc35c7e4261d96e20f32af66c91",
     ".claude/hooks/guard-model.mjs": "3b1e8cba1c4ddfcf6dd2b41e48a3d176d00471327d7ed707bd3785babb8764f4",
     ".claude/hooks/guard-prompt.mjs": "d9d1f3de98903425d16405ac261d505786af824e9ba4b9a666c522b92f0d58b2",
     ".claude/hooks/guard-readonly.mjs": "e0c4274517573e6791a83c4c75cbbb19dfba906b3253a149c2a424a574e32e07",
