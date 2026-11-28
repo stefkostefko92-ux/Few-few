@@ -17475,7 +17475,7 @@
           "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
           "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
         ],
-        "lessons": 64
+        "lessons": 74
       },
       "evolution": [
         {
@@ -17525,9 +17525,20 @@
           "date": "2026-11-28",
           "event": "v6.2 — учене",
           "detail": "Научи: Аргументите на blender се изпълняват по реда на подаване, затова -o, -F, -x, -s, -e и -… (+11 още)"
+        },
+        {
+          "version": "7.2.0",
+          "date": "2026-11-28",
+          "event": "v7.2 — учене",
+          "detail": "Научи: amix по подразбиране е inputs=2, duration=longest, dropout_transition=2 (секунди), weig… (+9 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „amix по подразбиране е inputs=2, duration=longest, dropout_transition=2 (секунди), weig…\" (+9 още) · 2 в карантина"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
