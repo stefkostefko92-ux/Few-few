@@ -17475,7 +17475,7 @@
           "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
           "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
         ],
-        "lessons": 157
+        "lessons": 168
       },
       "evolution": [
         {
@@ -17591,9 +17591,20 @@
           "date": "2026-11-28",
           "event": "v15.5 — учене",
           "detail": "Научи: Audacity Noise Reduction има по подразбиране Noise reduction 6 dB, Sensitivity 6.00 (об… (+12 още)"
+        },
+        {
+          "version": "16.6.0",
+          "date": "2026-11-28",
+          "event": "v16.6 — учене",
+          "detail": "Научи: page.screenshot има scale \"css\"|\"device\" с подразбиране \"device\" (един пиксел на device… (+10 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „page.screenshot има scale \"css\"|\"device\" с подразбиране \"device\" (един пиксел на device…\" (+10 още)"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
