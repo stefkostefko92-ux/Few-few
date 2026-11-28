@@ -75,7 +75,7 @@ src/
   proforma/      proforma.ts (създаване, отказ, писмо) · link.ts (проформа → фактура) · render.ts (PDF) · mail.ts
   peppol/        access-point.ts (интерфейсът) · econnect.ts (eConnect PSB) · ids.ts · settings.ts · participants.ts ·
                  transmissions.ts (опашката) · webhook.ts (известията) · loop.ts
-  features.ts    регистърът на функциите (live/planned + дата) — плановете, панелът и витрината четат оттук
+  features.ts    регистърът на функциите (live/planned + дата/review) — плановете, панелът и витрината четат оттук
   seo/           pages.ts (страниците на витрината — единствен списък) · structured-data.ts (JSON-LD)
   catalog/       schemas.ts (zod на формите) · catalog.ts (контрагенти, артикули) · series.ts (сериите под
                  заключването на фирмата) · document-prefill.ts (каталогът във формата за документ)
@@ -123,6 +123,11 @@ promo/           промо клипът за YouTube (`promo/README.md`): captu
   `src/admin/integrations.ts`. Тестовете пазят всичките.
 - **Промяна в ядрото → `npm run test:conformance`** (официалните правила), не само unit тестовете.
 - **`planned` функции никога не се показват като налични** на витрината (заблуждаваща реклама).
+- **`review` — „Проверява се с инструментите на НАП“** (SPEC 99; собственикът, 28.11.2026): сега SAF-T и дневниците
+  по ДДС (`vat-ledgers`). `orgHasFeature` — само фирмите от `features.reviewOrgIds` (панел, до 10); клиентите
+  виждат съобщението, файловете не се дават; рекламната страница (`feature` в `src/seo/pages.ts`) не е
+  публикувана. Пуска се с `status: 'live'` САМО след `docs/review/README.md` (официалният валидатор и програмата
+  на НАП с реални данни, отпечатъкът на XSD от официалния архив) — решение на собственика.
 - **Никога „одобрен от НАП“ или „сертифициран“** — до наредбата по чл. 120а, ал. 9 от законопроекта такова
   одобрение не съществува.
 - Права по план — само от проверен webhook на Revolut или от мастър панела, никога от redirect.

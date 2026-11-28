@@ -115,13 +115,13 @@ export async function manualPdf(
       .fontSize(16)
       .fillColor(INK)
       .text(`${index + 1}. ${section.title}`, { width });
-    if (section.notInPlan) {
+    if (section.notInPlan || section.review) {
       doc.moveDown(0.3);
       doc
         .font('sans')
         .fontSize(10)
         .fillColor(ACCENT)
-        .text(t('help.manual.notAvailable'), { width });
+        .text(t(section.review ? 'features.reviewNotice' : 'help.manual.notAvailable'), { width });
     }
     doc.moveDown(0.5);
     doc.font('sans').fontSize(11).fillColor(INK).text(section.intro, { width, lineGap: 2 });

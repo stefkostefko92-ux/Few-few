@@ -36,7 +36,7 @@
   <fieldset>
     <legend><%= t('admin.planFields.features') %></legend>
     <% features.forEach((f) => { %>
-      <label class="check"><input type="checkbox" name="features" value="<%= f.code %>"<%= plan.features.includes(f.code) ? ' checked' : '' %>> <%= t('features.' + f.code + '.name') %><% if (f.status === 'planned') { %> <span class="tag"><%= t('admin.planned') %> <%= f.target %></span><% } %></label>
+      <label class="check"><input type="checkbox" name="features" value="<%= f.code %>"<%= plan.features.includes(f.code) ? ' checked' : '' %>> <%= t('features.' + f.code + '.name') %><% if (f.status === 'planned') { %> <span class="tag"><%= t('admin.planned') %> <%= f.target %></span><% } else if (f.status === 'review') { %> <span class="tag"><%= t('admin.review') %></span><% } %></label>
     <% }) %>
   </fieldset>
   <button type="submit"><%= t('admin.save') %></button>
