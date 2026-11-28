@@ -3,10 +3,13 @@
 // SDK заедно със scrub и без автоматичната памет; главната нишка е диспечерът, който пуска НАШИЯ агент.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildOptions, listAgents, toUiEvent, DISPATCH } from '../src/agent.js';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { buildOptions, listAgents, toUiEvent, toUiEvents, DISPATCH } from '../src/agent.js';
 import { startTestServer, post, fakeRunner, FAKE_KEY } from './helpers.js';
 
-const repo = new URL('../..', import.meta.url).pathname.replace(/\/$/, '');
+const repo = join(import.meta.dirname, '..', '..');
 const can = async () => ({ behavior: 'deny' as const, message: 'x' });
 
 test('диспечер → нашият агент; нашите настройки; режим default; тавани', () => {
@@ -43,7 +46,8 @@ test('диспечер → нашият агент; нашите настрой�
       t,
     );
   }
-  assert.ok(o.allowedTools?.includes('Read'));
+  // F1: голо име в allowedTools одобрява целия инструмент без canUseTool — четенето се решава в куката.
+  assert.deepEqual(o.allowedTools, []);
 });
 
 test('ключът е само в env на SDK, със scrub и без автоматична памет', () => {
@@ -193,4 +197,190 @@ test('живата проба: субагентът е на преден пла�
     { signal: new AbortController().signal },
   )) as Record<string, unknown>;
   assert.deepEqual(other, {}, 'друг инструмент — без намеса');
+});
+
+// Прегледът на #515 (AI-джията) и червеният екип (F1): голо име в allowedTools одобрява целия инструмент
+// и canUseTool не се вика (code.claude.com/docs/en/agent-sdk/permissions) → Read на ключа + WebFetch навън
+// без нито един клик. Сега allowedTools е празен; куката пуска четенето само в репото и в студиото, забранява
+// папката на пулта (ключът) и /proc, всичко друго минава през клик.
+const hookCall = (o: ReturnType<typeof buildOptions>, matcher: string) => {
+  const h = o.hooks?.PreToolUse?.find((x) => x.matcher === matcher);
+  assert.ok(h, `кука ${matcher}`);
+  return async (tool: string, input: Record<string, unknown>) =>
+    (
+      (await h.hooks[0]!(
+        {
+          hook_event_name: 'PreToolUse',
+          tool_name: tool,
+          tool_input: input,
+          tool_use_id: 't',
+        } as never,
+        't',
+        { signal: new AbortController().signal },
+      )) as {
+        hookSpecificOutput?: {
+          permissionDecision?: string;
+          updatedInput?: Record<string, unknown>;
+        };
+      }
+    ).hookSpecificOutput;
+};
+
+test('#515 F1: без голи имена в allowedTools; четене — само в репото и студиото; ключът и /proc — никога', async () => {
+  const studio = mkdtempSync(join(tmpdir(), 'pult-studio-'));
+  const data = join(tmpdir(), 'pult-data-x', 'studiopult');
+  after(() => rmSync(studio, { recursive: true, force: true }));
+  const o = buildOptions({
+    agentId: 'ai-studio',
+    agents: ['ai-studio'],
+    repoRoot: repo,
+    key: FAKE_KEY,
+    canUseTool: can,
+    dataDir: data,
+    studioDir: studio,
+  });
+  assert.deepEqual(o.allowedTools ?? [], [], 'нито Read, нито WebFetch/WebSearch без контрол');
+  const call = hookCall(o, 'Read|Grep|Glob');
+  const dec = async (tool: string, input: Record<string, unknown>) =>
+    (await call(tool, input))?.permissionDecision;
+  // в репото и в студиото — без клик
+  assert.equal(
+    await dec('Read', { file_path: join(repo, 'tools', 'video', 'README.md') }),
+    'allow',
+  );
+  assert.equal(
+    await dec('Read', { file_path: 'tools/video/README.md' }),
+    'allow',
+    'относителен спрямо репото',
+  );
+  assert.equal(await dec('Grep', { pattern: 'ffmpeg' }), 'allow', 'без path — cwd = репото');
+  assert.equal(await dec('Glob', { pattern: '**/*.mp4', path: studio }), 'allow');
+  // папката на пулта: пряко, с .., с друг регистър/разделител на Windows, обхождане на родител
+  for (const [tool, input] of [
+    ['Read', { file_path: join(data, 'key.txt') }],
+    ['Read', { file_path: join(data, '..', 'studiopult', 'key.txt') }],
+    ['Grep', { pattern: 'sk-ant', path: data }],
+    ['Grep', { pattern: 'sk-ant', path: join(data, '..') }],
+    ['Glob', { pattern: '**/*', path: join(data, '..', '..') }],
+    ['Glob', { pattern: join(data, '*') }],
+    ['Read', { file_path: '/proc/self/environ' }],
+  ] as const) {
+    assert.equal(await dec(tool, input), 'deny', `${tool} ${JSON.stringify(input)}`);
+  }
+  // извън репото и студиото — без решение от куката → canUseTool (клик)
+  assert.equal(await dec('Read', { file_path: '/etc/hostname' }), undefined);
+  assert.equal(await dec('Glob', { pattern: '../../**/key.txt' }), undefined, '.. в шаблона');
+  assert.equal(await dec('Grep', { pattern: 'x', glob: '../**' }), undefined);
+  assert.equal(await dec('Read', { file_path: 42 as never }), undefined, 'странен вход — клик');
+});
+
+test('#515 F1 (Windows): регистърът и разделителите не отварят ключа', async () => {
+  const { pathVerdict } = await import('../src/agent.js');
+  const w = {
+    platform: 'win32' as const,
+    cwd: 'C:\\Users\\Owner\\Few-few',
+    roots: ['C:\\Users\\Owner\\Few-few'],
+    data: 'C:\\Users\\Owner\\AppData\\Local\\studiopult',
+  };
+  assert.equal(pathVerdict('c:/users/owner/appdata/local/STUDIOPULT/key.txt', w), 'deny');
+  assert.equal(
+    pathVerdict('C:\\Users\\Owner\\AppData\\Local', w, true),
+    'deny',
+    'родител при обхождане',
+  );
+  assert.equal(
+    pathVerdict('\\\\?\\C:\\Users\\Owner\\AppData\\Local\\studiopult\\key.txt', w),
+    'deny',
+    '\\\\?\\ префикс',
+  );
+  assert.equal(pathVerdict('C:\\Users\\Owner\\few-few\\tools\\x.md', w), 'allow');
+  assert.equal(pathVerdict('C:\\Users\\Owner\\Desktop\\x.md', w), 'ask');
+  assert.equal(
+    pathVerdict('C:\\Users\\OWNER~1\\AppData\\Local\\STUDIO~1\\key.txt', w),
+    'ask',
+    '8.3 име: лексикално не е в корена → клик (realpath го разгъва, когато съществува)',
+  );
+});
+
+test('#515: диспечерът вика само избрания агент и не сменя модела, усилието или изолацията', async () => {
+  const o = buildOptions({
+    agentId: 'ai-studio',
+    agents: ['ai-studio'],
+    repoRoot: repo,
+    key: FAKE_KEY,
+    canUseTool: can,
+  });
+  const call = hookCall(o, 'Agent');
+  assert.equal(
+    (await call('Agent', { subagent_type: 'seo', prompt: 'x' }))?.permissionDecision,
+    'deny',
+  );
+  const out = await call('Agent', {
+    subagent_type: 'ai-studio',
+    prompt: 'x',
+    model: 'opus',
+    effort: 'max',
+    isolation: 'remote',
+    run_in_background: true,
+  });
+  assert.equal(out?.permissionDecision, 'allow');
+  assert.deepEqual(out?.updatedInput, {
+    subagent_type: 'ai-studio',
+    prompt: 'x',
+    run_in_background: false,
+  });
+});
+
+test('#515: диспечерът не повтаря отговора (двойни изходни токени) — текстът на агента идва от субагента', () => {
+  const o = buildOptions({
+    agentId: 'ai-studio',
+    agents: ['ai-studio'],
+    repoRoot: repo,
+    key: FAKE_KEY,
+    canUseTool: can,
+  });
+  assert.match(o.agents![DISPATCH]!.prompt, /само „Готово\.“/);
+  assert.doesNotMatch(o.agents![DISPATCH]!.prompt, /върни отговора му дословно/);
+  const sub = toUiEvents({
+    type: 'assistant',
+    parent_tool_use_id: 'x',
+    session_id: 's',
+    uuid: 'u',
+    message: {
+      content: [
+        { type: 'text', text: 'Отговор на агента' },
+        { type: 'tool_use', name: 'Bash' },
+      ],
+    },
+  } as never);
+  assert.deepEqual(sub, [
+    { type: 'text', text: 'Отговор на агента', sub: true },
+    { type: 'tool', name: 'Bash', sub: true },
+  ]);
+  assert.deepEqual(
+    toUiEvents({
+      type: 'stream_event',
+      parent_tool_use_id: 'x',
+      session_id: 's',
+      uuid: 'u',
+      event: {
+        type: 'content_block_delta',
+        index: 0,
+        delta: { type: 'text_delta', text: 'дубъл' },
+      },
+    } as never),
+    [],
+    'частичните на субагента не се показват два пъти',
+  );
+  assert.deepEqual(
+    toUiEvents({
+      type: 'assistant',
+      parent_tool_use_id: null,
+      session_id: 's',
+      uuid: 'u',
+      message: { content: [{ type: 'text', text: 'вече показан чрез потока' }] },
+    } as never),
+    [],
+    'текстът на диспечера идва от потока',
+  );
 });

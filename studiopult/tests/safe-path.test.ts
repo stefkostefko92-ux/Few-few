@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { safeResolve, safeOutput, contentTypeOf, PathError } from '../src/files.js';
-import { startTestServer } from './helpers.js';
+import { startTestServer, get, fileUrl } from './helpers.js';
 
 const root = mkdtempSync(join(tmpdir(), 'pult-root-'));
 const outside = mkdtempSync(join(tmpdir(), 'pult-out-'));
@@ -72,6 +72,18 @@ test('изход за задача: файлът може да не същест
   if (linked) await assert.rejects(safeOutput(root, 'link/нов.mp4'), PathError);
 });
 
+// Червеният екип на #515 (F6): крайното име на изхода е symlink навън → --force пишеше през връзката.
+test('изход: крайното име е symlink → отказ', async () => {
+  let made = true;
+  try {
+    symlinkSync(join(outside, 'secret.mp4'), join(root, 'renders', 'ln.mp4'), 'file');
+  } catch {
+    made = false; // Windows без право за symlink — junction е само за папки, там F6 не важи
+  }
+  if (!made) return;
+  await assert.rejects(safeOutput(root, 'renders/ln.mp4'), PathError);
+});
+
 test('Content-Type е по позволен списък', () => {
   assert.equal(contentTypeOf('a.mp4'), 'video/mp4');
   assert.equal(contentTypeOf('a.MOV'), 'video/quicktime');
@@ -90,20 +102,43 @@ after(() => p.close());
 test('HTTP: прегледът дава файла с nosniff и поддържа Range; лош път → 400', async () => {
   mkdirSync(join(p.preview, 'out'));
   writeFileSync(join(p.preview, 'out', 'v.mp4'), '0123456789');
-  const ok = await fetch(`${p.base}/api/file?path=${encodeURIComponent('out/v.mp4')}`, {
-    headers: { cookie: p.cookie },
-  });
+  const ok = await fetch(`${p.base}${await fileUrl(p, 'out/v.mp4')}`);
   assert.equal(ok.status, 200);
   assert.equal(ok.headers.get('content-type'), 'video/mp4');
   assert.equal(ok.headers.get('x-content-type-options'), 'nosniff');
   assert.equal(await ok.text(), '0123456789');
-  const part = await fetch(`${p.base}/api/file?path=out/v.mp4`, {
-    headers: { cookie: p.cookie, range: 'bytes=2-4' },
+  const part = await fetch(`${p.base}${await fileUrl(p, 'out/v.mp4')}`, {
+    headers: { range: 'bytes=2-4' },
   });
   assert.equal(part.status, 206);
   assert.equal(await part.text(), '234');
-  const bad = await fetch(`${p.base}/api/file?path=${encodeURIComponent('../x.mp4')}`, {
-    headers: { cookie: p.cookie },
-  });
+  const bad = await get(p, `/api/file-link?path=${encodeURIComponent('../x.mp4')}`);
   assert.equal(bad.status, 400);
+});
+
+// Червеният екип на #515 (F2): адресът за прегледа е подписан за един път и кратко време — без подпис, с чужд
+// подпис, за друг път или изтекъл → 403. Токенът на API не отваря файла (видеото не праща заглавия).
+test('HTTP: прегледът иска подпис — без, подправен, за друг път или изтекъл → 403', async () => {
+  writeFileSync(join(p.preview, 'out', 'w.mp4'), 'abc');
+  const url = new URL(await fileUrl(p, 'out/v.mp4'), p.base);
+  assert.equal((await get(p, '/api/file?path=out%2Fv.mp4')).status, 403, 'само Bearer не стига');
+  const other = new URL(url);
+  other.searchParams.set('path', 'out/w.mp4');
+  assert.equal((await fetch(other)).status, 403, 'подписът е за друг път');
+  const forged = new URL(url);
+  forged.searchParams.set('sig', 'A'.repeat(43));
+  assert.equal((await fetch(forged)).status, 403);
+  const later = new URL(url);
+  later.searchParams.set('exp', String(Number(url.searchParams.get('exp')) + 60_000));
+  assert.equal((await fetch(later)).status, 403, 'удължен срок');
+  assert.equal(
+    p.deps.gate.fileOk(
+      'out/v.mp4',
+      url.searchParams.get('exp'),
+      url.searchParams.get('sig'),
+      Number(url.searchParams.get('exp')) + 1,
+    ),
+    false,
+    'изтекъл',
+  );
 });

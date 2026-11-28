@@ -7,16 +7,19 @@ Claude се вика през **Claude Agent SDK** с API ключ на Anthropi
 Пултът **не се деплойва** (няма го в `deploy/`).
 
 ## Стек
+
 Node ≥22 · TS strict (ESM/NodeNext) · `node:http` без рамка · единствена runtime зависимост
 `@anthropic-ai/claude-agent-sdk` (точна версия; носи вграден Claude Code, затова **не** `--omit=optional`) ·
 UI: обикновен HTML/CSS/JS в `public/` (системни шрифтове, без CDN, без SVG).
 
 ## Гейт
+
 ```bash
 npm run gate          # prettier --check · tsc (src + tests) · tsx --test tests/*.test.ts · build
 ```
 
 ## Пускане на компютъра на собственика (Windows)
+
 1. **Git for Windows** е задължителен (`winget install Git.Git`). Без Git Bash куките на агентите падат тихо и
    пазачите не работят, затова пултът изобщо не тръгва без него.
 2. Ключът е в **`%LOCALAPPDATA%\studiopult\key.txt`**, на един ред `sk-ant-…`. Не е в репото и не е в
@@ -30,26 +33,46 @@ Linux (разработка): ключът е в `$XDG_CONFIG_HOME/studiopult/ke
 **bubblewrap** (`apt install bubblewrap`), иначе Claude Code не тръгва.
 
 ## Как работи (важно за промени)
+
 - **Диспечер:** главната нишка е `pult-dispatch` (Sonnet, ниско усилие, само `Agent(<избран>)`). Само така
   тичат SubagentStart/Stop куките (памет, учене, dod-check, usage-capture) и `agent-cap` → месечният таван.
-- **Преден план:** PreToolUse кука на SDK (`foregroundAgent`) слага `run_in_background: false`. Без нея
-  субагентът тръгваше фоново и диспечерът отговаряше преди резултата (живата проба 28.11.2026).
+  Диспечерът отговаря само „Готово.“. Текстът на агента идва от субагента (`forwardSubagentText`), иначе
+  изходните токени се плащаха двойно.
+- **Куката `agentGuard`:** слага `run_in_background: false` (без нея субагентът тръгваше фоново и
+  диспечерът отговаряше преди резултата, живата проба 28.11.2026). Отказва друг `subagent_type` и маха
+  `model`, `effort` и `isolation`.
 - **Настройките** са от `.claude/` на репото (`settingSources: ['project']`). `STUDIOPULT=1` в средата на
   SDK заглушава Stop напомнянията `session-dod` и `artifact-sync`; те са за работната сесия, не пазачи.
 - **Разрешения:**
-  - режимът е `default` + `canUseTool`;
-  - четенето (Read, Grep, Glob, WebFetch, WebSearch) е позволено без питане;
-  - Bash, PowerShell, Write и Edit минават **само с клик**;
+  - режимът е `default` + `canUseTool`, а `allowedTools` е **празен**. Голо име там одобрява целия
+    инструмент и `canUseTool` не се вика (червеният екип на #515: Read на ключа + WebFetch навън без клик);
+  - четенето решава куката `readScope`:
+    - Read, Grep и Glob в репото и в студиото минават без клик;
+    - папката на пулта и `/proc` са забранени винаги, и след realpath;
+    - всичко друго иска клик;
+  - WebFetch, WebSearch, Bash, PowerShell, Write и Edit минават **само с клик**;
+  - картата показва съдържанието на Write и Edit; невидимите и bidi знаците се виждат като `⟨U+…⟩`;
   - „винаги разрешено“ не се прилага;
   - таймаут от 5 минути или затворена страница → отказ.
+- **Сесия:**
+  - токенът от терминала се сменя за API токен във фрагмента `/app#t=…`. Страницата го пази в
+    `sessionStorage` (той е по порт) и праща `Authorization: Bearer`. SSE тече през `fetch`;
+  - бисквитка няма: тя стига и до други портове на 127.0.0.1;
+  - прегледът е по подписан адрес (`/api/file-link`): за един път, 10 минути.
 - **Тавани:**
   - $3 и 80 хода на съобщение (`maxBudgetUsd`/`maxTurns`);
   - $20 на ден (`spend.json` до ключа); при 75% предупреждава и не пуска нова работа;
+  - `total_cost_usd` е за цялата сесия, включително при продължение. Затова в тавана влиза делтата
+    (`SpendMeter`). Спрян разговор без резултат влиза по оценка от стъпките, по цените от
+    `tools/agents/prices.json` (тест пази синхрона);
   - отгоре е месечният `budgets.json`.
+- **Задачите** тичат с `cwd` = репото, не папката на студиото: на Windows голо `ffmpeg` се търси първо в
+  `cwd`. Изходът не пише през symlink.
 - **Изход** (Ctrl+C или затворен терминал): спира агента и рендера. Без това процесът на SDK оставаше сирак.
 
 ## Layout
+
 `src/config.ts` (пътища, ключ, fail closed) · `src/http/guard.ts` (Host, Origin, токен → бисквитка, заглавия) ·
 `src/files.ts` (безопасен резолвер) · `src/tasks.ts` (задача → argv, един рендер, ход) ·
-`src/approvals.ts` (одобрения) · `src/budget.ts` (дневен таван) · `src/agent.ts` (опции на SDK, диспечер,
-поток → събития) · `src/selfcheck.ts` · `src/server.ts` · `src/index.ts` · `public/` · `tests/`.
+`src/approvals.ts` (одобрения) · `src/budget.ts` (дневен таван, делта и оценка на разхода) ·
+`src/agent.ts` (опции на SDK, диспечер, четене, поток → събития) · `src/selfcheck.ts` · `src/server.ts` · `src/index.ts` · `public/` · `tests/`.

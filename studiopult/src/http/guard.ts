@@ -4,12 +4,12 @@
  *   127.0.0.1, праща Host със своето име);
  * - POST иска точен Origin `http://127.0.0.1:<порт>` — без, `null` или чужд → 403 (CSRF);
  * - GET от чужд сайт (Sec-Fetch-Site: cross-site/same-site) → 403;
- * - еднократен токен от терминала → бисквитка HttpOnly; SameSite=Strict (други локални потребители и
- *   процеси виждат порта, но не и токена).
+ * - еднократен токен от терминала → API токен във фрагмента `/app#t=…` (никога не стига до сървър) →
+ *   `Authorization: Bearer` на всяко /api/*. Бисквитка НЯМА: червеният екип на #515 (F2) показа, че Chrome
+ *   праща бисквитката на 127.0.0.1:A и на всеки друг порт на 127.0.0.1 → всеки локален слушател я получава;
+ * - прегледът (`<video src>` не праща заглавия) е по подписан адрес: един път, 10 минути, HMAC с ключ на процеса.
  */
-import { randomBytes, timingSafeEqual } from 'node:crypto';
-
-export const COOKIE = 'pult';
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export function hostOk(host: string | undefined, port: number): boolean {
   return host === `127.0.0.1:${port}`;
@@ -31,11 +31,14 @@ const same = (a: string, b: string): boolean => {
   return x.length === y.length && timingSafeEqual(x, y);
 };
 
-/** Еднократният токен (32 байта) се сменя за стойност на бисквитката; повторна смяна → null. */
+export const FILE_TTL_MS = 10 * 60_000;
+
+/** Еднократният токен (32 байта) се сменя за API токен; повторна смяна → null. */
 export class SessionGate {
   readonly startToken: string;
   private used = false;
-  private cookieValue: string | null = null;
+  private apiToken: string | null = null;
+  private readonly fileKey = randomBytes(32);
 
   constructor(rand: (n: number) => Buffer = randomBytes) {
     this.startToken = b64url(rand(32));
@@ -44,21 +47,32 @@ export class SessionGate {
   exchange(token: string | null | undefined): string | null {
     if (this.used || typeof token !== 'string' || !same(token, this.startToken)) return null;
     this.used = true;
-    this.cookieValue = b64url(randomBytes(32));
-    return this.cookieValue;
+    this.apiToken = b64url(randomBytes(32));
+    return this.apiToken;
   }
 
-  valid(cookieHeader: string | undefined): boolean {
-    if (!this.cookieValue || !cookieHeader) return false;
-    for (const part of cookieHeader.split(';')) {
-      const [k, ...v] = part.trim().split('=');
-      if (k === COOKIE && same(v.join('='), this.cookieValue)) return true;
-    }
-    return false;
+  /** Точно `Bearer <токен>`; сравнението е с постоянно време. */
+  valid(authorization: string | undefined): boolean {
+    if (!this.apiToken || typeof authorization !== 'string') return false;
+    if (!authorization.startsWith('Bearer ')) return false;
+    return same(authorization.slice(7), this.apiToken);
   }
 
-  setCookie(value: string): string {
-    return `${COOKIE}=${value}; HttpOnly; SameSite=Strict; Path=/`;
+  private mac(rel: string, exp: string): string {
+    return b64url(createHmac('sha256', this.fileKey).update(`${rel}\n${exp}`).digest());
+  }
+
+  signFile(rel: string, now = Date.now()): { exp: string; sig: string } {
+    const exp = String(now + FILE_TTL_MS);
+    return { exp, sig: this.mac(rel, exp) };
+  }
+
+  fileOk(rel: string, exp: string | null, sig: string | null, now = Date.now()): boolean {
+    if (!this.apiToken || typeof exp !== 'string' || typeof sig !== 'string') return false;
+    if (!/^\d{13}$/.test(exp)) return false;
+    const t = Number(exp);
+    if (t <= now || t > now + FILE_TTL_MS) return false;
+    return same(sig, this.mac(rel, exp));
   }
 }
 

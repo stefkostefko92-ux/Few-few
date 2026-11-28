@@ -1,9 +1,9 @@
 {
   "date": "2026-11-28",
-  "ref": "22df8cdd626d626cf03e366349eb0ab7b6ced421",
+  "ref": "f5a763a279d09cd9067adb851cc85dd21522f6db",
   "cli": "2.1.332 (Claude Code)",
   "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
-  "costUsd": 10.02,
+  "costUsd": 9.73,
   "criticalAt": "2026-11-28",
   "probe": [
     {
@@ -22,7 +22,7 @@
       "problems": []
     }
   ],
-  "inputsHash": "e9004086d1079a3fb66446a7b15c82547fab96963eb78b565c27ac64dc15ca0b",
+  "inputsHash": "28c60b5ec60de02c4f5296f574f3768650dd9b86d6980b5d33a94e8b165a5906",
   "files": {
     ".claude/agents/3d-maniac.md": "bdec637b2b2ca2d29db8fdc0049e65598aaf2cf0bc4552f6a5c8718e75ed162d",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
@@ -64,7 +64,7 @@
     ".claude/agents/vps-adjiyata.md": "676a67dc7a5b1587b832fb77771bdba55f147050d5d93701c9db6bccc893d32b",
     ".claude/hooks/agent-cap.mjs": "5ae3058b6929423114920ee2deb8f5ce783e18a2e776e4cbd12f418ba66e0178",
     ".claude/hooks/agent-return.mjs": "e9b76f4e211ad024fc6bf02c6f088f6474ef7232dea8401841efcd17d54615f8",
-    ".claude/hooks/artifact-sync.mjs": "1d33833db1a0a73eb3e818bb4360dddd3f807abe8b848adae684e48c77add80a",
+    ".claude/hooks/artifact-sync.mjs": "28f19c432edca12ff578971ac9cfc5a21760d2b6b9caf1cc83727e73874688eb",
     ".claude/hooks/budget.mjs": "852f0055195ac4ed24c8ef3f04bef89ea254ce5142c4b996a57837772139a3d4",
     ".claude/hooks/dod-check.mjs": "0894630c593574889b2b355e4abd6c4bdc68d461c3f1675d84d65b8d51587c81",
     ".claude/hooks/format-on-edit.mjs": "d4f5c6bfd6296f2cc6f64c05927c72a2c71f0f17f5ade5b4b5930b8a60164c4c",
@@ -83,7 +83,7 @@
     ".claude/hooks/pii.mjs": "fdb278d0e918a21cdadbafc150ceeb3ecdd24b6c769f8b5de81cc32657e3553f",
     ".claude/hooks/precompact-save.mjs": "cf0a353414c61ce2385238ec86e7b72f5044b5a660a2d8a2c9a808cd73b5dccc",
     ".claude/hooks/route-hint.mjs": "3e08a41a31192edb5053a67e5a2e8a6ab8d05d5d884211365b99396e285a8abb",
-    ".claude/hooks/session-dod.mjs": "3f320021c2227fb5554a1d34551a5bac0d3b4e1046fd39cc8d3902fdab43b0c9",
+    ".claude/hooks/session-dod.mjs": "5b5c2f1bbdaa884eb82a035c9b69a22ecafda2790e4a791a24d8b93e5c676054",
     ".claude/hooks/session-restore.mjs": "cf1d4a2d2bc545ae5a3778d1cb170e2f53e6db733c618ee3baf525b7a75d5faa",
     ".claude/hooks/stop-failure.mjs": "84adc72d569483635018a406ae63c583e279fe3eb390f69bf42b826f2bdfa6ba",
     ".claude/hooks/usage-capture.mjs": "b6dee83a4a53f425c0e8dfab3c8b050e36b7c70b4f45c8dd9d041a5780530981",

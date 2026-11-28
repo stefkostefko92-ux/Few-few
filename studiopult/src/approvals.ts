@@ -57,14 +57,35 @@ export class Approvals {
   }
 }
 
+/**
+ * Червеният екип на #515 (F4): bidi (U+202E обръща видимия ред — Trojan Source), невидими и управляващи знаци
+ * се показват като ⟨U+XXXX⟩, за да одобрява собственикът това, което ще тече, а не това, което вижда.
+ */
+const HIDDEN =
+  /[\u0000-\u0008\u000b-\u001f\u007f-\u009f\u00ad\u061c\u115f\u1160\u180e\u200b-\u200f\u2028-\u202e\u2060-\u206f\u3164\ufe00-\ufe0f\ufeff\ufff9-\ufffb\u{e0000}-\u{e007f}]/gu;
+export const visible = (t: string): string =>
+  t.replace(HIDDEN, (c) => `⟨U+${c.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')}⟩`);
+
+const clip = (t: string, max = 4000) =>
+  t.length > max ? `${t.slice(0, max)}\n… още ${t.length - max} знака` : t;
+
 /** Какво точно ще се изпълни — дословно, за да решава собственикът по истинската команда. */
 export function describe(tool: string, input: Record<string, unknown>): string {
   const s = (v: unknown) => (typeof v === 'string' ? v : JSON.stringify(v));
-  if (tool === 'Bash' || tool === 'PowerShell') return s(input.command);
+  if (tool === 'Bash' || tool === 'PowerShell') {
+    const cmd = String(s(input.command ?? ''));
+    const lines = cmd.split('\n').length;
+    return visible(lines > 1 ? `${cmd}\n— ${lines} реда, ${cmd.length} знака` : cmd);
+  }
+  // Прегледът на #515: само пътят не стига — съдържанието е това, което собственикът одобрява.
   if (tool === 'Write')
-    return `${s(input.file_path)}\n— нов файл, ${String(s(input.content)).length} знака`;
-  if (tool === 'Edit' || tool === 'MultiEdit') return `${s(input.file_path)}\n— редакция`;
-  return JSON.stringify(input).slice(0, 4000);
+    return visible(`${s(input.file_path)}\n— нов файл:\n${clip(String(s(input.content ?? '')))}`);
+  if (tool === 'Edit')
+    return visible(
+      `${s(input.file_path)}\n— заменя:\n${clip(String(s(input.old_string ?? '')), 2000)}` +
+        `\n— с:\n${clip(String(s(input.new_string ?? '')), 2000)}`,
+    );
+  return visible(clip(JSON.stringify(input)));
 }
 
 export type ApprovalEvent = {

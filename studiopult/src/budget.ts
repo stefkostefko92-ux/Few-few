@@ -73,3 +73,102 @@ export class DailyBudget {
     this.corrupt = false;
   }
 }
+
+/**
+ * Цени в USD за 1M токена — копие на `tools/agents/prices.json` (сверено 2026-11-24; тест пази синхрона).
+ * Кеш-записът е по 1-часовия живот (2× входа) — по-скъпият, защото оценката трябва да е отгоре, не отдолу.
+ */
+export const PRICES: Record<
+  string,
+  { in: number; out: number; cacheRead: number; cacheWrite: number }
+> = {
+  'opus-5-5': { in: 4, out: 20, cacheRead: 0.2, cacheWrite: 8 },
+  'sonnet-5-5': { in: 2, out: 10, cacheRead: 0.1, cacheWrite: 4 },
+  'fable-5-2': { in: 8, out: 40, cacheRead: 0.2, cacheWrite: 16 },
+};
+const TOP = Object.values(PRICES).reduce((a, b) => (b.out > a.out ? b : a));
+
+function priceOf(model: unknown): (typeof PRICES)[string] {
+  const m = String(model ?? '').toLowerCase();
+  for (const [id, p] of Object.entries(PRICES)) if (m.includes(id)) return p;
+  return TOP; // непознат модел → най-скъпият (fail closed)
+}
+
+interface Usage {
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_read_input_tokens?: number;
+  cache_creation_input_tokens?: number;
+}
+const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0);
+
+/** Разходът на едно пускане по стъпките — само когато SDK не върне резултат (спрян, сринал се разговор). */
+export class RunMeter {
+  private readonly msgs = new Map<string, { model: unknown; u: Required<Usage> }>();
+  private anon = 0;
+
+  /** Едно API съобщение идва на няколко реда със същото id — брои се веднъж, с най-големите стойности. */
+  onAssistant(message: { id?: unknown; model?: unknown; usage?: Usage } | undefined): void {
+    if (!message?.usage) return;
+    const id = typeof message.id === 'string' && message.id ? message.id : `#${this.anon++}`;
+    const prev = this.msgs.get(id)?.u;
+    const u = message.usage;
+    this.msgs.set(id, {
+      model: message.model,
+      u: {
+        input_tokens: Math.max(n(prev?.input_tokens), n(u.input_tokens)),
+        output_tokens: Math.max(n(prev?.output_tokens), n(u.output_tokens)),
+        cache_read_input_tokens: Math.max(
+          n(prev?.cache_read_input_tokens),
+          n(u.cache_read_input_tokens),
+        ),
+        cache_creation_input_tokens: Math.max(
+          n(prev?.cache_creation_input_tokens),
+          n(u.cache_creation_input_tokens),
+        ),
+      },
+    });
+  }
+
+  estimate(): number {
+    let usd = 0;
+    for (const { model, u } of this.msgs.values()) {
+      const p = priceOf(model);
+      usd +=
+        (u.input_tokens * p.in +
+          u.output_tokens * p.out +
+          u.cache_read_input_tokens * p.cacheRead +
+          u.cache_creation_input_tokens * p.cacheWrite) /
+        1e6;
+    }
+    return usd;
+  }
+}
+
+/**
+ * Колко от разхода на SDK влиза в дневния таван. `total_cost_usd` е за цялата сесия, включително по-ранните
+ * пускания при продължение (code.claude.com/docs/en/agent-sdk/cost-tracking), затова се брои делтата спрямо
+ * последното видяно за сесията. Оценка за спрян разговор също влиза в базата: така продължението не го брои
+ * втори път, а сборът никога не е под истинския разход. След рестарт на пулта базата е празна → първото
+ * продължение се брои цяло (отгоре, не отдолу).
+ */
+export class SpendMeter {
+  private readonly totals = new Map<string, number>();
+
+  onResult(sessionId: string, total: number): number {
+    const prev = this.totals.get(sessionId) ?? 0;
+    const t = n(total);
+    if (t > prev) this.totals.set(sessionId, t);
+    return Math.max(0, t - prev);
+  }
+
+  onEstimate(sessionId: string | undefined, usd: number): number {
+    const v = n(usd);
+    if (sessionId) this.totals.set(sessionId, (this.totals.get(sessionId) ?? 0) + v);
+    return v;
+  }
+
+  startRun(): RunMeter {
+    return new RunMeter();
+  }
+}

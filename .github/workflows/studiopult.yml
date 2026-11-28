@@ -4,10 +4,20 @@ on:
   push:
     paths:
       - 'studiopult/**'
+      # Тестовете четат .claude/agents и пускат истинския guard-dangerous (самопроверката), а таблицата с
+      # цени е от tools/agents/prices.json — промяна там трябва да пусне и гейта на пулта (Конвейерът, #515).
+      - '.claude/agents/**'
+      - '.claude/hooks/**'
+      - 'tools/agents/prices.json'
       - '.github/workflows/studiopult.yml'
   pull_request:
     paths:
       - 'studiopult/**'
+      # Тестовете четат .claude/agents и пускат истинския guard-dangerous (самопроверката), а таблицата с
+      # цени е от tools/agents/prices.json — промяна там трябва да пусне и гейта на пулта (Конвейерът, #515).
+      - '.claude/agents/**'
+      - '.claude/hooks/**'
+      - 'tools/agents/prices.json'
       - '.github/workflows/studiopult.yml'
 
 concurrency:

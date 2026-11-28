@@ -1,22 +1,23 @@
-// Критерии 3–4: еднократен токен → бисквитка HttpOnly; SameSite=Strict; повторно → 401; без бисквитка → 401;
+// Критерии 3–4: еднократен токен → API токен във фрагмента (#t=…, без бисквитка); повторно → 401; без токен → 401;
 // токенът и ключът не стигат до нито един отговор, лог или файл в public/.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SessionGate } from '../src/http/guard.js';
-import { startTestServer, post, FAKE_KEY } from './helpers.js';
+import { startTestServer, post, get, FAKE_KEY } from './helpers.js';
 
-test('SessionGate: токенът е 32 байта, важи веднъж, бисквитката се проверява с постоянно време', () => {
+test('SessionGate: токенът е 32 байта, важи веднъж; API токенът се проверява с постоянно време', () => {
   const g = new SessionGate();
   assert.match(g.startToken, /^[A-Za-z0-9_-]{43}$/, '32 байта в base64url');
   assert.equal(g.exchange('грешен'), null);
-  const c = g.exchange(g.startToken);
-  assert.ok(c);
+  const t = g.exchange(g.startToken);
+  assert.ok(t);
   assert.equal(g.exchange(g.startToken), null, 'втори път — не');
-  assert.equal(g.valid(`pult=${c}`), true);
-  assert.equal(g.valid(`x=1; pult=${c}; y=2`), true);
-  assert.equal(g.valid('pult=друго'), false);
+  assert.equal(g.valid(`Bearer ${t}`), true);
+  assert.equal(g.valid(`bearer ${t}`), false, 'точната схема');
+  assert.equal(g.valid(t), false);
+  assert.equal(g.valid('Bearer друго'), false);
   assert.equal(g.valid(undefined), false);
 });
 
@@ -28,15 +29,16 @@ test('отваряне без токен или с грешен → 401', async 
   assert.equal((await fetch(`${p.base}/?k=abc`, { redirect: 'manual' })).status, 401);
 });
 
-test('токенът вече е използван (helpers го размениха) → 401; бисквитката е pult=…', async () => {
+test('токенът вече е използван (helpers го размениха) → 401', async () => {
   assert.equal(
     (await fetch(`${p.base}/?k=${p.deps.gate.startToken}`, { redirect: 'manual' })).status,
     401,
   );
-  assert.match(p.cookie, /^pult=[A-Za-z0-9_-]{43}$/);
 });
 
-test('размяната връща 303 към /app и бисквитка с правилните флагове', async () => {
+// Червеният екип на #515 (F2): бисквитка от 127.0.0.1:A стига и до 127.0.0.1:B (не се делят по порт) →
+// всеки друг локален слушател я получава. API токенът е във фрагмента — той никога не стига до сървър.
+test('размяната връща 303 към /app#t=… и не слага бисквитка', async () => {
   const { createPult } = await import('../src/server.js');
   const g = new SessionGate();
   const server = createPult({ ...p.deps, gate: g });
@@ -45,29 +47,46 @@ test('размяната връща 303 към /app и бисквитка с п�
   try {
     const res = await fetch(`http://127.0.0.1:${port}/?k=${g.startToken}`, { redirect: 'manual' });
     assert.equal(res.status, 303);
-    assert.equal(res.headers.get('location'), '/app');
-    const sc = res.headers.get('set-cookie') ?? '';
-    assert.match(sc, /HttpOnly/);
-    assert.match(sc, /SameSite=Strict/);
-    assert.match(sc, /Path=\//);
+    assert.match(res.headers.get('location') ?? '', /^\/app#t=[A-Za-z0-9_-]{43}$/);
+    assert.equal(res.headers.get('set-cookie'), null, 'без бисквитка');
   } finally {
     server.closeAllConnections();
     server.close();
   }
 });
 
-test('API без бисквитка → 401, с бисквитка → 200', async () => {
+test('API без токен → 401; само бисквитка (старата сесия) → 401; с Bearer → 200', async () => {
   assert.equal((await fetch(`${p.base}/api/agents`)).status, 401);
+  const t = p.auth.slice('Bearer '.length);
   assert.equal(
-    (await fetch(`${p.base}/api/agents`, { headers: { cookie: p.cookie } })).status,
-    200,
+    (await fetch(`${p.base}/api/agents`, { headers: { cookie: `pult=${t}` } })).status,
+    401,
+  );
+  assert.equal((await get(p, '/api/agents')).status, 200);
+  assert.equal((await fetch(`${p.base}/api/events`)).status, 401, 'и потокът на събитията');
+  const r = await fetch(`${p.base}/api/chat`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', origin: p.origin, cookie: `pult=${t}` },
+    body: JSON.stringify({ agent: 'ai-studio', text: 'x' }),
+  });
+  assert.equal(r.status, 401);
+});
+
+test('страницата и скриптът се дават без токен — в тях няма тайни', async () => {
+  for (const path of ['/app', '/app.js', '/app.css']) {
+    assert.equal((await fetch(`${p.base}${path}`)).status, 200, path);
+  }
+  assert.equal(
+    (await fetch(`${p.base}/app`, { headers: { 'sec-fetch-site': 'cross-site' } })).status,
+    403,
+    'от чужд сайт — не',
   );
 });
 
 test('ключът и токенът ги няма в отговорите, лога и public/', async () => {
   const bodies: string[] = [];
   for (const path of ['/app', '/api/agents', '/api/budget', '/app.js', '/app.css']) {
-    const r = await fetch(`${p.base}${path}`, { headers: { cookie: p.cookie } });
+    const r = await get(p, path);
     bodies.push(await r.text(), JSON.stringify([...r.headers]));
   }
   bodies.push(await (await post(p, '/api/task', { task: 'nema' })).text());

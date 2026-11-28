@@ -90,7 +90,9 @@ export async function buildArgv(
 ): Promise<Command> {
   if (!(TASK_IDS as readonly string[]).includes(task)) throw new TaskError(400, 'непозната задача');
   const root = ctx.previewRoot;
-  const cwd = await realpath(root);
+  // Червеният екип на #515 (F5): cwd НЕ е папката на студиото — на Windows libuv търси голо име (ffmpeg)
+  // първо в cwd, затова подхвърлен studio\\ffmpeg.exe печелеше пред PATH. Пътищата към студиото са абсолютни.
+  const cwd = await realpath(ctx.repoRoot);
   const tool = (f: string) => join(ctx.repoRoot, 'tools', 'video', f);
   if (task === 'doctor')
     return { cmd: process.execPath, args: [tool('doctor.mjs'), '--json'], cwd };

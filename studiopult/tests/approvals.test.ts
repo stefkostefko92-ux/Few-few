@@ -2,7 +2,7 @@
 // „винаги разрешено“ (suggestions) НЕ се прилага — всяка команда минава с клик.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { Approvals, makeCanUseTool } from '../src/approvals.js';
+import { Approvals, makeCanUseTool, describe } from '../src/approvals.js';
 import { startTestServer, post } from './helpers.js';
 
 test('решение на правилната сесия освобождава заявката', async () => {
@@ -101,4 +101,33 @@ test('картата носи името на агента (не вътрешн�
   assert.equal(shown[1]!.agent, 'диспечер');
   for (const s of shown) a.decide('s1', s.requestId, false);
   await Promise.all([p1, p2]);
+});
+
+test('#515: за Write и Edit картата показва съдържанието, не само пътя', () => {
+  const w = describe('Write', { file_path: 'out/a.txt', content: 'ред 1\nред 2' });
+  assert.match(w, /out\/a\.txt/);
+  assert.match(w, /ред 1\nред 2/);
+  const e = describe('Edit', { file_path: 'b.ts', old_string: 'стар', new_string: 'нов' });
+  assert.match(e, /стар/);
+  assert.match(e, /нов/);
+  const big = describe('Write', { file_path: 'c.txt', content: 'x'.repeat(10000) });
+  assert.ok(big.length < 7000);
+  assert.match(big, /още \d+ знака/);
+});
+
+// Червеният екип на #515 (F4): U+202E стигаше до textContent и браузърът обръщаше видимия ред (Trojan Source).
+test('#515: bidi, невидими и управляващи знаци в картата се виждат като ⟨U+…⟩', () => {
+  const d = describe('Bash', { command: 'echo ok #\u202e;)rm -rf ~(\u200b\u2066x\u0007' });
+  assert.doesNotMatch(d, /[\u202a-\u202e\u2066-\u2069\u200b-\u200f\u0000-\u0008]/);
+  assert.match(d, /⟨U\+202E⟩/);
+  assert.match(d, /⟨U\+200B⟩/);
+  assert.match(d, /⟨U\+2066⟩/);
+  assert.match(d, /⟨U\+0007⟩/);
+  const multi = describe('Bash', { command: 'a\nb\nc' });
+  assert.match(multi, /^a\nb\nc\n— 3 реда, 5 знака$/);
+  assert.equal(
+    describe('Bash', { command: 'node -v' }),
+    'node -v',
+    'един ред — дословно, без бележка',
+  );
 });

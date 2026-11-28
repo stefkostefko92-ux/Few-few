@@ -65,17 +65,17 @@ test('сървърът слуша само на 127.0.0.1', () => {
   assert.equal((srv.server.address() as AddressInfo).address, '127.0.0.1');
 });
 
-test('грешен Host → 421 дори с валидна бисквитка', async () => {
+test('грешен Host → 421 дори с валиден токен', async () => {
   assert.equal(
-    await raw('/api/agents', { host: `evil.example:${srv.port}`, cookie: srv.cookie }),
+    await raw('/api/agents', { host: `evil.example:${srv.port}`, authorization: srv.auth }),
     421,
   );
   assert.equal(
-    await raw('/api/agents', { host: `localhost:${srv.port}`, cookie: srv.cookie }),
+    await raw('/api/agents', { host: `localhost:${srv.port}`, authorization: srv.auth }),
     421,
   );
   assert.equal(
-    await raw('/api/agents', { host: `127.0.0.1:${srv.port}`, cookie: srv.cookie }),
+    await raw('/api/agents', { host: `127.0.0.1:${srv.port}`, authorization: srv.auth }),
     200,
   );
 });
@@ -83,7 +83,7 @@ test('грешен Host → 421 дори с валидна бисквитка', 
 test('POST без, с null или с чужд Origin → 403', async () => {
   const h = {
     host: `127.0.0.1:${srv.port}`,
-    cookie: srv.cookie,
+    authorization: srv.auth,
     'content-type': 'application/json',
   };
   const body = JSON.stringify({ task: 'doctor' });
@@ -95,7 +95,7 @@ test('POST без, с null или с чужд Origin → 403', async () => {
 test('POST с тяло, което не е JSON → 415', async () => {
   const h = {
     host: `127.0.0.1:${srv.port}`,
-    cookie: srv.cookie,
+    authorization: srv.auth,
     origin: `http://127.0.0.1:${srv.port}`,
     'content-type': 'text/plain',
   };
@@ -106,7 +106,7 @@ test('GET от чужд сайт (Sec-Fetch-Site: cross-site) → 403', async ()
   assert.equal(
     await raw('/api/agents', {
       host: `127.0.0.1:${srv.port}`,
-      cookie: srv.cookie,
+      authorization: srv.auth,
       'sec-fetch-site': 'cross-site',
     }),
     403,
@@ -114,7 +114,7 @@ test('GET от чужд сайт (Sec-Fetch-Site: cross-site) → 403', async ()
 });
 
 test('отговорите носят CSP, nosniff и забрана за вграждане', async () => {
-  const res = await fetch(`${srv.base}/api/agents`, { headers: { cookie: srv.cookie } });
+  const res = await fetch(`${srv.base}/api/agents`, { headers: { authorization: srv.auth } });
   assert.match(res.headers.get('content-security-policy') ?? '', /default-src 'self'/);
   assert.match(res.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
   assert.equal(res.headers.get('x-content-type-options'), 'nosniff');

@@ -4,7 +4,7 @@
  * запазени имена на Windows (CON, PRN, AUX, NUL, COM1–9, LPT1–9), непозволено разширение и всичко, което
  * след realpath (symlink, junction) излиза от корена. Сравнението е без значение на регистъра на Windows.
  */
-import { realpath, stat } from 'node:fs/promises';
+import { lstat, open, realpath, stat, type FileHandle } from 'node:fs/promises';
 import { basename, dirname, extname, isAbsolute, join, relative, sep } from 'node:path';
 
 export class PathError extends Error {}
@@ -80,5 +80,33 @@ export async function safeOutput(root: string, rel: string): Promise<string> {
     throw new PathError('папката липсва');
   }
   if (dir !== realRoot && !inside(realRoot, dir)) throw new PathError('излизане от корена');
-  return join(dir, basename(wanted));
+  const out = join(dir, basename(wanted));
+  // Червеният екип на #515 (F6): крайното име symlink навън → --force пишеше през връзката.
+  const l = await lstat(out).catch(() => null);
+  if (l?.isSymbolicLink()) throw new PathError('изходът е връзка');
+  return out;
+}
+
+/**
+ * Отваря файла за прегледа без прозорец между проверката и четенето (червеният екип на #515, F7): след
+ * отварянето пътят се проверява наново и дескрипторът трябва да е същият файл (dev + ino). Подмяна на папка
+ * със symlink между realpath и open → различен файл → отказ. Затваря дескриптора при отказ.
+ */
+export async function openInside(
+  root: string,
+  rel: string,
+): Promise<{ fh: FileHandle; size: number; real: string }> {
+  const real = await safeResolve(root, rel);
+  const fh = await open(real, 'r');
+  try {
+    const st = await fh.stat({ bigint: true });
+    const again = await safeResolve(root, rel);
+    const st2 = await stat(again, { bigint: true });
+    if (!st.isFile() || st.ino !== st2.ino || st.dev !== st2.dev)
+      throw new PathError('файлът се смени по време на отваряне');
+    return { fh, size: Number(st.size), real: again };
+  } catch (e) {
+    await fh.close();
+    throw e;
+  }
 }

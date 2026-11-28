@@ -25,6 +25,7 @@ function main(): void {
   const server = createPult({
     repoRoot: cfg.repoRoot,
     previewRoot: cfg.previewRoot,
+    dataDir: cfg.dataDir,
     gate,
     runner: sdkRunner,
     approvals: new Approvals(),

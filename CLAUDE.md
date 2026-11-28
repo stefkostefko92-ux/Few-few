@@ -34,7 +34,7 @@ file holds only what is true across all products. Keep it that way.
 | `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
 | `SupremeBot/` | Tanoth Master Bot — автоматизира дневната рутина в браузърната игра Tanoth | Chrome MV3 · vanilla JS · XML-RPC към играта · лиценз-сървър (Node · Docker · Caddy) | EN/многоезичен · **автоматизацията може да наруши ToS на Gameforge → бан на акаунта**; не се качва в Web Store |
 | `FiveM/` | Thraex PVP — директория на българските FiveM RP сървъри | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind | BG · жив статус от `info.json`/`dynamic.json` · **от `players.json` само имената, идентификаторите никога** (лични данни) · thraex.carbonstealth.eu |
-| `ospedalitrasparenti/` | Ospedali Trasparenti — финансите на публичните болници в Италия (ETL + статичен сайт) | Node ≥20 · plain JS ESM · нула зависимости | IT · официални open data |
+| `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + разследване на финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · отчет за всяка SSN структура · сигнали и аномалии · официални open data |
 | `mascot/` | Маскотът на Carbon Stealth — бранд персонаж | SVG (3 нива на детайл) · генериран React компонент · plain JS ESM · нула зависимости | BG · бранд асет, **не** продукт с деплой · продуктите копират каквото ползват |
 | `vpsdash/` | Carbon Stealth VPS Dashboard — контролен панел за сървъра → `vpsdash/CLAUDE.md` | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · owner: VPS-аджията |
 | `piuma/` | Piuma — Instagram контент-двигател (чернова → човешко одобрение → публикуване) + управлявани страници | Node 22 · TS · Express 5 · Prisma · PostgreSQL · BullMQ + Redis · Anthropic SDK | BG/EN/IT · официален Instagram Platform API · агентът — само чернови · акаунти се създават **ръчно** (ToS на Meta) |
@@ -147,7 +147,7 @@ Ours (BG, vetted; 67; metadata only until triggered): procedures (deploy · qual
 `guard-exfil` (secrets/PII out via any net verb, interpreter, Monitor or MCP argument) · `guard-readonly` ·
 `guard-config` (mid-session settings can't weaken guards) · `guard-self` (an agent can't rewrite hooks, settings, mods
 or memory; main session → human confirms) · `guard-model` (never Haiku). One secret list, fail-closed on a hit,
-red-teamed through the CLI; `permissions.deny` (read+write) for `.env`/keys (`.env.example` open). Hook context >10,000 chars never reaches an agent (doctrine = `agent-doctrine` skill).
+red-teamed through the CLI; `permissions.deny` (read+write) for `.env`/keys (`.env.example` open).
 **Learning ⇒ the fleet Artifact is republished, always** (owner's rule; `artifact-sync` Stop hook).
 Details → `.claude/hooks/README.md`.
 

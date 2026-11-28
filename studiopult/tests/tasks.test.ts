@@ -3,6 +3,7 @@
 // цялото дърво; ходът на ffmpeg (frame=, time=) се разчита.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
+import { realpath } from 'node:fs/promises';
 import { EventEmitter } from 'node:events';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -41,7 +42,11 @@ test('doctor → node tools/video/doctor.mjs --json', async () => {
   const a = await buildArgv('doctor', {}, ctx);
   assert.equal(a.cmd, process.execPath);
   assert.deepEqual(a.args, [join(repo, 'tools', 'video', 'doctor.mjs'), '--json']);
-  assert.equal(a.cwd, root);
+  // Червеният екип на #515 (F5): на Windows libuv търси голо име (ffmpeg) първо в cwd → подхвърлен
+  // studio\\ffmpeg.exe печелеше пред PATH. Задачите тичат с cwd = репото; пътищата са абсолютни.
+  assert.equal(a.cwd, await realpath(repo));
+  const m = await buildArgv('loudnorm', { in: 'out/voice.wav', out: 'out/v2.wav' }, ctx);
+  assert.equal(m.cwd, await realpath(repo));
 });
 
 test('метазнаците в името са един аргумент; изходът е под корена', async () => {

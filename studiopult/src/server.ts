@@ -1,23 +1,27 @@
 /**
  * Студио пулт — HTTP сървърът (node:http, без рамка). Слуша само на 127.0.0.1 (index.ts). Всяка заявка минава
- * през пазача: Host → 421, бисквитка → 401, GET от чужд сайт → 403, POST без точния Origin → 403, тяло само
- * JSON до 64 KB. Събитията (текст от агента, одобрения, ход на рендера) отиват към страницата по SSE.
+ * през пазача: Host → 421, GET от чужд сайт → 403, /api/* без `Authorization: Bearer` → 401, POST без точния
+ * Origin → 403, тяло само JSON до 64 KB; прегледът на файл — само по подписан адрес (403). Страницата и
+ * скриптът се дават без токен — в тях няма тайни. Събитията отиват към страницата по SSE (fetch с токена).
  * Текстът на агента е ДАННИ — страницата го рисува с textContent, никога като HTML.
  */
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
-import { createReadStream, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { pipeline } from 'node:stream/promises';
 import { join } from 'node:path';
 import type { AddressInfo } from 'node:net';
 import { hostOk, originOk, fetchSiteOk, SECURITY_HEADERS, type SessionGate } from './http/guard.js';
-import { safeResolve, contentTypeOf, PathError } from './files.js';
+import { safeResolve, openInside, contentTypeOf, PathError } from './files.js';
 import { buildArgv, TaskError, type TaskRunner } from './tasks.js';
 import { makeCanUseTool, type Approvals } from './approvals.js';
-import type { DailyBudget } from './budget.js';
-import { buildOptions, toUiEvent, type AgentRunner } from './agent.js';
+import { SpendMeter, type DailyBudget } from './budget.js';
+import { buildOptions, toUiEvents, type AgentRunner } from './agent.js';
 
 export interface PultDeps {
   repoRoot: string;
   previewRoot: string;
+  /** Папката на пулта (ключът, spend.json) — агентът не я чете (кука readScope). */
+  dataDir: string;
   gate: SessionGate;
   runner: AgentRunner;
   approvals: Approvals;
@@ -51,6 +55,7 @@ export function createPult(deps: PultDeps): Server & { shutdown(): void } {
   const publicDir = join(import.meta.dirname, '..', 'public');
   const clients = new Set<ServerResponse>();
   let chat: AbortController | null = null;
+  const spend = new SpendMeter();
   const redact = (s: string) => (deps.key ? s.split(deps.key).join('[ключ]') : s);
   const log = (line: string) => deps.log?.(redact(line));
 
@@ -86,31 +91,39 @@ export function createPult(deps: PultDeps): Server & { shutdown(): void } {
     }
   }
 
-  function serveFile(res: ServerResponse, real: string, range: string | undefined) {
-    const size = statSync(real).size;
+  async function serveFile(res: ServerResponse, rel: string, range: string | undefined) {
+    const { fh, size, real } = await openInside(deps.previewRoot, rel);
     const type = contentTypeOf(real);
     const m = range ? /^bytes=(\d*)-(\d*)$/.exec(range) : null;
+    let start = 0;
+    let end = size - 1;
+    let status = 200;
     if (m && (m[1] || m[2])) {
-      let start = m[1] ? Number(m[1]) : size - Number(m[2]);
-      let end = m[1] && m[2] ? Number(m[2]) : size - 1;
+      start = m[1] ? Number(m[1]) : size - Number(m[2]);
+      end = m[1] && m[2] ? Number(m[2]) : size - 1;
       start = Math.max(0, start);
       end = Math.min(size - 1, end);
       if (start > end) {
+        await fh.close();
         res.writeHead(416, { 'content-range': `bytes */${size}` });
         res.end();
         return;
       }
-      res.writeHead(206, {
-        'content-type': type,
-        'content-length': end - start + 1,
-        'content-range': `bytes ${start}-${end}/${size}`,
-        'accept-ranges': 'bytes',
-      });
-      createReadStream(real, { start, end }).pipe(res);
+      status = 206;
+    }
+    res.writeHead(status, {
+      'content-type': type,
+      'content-length': size === 0 ? 0 : end - start + 1,
+      'accept-ranges': 'bytes',
+      ...(status === 206 ? { 'content-range': `bytes ${start}-${end}/${size}` } : {}),
+    });
+    if (size === 0) {
+      await fh.close();
+      res.end();
       return;
     }
-    res.writeHead(200, { 'content-type': type, 'content-length': size, 'accept-ranges': 'bytes' });
-    createReadStream(real).pipe(res);
+    // От дескриптора, не по път (F7). Грешка при четене → прекъсната връзка, не срив на сървъра.
+    await pipeline(fh.createReadStream({ start, end }), res).catch(() => res.destroy());
   }
 
   async function startChat(body: Record<string, unknown>) {
@@ -128,30 +141,54 @@ export function createPult(deps: PultDeps): Server & { shutdown(): void } {
         ? body.resume
         : undefined;
     const ac = new AbortController();
-    chat = ac;
     const canUseTool = makeCanUseTool({
       approvals: deps.approvals,
       session: SESSION,
       agentName: agent,
       emit: broadcast,
     });
-    const opts = buildOptions({
-      agentId: agent,
-      agents: deps.agents,
-      repoRoot: deps.repoRoot,
-      key: deps.key,
-      canUseTool,
-      abortController: ac,
-      ...(resume ? { resume } : {}),
-    });
+    let opts: ReturnType<typeof buildOptions>;
+    try {
+      opts = buildOptions({
+        agentId: agent,
+        agents: deps.agents,
+        repoRoot: deps.repoRoot,
+        key: deps.key,
+        canUseTool,
+        abortController: ac,
+        dataDir: deps.dataDir,
+        studioDir: deps.previewRoot,
+        ...(resume ? { resume } : {}),
+      });
+    } catch (e) {
+      throw new HttpError(400, String((e as Error)?.message ?? 'непознат агент'));
+    }
+    chat = ac; // едва след опциите: грешка в тях не оставя чата зает (прегледът на #515)
     broadcast({ type: 'chat-start', agent });
     void (async () => {
+      // Разходът (прегледът на #515): total_cost_usd е за цялата сесия, вкл. по-ранните пускания при
+      // продължение → в тавана влиза делтата; без резултат (спрян, сринал се) — оценката от стъпките.
+      const run = spend.startRun();
+      let sid = resume;
+      let charged = false;
+      const charge = (usd: number) => {
+        if (usd > 0) deps.budget.add(usd);
+        charged = true;
+      };
       try {
         for await (const m of deps.runner.run(text, opts)) {
-          const e = toUiEvent(m);
-          if (!e) continue;
-          if (e.type === 'result' && e.cost > 0) deps.budget.add(e.cost);
-          broadcast(e);
+          const mm = m as unknown as { type?: string; session_id?: unknown; message?: unknown };
+          if (typeof mm.session_id === 'string' && mm.session_id) sid = mm.session_id;
+          if (mm.type === 'assistant') run.onAssistant(mm.message as never);
+          for (const e of toUiEvents(m)) {
+            if (e.type === 'result' && !charged) {
+              const key = e.sessionId || sid || '';
+              charge(
+                e.cost > 0 ? spend.onResult(key, e.cost) : spend.onEstimate(key, run.estimate()),
+              );
+            }
+            broadcast(e);
+          }
         }
       } catch (err) {
         broadcast({
@@ -159,6 +196,7 @@ export function createPult(deps: PultDeps): Server & { shutdown(): void } {
           message: redact(String((err as Error)?.message ?? err)).slice(0, 500),
         });
       } finally {
+        if (!charged) charge(spend.onEstimate(sid, run.estimate()));
         deps.approvals.cancelAll(SESSION);
         if (chat === ac) chat = null;
         broadcast({ type: 'chat-end', budget: deps.budget.status() });
@@ -178,13 +216,11 @@ export function createPult(deps: PultDeps): Server & { shutdown(): void } {
         res.end('Студио пулт: отвори адреса с ключа, който е отпечатан в терминала при старта.');
         return;
       }
-      res.writeHead(303, { location: '/app', 'set-cookie': deps.gate.setCookie(value) });
+      // Токенът е във фрагмента: браузърът не го праща към никой сървър (F2 от червения екип на #515).
+      res.writeHead(303, { location: `/app#t=${value}` });
       res.end();
       return;
     }
-    if (!deps.gate.valid(req.headers.cookie))
-      throw new HttpError(401, 'няма сесия — отвори адреса от терминала');
-
     if (req.method === 'GET') {
       if (!fetchSiteOk(req.headers['sec-fetch-site'] as string | undefined))
         throw new HttpError(403, 'чужд сайт');
@@ -194,6 +230,23 @@ export function createPult(deps: PultDeps): Server & { shutdown(): void } {
         res.end(readFileSync(join(publicDir, pub[0])));
         return;
       }
+      if (path === '/api/file') {
+        const rel = url.searchParams.get('path') ?? '';
+        if (!deps.gate.fileOk(rel, url.searchParams.get('exp'), url.searchParams.get('sig')))
+          throw new HttpError(403, 'адресът за прегледа е невалиден или изтекъл');
+        try {
+          await serveFile(res, rel, req.headers.range);
+        } catch (e) {
+          if (e instanceof PathError) throw new HttpError(400, e.message);
+          throw e;
+        }
+        return;
+      }
+    }
+    if (!deps.gate.valid(req.headers.authorization))
+      throw new HttpError(401, 'няма сесия — отвори адреса от терминала');
+
+    if (req.method === 'GET') {
       if (path === '/api/agents')
         return send(res, 200, {
           agents: deps.agents,
@@ -215,15 +268,17 @@ export function createPult(deps: PultDeps): Server & { shutdown(): void } {
         });
         return;
       }
-      if (path === '/api/file') {
+      if (path === '/api/file-link') {
+        const rel = url.searchParams.get('path') ?? '';
         try {
-          const real = await safeResolve(deps.previewRoot, url.searchParams.get('path') ?? '');
-          serveFile(res, real, req.headers.range);
+          await safeResolve(deps.previewRoot, rel);
         } catch (e) {
           if (e instanceof PathError) throw new HttpError(400, e.message);
           throw e;
         }
-        return;
+        const { exp, sig } = deps.gate.signFile(rel);
+        const q = new URLSearchParams({ path: rel, exp, sig });
+        return send(res, 200, { url: `/api/file?${q}` });
       }
       throw new HttpError(404, 'няма такава страница');
     }

@@ -33,7 +33,8 @@ export interface TestPult {
   port: number;
   base: string;
   origin: string;
-  cookie: string;
+  /** `Bearer …` — API токенът от фрагмента `/app#t=…` (бисквитка няма: тя стига и до други портове). */
+  auth: string;
   dir: string;
   preview: string;
   logs: string[];
@@ -49,6 +50,7 @@ export async function startTestServer(over: Partial<PultDeps> = {}): Promise<Tes
   const deps: PultDeps = {
     repoRoot: join(import.meta.dirname, '..', '..'),
     previewRoot: preview,
+    dataDir: join(dir, 'data'),
     gate: new SessionGate(),
     runner: fakeRunner([]),
     approvals: new Approvals({ timeoutMs: 2000 }),
@@ -64,13 +66,15 @@ export async function startTestServer(over: Partial<PultDeps> = {}): Promise<Tes
   const port = (server.address() as AddressInfo).port;
   const base = `http://127.0.0.1:${port}`;
   const res = await fetch(`${base}/?k=${deps.gate.startToken}`, { redirect: 'manual' });
-  const cookie = (res.headers.get('set-cookie') ?? '').split(';')[0] ?? '';
+  const t = /^\/app#t=([A-Za-z0-9_-]{43})$/.exec(res.headers.get('location') ?? '')?.[1];
+  if (!t) throw new Error('размяната не върна токен във фрагмента');
+  const auth = `Bearer ${t}`;
   return {
     server,
     port,
     base,
     origin: base,
-    cookie,
+    auth,
     dir,
     preview,
     logs,
@@ -87,7 +91,23 @@ export async function startTestServer(over: Partial<PultDeps> = {}): Promise<Tes
 export function post(p: TestPult, path: string, body: unknown): Promise<Response> {
   return fetch(`${p.base}${path}`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', origin: p.origin, cookie: p.cookie },
+    headers: { 'content-type': 'application/json', origin: p.origin, authorization: p.auth },
     body: JSON.stringify(body),
   });
+}
+
+/** GET с токена. */
+export function get(
+  p: TestPult,
+  path: string,
+  headers: Record<string, string> = {},
+): Promise<Response> {
+  return fetch(`${p.base}${path}`, { headers: { authorization: p.auth, ...headers } });
+}
+
+/** Подписан адрес за прегледа (`<video src>` не праща заглавия). */
+export async function fileUrl(p: TestPult, rel: string): Promise<string> {
+  const r = await get(p, `/api/file-link?path=${encodeURIComponent(rel)}`);
+  if (r.status !== 200) throw new Error(`file-link ${r.status}`);
+  return ((await r.json()) as { url: string }).url;
 }

@@ -1,6 +1,7 @@
 // Студио пулт — страницата. Всичко от агента и от задачите е ДАННИ: рисува се само с textContent, никога
 // innerHTML (XSS в пулта = кражба на сесията и самоодобрение на команди). POST-овете носят Origin сами
-// (fetch от същия адрес); бисквитката е HttpOnly и този код не я вижда.
+// (fetch от същия адрес). Сесията е API токен от фрагмента `#t=…` (никога не стига до сървър) → в паметта и
+// в sessionStorage (той е по порт — бисквитка стигаше и до други портове на 127.0.0.1) → `Bearer` на всяко /api/*.
 'use strict';
 
 const $ = (id) => document.getElementById(id);
@@ -11,21 +12,42 @@ const el = (tag, cls, text) => {
   return e;
 };
 
+const TOKEN = (() => {
+  const m = /^#t=([A-Za-z0-9_-]{43})$/.exec(location.hash);
+  if (m) {
+    try {
+      sessionStorage.setItem('pult', m[1]);
+    } catch {
+      /* без хранилище — само в паметта */
+    }
+    history.replaceState(null, '', '/app'); // фрагментът не остава в адреса
+    return m[1];
+  }
+  try {
+    return sessionStorage.getItem('pult');
+  } catch {
+    return null;
+  }
+})();
+const AUTH = TOKEN ? { authorization: `Bearer ${TOKEN}` } : {};
+
 let sessionId = null;
 let current = null; // текущото съобщение на агента
+let currentSub = null; // от агента (true) или от диспечера (false)
 let duration = 0;
 
 async function api(path, body) {
   const res = await fetch(
     path,
     body === undefined
-      ? {}
+      ? { headers: AUTH }
       : {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: { ...AUTH, 'content-type': 'application/json' },
           body: JSON.stringify(body),
         },
   );
+  if (res.status === 401) noSession();
   let data = {};
   try {
     data = await res.json();
@@ -33,6 +55,16 @@ async function api(path, body) {
     /* празно */
   }
   return { ok: res.ok, status: res.status, data };
+}
+
+function noSession() {
+  $('send').disabled = true;
+  if (!$('log').querySelector('.nosession'))
+    say(
+      'err nosession',
+      '',
+      'Няма сесия. Отвори наново адреса от терминала (пултът се рестартира или е отворен в друг раздел).',
+    );
 }
 
 function say(cls, who, text) {
@@ -104,11 +136,16 @@ const toSec = (t) => {
 function onEvent(e) {
   switch (e.type) {
     case 'chat-start':
-      current = say('agent', e.agent, '');
+      current = null;
+      currentSub = null;
       $('send').disabled = true;
       break;
     case 'text':
-      if (!current) current = say('agent', '', '');
+      // Диспечерът и нашият агент — отделни балони (диспечерът казва само „Готово.“).
+      if (!current || currentSub !== e.sub) {
+        current = say(e.sub ? 'agent' : 'sys', e.sub ? $('agent').value : '', '');
+        currentSub = e.sub;
+      }
       current.textContent += e.text;
       break;
     case 'tool':
@@ -162,19 +199,39 @@ function onEvent(e) {
   }
 }
 
-function connect() {
-  const es = new EventSource('/api/events');
-  es.onmessage = (m) => {
-    try {
-      onEvent(JSON.parse(m.data));
-    } catch {
-      /* повредено събитие — пропусни */
+// SSE през fetch (EventSource не праща заглавия). Събитията са редове `data: …`, разделени с празен ред.
+async function connect() {
+  try {
+    const res = await fetch('/api/events', { headers: AUTH });
+    if (res.status === 401) return noSession();
+    if (!res.ok || !res.body) throw new Error(String(res.status));
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buf = '';
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += value;
+      let i;
+      while ((i = buf.indexOf('\n\n')) >= 0) {
+        const chunk = buf.slice(0, i);
+        buf = buf.slice(i + 2);
+        const data = chunk
+          .split('\n')
+          .filter((l) => l.startsWith('data: '))
+          .map((l) => l.slice(6))
+          .join('\n');
+        if (!data) continue;
+        try {
+          onEvent(JSON.parse(data));
+        } catch {
+          /* повредено събитие — пропусни */
+        }
+      }
     }
-  };
-  es.onerror = () => {
-    es.close();
-    setTimeout(connect, 2000);
-  };
+  } catch {
+    /* прекъсната връзка — опитай пак */
+  }
+  setTimeout(connect, 2000);
 }
 
 $('say').addEventListener('submit', async (ev) => {
@@ -247,13 +304,19 @@ $('task').addEventListener('submit', async (ev) => {
 });
 $('t-stop').addEventListener('click', () => api('/api/task/stop', {}));
 
-$('preview-form').addEventListener('submit', (ev) => {
+$('preview-form').addEventListener('submit', async (ev) => {
   ev.preventDefault();
   const p = $('preview-path').value.trim();
   if (!p) return;
-  const src = `/api/file?path=${encodeURIComponent(p)}`;
   const box = $('preview');
   box.replaceChildren();
+  // `<video src>` не праща заглавия → сървърът дава подписан адрес за този път, валиден 10 минути.
+  const link = await api(`/api/file-link?path=${encodeURIComponent(p)}`);
+  if (!link.ok) {
+    box.append(el('p', 'hint', link.data.error || `Грешка ${link.status}`));
+    return;
+  }
+  const src = link.data.url;
   const isImg = /\.(png|jpe?g|webp)$/i.test(p);
   const isAudio = /\.wav$/i.test(p);
   const m = el(isImg ? 'img' : isAudio ? 'audio' : 'video');
