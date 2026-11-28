@@ -17475,7 +17475,7 @@
           "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
           "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
         ],
-        "lessons": 168
+        "lessons": 180
       },
       "evolution": [
         {
@@ -17597,9 +17597,20 @@
           "date": "2026-11-28",
           "event": "v16.6 — учене",
           "detail": "Научи: page.screenshot има scale \"css\"|\"device\" с подразбиране \"device\" (един пиксел на device… (+10 още)"
+        },
+        {
+          "version": "17.8.0",
+          "date": "2026-11-28",
+          "event": "v17.8 — учене",
+          "detail": "Научи: YouTube изисква разкриване на AI съдържание, което изглежда реалистично и е генерирано … (+11 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „YouTube изисква разкриване на AI съдържание, което изглежда реалистично и е генерирано …\" (+11 още)"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
