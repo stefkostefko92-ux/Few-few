@@ -43,3 +43,18 @@ node tools/research/video-notes.mjs ~/Downloads/reel.mp4 --source author \
 - `YOUTUBE_API_KEY` по `legal/youtube-key.md`;
 - Reddit: първо дали приемът на заявки е още отворен (по вторичен източник е затворен от 31.10.2026),
   после писмено одобрение по Responsible Builder Policy (`legal/reddit-application.md`).
+
+## `doc.mjs` — официална документация като текст (за всички агенти)
+
+WebFetch реже дългите страници (`ffmpeg-filters.html` е ~600 000 знака) и получава 403 от някои сайтове
+(docs.blender.org). Разрешеният път е само за четене, без шел и без интерпретатор с код в аргумент. Изходът е в
+плика „недоверено съдържание“, а адресът стои буквално в командата, затова source-provenance го признава.
+
+```bash
+node tools/research/doc.mjs 'https://ffmpeg.org/ffmpeg-filters.html' --find '#scale-1' --chars 20000
+node tools/research/doc.mjs 'https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html' --find 'Render Options'
+node tools/research/doc.mjs '<URL>' --offset 30000   # следващото парче (номерът е в заглавката)
+```
+
+Само https към публичен хост. Нищо не се записва. PDF не се чете тук — свали го в scratchpad и ползвай
+`pdftotext -f N -l M`. Страница, рисувана с JavaScript, излиза празна и не се брои за прочетена.

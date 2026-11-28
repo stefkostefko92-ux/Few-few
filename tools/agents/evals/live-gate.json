@@ -1,25 +1,35 @@
 {
-  "date": "2026-11-27",
-  "ref": "e6ab607ee7369581f0f4a31b4227f36af158748d",
+  "date": "2026-11-28",
+  "ref": "22df8cdd626d626cf03e366349eb0ab7b6ced421",
   "cli": "2.1.332 (Claude Code)",
-  "summary": "проба 1/1 · оценки 1/1 · verifier ✓ · критичните пропуснати (входовете им са непроменени; минаха на 2026-11-25)",
-  "costUsd": 1.15,
-  "criticalAt": "2026-11-25",
+  "summary": "проба 3/3 · оценки 6/6 · pass^k 2/2 · verifier ✓",
+  "costUsd": 10.02,
+  "criticalAt": "2026-11-28",
   "probe": [
     {
-      "agent": "socialdjiyata",
+      "agent": "seo",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "kodadjiyata",
+      "ok": true,
+      "problems": []
+    },
+    {
+      "agent": "dizayner",
       "ok": true,
       "problems": []
     }
   ],
-  "inputsHash": "506c29be0cbfffff6df2b82a602d9172375a2c6e3cc8440e9ab7e0e9f5b3ded8",
+  "inputsHash": "e9004086d1079a3fb66446a7b15c82547fab96963eb78b565c27ac64dc15ca0b",
   "files": {
     ".claude/agents/3d-maniac.md": "bdec637b2b2ca2d29db8fdc0049e65598aaf2cf0bc4552f6a5c8718e75ed162d",
     ".claude/agents/_memory/PROCEDURE.md": "3ba9adf48b246dcf4f4b44a3b600aa7c0dfded805600601e68b8517457c2d932",
     ".claude/agents/_memory/SECURITY.md": "07f3ca068b951a3188cd16fce81cd0432025dcdaa0cd985cc3fa2a2e382d2037",
     ".claude/agents/_teams.json": "64d4c3f64242dbe8172babbc20e77e8c63ab8e5d2195d56d8a6c505e995bd64e",
     ".claude/agents/ai-djiyata.md": "94e69217058065c3d6d22472aa6be6f22f4b60d8b98645228e31570012387202",
-    ".claude/agents/ai-studio.md": "070db54e9f1a7f46e8c15cc9a7c4c7f64f8e1911c7d2c6b017a144cbe57b0db4",
+    ".claude/agents/ai-studio.md": "339ff824eea95861088fa3a5abce9e9dd7a9d4bdf175015cc7cf4b86e0474ff4",
     ".claude/agents/analizatora.md": "2118d101411068abcf9ca1cfe409df484d330848b2701fd99ae808b66a1354ff",
     ".claude/agents/asansyorchika.md": "18153eb60b408d9cf46341b3338cb24e45475293e0c665d90dfcb3ef08b47d77",
     ".claude/agents/danachnika.md": "b8116a14b3df78da44ba99e91f625a761574feabaea8178a62f419d993b4c21b",
@@ -62,7 +72,7 @@
     ".claude/hooks/guard-config.mjs": "b14433069e4af13b1dc84f7d76dbc5129cdd03688c45bfa9c2292827a3bd4cdd",
     ".claude/hooks/guard-dangerous.mjs": "522f11cdcd478d6f3b42e5ebbcc478ff283cd7c8aaa413d7420b1bb8cccb9419",
     ".claude/hooks/guard-engagement.mjs": "0706e7055fe799f7e0f5fd9c1a87314a0cc63905da2108c61830e52ee201dc37",
-    ".claude/hooks/guard-exfil.mjs": "a84bda8e920298f7bfe09d62ea3f09de46f07ed30b645203b44aeebd9b8f9d50",
+    ".claude/hooks/guard-exfil.mjs": "da5d6410bfa158e4b66972d94959a79757cbddc35c7e4261d96e20f32af66c91",
     ".claude/hooks/guard-model.mjs": "3b1e8cba1c4ddfcf6dd2b41e48a3d176d00471327d7ed707bd3785babb8764f4",
     ".claude/hooks/guard-prompt.mjs": "d9d1f3de98903425d16405ac261d505786af824e9ba4b9a666c522b92f0d58b2",
     ".claude/hooks/guard-readonly.mjs": "e0c4274517573e6791a83c4c75cbbb19dfba906b3253a149c2a424a574e32e07",
