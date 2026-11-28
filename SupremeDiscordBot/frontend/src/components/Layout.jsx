@@ -20,6 +20,7 @@ import GraceBanner from "./GraceBanner";
 import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
 import DashboardTopbar, { ServerSwitcher } from "./DashboardTopbar";
 import { buildServerNav, buildSearchIndex } from "./dashboardNav";
+import { BackupIcon } from "./RasterIcon";
 import { APP_VERSION_LABEL, RELEASE_NAME } from "../version";
 import { openCookiePreferences } from "./CookieConsent";
 
@@ -76,6 +77,8 @@ export default function Layout() {
       key: "root",
       items: [
         { to: "/dashboard", icon: LayoutDashboard, label: t("nav.allServers"), end: true },
+        // Копията на изтрити сървъри — извън сървър, защото сървърът го няма.
+        { to: "/dashboard/backups", icon: BackupIcon, label: t("nav.myBackups") },
         ...(isSuperUser ? [{ to: "/dashboard/admin", icon: Shield, label: t("nav.superAdmin") }] : []),
       ],
     },
@@ -84,6 +87,7 @@ export default function Layout() {
     ...buildSearchIndex(navGroups),
     { to: "/dashboard/privacy-settings", icon: Shield, label: t("nav.privacy") },
     { to: "/dashboard/security", icon: KeyRound, label: t("nav.security") },
+    { to: "/dashboard/backups", icon: BackupIcon, label: t("nav.myBackups") },
   ], [navGroups, t]);
   const [mobileOpen, setMobileOpen] = useState(false);
   // Групите в лентата се сгъват (12.11.2026): менюто по задачи има двайсет реда и

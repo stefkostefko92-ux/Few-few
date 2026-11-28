@@ -55,6 +55,8 @@ const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const WelcomeRolesPage = lazy(() => import("./pages/WelcomeRolesPage"));
 const BaitPage = lazy(() => import("./pages/BaitPage"));
 const ActivityLogPage = lazy(() => import("./pages/ActivityLogPage"));
+const BackupsPage = lazy(() => import("./pages/BackupsPage"));
+const MyBackupsPage = lazy(() => import("./pages/MyBackupsPage"));
 const WebhooksPage = lazy(() => import("./pages/WebhooksPage"));
 const KnowledgeBasePage = lazy(() => import("./pages/KnowledgeBasePage"));
 const TagsPage = lazy(() => import("./pages/TagsPage"));
@@ -136,6 +138,7 @@ export default function App() {
                 <Route path=":serverId/verification" element={<VerificationPage />} />
                 <Route path=":serverId/bait" element={<BaitPage />} />
                 <Route path=":serverId/activity-log" element={<ActivityLogPage />} />
+                <Route path=":serverId/backups" element={<BackupsPage />} />
                 <Route path=":serverId/welcome" element={<WelcomeRolesPage />} />
                 <Route path=":serverId/polls" element={<PollsGiveawaysPage />} />
                 <Route path=":serverId/messages" element={<MessagesPage />} />
@@ -153,6 +156,7 @@ export default function App() {
                 <Route path=":serverId/game" element={<GamePage />} />
                 <Route path="privacy-settings" element={<PrivacySettingsPage />} />
                 <Route path="security" element={<SecurityPage />} />
+                <Route path="backups" element={<MyBackupsPage />} />
                 <Route
                   path="admin"
                   element={<RequireSuperUser><AdminPage /></RequireSuperUser>}

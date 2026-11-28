@@ -8,6 +8,7 @@ import { getTickets, closeTicket, claimTicket, exportTicketPDF, replyToTicket } 
 import Modal from "../components/Modal";
 import EmptyState from "../components/EmptyState";
 import { useToast } from "../contexts/ToastContext";
+import TicketManageDialog from "../components/tickets/TicketManageDialog";
 import { useT } from "../contexts/I18nContext";
 
 // Статусът — точка + ДУМА в хапче (концепцията, 10.10.2026), никога само цвят.
@@ -36,6 +37,7 @@ export default function TicketsPage() {
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
+  const [managing, setManaging] = useState(null); // тикетът в „Управлявай“
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -337,6 +339,11 @@ export default function TicketsPage() {
                     <td>
                       <div className="flex items-center justify-end gap-0.5">
                         {(ticket.status === "OPEN" || ticket.status === "CLAIMED") && (
+                          <button type="button" className="cs-btn-ghost cs-btn-sm whitespace-nowrap" onClick={() => setManaging(ticket)}>
+                            {t("tickets.manage.open")}
+                          </button>
+                        )}
+                        {(ticket.status === "OPEN" || ticket.status === "CLAIMED") && (
                           <button
                             onClick={() => { setReplyingId(ticket.id); setReplyText(""); }}
                             title={t("tickets.replyFromDashboard")}
@@ -489,6 +496,7 @@ export default function TicketsPage() {
           </button>
         </div>
       </Modal>
+      {managing && <TicketManageDialog serverId={serverId} ticket={managing} onClose={() => setManaging(null)} />}
     </div>
   );
 }

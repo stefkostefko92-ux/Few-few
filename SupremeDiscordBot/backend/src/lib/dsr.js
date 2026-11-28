@@ -185,6 +185,11 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
     await c("pollVotes", () => tx.pollVote.deleteMany({ where: { userId: uid } }));
     await c("giveawayEntries", () => tx.giveawayEntry.deleteMany({ where: { userId: uid } }));
     await c("formCooldowns", () => tx.formCooldown.deleteMany({ where: { userId: uid } }));
+    // v57 (Б18) — резервните копия са на общността (сървъра), не на човека: копието остава,
+    // а неговият Discord ID излиза. Без собственик копието вече не може да се върне в ДРУГ сървър.
+    await c("backupOwner", () => tx.serverBackup.updateMany({ where: { ownerId: uid }, data: { ownerId: null } }));
+    await c("backupCreator", () => tx.serverBackup.updateMany({ where: { createdBy: uid }, data: { createdBy: null } }));
+    await c("restoreRequester", () => tx.backupRestore.updateMany({ where: { requestedBy: uid }, data: { requestedBy: null } }));
     await c("giveawayWinners", async () => {
       const won = await tx.giveaway.findMany({ where: { winnerIds: { has: uid } }, select: { id: true, winnerIds: true } });
       for (const g of won ?? []) {

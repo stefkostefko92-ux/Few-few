@@ -144,7 +144,9 @@ router.get("/:serverId/giveaways", requireServerAdmin, async (req, res, next) =>
 const createGiveawaySchema = z.object({
   channelId: snowflake,
   prize: z.string().min(1).max(256),
-  description: z.string().max(1000).optional().nullable(),
+  // До 2000 знака — колкото и /giveaway start (bot/src/commands/giveaway.js). Беше 1000 и
+  // описание, прието от командата, падаше от таблото (одит на Дискорджията, 28.11.2026).
+  description: z.string().max(2000).optional().nullable(),
   winnerCount: z.number().int().min(1).max(20).default(1),
   durationMinutes: z.number().int().min(1).max(60 * 24 * 30),
   requiredRoleIds: z.array(snowflake).max(10).default([]),

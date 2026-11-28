@@ -16,6 +16,7 @@ import { buildTranscript } from "../lib/appTranscript.js";
 import { submitApplication } from "../services/applicationSubmit.js";
 import { claimApplicationReview, closeApplicationDiscussion, openApplicationDiscussion } from "../lib/applicationReview.js";
 import { writeAudit } from "../lib/auditLog.js";
+import { markServerBackupsExpiring, clearServerBackupsExpiry } from "../lib/backups.js";
 import { ensureUserStub, ensureUserStubs } from "../lib/ensureUser.js";
 import { eraseDiscordUser, summarizeDiscordUser } from "../lib/dsr.js";
 import { sealTranscript } from "../lib/transcriptAtRest.js";
@@ -109,6 +110,9 @@ router.post("/server/register", async (req, res, next) => {
       create: { id, name, icon: icon || null, ownerId: ownerId || "UNKNOWN" },
       update: { name, icon: icon || null, botRemovedAt: null },
     });
+    // Б17 — ботът е пак тук: резервните копия на сървъра спират да изтичат.
+    // Вторично: провал тук не бива да чупи регистрацията на сървъра.
+    await clearServerBackupsExpiry(id).catch((e) => console.error("[backups] срокът не падна:", e?.message));
 
     await writeAudit({
       actorId: ownerId || null,
@@ -299,6 +303,8 @@ router.delete("/server/:serverId", async (req, res, next) => {
       where: { id: req.params.serverId, botRemovedAt: null },
       data:  { botRemovedAt: new Date() },
     });
+    // Б17 — резервните копия живеят още 90 дни: точно сега може да са нужни (изтрит сървър).
+    await markServerBackupsExpiring(req.params.serverId).catch((e) => console.error("[backups] срокът не се сложи:", e?.message));
 
     await writeAudit({
       actorId: null,
