@@ -5,9 +5,13 @@ import {
 } from './ui.js';
 import { t, setLang, getLang, languages, translateDom } from './i18n.js';
 import { mountTerrain } from './terrain.js';
+import { HUBS, hubOf, hubById, hubStates } from './nav.js';
+import { mountTopo } from './topo.js';
 
 // ── Състояние + API слой (с federation рутинг към избрания възел) ──────────────
-const state = { node: savedNode(), me: null, section: 'overview', metricsEs: null, sectionEs: null, hist: [] };
+// `alerts` = активните аларми от последното четене; null = НЕ ЗНАЕМ (значките
+// и докът тогава мълчат, вместо да показват „спокойно").
+const state = { node: savedNode(), me: null, section: 'overview', metricsEs: null, sectionEs: null, hist: [], alerts: null, topo: null };
 
 // Затваря потока на текущата секция (логове/следене) при навигация.
 function closeSectionStream() {
@@ -279,58 +283,174 @@ const SECTIONS = [
   { id: 'power', img: 'nav-power', ico: '⏼', label: 'Захранване', render: renderPower },
 ];
 
-// Групи по ВЪПРОСА, който човек задава — не по технология. Секция, забравена
-// тук, не изчезва: отива в последната група (по-добре на грешно място, отколкото
-// невидима — същият урок като с трите липсващи секции в README).
-const NAV_GROUPS = [
-  ['Наблюдение', ['overview', 'products', 'slo', 'alerts', 'approvals', 'diagnostics', 'selfcheck', 'investigate']],
-  ['Работа', ['services', 'docker', 'compose', 'databases', 'redis', 'processes', 'logs', 'traffic']],
-  ['Издаване', ['deploy', 'updates']],
-  ['Защита', ['security', 'ports', 'firewall', 'integrity', 'fail2ban', 'access', 'domains']],
-  ['Сървър', ['webserver', 'backups', 'disk', 'env', 'cron', 'files', 'machine']],
-  ['Управление', ['desktop', 'terminal', 'runonce', 'agents', 'jobs', 'audit', 'settings', 'power']],
-];
+// ── Навигация „Топокарта" (v1.19): 7 хъба → секциите на хъба ────────────────
+// 40 реда в една лента бяха стена, в която човек търси с очи. Хъбът отговаря на
+// ВЪПРОС (public/nav.js — там е и тестът, че всяка секция е в точно един хъб).
+// Рейлът (десктоп) и докът (телефон) избират хъба; лентата под горната лента
+// показва секциите му — тя е ЕДИНЪТ модел за табове в панела. Хъбът помни
+// последната ти секция в него (sessionStorage): „Работа" не те връща всеки път
+// на „Услуги".
+const SECTION_BY_ID = Object.fromEntries(SECTIONS.map((s) => [s.id, s]));
+
+function lastInHub(hubId) {
+  try {
+    const v = sessionStorage.getItem('csd.hub.' + hubId);
+    if (v && SECTION_BY_ID[v] && hubOf(v) === hubId) return v;
+  } catch { /* без памет — входът на хъба */ }
+  return hubById(hubId).sections.find((id) => SECTION_BY_ID[id]) || 'overview';
+}
+function rememberInHub(id) {
+  try { sessionStorage.setItem('csd.hub.' + hubOf(id), id); } catch { /* без памет — пак работи */ }
+}
+// Последните посетени секции — горе до търсенето (десктоп).
+function pushRecent(id) {
+  let list = [];
+  try { list = JSON.parse(sessionStorage.getItem('csd.recent') || '[]'); } catch { /* празно */ }
+  list = [id, ...(Array.isArray(list) ? list : []).filter((x) => x !== id && SECTION_BY_ID[x])].slice(0, 4);
+  try { sessionStorage.setItem('csd.recent', JSON.stringify(list)); } catch { /* без памет */ }
+  return list;
+}
 
 function buildNav() {
-  const nav = document.getElementById('nav');
-  nav.innerHTML = '';
+  const hubs = document.getElementById('hubs');
+  hubs.innerHTML = '';
   clearCommands('nav');
+  for (const h of HUBS) {
+    const b = el('button', { class: 'hub-btn', title: h.q, onclick: () => go(lastInHub(h.id)) }, [
+      el('img', { src: `/icons/${h.icon}.png`, alt: '' }),
+      el('span', { class: 'rail-label', text: h.label }),
+    ]);
+    b.dataset.hub = h.id;
+    hubs.appendChild(b);
+  }
   const gotoFor = Object.fromEntries(Object.entries(GOTO_KEYS).map(([k, v]) => [v, k]));
-  const placed = new Set(NAV_GROUPS.flatMap(([, ids]) => ids));
-  const groups = NAV_GROUPS.map(([label, ids]) => [label, ids.slice()]);
-  groups[groups.length - 1][1].push(...SECTIONS.map((s) => s.id).filter((id) => !placed.has(id)));
-  const holder = {};
-  groups.forEach(([label, ids], gi) => {
-    const hid = `nav-h-${gi}`;
-    const g = el('div', { class: 'nav-group', role: 'group', 'aria-labelledby': hid }, [
-      el('div', { class: 'nav-h', id: hid, text: label }),
-    ]);
-    for (const id of ids) holder[id] = g;
-    nav.appendChild(g);
-  });
   for (const s of SECTIONS) {
-    // Секция с img ползва иконата от комплекта; останалите пазят глифа,
-    // докато дойде пълният nav-* лист.
-    const b = el('button', { onclick: () => go(s.id) }, [
-      s.img
-        ? el('span', { class: 'ico' }, [el('img', { class: 'ico-img', src: `/icons/${s.img}.png`, alt: '' })])
-        : el('span', { class: 'ico', text: s.ico }),
-      el('span', { text: s.label }),
-    ]);
-    b.dataset.id = s.id;
-    (holder[s.id] || nav).appendChild(b);
     registerCommand({
       id: `go:${s.id}`,
       scope: 'nav',
       label: `Отиди: ${s.label}`,
       section: 'Навигация',
-      // Търси се и на латиница, и на кирилица — интерфейсът е български, но
-      // имената на технологиите се пишат и по двата начина.
-      keywords: `${s.id} ${SECTION_ALIASES[s.id] || ''}`,
+      // Търси се и на латиница, и на кирилица, и по името на хъба („защита ports").
+      keywords: `${s.id} ${SECTION_ALIASES[s.id] || ''} ${hubById(hubOf(s.id)).label}`,
       hint: gotoFor[s.id] ? `g ${gotoFor[s.id]}` : undefined,
       run: () => go(s.id),
     });
   }
+  paintHubStates();
+}
+
+// Лентата със секциите. Същият хъб → само се мести активната (индикаторът се
+// плъзга); друг хъб → лентата се рисува наново.
+function renderSecbar(id) {
+  const hub = hubById(hubOf(id));
+  const bar = document.getElementById('secs');
+  if (bar.dataset.hub !== hub.id) {
+    bar.innerHTML = '';
+    bar.dataset.hub = hub.id;
+    bar.setAttribute('aria-label', `${t('Секции')}: ${t(hub.label)}`);
+    for (const sid of hub.sections) {
+      const s = SECTION_BY_ID[sid];
+      if (!s) continue;
+      const b = el('button', { class: 'sec-btn', onclick: () => go(sid) }, [el('span', { text: s.label })]);
+      b.dataset.id = sid;
+      bar.appendChild(b);
+    }
+    bar.appendChild(el('span', { class: 'sec-ind', 'aria-hidden': 'true' }));
+  }
+  for (const b of bar.querySelectorAll('.sec-btn')) {
+    if (b.dataset.id === id) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  }
+  requestAnimationFrame(placeSecInd);
+}
+function placeSecInd() {
+  const bar = document.getElementById('secs');
+  const a = bar.querySelector('.sec-btn[aria-current="page"]');
+  const ind = bar.querySelector('.sec-ind');
+  if (!a || !ind) return;
+  ind.style.left = a.offsetLeft + 14 + 'px';
+  ind.style.width = Math.max(12, a.offsetWidth - 28) + 'px';
+  // Активната секция в изглед — на телефон лентата е по-широка от екрана.
+  const l = a.offsetLeft - 12;
+  const r = a.offsetLeft + a.offsetWidth + 12;
+  if (l < bar.scrollLeft) bar.scrollLeft = l;
+  else if (r > bar.scrollLeft + bar.clientWidth) bar.scrollLeft = r - bar.clientWidth;
+}
+addEventListener('resize', () => requestAnimationFrame(placeSecInd));
+
+// Думата за брой аларми — съгласувана по число (правилото „1 точки е дефект").
+function sevWord(sev, n) {
+  return sev === 'danger' ? (n === 1 ? 'критична' : 'критични') : n === 1 ? 'предупреждение' : 'предупреждения';
+}
+
+// Значките на хъбовете, докът и картата — от ЕДНО четене на алармите.
+function paintHubStates() {
+  const st = hubStates(state.alerts || []);
+  for (const b of document.querySelectorAll('#hubs .hub-btn')) {
+    b.querySelectorAll('.hub-badge, .hub-sr').forEach((x) => x.remove());
+    const s = st[b.dataset.hub];
+    if (s?.sev) {
+      b.append(
+        el('span', { class: `hub-badge sev-${s.sev}`, 'aria-hidden': 'true', raw: String(s.n) }),
+        el('span', { class: 'sr-only hub-sr', text: plural(s.n, sevWord(s.sev, 1), sevWord(s.sev, 2)) })
+      );
+    }
+  }
+  const al = document.getElementById('dock-al');
+  if (al) {
+    const crit = (state.alerts || []).filter((a) => a.severity === 'critical').length;
+    const warn = (state.alerts || []).filter((a) => a.severity === 'warning').length;
+    al.dataset.sev = state.alerts == null ? '' : crit ? 'danger' : warn ? 'warn' : 'ok';
+    document.getElementById('dock-al-n').textContent = state.alerts == null ? '?' : String(crit || warn);
+    al.setAttribute('aria-label', state.alerts == null ? t('Аларми') : `${t('Аларми')}: ${crit ? t(plural(crit, 'критична', 'критични')) : warn ? t(plural(warn, 'предупреждение', 'предупреждения')) : t('няма')}`);
+  }
+  state.topo?.update(st);
+}
+
+function renderRecent(list) {
+  const box = document.getElementById('recent');
+  if (!box) return;
+  box.innerHTML = '';
+  for (const id of list.filter((x) => x !== state.section).slice(0, 3)) {
+    box.appendChild(el('button', { text: SECTION_BY_ID[id].label, onclick: () => go(id) }));
+  }
+}
+
+// Листът с хъбовете (телефон): 7 плочки с живо число + търсене; отдолу възел,
+// език, изход. Рисува се при всяко отваряне — числата са от последното четене.
+function openHubSheet() {
+  const dlg = document.getElementById('hub-sheet');
+  const tiles = document.getElementById('hub-tiles');
+  tiles.innerHTML = '';
+  const st = hubStates(state.alerts || []);
+  const cur = hubOf(state.section);
+  for (const h of HUBS) {
+    const s = st[h.id];
+    const known = state.alerts != null;
+    const b = el('button', { class: 'tile', 'aria-current': h.id === cur ? 'true' : null, onclick: () => { dlg.close(); go(lastInHub(h.id)); } }, [
+      el('img', { src: `/icons/${h.icon}.png`, alt: '' }),
+      el('span', { class: 'tile-num', 'aria-hidden': 'true', raw: !known ? '?' : s.sev ? String(s.n) : '✓' }),
+      el('span', { class: 'tile-name', text: h.label }),
+      el('span', { class: 'tile-lbl', text: !known ? 'не знам — алармите не отговориха' : s.sev ? plural(s.n, sevWord(s.sev, 1), sevWord(s.sev, 2)) : 'спокойно' }),
+    ]);
+    b.dataset.sev = s.sev || 'ok';
+    tiles.appendChild(b);
+  }
+  tiles.appendChild(el('button', { class: 'tile', onclick: () => { dlg.close(); openPalette(); } }, [
+    el('img', { src: '/icons/act-search.png', alt: '' }),
+    el('span', { class: 'tile-name', text: 'Търси' }),
+    el('span', { class: 'tile-lbl', text: 'секция, услуга, действие' }),
+  ]));
+  if (!dlg.open) dlg.showModal();
+}
+{
+  const dlg = document.getElementById('hub-sheet');
+  // Докосване извън листа (по фона) го затваря; Esc — родно от <dialog>.
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  document.getElementById('dock-place').addEventListener('click', openHubSheet);
+  document.getElementById('dock-search').addEventListener('click', () => openPalette());
+  document.getElementById('dock-al').addEventListener('click', () => go('alerts'));
+  document.getElementById('btn-cmd').addEventListener('click', () => openPalette());
 }
 
 // Търсачка над вече нарисувана таблица — филтрира DOM редовете, без нова заявка.
@@ -374,13 +494,29 @@ function isCurrentRender(gen) {
 }
 
 function go(id) {
+  if (!SECTION_BY_ID[id]) id = 'overview';
   const gen = ++navGen;
   state.section = id;
   stopMetrics();
   closeSectionStream();
-  for (const b of document.querySelectorAll('#nav button')) b.classList.toggle('active', b.dataset.id === id);
-  const s = SECTIONS.find((x) => x.id === id);
+  state.topo?.destroy();
+  state.topo = null;
+  const s = SECTION_BY_ID[id];
+  const hub = hubById(hubOf(id));
+  for (const b of document.querySelectorAll('#hubs .hub-btn')) b.setAttribute('aria-current', String(b.dataset.hub === hub.id));
   document.getElementById('section-title').textContent = t(s.label);
+  document.getElementById('hub-crumb').textContent = t(hub.label);
+  document.getElementById('dock-hub').textContent = t(hub.label);
+  document.getElementById('dock-sec').textContent = t(s.label);
+  document.getElementById('dock-ico').src = `/icons/${hub.icon}.png`;
+  renderSecbar(id);
+  rememberInHub(id);
+  renderRecent(pushRecent(id));
+  // Адресът носи секцията (`#services`) — отметка на телефона отваря точно нея.
+  // replaceState, не push: „Назад" не бива да минава през всяка секция.
+  try { history.replaceState(null, '', '#' + id); } catch { /* file:// или забранено — без отметка */ }
+  const sheet = document.getElementById('hub-sheet');
+  if (sheet?.open) sheet.close();
   // Всяка навигация получава СВЕЖ #view възел. Закъснялата секция държи стария
   // (вече откачен) възел и пише в нищото — вместо да замаже новата. Работи за
   // ВСИЧКИ секции наведнъж, защото всяка взема `view` ПРЕДИ първото await.
@@ -388,7 +524,6 @@ function go(id) {
   const fresh = old.cloneNode(false);
   old.replaceWith(fresh);
   showSkeleton();
-  document.querySelector('.sidebar').classList.remove('open');
   clearCommands('section'); // командите на предишната секция си отиват с нея
   s.render().catch((e) => {
     if (!isCurrentRender(gen)) return; // закъсняла грешка от изоставена секция
@@ -536,8 +671,10 @@ translateDom(document.body);
 function langTagSafe() {
   return { bg: 'bg-BG', en: 'en-GB', it: 'it-IT' }[getLang()] || 'bg-BG';
 }
-{
-  const wrap = el('div', { class: 'lang-switch', role: 'group', 'aria-label': 'Език / Language / Lingua' },
+// Езикът живее в подножието на рейла (десктоп) и на листа с хъбовете (телефон):
+// горната лента е за „къде съм" и състоянието.
+function langSwitch() {
+  return el('div', { class: 'lang-switch', role: 'group', 'aria-label': 'Език / Language / Lingua' },
     languages().map((l) =>
       el('button', {
         class: 'lang-btn' + (l.id === getLang() ? ' active' : ''),
@@ -546,14 +683,30 @@ function langTagSafe() {
         onclick: () => setLang(l.id),
       })
     ));
-  // В подножието на менюто: горната лента е за „къде съм" и състоянието, а на
-  // телефон превключвателят там избутваше бутоните извън екрана.
-  document.querySelector('.sidebar-foot')?.prepend(wrap);
+}
+document.querySelector('.rail-foot')?.prepend(langSwitch());
+// Подножието на листа: възел (само при съседи), език, изход, версия.
+function buildSheetFoot() {
+  const foot = document.getElementById('sheet-foot');
+  if (!foot) return;
+  foot.innerHTML = '';
+  const main = document.getElementById('node-select');
+  if (main && main.options.length > 1) {
+    const sel = el('select', { 'aria-label': 'Възел' }, [...main.options].map((o) => el('option', { value: o.value, raw: o.textContent })));
+    sel.value = main.value;
+    sel.onchange = () => {
+      main.value = sel.value;
+      main.dispatchEvent(new Event('change'));
+    };
+    foot.appendChild(sel);
+  }
+  foot.append(
+    langSwitch(),
+    el('button', { class: 'btn btn-ghost btn-sm', text: 'Изход', onclick: () => document.getElementById('btn-logout').click() }),
+    el('span', { class: 'ver', raw: document.getElementById('ver').textContent }),
+  );
 }
 
-document.getElementById('menu-toggle').addEventListener('click', () =>
-  document.querySelector('.sidebar').classList.toggle('open')
-);
 document.getElementById('btn-refresh').addEventListener('click', () => go(state.section));
 
 // ── Node switcher ────────────────────────────────────────────────────────────
@@ -585,6 +738,10 @@ async function loadNodes() {
   status.textContent = t(peers.length
     ? `${peers.filter((p) => p.up).length}/${peers.length} peer(s) на линия`
     : 'Няма конфигурирани peer-и');
+  // Изборът на възел има смисъл само при съседи — един сървър не е избор.
+  sel.closest('.node-switch')?.classList.toggle('hidden', !peers.length);
+  sel.title = status.textContent;
+  buildSheetFoot();
   sel.onchange = () => {
     state.node = sel.value;
     saveNode(state.node);
@@ -618,7 +775,20 @@ async function renderOverview() {
     state.range = rangeSel.value;
     go('overview');
   };
-  view.appendChild(el('div', { class: 'toolbar' }, [rangeSel, el('span', { class: 'muted', text: `${plural(state.hist.length, 'точка', 'точки')} (пазят се 7 дни на диска)` })]));
+  // Картата на сървъра: релефът е натоварването СЕГА, местата са седемте хъба и
+  // светят по най-тежката аларма в тях. Ускорител, не единствената навигация.
+  const topoHost = el('div', { class: 'topo' });
+  view.appendChild(el('div', { class: 'card topo-card' }, [
+    topoHost,
+    el('div', { class: 'topo-legend' }, [
+      el('span', { text: 'Релефът е натоварването сега; местата светят по най-тежката аларма в тях.' }),
+      el('span', { text: 'Натисни място, за да отидеш там.' }),
+    ]),
+  ]));
+  const load = Math.max(0, Math.min(1, ((m.cpuPct ?? 0) + (memPctOf(m.mem) ?? 0)) / 200));
+  state.topo = mountTopo(topoHost, { hubs: HUBS, states: hubStates(state.alerts || []), load, onPick: (h) => go(lastInHub(h)) });
+
+  view.appendChild(el('div', { class: 'toolbar', style: 'margin-top:16px' }, [rangeSel, el('span', { class: 'muted', text: `${plural(state.hist.length, 'точка', 'точки')} (пазят се 7 дни на диска)` })]));
   view.appendChild(
     el('div', { class: 'grid grid-metrics' }, [
       metricCard('CPU', 'cpu', pctHtml(m.cpuPct), `${plural(info.cpus, 'ядро', 'ядра')} · load ${m.load.map((x) => x.toFixed(2)).join(' ')}`),
@@ -7019,10 +7189,15 @@ async function refreshBadge() {
     a = await api('/alerts');
   } catch {
     // Не знаем → сигнализацията изчезва, НЕ показва „без аларми". Зелено при
-    // неизвестно е точно лъжата, срещу която е целият панел.
+    // неизвестно е точно лъжата, срещу която е целият панел. Значките на
+    // хъбовете и докът казват „?" по същата причина.
     document.getElementById('annun').classList.add('hidden');
+    state.alerts = null;
+    paintHubStates();
     return;
   }
+  state.alerts = a.active || [];
+  paintHubStates();
   showAnnunciator(a.active || []);
   if (!('setAppBadge' in navigator)) return;
   try {
@@ -7083,7 +7258,9 @@ async function boot() {
       run: () => document.getElementById('btn-logout').click(),
     });
     await loadNodes();
-    go('overview');
+    buildSheetFoot();
+    // `#services` в адреса (отметка, PWA) отваря точно тази секция.
+    go(decodeURIComponent(location.hash.slice(1)) || 'overview');
     refreshBadge();
     setInterval(refreshBadge, 60000);
   } catch {
@@ -7091,7 +7268,6 @@ async function boot() {
   }
 }
 
-document.getElementById('btn-palette').addEventListener('click', () => openPalette());
 boot();
 
 // PWA: регистрира се само по HTTPS (или localhost) — иначе браузърът го отказва.

@@ -1,8 +1,12 @@
 // Service worker — САМО за да се инсталира като приложение на телефона и да
 // зареди обвивката офлайн. НИКОГА не кешира /api/ — данните за сървъра трябва да
 // са живи, а кеширан отговор от контролен панел е опасно подвеждащ.
-const CACHE = 'csd-shell-v1';
-const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/ui.js', '/ansi.js', '/terrain.js', '/favicon.svg', '/manifest.json'];
+// v2 = „Топокарта" (v1.19): нови модули и самохостнатите шрифтове. Смяната на
+// името изхвърля стария кеш — иначе телефонът показва стария облик до безкрай.
+const CACHE = 'csd-shell-v2';
+const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/ui.js', '/ansi.js', '/terrain.js', '/nav.js', '/topo.js', '/i18n.js', '/i18n-dict.js',
+  '/fonts/golos-text-cyrillic.woff2', '/fonts/golos-text-latin.woff2', '/fonts/unbounded-cyrillic.woff2', '/fonts/unbounded-latin.woff2',
+  '/favicon.svg', '/manifest.json'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

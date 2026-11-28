@@ -1110,3 +1110,5 @@
 {"t":"handoff","ts":"2026-11-28T12:48:09.774Z","id":"ra4f23ce3","from":"dizayner","to":"kodadjiyata","status":"има бележки","run":"e6ad7147"}
 {"t":"start","ts":"2026-11-28T12:49:52.062Z","id":"r7c452bec","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-28T12:49:52.063Z","id":"r7c452bec","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"d3581fba"}
+{"t":"start","ts":"2026-11-28T12:11:08.375Z","id":"ra73769d3","flow":"авто","lead":"dizayner","auto":true}
+{"t":"handoff","ts":"2026-11-28T12:11:08.375Z","id":"ra73769d3","from":"dizayner","to":"човек","status":"има бележки","run":"5086d412"}
