@@ -31,6 +31,8 @@ export interface PlanDefinition {
 }
 
 const CORE: FeatureCode[] = [
+  // Дневниците по ДДС — във всеки план (така бяха и преди кода за функцията, SPEC 99).
+  'vat-ledgers',
   'invoices',
   'credit-debit-notes',
   'en16931-xml',

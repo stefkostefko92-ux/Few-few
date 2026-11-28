@@ -16,6 +16,7 @@ export interface NewsEntry {
 
 /** Най-новите отгоре; в един ден — по важност. */
 export const NEWS: readonly NewsEntry[] = [
+  { id: '2026-11-28-versiya-2-3', date: '2026-11-28' },
   { id: '2026-11-25-versiya-2-2', date: '2026-11-25' },
   { id: '2026-11-23-versiya-2-1', date: '2026-11-23' },
   { id: '2026-11-16-versiya-2-0', date: '2026-11-16' },
