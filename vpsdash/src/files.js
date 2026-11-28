@@ -24,10 +24,46 @@ const SENSITIVE_FILES = [
 
 // Пътят на ЖИВИЯ конфиг (уважава CSD_CONFIG) — иначе преместен конфиг тихо
 // изпада от защитата и тайните му тръгват към браузъра.
+function sensitiveText(p, live) {
+  if (p === live || p.startsWith(live + '.')) return true;
+  return SENSITIVE_FILES.some((rx) => rx.test(p));
+}
+
+// И през символна връзка: проверката по ТЕКСТ пускаше `<връзка>/config.json`
+// (връзка от разархивиран tar, от продукт), а прегледът и свалянето четат ЦЕЛТА —
+// тайните излизаха нескрити под чуждо име (Кодаджията 28.11).
 export function isSensitive(fullPath) {
   const live = path.resolve(CONFIG_PATH);
-  if (fullPath === live || fullPath.startsWith(live + '.')) return true;
-  return SENSITIVE_FILES.some((rx) => rx.test(fullPath));
+  return [fullPath, resolveLinks(fullPath)].some((p) => sensitiveText(p, live));
+}
+
+// Пътят през ВСИЧКИ символни връзки — и през висящите (`realpath` там хвърля, а
+// връзка към още несъществуващ файл пак сочи към тайна или към /etc/ssh).
+// Несъществуващата опашка остава каквато е. Таван на скоковете срещу цикли.
+export function resolveLinks(p, depth = 0) {
+  const parts = String(p).split('/').filter(Boolean);
+  let cur = '/';
+  for (let i = 0; i < parts.length; i++) {
+    const next = path.join(cur, parts[i]);
+    let st;
+    try {
+      st = fs.lstatSync(next);
+    } catch {
+      return path.join(next, ...parts.slice(i + 1));
+    }
+    if (st.isSymbolicLink()) {
+      if (depth >= 40) return path.join(next, ...parts.slice(i + 1));
+      let target;
+      try {
+        target = fs.readlinkSync(next);
+      } catch {
+        return path.join(next, ...parts.slice(i + 1));
+      }
+      return resolveLinks(path.join(path.resolve(cur, target), ...parts.slice(i + 1)), depth + 1);
+    }
+    cur = next;
+  }
+  return cur;
 }
 
 // Папките, в които живеят тайните на панела — цели не се свалят, а по-горна

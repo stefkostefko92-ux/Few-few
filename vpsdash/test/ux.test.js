@@ -52,3 +52,23 @@ test('потвърждение: „Изтрий" от телефона се пр
   assert.equal(sameWord('', ''), false, 'празно никога не потвърждава');
   assert.equal(sameWord('delete', 'изтрий'), false);
 });
+
+test('изходът на задачите: ANSI цветовете стават класове, кодовете не излизат сурово', async () => {
+  const { ansiAppender } = await import('../public/ui.js');
+  // Минимален DOM — само колкото ползва помощникът.
+  const nodes = [];
+  const doc = {
+    createTextNode: (t) => ({ text: t }),
+    createElement: () => ({ className: '', textContent: '' }),
+  };
+  const out = { appendChild: (n) => nodes.push(n) };
+  const write = ansiAppender(out, doc);
+  write('\x1b[1;36m▸ Свалям x@main…\x1b[0m\n\x1b[3');
+  write('2m✔ готово\x1b[0m\n\x1b[31m✘ падна\x1b[0m <b>не е HTML</b>\n');
+  const text = nodes.map((n) => n.text ?? n.textContent).join('');
+  assert.equal(text, '▸ Свалям x@main…\n✔ готово\n✘ падна <b>не е HTML</b>\n');
+  assert.doesNotMatch(text, /\x1b|\[0m|\[1;36m/);
+  assert.equal(nodes.find((n) => n.textContent === '✔ готово')?.className, 'ansi-ok', 'срязаният между парчета код пак е разпознат');
+  assert.equal(nodes.find((n) => n.textContent === '✘ падна')?.className, 'ansi-bad');
+  assert.ok(nodes.some((n) => n.text === ' <b>не е HTML</b>\n'), 'текстов възел, не HTML');
+});

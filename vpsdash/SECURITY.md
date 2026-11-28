@@ -46,8 +46,12 @@
   има **само** `/api/terminal/run` — изрично, ограничено по дължина и **одитирано**.
 - **Изолация на мрежата:** сървърът слуша само на `127.0.0.1:7700`. Публичен достъп —
   само през Nginx + TLS (виж `deploy/nginx.conf.example`), препоръчително + Basic-auth.
-- **systemd втвърдяване:** `NoNewPrivileges`, `ProtectHome`, `ProtectKernel*`,
-  `RestrictSUIDSGID`, `LockPersonality` (виж `deploy/vps-dashboard.service`).
+- **systemd втвърдяване:** `NoNewPrivileges`, `/home` само за четене (`BindReadOnlyPaths`),
+  скрит `/run/user` (`TemporaryFileSystem`), `ProtectControlGroups`, `LockPersonality`
+  (виж `deploy/vps-dashboard.service`). Съзнателно ИЗКЛЮЧЕНИ, с причината в самия unit:
+  `ProtectHome` (на systemd 257 прави `/root` само за четене — деплоят и качването падат),
+  `ProtectKernelTunables`/`ProtectKernelModules` (`ufw enable` пише в `/proc/sys`) и
+  `RestrictSUIDSGID` (postinst на apport → dpkg остава прекъснат, спират всички ъпдейти).
 - **Файлове:** браузърът не изтрива нищо; записът винаги прави копие (`.bak-<време>`)
   и пази правата на файла; бинарни файлове не се сервират; преглед и запис се одитират.
 - **Уеб конфигът се валидира преди презареждане** (`nginx -t` / `caddy validate`) и при

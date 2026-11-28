@@ -87,7 +87,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.17.2';
+export const VERSION = '1.18.1';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -457,6 +457,9 @@ export function buildRouter(ctx) {
     ENAMETOOLONG: 400,
     ELOOP: 400, // символна връзка в кръг
     EINVAL: 400,
+    // Дял само за четене (за процеса на панела) — не е „вътрешна грешка" и не
+    // бива да храни SLO-то с 5xx. /home е такава по замисъл на unit-а.
+    EROFS: 409,
   };
   const J = (fn) => async (req, res, params, url) => {
     let data;
@@ -473,6 +476,7 @@ export function buildRouter(ctx) {
   // Текстът е за ЧОВЕК, не преразказ на errno. Пътят не се повтаря в отговора —
   // той идва от заявката и ехото му обратно е ненужна повърхност.
   function errText(err, status) {
+    if (err?.code === 'EROFS') return 'Тук панелът е само за четене (дялът е монтиран „ro“ за него) — промени по SSH.';
     if (status === 404) return 'Няма такъв път.';
     if (status === 403) return 'Няма права за този път.';
     if (err?.code === 'ENOTDIR') return 'Пътят не е папка.';
@@ -483,10 +487,14 @@ export function buildRouter(ctx) {
   }
 
   // ── Вход/сесия ─────────────────────────────────────────────────────────────
+  // `app` е маркерът за идентичност — и в отказа. Без него сондата на деплоя
+  // приемаше ВСЕКИ 401 на порта за „панелът е жив" (всяко приложение с вход
+  // минава; поука на Наблюдателя). Името на продукта не е тайна — формата за
+  // вход на `/` го казва и без това.
   r.get('/api/ping', (req, res) => {
     const who = auth(req);
-    if (!who) return sendError(res, 401, 'unauthorized');
-    sendJson(res, 200, { ok: true, nodeId: cfg.nodeId, nodeName: cfg.nodeName, version: VERSION, instance: nodes.INSTANCE });
+    if (!who) return sendJson(res, 401, { error: 'unauthorized', app: 'vps-dashboard' });
+    sendJson(res, 200, { ok: true, app: 'vps-dashboard', nodeId: cfg.nodeId, nodeName: cfg.nodeName, version: VERSION, instance: nodes.INSTANCE });
   });
 
   r.post('/api/login', async (req, res) => {
@@ -984,6 +992,19 @@ export function buildRouter(ctx) {
     )
   );
 
+  r.post(
+    '/api/deploy/fetch',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = deploy.fetchDeploySpec(cfg, { ref: b.ref, projects: b.projects, allowRefSwitch: b.allowRefSwitch === true });
+        audit.log({ action: 'deploy.fetch', ref: spec.env.REF, projects: spec.env.PROJECTS || 'всички', refSwitch: Boolean(spec.env.ALLOW_REF_SWITCH), user: req.user });
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
   // Качване на архив направо от браузъра (суровото тяло; име в query).
   // Пише и <архив>.sha256 → autodeploy.sh проверява целостта преди разопаковане.
   r.post(
@@ -1320,7 +1341,8 @@ export function buildRouter(ctx) {
       J((req, res, p, url) => {
         const out = files.listDir(url.searchParams.get('path'), { owners: fileops.owners() });
         const hidden = fileops.sandboxNote(out.path);
-        return hidden ? { ...out, sandboxHidden: hidden } : out;
+        const readOnly = fileops.readOnlyMount(out.path);
+        return { ...out, ...(hidden ? { sandboxHidden: hidden } : {}), ...(readOnly ? { readOnly } : {}) };
       })
     )
   );
@@ -2752,7 +2774,17 @@ export function buildRouter(ctx) {
   );
   r.post('/api/machine/ssh-keys/add', guard(J(async (req) => machine.addKey((await readJson(req)).key, cfg, audit, req.user)), { mutating: true }));
   r.post('/api/machine/ssh-keys/remove', guard(J(async (req) => machine.removeKey((await readJson(req)).fingerprint, cfg, audit, req.user)), { mutating: true }));
-  r.post('/api/machine/packages/install', guard(J(async (req) => jobs.start(machine.installSpec((await readJson(req)).name), { user: req.user })), { mutating: true }));
+  r.get('/api/machine/packages/install-plan', guard(J((req, res, p, url) => machine.installPlan(url.searchParams.get('name')))));
+  r.post(
+    '/api/machine/packages/install',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return jobs.start(await machine.installPlanned(b.name, b.expect), { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
   r.post(
     '/api/machine/packages/remove',
     guard(

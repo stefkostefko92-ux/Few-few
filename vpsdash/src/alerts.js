@@ -967,7 +967,9 @@ export class AlertEngine {
     if (total < minRequests || !server) return out;
     const rate = (server / total) * 100;
     if (rate < pct) return out;
-    const top = (r.topByErrors || []).filter((p) => Object.keys(p.statuses || {}).some((s) => Number(s) >= 500)).slice(0, 3);
+    // Само 5xx и с ДЯЛА на 5xx: процентът „грешки" брои и 404/429, което в
+    // аларма за отказ на услугата праща човека по грешен път.
+    const top = (r.topByServerErrors || []).slice(0, 3);
     out.push({
       key: 'http5xx',
       severity: rate >= pct * 2 ? 'critical' : 'warning',
@@ -978,7 +980,7 @@ export class AlertEngine {
       body:
         `${server} сървърни грешки от ${total} заявки на истински посетители за последните ` +
         `${Math.round(windowMs / 60000)} мин (праг ${pct}%; ботовете не се броят).` +
-        (top.length ? `\nНай-засегнати:\n${top.map((p) => `• ${p.method} ${safePath(p.path)} — ${p.errorPct}% от ${p.count}`).join('\n')}` : ''),
+        (top.length ? `\nНай-засегнати:\n${top.map((p) => `• ${p.method} ${safePath(p.path)} — ${p.serverErrorPct}% 5xx от ${p.count}`).join('\n')}` : ''),
     });
     return out;
   }

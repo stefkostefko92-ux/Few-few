@@ -108,7 +108,7 @@ test('файлове: права без setuid, собственик по шаб
   fs.writeFileSync(path.join(ROOT, 'pkg.tar.gz'), '');
   const ex = f.extractSpec(path.join(ROOT, 'pkg.tar.gz'), cfg);
   assert.equal(ex.dest, path.join(ROOT, 'pkg'), 'нова папка до архива');
-  assert.ok(ex.args.includes('--no-same-owner'));
+  assert.match(ex.args[1], /--no-same-owner --no-same-permissions/);
   // Папката вече съществува → нова до нея, никога разопаковане върху старата.
   fs.mkdirSync(path.join(ROOT, 'pkg'));
   assert.equal(f.extractSpec(path.join(ROOT, 'pkg.tar.gz'), cfg).dest, path.join(ROOT, 'pkg-2'));
@@ -233,4 +233,162 @@ test('файлове: големи стари файлове — праг, въ�
   await assert.rejects(f.bigFiles('/usr', {}, cfg), /Системен/);
   await assert.rejects(f.bigFiles(dir, { minMb: 0 }, cfg), /MB/);
   await assert.rejects(f.bigFiles(dir, { minMb: 5, days: -1 }, cfg), /Дните/);
+});
+
+// ── Червен екип (Разбивача, 28.11): децата на критичните папки и символните връзки ──
+test('файлове: ДЕЦАТА на /etc/ssh, /root/.ssh и /etc/sudoers.d са защитени като самите папки', () => {
+  for (const p of ['/etc/ssh/ssh_host_ed25519_key', '/root/.ssh/id_rsa', '/root/.ssh/authorized_keys2', '/etc/sudoers.d/90-custom', '/etc/ssh/sshd_config.d/50-cloud-init.conf']) {
+    assert.throws(() => f.assertMutable(p, cfg), /Критичен/, p);
+  }
+  // Файл-елементите остават точно съвпадение: /etc/hostsx не е /etc/hosts.
+  assert.equal(f.assertMutable('/etc/hostsx', cfg), '/etc/hostsx');
+});
+
+test('файлове: символна връзка към защитено място не заобикаля правилата', async () => {
+  const d = path.join(ROOT, 'връзки');
+  fs.mkdirSync(d, { recursive: true });
+  fs.symlinkSync('/etc', path.join(d, 'etc-връзка'));
+  fs.symlinkSync('/proc', path.join(d, 'proc-връзка'));
+  fs.symlinkSync('/etc/passwd', path.join(d, 'passwd-връзка'));
+  // Изтриване „на /etc/shadow" през папка-връзка → кошчето би преместило истинския файл.
+  assert.throws(() => f.assertMutable(path.join(d, 'etc-връзка', 'shadow'), cfg), /Критичен файл \(\/etc\/shadow\)/);
+  assert.throws(() => f.assertMutable(path.join(d, 'proc-връзка', 'self'), cfg), /Системен/);
+  await assert.rejects(f.toTrash(path.join(d, 'etc-връзка', 'shadow'), cfg, audit, 'u'), /Критичен/);
+  // Самата връзка се трие (местенето мести връзката, не целта)…
+  assert.equal(f.assertMutable(path.join(d, 'passwd-връзка'), cfg), path.join(d, 'passwd-връзка'));
+  // …но права/собственик минават ПРЕЗ нея до целта — отказ.
+  await assert.rejects(f.chmod(path.join(d, 'passwd-връзка'), '777', {}, cfg, audit, 'u'), /Критичен/);
+  await assert.rejects(f.chown(path.join(d, 'passwd-връзка'), 'nobody', '', {}, cfg, audit, 'u'), /Критичен/);
+  // Създаване в /etc/ssh през връзка — отказ.
+  assert.throws(() => f.assertCreatable(path.join(d, 'etc-връзка', 'ssh', 'нов-ключ'), cfg), /достъпа до машината/);
+});
+
+test('файлове: сваляне през символна връзка към тайните на панела — отказ', () => {
+  const d = path.join(ROOT, 'връзки-тайни');
+  const secretDir = path.join(ROOT, 'етц-панел');
+  fs.mkdirSync(d, { recursive: true });
+  fs.mkdirSync(secretDir, { recursive: true });
+  fs.writeFileSync(path.join(secretDir, 'config.json'), '{"passwordHash":"x"}');
+  fs.symlinkSync(path.join(secretDir, 'config.json'), path.join(d, 'невинно.txt'));
+  const opts = { isSensitive: (p) => p === path.join(secretDir, 'config.json'), secretDirs: [secretDir] };
+  assert.throws(() => f.downloadPlan(path.join(d, 'невинно.txt'), opts), /тайните/);
+});
+
+// ── Находките на Кодаджията (28.11) ──────────────────────────────────────────
+test('файлове: РОДИТЕЛ на защитен път не се трие (/var/lib → rm -rf dpkg, docker, state)', () => {
+  for (const p of ['/var/lib', '/usr/local/..', ROOT]) {
+    assert.throws(() => f.assertMutable(p, cfg), /защитен път|най-горно ниво|Системен/, p);
+  }
+  // ROOT е родител на state — и на кошчето до него.
+  assert.throws(() => f.assertMutable(ROOT, cfg), /защитен път/);
+  // Съседната папка без нищо защитено вътре — минава.
+  const free = path.join(ROOT, 'свободна');
+  fs.mkdirSync(free, { recursive: true });
+  assert.equal(f.assertMutable(free, cfg), free);
+});
+
+test('кошче: копирано на другия дял, но оригиналът остана наполовина — копието НЕ се трие', async () => {
+  const src = path.join(ROOT, 'наполовина');
+  fs.mkdirSync(src, { recursive: true });
+  fs.writeFileSync(path.join(src, 'a.txt'), 'единственото копие');
+  // Точно провалът от пробата: cp мина, rm -rf спря на „chattr +i" файл.
+  const move = async (from, to) => {
+    fs.cpSync(from, to, { recursive: true });
+    fs.rmSync(path.join(from, 'a.txt'));
+    throw Object.assign(new Error('Копието е готово, но оригиналът не се изтри докрай: Operation not permitted'), { status: 500, copied: true });
+  };
+  const meta = await f.toTrash(src, cfg, audit, 'u', { move });
+  assert.match(meta.warning, /част от оригинала остана/);
+  assert.equal(fs.readFileSync(path.join(f.trashDir(cfg), meta.id, 'item', 'a.txt'), 'utf8'), 'единственото копие');
+  const list = await f.trashList(cfg);
+  assert.ok(list.items.some((i) => i.id === meta.id && i.warning), 'записът е в кошчето, с предупреждението');
+  // Обикновен провал (cp не мина) — слотът се чисти както досега.
+  const plain = async () => {
+    throw Object.assign(new Error('cp не мина'), { status: 500 });
+  };
+  const before = fs.readdirSync(f.trashDir(cfg)).length;
+  await assert.rejects(f.toTrash(src, cfg, audit, 'u', { move: plain }), /cp не мина/);
+  assert.equal(fs.readdirSync(f.trashDir(cfg)).length, before, 'без празен слот');
+});
+
+test('кошче: несъществуващ запис е 404, а запис без meta.json изтича по часа на папката', async () => {
+  await assert.rejects(f.trashPurge('nonexistent00', cfg, audit, 'u'), /Няма такъв запис/);
+  const slot = path.join(f.trashDir(cfg), 'brokenslot01');
+  fs.mkdirSync(path.join(slot, 'item'), { recursive: true });
+  const old = new Date(Date.now() - 30 * 86400000);
+  fs.utimesSync(slot, old, old);
+  const r = await f.trashExpire(cfg, audit);
+  assert.ok(r.purged >= 1);
+  assert.equal(fs.existsSync(slot), false, 'счупеният запис не стои вечно');
+});
+
+test('разархивиране: tar не прави setuid и отказва устройства/FIFO', async () => {
+  const { execFileSync, spawnSync } = await import('node:child_process');
+  execFileSync('bash', ['-n', '-c', f.TAR_SAFE_SH]);
+  const d = path.join(ROOT, 'tarпроба');
+  fs.mkdirSync(path.join(d, 'src'), { recursive: true });
+  fs.writeFileSync(path.join(d, 'src', 'suid'), '#!/bin/sh\n');
+  fs.chmodSync(path.join(d, 'src', 'suid'), 0o4755);
+  execFileSync('tar', ['-cf', path.join(d, 'suid.tar'), '-C', path.join(d, 'src'), 'suid']);
+  const spec = f.extractSpec(path.join(d, 'suid.tar'), cfg);
+  assert.equal(spec.cmd, 'bash');
+  assert.equal(spec.args[1], f.TAR_SAFE_SH, 'пътищата са аргументи, не текст в скрипта');
+  fs.mkdirSync(spec.dest, { recursive: true });
+  const ok = spawnSync(spec.cmd, spec.args, { encoding: 'utf8' });
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.equal(fs.statSync(path.join(spec.dest, 'suid')).mode & 0o7000, 0, 'setuid е махнат');
+  // FIFO в архива — отказ преди първия байт.
+  execFileSync('mkfifo', [path.join(d, 'src', 'тръба')]);
+  execFileSync('tar', ['-cf', path.join(d, 'fifo.tar'), '-C', path.join(d, 'src'), 'тръба']);
+  const spec2 = f.extractSpec(path.join(d, 'fifo.tar'), cfg);
+  fs.mkdirSync(spec2.dest, { recursive: true });
+  const bad = spawnSync(spec2.cmd, spec2.args, { encoding: 'utf8' });
+  assert.equal(bad.status, 3);
+  assert.match(bad.stderr, /устройства или FIFO/);
+  assert.deepEqual(fs.readdirSync(spec2.dest), []);
+});
+
+test('сваляне: изчезнал файл и паднал tar рязват връзката — процесът оцелява', async () => {
+  const http = await import('node:http');
+  const gone = path.join(ROOT, 'изчезна.log');
+  const srv = http.createServer((req, res) => {
+    if (req.url === '/file') f.streamDownload({ path: gone, dir: false, name: 'x.log', sizeBytes: 100 }, res);
+    else f.streamDownload({ path: path.join(ROOT, 'няма-папка'), dir: true, name: 'няма-папка', excludes: [] }, res);
+  });
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  const base = `http://127.0.0.1:${srv.address().port}`;
+  try {
+    // Не uncaughtException (тестът би паднал), а прекъсната връзка.
+    await assert.rejects(fetch(base + '/file', { signal: AbortSignal.timeout(5000) }).then((r) => r.arrayBuffer()), (e) => e.name !== 'TimeoutError');
+    await assert.rejects(fetch(base + '/dir', { signal: AbortSignal.timeout(5000) }).then((r) => r.arrayBuffer()), (e) => e.name !== 'TimeoutError', 'tar с код 2 не дава „успешно" отрязан архив');
+  } finally {
+    srv.close();
+  }
+});
+
+test('тайните: прегледът през символна връзка към config.json също ги скрива', () => {
+  const d = path.join(ROOT, 'връзка-конфиг');
+  fs.mkdirSync(d, { recursive: true });
+  fs.symlinkSync('/etc/vps-dashboard/config.json', path.join(d, 'config.json'));
+  fs.symlinkSync('/etc/vps-dashboard', path.join(d, 'панел'));
+  assert.equal(isSensitive(path.join(d, 'config.json')), true, 'целта е тайна, дори да липсва на тази машина');
+  assert.equal(isSensitive(path.join(d, 'панел', 'config.json')), true);
+  assert.equal(isSensitive(path.join(d, 'друго.txt')), false);
+});
+
+test('файлове: дял само за четене се КАЗВА в списъка — преди първото провалено действие', () => {
+  // Ред от /proc/self/mountinfo: поле 5 е точката, поле 6 — опциите на ТОВА монтиране.
+  const mi = [
+    '25 1 8:1 / / rw,relatime shared:1 - ext4 /dev/sda1 rw',
+    '310 25 8:1 /home /home ro,nosuid,nodev,relatime - ext4 /dev/sda1 rw',
+    '311 25 7:0 / /snap/core22/1 ro,nodev,relatime - squashfs /dev/loop0 ro',
+    '312 25 8:2 / /mnt/с\\040интервал ro,relatime - ext4 /dev/sdb1 rw',
+  ].join('\n');
+  assert.equal(f.readOnlyMount('/home/deploy/.ssh', mi), '/home', 'bind на unit-а: /home е ro за панела');
+  assert.equal(f.readOnlyMount('/snap/core22/1/usr', mi), '/snap/core22/1');
+  assert.equal(f.readOnlyMount('/mnt/с интервал/x', mi), '/mnt/с интервал', 'интервалът е \\040 в mountinfo');
+  assert.equal(f.readOnlyMount('/root', mi), null, '/root е на rw корена');
+  assert.equal(f.readOnlyMount('/homework', mi), null, '/homework не е под /home');
+  // Опциите на СУПЕРБЛОКА (след „-") не решават: bind ro върху rw диск е ro.
+  assert.equal(f.readOnlyMount('/home', mi.replace('/home ro,nosuid', '/home rw,nosuid')), null);
 });

@@ -74,3 +74,51 @@ test("не-ASCII се отказва и под UTF-8 локал", () => {
     assert.equal(out.trim(), "BAD", ref);
   }
 });
+
+// ── Урок 2026-11-28: „curl: (23) client returned ERROR on write" ─────────────
+// Панелът сваляше в /root, който за процеса му беше само за четене (systemd 257).
+// Съобщението пращаше към ref/мрежа/репо. Сега: проверка за запис и място ПРЕДИ
+// свалянето и причината по кода на curl. Пуска се РЕАЛНИЯТ скрипт с фалшив curl
+// в PATH — нула мрежа. Скриптът иска root (проверката е преди тези стъпки).
+const asRoot = process.getuid?.() === 0;
+function runFetch(env, curlRc) {
+  const dir = mkdtempSync(join(tmpdir(), "fetch-io-"));
+  const bin = join(dir, "bin");
+  execFileSync("mkdir", ["-p", bin, join(dir, "arch"), join(dir, "refs")]);
+  // Фалшивият curl: пише малко в -o (ако може) и излиза с дадения код.
+  execFileSync("bash", ["-c", `cat > "${bin}/curl" <<'C'\n#!/bin/bash\nout=""; while [ $# -gt 0 ]; do [ "$1" = "-o" ] && out="$2"; shift; done\n[ -n "$out" ] && printf 'част' > "$out"\nexit ${curlRc}\nC\nchmod +x "${bin}/curl"`]);
+  try {
+    const r = spawnSync("bash", [path], {
+      env: { PATH: `${bin}:/usr/bin:/bin`, REF: "main", ARCHIVE_DIR: join(dir, "arch"), REF_STATE_DIR: join(dir, "refs"), HOME: dir, ...env },
+      encoding: "utf8",
+    });
+    return { ...r, left: readdirSync(join(dir, "arch")) };
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test("запис: папка, в която не може да се пише → причината, преди свалянето", { skip: !asRoot && "иска root" }, () => {
+  // /proc/1 е папка, в която и root не може да създаде файл — като дял „ro" за процеса.
+  const r = runFetch({ ARCHIVE_DIR: "/proc/1" }, 0);
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /Не мога да пиша в \/proc\/1/);
+  assert.doesNotMatch(r.stderr, /Свалям|репото е публично/, "не стига до curl и не праща към ref/мрежа");
+});
+
+test("място: под MIN_FREE_MB → отказ с колко има и откъде се освобождава", { skip: !asRoot && "иска root" }, () => {
+  const r = runFetch({ MIN_FREE_MB: String(1024 * 1024 * 1024) }, 0);
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /MB свободни, а свалянето иска поне/);
+  assert.match(r.stderr, /Какво може да се освободи/);
+});
+
+test("curl по код: 23 = запис, 22 = няма такъв ref, 6 = мрежа; половин архив не остава", { skip: !asRoot && "иска root" }, () => {
+  const w = runFetch({}, 23);
+  assert.equal(w.status, 1);
+  assert.match(w.stderr, /не можа да ЗАПИШЕ/);
+  assert.doesNotMatch(w.stderr, /репото е публично/, "кодът за запис не праща към ref/репо");
+  assert.deepEqual(w.left, [], "половин архив не остава в ARCHIVE_DIR");
+  assert.match(runFetch({}, 22).stderr, /GitHub няма .*@main/);
+  assert.match(runFetch({}, 6).stderr, /Връзката до codeload\.github\.com падна \(curl код 6\)/);
+});

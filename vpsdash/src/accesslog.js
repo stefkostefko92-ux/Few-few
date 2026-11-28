@@ -259,7 +259,7 @@ export class AccessLogReader {
         if (rec.requestTime != null) withTiming++;
 
         const key = `${rec.method} ${normalizePath(rec.path)}`;
-        const g = byPath.get(key) || { key, method: rec.method, path: normalizePath(rec.path), count: 0, bot: 0, bytes: 0, times: [], upTimes: [], waits: [], statuses: {}, errors: 0 };
+        const g = byPath.get(key) || { key, method: rec.method, path: normalizePath(rec.path), count: 0, bot: 0, bytes: 0, times: [], upTimes: [], waits: [], statuses: {}, errors: 0, server: 0 };
         g.count++;
         g.bytes += rec.bytes;
         if (bot) g.bot++;
@@ -277,6 +277,10 @@ export class AccessLogReader {
         }
         g.statuses[rec.status] = (g.statuses[rec.status] || 0) + 1;
         if (rec.status >= 400) g.errors++;
+        // 5xx отделно: 404 и 429 НЕ са отказ на услугата (429 е сигнал за
+        // злоупотреба, 404 — най-често скенер). Смесени, „80% грешки" на адрес с
+        // 75% 404 праща човека да търси бъг, който го няма (поука на Наблюдателя).
+        if (rec.status >= 500) g.server++;
         byPath.set(key, g);
 
         const cls = `${Math.floor(rec.status / 100)}xx`;
@@ -317,6 +321,8 @@ export class AccessLogReader {
         count: g.count,
         botPct: g.count ? Math.round((g.bot / g.count) * 1000) / 10 : 0,
         errorPct: g.count ? Math.round((g.errors / g.count) * 1000) / 10 : 0,
+        serverErrorPct: g.count ? Math.round((g.server / g.count) * 1000) / 10 : 0,
+        clientErrorPct: g.count ? Math.round(((g.errors - g.server) / g.count) * 1000) / 10 : 0,
         bytes: g.bytes,
         p50: pct(times, 0.5),
         p95,
@@ -354,6 +360,7 @@ export class AccessLogReader {
       // потребителят усеща точно нея.
       topBySlow: [...paths].filter((p) => p.p95 != null).sort((a, b) => b.p95 - a.p95).slice(0, limit),
       topByErrors: [...paths].filter((p) => p.errorPct > 0).sort((a, b) => b.errorPct - a.errorPct || b.count - a.count).slice(0, limit),
+      topByServerErrors: [...paths].filter((p) => p.serverErrorPct > 0).sort((a, b) => b.serverErrorPct - a.serverErrorPct || b.count - a.count).slice(0, limit),
       topIps: [...byIp.values()].sort((a, b) => b.count - a.count).slice(0, limit),
       serverErrors: errors.slice(-50).reverse(),
     };

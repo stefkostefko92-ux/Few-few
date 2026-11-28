@@ -39,7 +39,7 @@ const keysOf = (lines) => lines.map((l) => l.split('=')[0]);
 // пропуска мълчаливо — най-подлият вид „конфигурация, която не работи".
 const UNIT_ONLY = ['StartLimitIntervalSec', 'StartLimitBurst', 'StartLimitAction', 'After', 'Before', 'Wants', 'Requires', 'Description', 'Documentation'];
 // И обратното: тези нямат смисъл извън [Service].
-const SERVICE_ONLY = ['ExecStart', 'Restart', 'RestartSec', 'KillMode', 'TimeoutStopSec', 'User', 'WorkingDirectory', 'Environment', 'ReadWritePaths', 'ProtectHome', 'BindPaths', 'LimitNOFILE', 'OOMScoreAdjust'];
+const SERVICE_ONLY = ['ExecStart', 'Restart', 'RestartSec', 'KillMode', 'TimeoutStopSec', 'User', 'WorkingDirectory', 'Environment', 'ReadWritePaths', 'ProtectHome', 'BindPaths', 'BindReadOnlyPaths', 'TemporaryFileSystem', 'LimitNOFILE', 'OOMScoreAdjust'];
 
 test('systemd unit: всеки ключ е в СВОЯТА секция', () => {
   const s = sections(read('deploy/vps-dashboard.service'));
@@ -84,19 +84,24 @@ test('systemd unit: RestrictSUIDSGID остава ИЗКЛЮЧЕН — инач�
   assert.match(txt, /var\/crash/, 'без конкретния случай коментарът е лозунг');
 });
 
-test('systemd unit: /root е с ЗАПИС, а не заключен от ProtectHome', () => {
+test('systemd unit: /root е с ЗАПИС — без ProtectHome, на всяка версия на systemd', () => {
   const s = sections(read('deploy/vps-dashboard.service'));
   const svc = s['[Service]'] || [];
-  const protectHome = svc.find((l) => l.startsWith('ProtectHome='))?.split('=')[1];
-  // `read-only` + `ReadWritePaths=/root` НЕ работи: при еднакви пътища systemd
-  // пази по-рестриктивния режим. Качването на архив тогава пада с EROFS, а
-  // autodeploy (който само чете) си върви — провал, който изглежда частичен.
-  if (protectHome === 'read-only' || protectHome === 'true' || protectHome === 'yes') {
-    assert.fail(`ProtectHome=${protectHome} прави /root само за четене — качването на архив ще пада с EROFS`);
+  const protectHome = svc.find((l) => l.startsWith('ProtectHome='))?.split('=')[1]?.trim();
+  // Платено два пъти: `read-only` + ReadWritePaths=/root не отваря /root (systemd
+  // 255 пази по-рестриктивния режим при еднакви пътища), а `tmpfs` + BindPaths=/root
+  // работи на 255, но на 257 (Debian 13) /root пак е ro — „Деплой от GitHub“
+  // падаше с `curl: (23) … ERROR on write`. Измерено с systemd като PID 1 на двете.
+  if (protectHome && !['false', 'no', '0', 'off'].includes(protectHome.toLowerCase())) {
+    assert.fail(`ProtectHome=${protectHome} прави /root само за четене на systemd 257 — деплоят и качването падат`);
   }
-  if (protectHome === 'tmpfs') {
-    assert.ok(svc.some((l) => l.startsWith('BindPaths=') && l.includes('/root')), 'ProtectHome=tmpfs иска BindPaths=/root, иначе папката е празна');
-  }
+  // Целта на ProtectHome се постига с по-тесни директиви: /home видима само за
+  // четене (пазачът на authorized_keys в /home/*/.ssh трябва да вижда), /run/user скрита.
+  assert.ok(svc.some((l) => /^BindReadOnlyPaths=.*-\/home\b/.test(l)), '/home трябва да е само за четене');
+  assert.ok(svc.some((l) => /^TemporaryFileSystem=.*\/run\/user/.test(l)), '/run/user трябва да е скрита');
+  assert.ok(!svc.some((l) => l.startsWith('BindPaths=') && /\/root\b/.test(l)), 'BindPaths=/root беше заобиколката за ProtectHome — без него е излишна');
+  // И причината е записана във файла, иначе някой ще го „втвърди“ обратно.
+  assert.match(read('deploy/vps-dashboard.service'), /systemd 257/);
 });
 
 test('nginx примерът позволява качването, което панелът рекламира', () => {

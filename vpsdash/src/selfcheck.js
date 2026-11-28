@@ -96,7 +96,10 @@ async function productChecks(cfg) {
   // nginx по домейн) — иначе двете места си противоречат за един и същ продукт.
   const results = await withTimeout(productHealth({ ...cfg, healthChecks: list.slice(0, 40) }), 9000, list.map((t) => ({ name: t.name, url: t.url, up: false, error: 'няма отговор за 9 s' })));
   const out = results.map((r) =>
-    r.up
+    r.up && r.redirect
+      ? warn('products', 'Пробата мери пренасочване, не продукта', `${r.name} · ${r.url} → ${r.status}${typeof r.redirect === 'string' ? ' ' + r.redirect : ''}`,
+          'Сложи в healthChecks адреса за здраве на продукта (напр. /healthz, /api/health) — иначе SLO-то и алармата за паднал сайт са винаги зелени, дори при мъртва база.')
+      : r.up
       ? ok('products', 'Продуктът отговаря', `${r.name} · ${r.url}`)
       : bad('products', 'Продуктът не отговаря', `${r.name} · ${r.url} · ${r.error || r.status || ''}`, 'Ако сайтът работи отвън, адресът за проверка е от старата машина — поправи порта в healthChecks.')
   );
