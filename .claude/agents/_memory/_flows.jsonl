@@ -1071,3 +1071,17 @@
 {"t":"handoff","ts":"2026-11-28T08:17:29.266Z","id":"r1df7db8e","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"beb244c9"}
 {"t":"handoff","ts":"2026-11-28T08:17:45.202Z","id":"r1df7db8e","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"5a8f87c2"}
 {"t":"handoff","ts":"2026-11-28T08:20:22.004Z","id":"r1df7db8e","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"deda54d2"}
+{"t":"start","ts":"2026-11-28T08:21:00.834Z","id":"r81a11ce7","flow":"авто","lead":"ai-studio","auto":true}
+{"t":"handoff","ts":"2026-11-28T08:21:00.834Z","id":"r81a11ce7","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"44f177da"}
+{"t":"handoff","ts":"2026-11-28T08:21:15.715Z","id":"r81a11ce7","from":"ai-studio","to":"човек","status":"има бележки","run":"df15128e"}
+{"t":"handoff","ts":"2026-11-28T08:22:31.856Z","id":"r81a11ce7","from":"ai-studio","to":"човек","status":"има бележки","run":"06d891f6"}
+{"t":"handoff","ts":"2026-11-28T08:22:49.921Z","id":"r81a11ce7","from":"ai-studio","to":"човек","status":"има бележки","run":"950684aa"}
+{"t":"handoff","ts":"2026-11-28T08:24:58.642Z","id":"r81a11ce7","from":"ai-studio","to":"socialdjiyata","status":"има бележки","run":"3a99aabb"}
+{"t":"start","ts":"2026-11-28T08:28:40.119Z","id":"r8c717581","flow":"авто","lead":"ai-studio","auto":true}
+{"t":"handoff","ts":"2026-11-28T08:28:40.119Z","id":"r8c717581","from":"ai-studio","to":"socialdjiyata","status":"наред","run":"c647db95"}
+{"t":"handoff","ts":"2026-11-28T08:28:40.217Z","id":"r8c717581","from":"ai-studio","to":"socialdjiyata","status":"наред","run":"f4cab313"}
+{"t":"handoff","ts":"2026-11-28T08:28:57.789Z","id":"r8c717581","from":"ai-studio","to":"socialdjiyata","status":"има бележки","run":"fbd65dd7"}
+{"t":"handoff","ts":"2026-11-28T08:29:05.566Z","id":"r8c717581","from":"ai-studio","to":"човек","status":"има бележки","run":"34cec39f"}
+{"t":"handoff","ts":"2026-11-28T08:29:09.459Z","id":"r8c717581","from":"ai-studio","to":"pravniyat-razbirach","status":"има бележки","run":"a3797d8b"}
+{"t":"start","ts":"2026-11-28T08:32:18.437Z","id":"rde01527a","flow":"авто","lead":"ai-studio","auto":true}
+{"t":"handoff","ts":"2026-11-28T08:32:18.437Z","id":"rde01527a","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"440672eb"}
