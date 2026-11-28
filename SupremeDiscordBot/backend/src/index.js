@@ -122,6 +122,7 @@ import archiveRouter from "./routes/archive.js";
 import supportRouter from "./routes/support.js";
 import backupsRouter from "./routes/backups.js";
 import botBackupsRouter from "./routes/bot_backups.js";
+import botSetupRouter from "./routes/bot_setup.js";
 import v1Router from "./routes/v1.js";
 import gdprRouter from "./routes/gdpr.js";
 import kbRouter from "./routes/kb.js";
@@ -396,6 +397,7 @@ app.use("/api/v1", v1Router);                 // v2.1 Public API (bearer-authed)
 app.use("/api/gdpr", gdprRouter);             // GDPR Articles 15, 17, 20 + DSA abuse reports
 app.use("/api/backups", backupsRouter);       // v57 резервни копия на сървъра (docs/BACKUP_SPEC.md)
 app.use("/api/bot", botBackupsRouter);        // v57 резервни копия — страната на бота (bot secret)
+app.use("/api/bot", botSetupRouter);          // /setup wizard → чернова на тикет панел (bot secret)
 
 // ── webhooksRouter е ПОСЛЕДЕН, и това е СЪЩЕСТВЕНО ──────────────────────────
 // Той се монтира на ГОЛ "/api" (маршрутите му са с форма /api/:serverId/webhooks,

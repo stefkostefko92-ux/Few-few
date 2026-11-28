@@ -35,7 +35,7 @@ export default {
     "/tag list": "Elenca tutte le risposte predefinite e quante volte è stata usata ciascuna.",
     "Reply with tag": "Scegli tra le 25 risposte più usate e pubblicala in questo canale.",
     "/panel spawn": "Pubblica nel canale corrente un pannello creato nella dashboard.",
-    "/setup wizard": "Procedura guidata di avvio rapido: scegli i ruoli di supporto, una categoria per i ticket e, se vuoi, un canale di log, poi crea il tuo primo pannello nella dashboard.",
+    "/setup wizard": "Procedura guidata di avvio rapido: scegli i ruoli di supporto, una categoria per i ticket e, se vuoi, un canale di log, poi crea con questi il tuo primo pannello ticket. Il pannello viene salvato ma non pubblicato; pubblicalo dalla dashboard o con /panel spawn.",
     "/setup sync": "Forza la sincronizzazione di tutti i pannelli pubblicati con la loro configurazione attuale nella dashboard.",
     "/form spawn": "Pubblica in questo canale un pulsante per un modulo di candidatura.",
     "/form review": "Approva o rifiuta manualmente una candidatura per ID. Stesso effetto dei pulsanti Approve/Deny nel messaggio di revisione.",

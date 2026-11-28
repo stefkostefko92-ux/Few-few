@@ -35,7 +35,7 @@ export default {
     "/tag list": "Toont alle standaardantwoorden en hoe vaak elk is gebruikt.",
     "Reply with tag": "Kies uit de 25 meestgebruikte antwoorden en plaats het in dit kanaal.",
     "/panel spawn": "Plaatst een in het dashboard gemaakt paneel in het huidige kanaal.",
-    "/setup wizard": "Interactieve snelstartwizard — kies supportrollen, een ticketcategorie en optioneel een logkanaal, en maak daarna je eerste paneel in het dashboard.",
+    "/setup wizard": "Interactieve snelstartwizard — kies supportrollen, een ticketcategorie en optioneel een logkanaal en maak daarmee je eerste ticketpanel. Het panel wordt opgeslagen maar niet geplaatst; plaats het via het dashboard of met /panel spawn.",
     "/setup sync": "Synchroniseert alle geplaatste panelen geforceerd met hun huidige dashboardinstellingen.",
     "/form spawn": "Plaatst in dit kanaal een knop voor een aanmeldformulier.",
     "/form review": "Keurt een aanmelding op ID handmatig goed of af. Zelfde effect als de knoppen Approve/Deny in het beoordelingsbericht.",

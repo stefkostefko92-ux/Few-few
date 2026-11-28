@@ -35,7 +35,7 @@ export default {
     "/tag list": "Liste toutes les réponses prédéfinies et combien de fois chacune a servi.",
     "Reply with tag": "Choisissez parmi les 25 réponses les plus utilisées et publiez-la dans ce salon.",
     "/panel spawn": "Publie dans le salon en cours un panneau créé dans le tableau de bord.",
-    "/setup wizard": "Assistant de démarrage interactif : choisissez les rôles de support, une catégorie de tickets et, en option, un salon de journal, puis créez votre premier panneau dans le tableau de bord.",
+    "/setup wizard": "Assistant interactif de démarrage rapide : choisissez les rôles de support, une catégorie de tickets et, en option, un salon de logs, puis créez avec eux votre premier panneau de tickets. Le panneau est enregistré mais pas publié ; publiez-le depuis le tableau de bord ou avec /panel spawn.",
     "/setup sync": "Force la synchronisation de tous les panneaux publiés avec leur configuration actuelle du tableau de bord.",
     "/form spawn": "Publie dans ce salon un bouton de formulaire de candidature.",
     "/form review": "Accepte ou refuse manuellement une candidature par ID. Même effet que les boutons Approve/Deny du message de revue.",

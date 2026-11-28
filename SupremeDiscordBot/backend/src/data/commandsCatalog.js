@@ -99,7 +99,7 @@ export const COMMAND_CATALOG = [
         dashboard: "Panels page · create/edit/spawn panels · configure categories, welcome messages, automation",
         permission: "Manage Server" },
       { name: "/setup wizard", signature: "/setup wizard",
-        description: "Interactive quick-start wizard — pick support roles, a ticket category, and an optional log channel, then jump to the dashboard to create your first panel.",
+        description: "Interactive quick-start wizard — pick support roles, a ticket category and an optional log channel, then create your first ticket panel with them. The panel is saved but not posted; post it from the dashboard or with /panel spawn.",
         dashboard: "Dashboard home shows setup progress",
         permission: "Manage Server" },
       { name: "/setup sync", signature: "/setup sync",

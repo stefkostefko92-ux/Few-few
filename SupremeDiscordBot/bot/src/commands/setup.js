@@ -8,7 +8,7 @@ import api from "../utils/api.js";
 import { buildPanelMessage } from "../utils/embed.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND, SUCCESS } from "../utils/colors.js";
-import { t, resolveLang } from "../i18n/index.js";
+import { t, resolveLang, resolveLangForGuild } from "../i18n/index.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 const DASHBOARD_URL = process.env.DASHBOARD_URL || "https://supremebot.carbonstealth.eu";
@@ -69,6 +69,8 @@ export default {
 };
 
 // ─── Quick Setup wizard (4 steps, all ephemeral) ──────────────────────────────
+// Последната стъпка записва избора като чернова на панел (28.11.2026; backend
+// routes/bot_setup.js). Досега съветникът само показваше избраното.
 // Session state lives in-memory keyed by `${guildId}:${userId}` — the wizard is
 // a short-lived, single-user flow, so no Redis needed (form sessions use Redis
 // because they cross DM/bot-restart boundaries; this doesn't).
@@ -77,6 +79,12 @@ const WIZARD_TTL = 10 * 60 * 1000; // 10 минути
 
 function sessionKey(interaction) {
   return `${interaction.guildId}:${interaction.user.id}`;
+}
+
+/** Само съществуваща и неизтекла сесия — за последната стъпка (без нова празна). */
+function peekSession(interaction) {
+  const s = wizardSessions.get(sessionKey(interaction));
+  return s && s.expiresAt > Date.now() ? s : null;
 }
 
 function getSession(interaction) {
@@ -121,11 +129,13 @@ export async function handleSetupComponent(interaction) {
     return interaction.reply({ content: t("setup.noPermissionShort", lang), flags: MessageFlags.Ephemeral });
   }
 
-  const session = getSession(interaction);
   const id = interaction.customId;
+  if (id === "setup:wizard:finish") return finishWizard(interaction, lang);
+  const session = getSession(interaction);
 
   if (id === "setup:wizard:roles") {
-    session.roleIds = interaction.values || [];
+    // @everyone има ID-то на сървъра — като роля за поддръжка би показал тикетите на всички.
+    session.roleIds = (interaction.values || []).filter((r) => r !== interaction.guildId);
     return interaction.update(buildStep2(lang));
   }
 
@@ -145,16 +155,61 @@ export async function handleSetupComponent(interaction) {
     return interaction.update(buildStep4(interaction, session, lang));
   }
 
-  if (id === "setup:wizard:finish") {
-    wizardSessions.delete(sessionKey(interaction));
-    return interaction.update({
-      embeds: [{
-        title: t("setup.done.title", lang),
-        description: t("setup.done.body", lang),
-        color: SUCCESS,
-      }],
+}
+
+function dashboardRow(interaction, lang) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel(t("setup.openDashboard", lang))
+      .setURL(`${DASHBOARD_URL}/dashboard/${interaction.guildId}/panels`),
+  );
+}
+
+/**
+ * „Създай панел“ — записва избора като ЧЕРНОВА на панел (не се публикува).
+ * Сесията се маха ПРЕДИ заявката: второ натискане (или изтекла сесия) не прави втори панел.
+ * Текстовете на панела са на езика на сървъра — членовете ги четат, не само този, който настройва.
+ */
+async function finishWizard(interaction, lang) {
+  const session = peekSession(interaction);
+  wizardSessions.delete(sessionKey(interaction));
+  await interaction.deferUpdate();
+  if (!session) {
+    return interaction.editReply({
+      embeds: [{ title: t("setup.step1.title", lang), description: t("setup.expired", lang), color: BRAND }],
       components: [],
     });
+  }
+  const panelLang = await resolveLangForGuild(interaction.guildId);
+  try {
+    const { data } = await api.post(`/bot/setup-wizard/${interaction.guildId}`, {
+      userId: interaction.user.id,
+      roleIds: session.roleIds,
+      categoryId: session.categoryId,
+      logChannelId: session.logChannelId,
+      name: t("setup.panel.name", panelLang),
+      title: t("setup.panel.title", panelLang),
+      description: t("setup.panel.description", panelLang),
+      buttonLabel: t("setup.panel.button", panelLang),
+    });
+    return interaction.editReply({
+      embeds: [{
+        title: t("setup.done.title", lang),
+        description: t("setup.done.body", lang, { name: data?.name || t("setup.panel.name", panelLang) }),
+        color: SUCCESS,
+      }],
+      components: [dashboardRow(interaction, lang)],
+    });
+  } catch (err) {
+    const body = err?.response?.data;
+    if (err?.response?.status === 403 && body?.code === "LIMIT_REACHED") {
+      return interaction.editReply({
+        embeds: [{ title: t("setup.limit.title", lang), description: t("setup.limit.body", lang, { limit: body.limit }), color: BRAND }],
+        components: [dashboardRow(interaction, lang)],
+      });
+    }
+    return interaction.editReply({ content: friendlyError(err, interaction), embeds: [], components: [] });
   }
 }
 
@@ -234,11 +289,11 @@ function buildStep4(interaction, session, lang) {
   ].join("\n");
 
   const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId("setup:wizard:finish").setLabel(t("setup.doneButton", lang)).setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setStyle(ButtonStyle.Link)
-      .setLabel("Create Panel on Dashboard")
+      .setLabel(t("setup.openDashboard", lang))
       .setURL(`${DASHBOARD_URL}/dashboard/${interaction.guildId}/panels`),
-    new ButtonBuilder().setCustomId("setup:wizard:finish").setLabel(t("setup.doneButton", lang)).setStyle(ButtonStyle.Success),
   );
 
   return {

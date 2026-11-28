@@ -126,14 +126,17 @@ export const DOCS_PAGES = [
           "Which roles should work on tickets (up to 5; you can skip)",
           "Which category new ticket channels should go in (you can skip)",
           "Which channel should receive a log of ticket events (you can skip)",
-          "A summary with a Create Panel on Dashboard button",
+          "A summary with a Create panel button. It saves your choices as a new ticket panel",
         ],
-        note: "The wizard does not save anything. It is a checklist: you enter the same choices when you create the panel in the next step. The wizard session ends after 10 minutes.",
+        note: "Create panel saves a panel named Support with your roles, category and log channel. It is not posted yet: change its text in the next step and post it. If your plan already has its maximum number of panels, nothing is created and you edit the existing panel instead. The wizard session ends after 10 minutes.",
       },
       {
         id: "first-panel",
         heading: "4. Create your first ticket panel",
-        body: ["A panel is the message with the button members click to open a ticket."],
+        body: [
+          "A panel is the message with the button members click to open a ticket.",
+          "If you pressed Create panel in the quick setup, the panel already exists under Support → Panels. Open it, check the text, and go to step 5.",
+        ],
         steps: [
           "In the dashboard, open your server and choose Support → Panels, then click New panel.",
           "Fill in Internal name (only staff see it), Embed title and Embed description. These are the words members read above the button.",
