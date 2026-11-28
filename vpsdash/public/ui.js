@@ -430,3 +430,46 @@ export function toast(msg, kind = 'ok') {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.add('hidden'), 4000);
 }
+
+// Изходът на задачите е ЦВЕТЕН: autodeploy.sh, fetch-deploy.sh и apt оцветяват
+// ✔/✘/▸ с ANSI. Чрез `textContent` кодовете излизаха сурово („[1;36m▸ Свалям…[0m",
+// видяно в лабораторията) точно на екрана, който човек чете по време на деплой.
+// Само цветовете на значението (червено/зелено/кехлибар); всичко друго се маха.
+// Текстът влиза като текстов възел — нула HTML от изхода на чужда програма.
+const SGR_CLASS = { 31: 'ansi-bad', 91: 'ansi-bad', 32: 'ansi-ok', 92: 'ansi-ok', 33: 'ansi-warn', 93: 'ansi-warn' };
+export function ansiAppender(out, doc = globalThis.document) {
+  let carry = '';
+  let cls = '';
+  const push = (text) => {
+    if (!text) return;
+    if (!cls) return out.appendChild(doc.createTextNode(text));
+    const sp = doc.createElement('span');
+    sp.className = cls;
+    sp.textContent = text;
+    out.appendChild(sp);
+  };
+  return (chunk) => {
+    let s = carry + String(chunk);
+    carry = '';
+    // Последователност, срязана между две парчета от потока, чака следващото.
+    const tail = /\x1b(\[[0-9;?]*)?$/.exec(s);
+    if (tail) {
+      carry = tail[0];
+      s = s.slice(0, tail.index);
+    }
+    const re = /\x1b\[([0-9;?]*)([A-Za-z])|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g;
+    let last = 0;
+    let m;
+    while ((m = re.exec(s))) {
+      push(s.slice(last, m.index));
+      last = re.lastIndex;
+      if (m[2] === 'm') {
+        for (const c of (m[1] || '0').split(';').map(Number)) {
+          if (c === 0 || c === 39) cls = '';
+          else if (SGR_CLASS[c]) cls = SGR_CLASS[c];
+        }
+      }
+    }
+    push(s.slice(last));
+  };
+}

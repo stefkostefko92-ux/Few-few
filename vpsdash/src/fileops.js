@@ -21,7 +21,7 @@ import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { run } from './exec.js';
 import { CONFIG_PATH } from './config.js';
-import { isSensitive as isSecretFile, secretDirs as panelSecretDirs } from './files.js';
+import { isSensitive as isSecretFile, secretDirs as panelSecretDirs, resolveLinks } from './files.js';
 
 const PANEL_DIR = path.resolve(import.meta.dirname, '..');
 
@@ -61,13 +61,38 @@ function ownDirs(cfg) {
   return [PANEL_DIR, path.dirname(path.resolve(CONFIG_PATH)), cfg?.paths?.stateDir, trashDir(cfg)].filter(Boolean).map((d) => path.resolve(d));
 }
 
+// Истинските форми на пътя. Проверката по ТЕКСТ на пътя не вижда символните
+// връзки: папка на продукт с връзка към /etc прави `<връзка>/shadow` „обикновен"
+// файл, а кошчето премества истинския /etc/shadow. Затова правилата важат и за
+// пътя през връзките на ПАПКАТА; последното име не се следва (rename/кошче местят
+// самата връзка, не целта) — освен при права и собственик (`follow`): chmod и
+// chown минават през връзката до целта.
+// `resolveLinks` минава и през висящи връзки и несъществуваща опашка — иначе път
+// през връзка към още несъществуваща папка (`<връзка>/ssh/нов`) минава като текст.
+function realForms(full, follow) {
+  const out = [full, full === '/' ? '/' : path.join(resolveLinks(path.dirname(full)), path.basename(full))];
+  if (follow) out.push(resolveLinks(full));
+  return [...new Set(out)];
+}
+
 // Може ли това да се ТРИЕ/МЕСТИ/да му се сменят правата.
-export function assertMutable(p, cfg) {
+export function assertMutable(p, cfg, { follow = false } = {}) {
   const full = resolvePath(p);
-  if (full.split('/').filter(Boolean).length < 2) throw err(`Папка от най-горно ниво (${full}) не се пипа оттук.`, 403);
-  if (HARD_DENY.some((r) => under(full, r))) throw err(`Системен път (${full}) — не се пипа от панела.`, 403);
-  if (CRITICAL.includes(full)) throw err(`Критичен файл (${full}) — само редакция с копие, не триене, местене или права.`, 403);
-  if (ownDirs(cfg).some((r) => under(full, r))) throw err(`Това са файловете на самия панел (${full}).`, 403);
+  for (const f of realForms(full, follow)) {
+    if (f.split('/').filter(Boolean).length < 2) throw err(`Папка от най-горно ниво (${f}) не се пипа оттук.`, 403);
+    if (HARD_DENY.some((r) => under(f, r))) throw err(`Системен път (${f}) — не се пипа от панела.`, 403);
+    // under(), не точно съвпадение: децата на /etc/ssh, /root/.ssh и /etc/sudoers.d
+    // (частните ключове на хоста и на root, sudo редовете) минаваха — само
+    // `create` ги пазеше с under() (червен екип, Разбивача 28.11).
+    if (CRITICAL.some((r) => under(f, r))) throw err(`Критичен файл (${f}) — само редакция с копие, не триене, местене или права.`, 403);
+    if (ownDirs(cfg).some((r) => under(f, r))) throw err(`Това са файловете на самия панел (${f}).`, 403);
+    // И РОДИТЕЛИТЕ им: правилата пазеха само пътищата ПОД защитените, затова
+    // „Изтрий завинаги" върху /var/lib пускаше `rm -rf /var/lib` — dpkg, apt,
+    // docker, state и кошчето на панела наведнъж (Кодаджията 28.11).
+    if ([...HARD_DENY, ...CRITICAL, ...ownDirs(cfg)].some((r) => r !== f && under(r, f))) {
+      throw err(`Вътре в ${f} има защитен път — папката не се трие, мести и не ѝ се сменят правата оттук.`, 403);
+    }
+  }
   return full;
 }
 
@@ -79,9 +104,12 @@ const CRITICAL_DIRS = ['/etc/sudoers.d', '/etc/ssh', '/root/.ssh'];
 export function assertCreatable(p, cfg) {
   const full = resolvePath(p);
   if (full === '/') throw err('Коренът не е място за файлове.');
-  if (HARD_DENY.some((r) => under(full, r))) throw err(`Системен път (${full}) — не се пише от панела.`, 403);
-  if (CRITICAL_DIRS.some((r) => under(full, r))) throw err(`Тук (${full}) нов файл променя достъпа до машината — не оттук.`, 403);
-  if (ownDirs(cfg).some((r) => under(full, r))) throw err(`Това са файловете на самия панел (${full}).`, 403);
+  for (const f of realForms(full, false)) {
+    if (f === '/') throw err('Коренът не е място за файлове.');
+    if (HARD_DENY.some((r) => under(f, r))) throw err(`Системен път (${f}) — не се пише от панела.`, 403);
+    if (CRITICAL_DIRS.some((r) => under(f, r))) throw err(`Тук (${f}) нов файл променя достъпа до машината — не оттук.`, 403);
+    if (ownDirs(cfg).some((r) => under(f, r))) throw err(`Това са файловете на самия панел (${f}).`, 403);
+  }
   return full;
 }
 
@@ -192,12 +220,14 @@ export function receiveUpload(req, cfg, dir, name, { overwrite = false } = {}, a
   const base = assertName(name);
   const parent = assertCreatable(dir, cfg);
   const finalPath = path.join(parent, base);
-  const tmpPath = `${finalPath}.csd-part-${process.pid}`;
+  // Случаен суфикс + `wx`: две паралелни качвания на едно име иначе пишеха в ЕДИН
+  // временен файл и второто тихо презаписваше първото.
+  const tmpPath = `${finalPath}.csd-part-${process.pid}-${crypto.randomBytes(6).toString('hex')}`;
   const maxBytes = Number(cfg.uploads?.maxBytes) || 3 * 1024 ** 3;
   if (!fs.existsSync(parent) || !fs.statSync(parent).isDirectory()) throw err('Папката не съществува');
   if (fs.existsSync(finalPath) && !overwrite) throw err('Файл с това име вече има — избери „замени", за да отиде старият в кошчето.', 409);
   return new Promise((resolve, reject) => {
-    const out = fs.createWriteStream(tmpPath, { mode: 0o644 });
+    const out = fs.createWriteStream(tmpPath, { mode: 0o644, flags: 'wx' });
     const hash = crypto.createHash('sha256');
     let size = 0;
     let failed = false;
@@ -287,8 +317,10 @@ export async function moveAny(src, dst, cfg) {
     throw err(`cp не мина: ${(cp.stderr || '').slice(0, 160)}`, 500);
   }
   const rm = await run('rm', ['-rf', '--', src], { timeout: 10 * 60 * 1000 });
-  // Копието е цяло, оригиналът е останал: нищо не е загубено, но се КАЗВА.
-  if (!rm.ok) throw err(`Копието е готово, но оригиналът не се изтри: ${(rm.stderr || '').slice(0, 160)}`, 500);
+  // Копието е цяло, а от оригинала е останала ЧАСТ: `rm -rf` трие каквото може и
+  // спира на първия упорит файл (`chattr +i`, зает mount). `copied` казва на
+  // извикващия, че копието е ЕДИНСТВЕНОТО цяло — не се трие при отката.
+  if (!rm.ok) throw Object.assign(err(`Копието е готово, но оригиналът не се изтри докрай: ${(rm.stderr || '').slice(0, 160)}`, 500), { copied: true });
   return { crossDevice: true, sizeBytes: size };
 }
 
@@ -336,7 +368,7 @@ export function trashDir(cfg) {
 }
 const ID_RX = /^[a-z0-9]{8,40}$/;
 
-export async function toTrash(p, cfg, audit, user, { reason = '' } = {}) {
+export async function toTrash(p, cfg, audit, user, { reason = '', move = moveAny } = {}) {
   const full = assertMutable(p, cfg);
   if (!fs.existsSync(full) && !isLink(full)) throw err('Няма такъв файл', 404);
   const dir = trashDir(cfg);
@@ -346,15 +378,24 @@ export async function toTrash(p, cfg, audit, user, { reason = '' } = {}) {
   fs.mkdirSync(slot, { mode: 0o700 });
   const st = fs.lstatSync(full);
   let how;
+  let partial = null;
   try {
-    how = await moveAny(full, path.join(slot, 'item'), cfg);
+    how = await move(full, path.join(slot, 'item'), cfg);
   } catch (e) {
-    fs.rmSync(slot, { recursive: true, force: true });
-    throw e;
+    // Цялото копие е вече в слота, а от оригинала е останала част: изтриването на
+    // слота тук губеше ЕДИНСТВЕНОТО пълно копие (доказано с `chattr +i` през два
+    // дяла). Записът остава в кошчето и се казва какво е останало на мястото.
+    if (!e.copied) {
+      fs.rmSync(slot, { recursive: true, force: true });
+      throw e;
+    }
+    how = { crossDevice: true };
+    partial = e.message;
   }
   const meta = { id, path: full, isDir: st.isDirectory(), sizeBytes: st.isDirectory() ? null : st.size, deletedAt: new Date().toISOString(), user, reason, crossDevice: how.crossDevice };
+  if (partial) meta.warning = `Пълното копие е в кошчето, но част от оригинала остана на мястото — провери го (${partial.slice(0, 120)}).`;
   fs.writeFileSync(path.join(slot, 'meta.json'), JSON.stringify(meta), { mode: 0o600 });
-  audit.log({ action: 'file.trash', path: full, id, user });
+  audit.log({ action: 'file.trash', path: full, id, partial: Boolean(partial), user });
   return meta;
 }
 
@@ -371,7 +412,15 @@ export async function trashList(cfg) {
     try {
       items.push(JSON.parse(fs.readFileSync(path.join(dir, id, 'meta.json'), 'utf8')));
     } catch {
-      items.push({ id, path: '?', broken: true });
+      // Без meta.json няма `deletedAt` — без часа на папката такъв запис не
+      // изтичаше НИКОГА и трупаше място вечно.
+      let mtime = null;
+      try {
+        mtime = fs.statSync(path.join(dir, id)).mtime.toISOString();
+      } catch {
+        /* изчезнал междувременно */
+      }
+      items.push({ id, path: '?', broken: true, mtime });
     }
   }
   // Размерът на папките — с един `du` за всички, не по едно на ред.
@@ -407,6 +456,8 @@ export async function trashPurge(id, cfg, audit, user) {
   const dir = trashDir(cfg);
   const targets = id === 'all' ? fs.readdirSync(dir).filter((d) => ID_RX.test(d)) : [String(id)];
   if (!targets.every((t) => ID_RX.test(t))) throw err('Невалиден запис');
+  // `rm -rf` на несъществуващо излиза с 0 — иначе „изтрит 1" за запис, който го няма.
+  if (id !== 'all' && !fs.existsSync(path.join(dir, targets[0]))) throw err('Няма такъв запис в кошчето.', 404);
   const r = await run('rm', ['-rf', '--', ...targets.map((t) => path.join(dir, t))], { timeout: 10 * 60 * 1000 });
   if (!r.ok) throw err(`rm не мина: ${(r.stderr || '').slice(0, 160)}`, 500);
   audit.log({ action: 'file.trashPurge', count: targets.length, scope: id === 'all' ? 'all' : 'one', user });
@@ -422,12 +473,15 @@ export function trashDays(cfg) {
 export async function trashExpire(cfg, audit, now = Date.now()) {
   const days = trashDays(cfg);
   const { items } = await trashList(cfg);
-  const old = items.filter((i) => i.deletedAt && now - Date.parse(i.deletedAt) > days * 86400000).map((i) => i.id);
+  const when = (i) => Date.parse(i.deletedAt || i.mtime || '');
+  const old = items.filter((i) => Number.isFinite(when(i)) && now - when(i) > days * 86400000).map((i) => i.id);
   if (!old.length) return { purged: 0 };
   const dir = trashDir(cfg);
-  await run('rm', ['-rf', '--', ...old.map((t) => path.join(dir, t))], { timeout: 10 * 60 * 1000 });
-  audit?.log?.({ action: 'file.trashExpire', count: old.length, days });
-  return { purged: old.length };
+  const r = await run('rm', ['-rf', '--', ...old.map((t) => path.join(dir, t))], { timeout: 10 * 60 * 1000 });
+  // Одитът пише какво СТАНА: провален rm не е „изтекли N".
+  const left = old.filter((t) => fs.existsSync(path.join(dir, t))).length;
+  audit?.log?.({ action: 'file.trashExpire', count: old.length - left, failed: left || undefined, days, ...(r.ok ? {} : { error: (r.stderr || '').slice(0, 160) }) });
+  return { purged: old.length - left, failed: left };
 }
 
 // Окончателно — без кошче. За файлове на друг дял или когато мястото трябва СЕГА.
@@ -446,7 +500,7 @@ const MODE_RX = /^[01]?[0-7]{3}$/;
 const OWNER_RX = /^([a-z_][a-z0-9_.-]{0,31}|\d{1,10})$/;
 
 export async function chmod(p, mode, { recursive = false } = {}, cfg, audit, user) {
-  const full = assertMutable(p, cfg);
+  const full = assertMutable(p, cfg, { follow: true });
   const m = String(mode ?? '');
   if (!MODE_RX.test(m)) throw err('Правата са 3 цифри (напр. 644, 755); setuid/setgid не се дават оттук.');
   const r = await run('chmod', [...(recursive ? ['-R'] : []), m, '--', full], { timeout: 5 * 60 * 1000 });
@@ -456,7 +510,7 @@ export async function chmod(p, mode, { recursive = false } = {}, cfg, audit, use
 }
 
 export async function chown(p, owner, group, { recursive = false } = {}, cfg, audit, user) {
-  const full = assertMutable(p, cfg);
+  const full = assertMutable(p, cfg, { follow: true });
   const o = String(owner ?? '');
   const g = String(group ?? '');
   if (!OWNER_RX.test(o) || (g && !OWNER_RX.test(g))) throw err('Невалиден потребител или група');
@@ -583,6 +637,20 @@ export function archiveSpec(paths, cfg) {
 }
 
 const ARCHIVE_RX = /\.(tar\.gz|tgz|tar\.xz|txz|tar\.bz2|tar|zip)$/i;
+// Като root GNU tar пази режима ОТ АРХИВА: член с uid 0 и 4755 излиза setuid-root
+// (`--no-same-owner` не помага — собственикът и без това е root), а блоково
+// устройство излиза `666` — суров достъп до диска за всеки локален потребител
+// (Кодаджията 28.11, проверено с tar 1.35). `--no-same-permissions` маха setuid;
+// устройствата и FIFO се отказват ПРЕДИ първия байт по списъка (`tar -tv`: първият
+// знак е типът). unzip маха setuid сам, устройства в zip няма.
+export const TAR_SAFE_SH = [
+  'if tar -tvf "$1" | grep -q "^[bcp]"; then',
+  '  echo "✘ Архивът съдържа файлове на устройства или FIFO — не се разархивира оттук." >&2',
+  '  exit 3',
+  'fi',
+  'exec tar -xf "$1" -C "$2" --no-same-owner --no-same-permissions',
+].join('\n');
+
 export function extractSpec(archive, cfg) {
   const src = resolvePath(archive);
   if (!ARCHIVE_RX.test(src)) throw err('Поддържани: .tar.gz .tgz .tar.xz .tar.bz2 .tar .zip');
@@ -594,9 +662,10 @@ export function extractSpec(archive, cfg) {
   for (let i = 2; fs.existsSync(dest); i++) dest = path.join(path.dirname(src), `${stem}-${i}`);
   assertCreatable(dest, cfg);
   const isZip = /\.zip$/i.test(src);
-  // tar маха водещо „/" и „../" от имената сам; --no-same-owner — файловете са на root, не на чужд uid от архива.
-  const args = isZip ? ['-q', src, '-d', dest] : ['-xf', src, '-C', dest, '--no-same-owner'];
-  return { title: `Разархивиране → ${dest}`, cmd: isZip ? 'unzip' : 'tar', args, timeoutMs: 6 * 3600 * 1000, dest, mkdirFirst: !isZip };
+  // tar маха водещо „/" и „../" от имената сам; --no-same-owner — файловете са на
+  // root, не на чужд uid от архива. Пътищата влизат като аргументи ($1 $2), не в скрипта.
+  if (isZip) return { title: `Разархивиране → ${dest}`, cmd: 'unzip', args: ['-q', src, '-d', dest], timeoutMs: 6 * 3600 * 1000, dest, mkdirFirst: false };
+  return { title: `Разархивиране → ${dest}`, cmd: 'bash', args: ['-c', TAR_SAFE_SH, 'extract', src, dest], timeoutMs: 6 * 3600 * 1000, dest, mkdirFirst: true };
 }
 
 // ── Сваляне ─────────────────────────────────────────────────────────────────
@@ -608,10 +677,14 @@ export function extractSpec(archive, cfg) {
 const NO_DOWNLOAD = ['/proc', '/sys', '/dev', '/run'];
 export function downloadPlan(p, { isSensitive = isSecretFile, secretDirs = panelSecretDirs() } = {}) {
   const full = resolvePath(p);
-  if (full === '/' || NO_DOWNLOAD.some((r) => under(full, r))) throw err('Системен път — не се сваля оттук.', 403);
-  if (isSensitive?.(full)) throw err('Този файл съдържа тайните на панела — не се сваля оттук.', 403);
   const secrets = secretDirs.map((d) => path.resolve(d));
-  if (secrets.some((d) => under(full, d))) throw err('Тук са тайните на панела — не се сваля оттук.', 403);
+  // И през символна връзка: файлът се чете със `createReadStream`, който я
+  // следва — връзка към config.json иначе изнася тайните под чуждо име.
+  for (const f of realForms(full, true)) {
+    if (f === '/' || NO_DOWNLOAD.some((r) => under(f, r))) throw err('Системен път — не се сваля оттук.', 403);
+    if (isSensitive?.(f)) throw err('Този файл съдържа тайните на панела — не се сваля оттук.', 403);
+    if (secrets.some((d) => under(f, d))) throw err('Тук са тайните на панела — не се сваля оттук.', 403);
+  }
   const st = fs.statSync(full);
   if (st.isDirectory()) {
     // По-горна папка (/etc) — без тайните. tar сравнява с имената В архива, а те
@@ -631,11 +704,26 @@ export function streamDownload(plan, res) {
     // --one-file-system: без /proc на контейнери, tmpfs и чужди дискове отдолу.
     const args = ['-czf', '-', '--one-file-system', ...plan.excludes.map((x) => `--exclude=${x}`), '-C', path.dirname(plan.path), '--', plan.name];
     const child = spawn('tar', args, { stdio: ['ignore', 'pipe', 'ignore'] });
-    child.stdout.pipe(res);
+    // Без слушател за 'error' липсващ tar ставаше uncaughtException → server.js
+    // вика process.exit(1) и рестартът убива текущите задачи (apt по средата на
+    // dpkg). Провал по средата РЯЗВА връзката: отрязан .tar.gz със статус 200
+    // браузърът записва като успешно свален. Код 1 = „файлът се промени, докато
+    // го четях" — безвреден.
+    // `end: false` — краят на тялото го решава изходният код, не краят на потока:
+    // иначе pipe() затваря отговора чисто, преди да знаем, че tar е паднал.
+    child.on('error', () => res.destroy());
+    child.on('close', (code) => {
+      if (code === 0 || code === 1) res.end();
+      else res.destroy();
+    });
+    child.stdout.pipe(res, { end: false });
     res.on('close', () => child.kill('SIGTERM'));
     return plan;
   }
   res.writeHead(200, { 'content-type': 'application/octet-stream', 'content-length': plan.sizeBytes, 'content-disposition': disp(plan.name), 'cache-control': 'no-store' });
-  fs.createReadStream(plan.path).pipe(res);
+  // Изтрит между stat и отварянето (ротация на лог), EIO от болен диск — само тази връзка пада.
+  const rs = fs.createReadStream(plan.path);
+  rs.on('error', () => res.destroy());
+  rs.pipe(res);
   return plan;
 }

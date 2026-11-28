@@ -87,7 +87,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.17.2';
+export const VERSION = '1.18.0';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -483,10 +483,14 @@ export function buildRouter(ctx) {
   }
 
   // ── Вход/сесия ─────────────────────────────────────────────────────────────
+  // `app` е маркерът за идентичност — и в отказа. Без него сондата на деплоя
+  // приемаше ВСЕКИ 401 на порта за „панелът е жив" (всяко приложение с вход
+  // минава; поука на Наблюдателя). Името на продукта не е тайна — формата за
+  // вход на `/` го казва и без това.
   r.get('/api/ping', (req, res) => {
     const who = auth(req);
-    if (!who) return sendError(res, 401, 'unauthorized');
-    sendJson(res, 200, { ok: true, nodeId: cfg.nodeId, nodeName: cfg.nodeName, version: VERSION, instance: nodes.INSTANCE });
+    if (!who) return sendJson(res, 401, { error: 'unauthorized', app: 'vps-dashboard' });
+    sendJson(res, 200, { ok: true, app: 'vps-dashboard', nodeId: cfg.nodeId, nodeName: cfg.nodeName, version: VERSION, instance: nodes.INSTANCE });
   });
 
   r.post('/api/login', async (req, res) => {
@@ -978,6 +982,19 @@ export function buildRouter(ctx) {
       J(async (req) => {
         const b = await readJson(req);
         const spec = deploy.deploySpec(cfg, b);
+        return jobs.start(spec, { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
+
+  r.post(
+    '/api/deploy/fetch',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        const spec = deploy.fetchDeploySpec(cfg, { ref: b.ref, projects: b.projects, allowRefSwitch: b.allowRefSwitch === true });
+        audit.log({ action: 'deploy.fetch', ref: spec.env.REF, projects: spec.env.PROJECTS || 'всички', refSwitch: Boolean(spec.env.ALLOW_REF_SWITCH), user: req.user });
         return jobs.start(spec, { user: req.user });
       }),
       { mutating: true }
@@ -2752,7 +2769,17 @@ export function buildRouter(ctx) {
   );
   r.post('/api/machine/ssh-keys/add', guard(J(async (req) => machine.addKey((await readJson(req)).key, cfg, audit, req.user)), { mutating: true }));
   r.post('/api/machine/ssh-keys/remove', guard(J(async (req) => machine.removeKey((await readJson(req)).fingerprint, cfg, audit, req.user)), { mutating: true }));
-  r.post('/api/machine/packages/install', guard(J(async (req) => jobs.start(machine.installSpec((await readJson(req)).name), { user: req.user })), { mutating: true }));
+  r.get('/api/machine/packages/install-plan', guard(J((req, res, p, url) => machine.installPlan(url.searchParams.get('name')))));
+  r.post(
+    '/api/machine/packages/install',
+    guard(
+      J(async (req) => {
+        const b = await readJson(req);
+        return jobs.start(await machine.installPlanned(b.name, b.expect), { user: req.user });
+      }),
+      { mutating: true }
+    )
+  );
   r.post(
     '/api/machine/packages/remove',
     guard(

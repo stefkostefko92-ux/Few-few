@@ -50,7 +50,7 @@ export const SUDO_ON_WRITE = [
   // Възстановяването на том изтрива текущото съдържание и излива старо върху
   // него — същият клас необратимост като възстановяването на база.
   /^\/api\/volumes\/restore\/apply$/,
-  /^\/api\/deploy\/(run|rollback)$/,
+  /^\/api\/deploy\/(run|rollback|fetch)$/,
   /^\/api\/env\/file$/, // запис на тайни на продукцията
   /^\/api\/agents\/tools\/run$/,
   /^\/api\/firewall\//,

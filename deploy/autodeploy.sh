@@ -1853,6 +1853,15 @@ deploy_vpsdashboard() {
   if [ "$code" = "403" ] && printf '%s' "$body" | grep -q 'Достъпът от този адрес не е разрешен'; then
     code="403 (allowIps)"
   fi
+  # 401/200 се броят само с маркера на панела: иначе всяко приложение с вход на
+  # този порт минава за „vps-dashboard е жив" (поука на Наблюдателя). Изисква се
+  # САМО когато разгърнатият код го носи — връщане назад към release отпреди
+  # маркера (1.18) иначе винаги би „паднало" и панелът не би се върнал никога.
+  if grep -q "app: 'vps-dashboard'" "$VPSDASH_DIR/src/routes.js" 2>/dev/null; then
+    case "$code" in
+      401|200) printf '%s' "$body" | grep -q '"app":"vps-dashboard"' || code="$code (без маркера на панела — отговаря нещо друго)" ;;
+    esac
+  fi
   if [ "$code" = "401" ] || [ "$code" = "200" ] || [ "$code" = "403 (allowIps)" ]; then
     ok "vps-dashboard е жив ($VPSDASH_HEALTH_URL → $code)"
     rm -rf "${VPSDASH_DIR}.bak-$TS"

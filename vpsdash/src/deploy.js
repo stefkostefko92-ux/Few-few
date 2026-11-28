@@ -73,7 +73,7 @@ export function deployState(cfg) {
   } catch {
     /* ок */
   }
-  return { releases, current, archives, knownProjects: KNOWN_PROJECTS };
+  return { releases, current, archives, knownProjects: KNOWN_PROJECTS, fetchDeploy: Boolean(fetchDeployScript(cfg)) };
 }
 
 export function autodeployScript(cfg) {
@@ -112,6 +112,60 @@ export function deploySpec(cfg, { projects, archive, forceSeed }) {
   env.CSD_SELF_DEPLOY = '1';
   return {
     title: `Деплой (${env.PROJECTS || 'всички проекти'})`,
+    cmd: 'bash',
+    args: [script],
+    env,
+    exclusive: 'system',
+    timeoutMs: 60 * 60 * 1000,
+  };
+}
+
+// ── Деплой от GitHub — каноничният път, без SSH ───────────────────────────────
+// Панелът пуска СЪЩИЯ `deploy/fetch-deploy.sh` като човека по SSH: сървърът сам
+// тегли архива за точен ref, проверява, че е нашето репо, пише sha256 и предава
+// на autodeploy.sh. Досега от панела ставаше само деплой на качен архив — тоест
+// всеки деплой по канона минаваше през SSH (и от телефон — никак).
+//
+// Ref-ът влиза в URL и в име на файл: правилото е буквално това на
+// fetch-deploy.sh (validate_ref), за да откаже ТУК, преди задачата да тръгне.
+// Отгоре: `pull/` и `refs/` — codeload сервира и PR от ЧУЖДИ форкове през
+// нашето репо, тоест такъв ref е чужд код, пуснат като root.
+export const REF_RX = /^[A-Za-z0-9._/-]{1,200}$/;
+export function assertRef(ref) {
+  const r = String(ref ?? '').trim() || 'main';
+  if (!REF_RX.test(r) || r.includes('..') || r.startsWith('-') || r.startsWith('/')) {
+    throw Object.assign(new Error('Невалиден ref — позволени са A-Z a-z 0-9 . _ / - (до 200), без „..“ и без водещо „-“.'), { status: 400 });
+  }
+  if (/^(refs|pull)\//i.test(r)) {
+    throw Object.assign(new Error('Ref от PR (pull/…, refs/…) може да е код от чужд форк — не се деплойва оттук. Слей го в main.'), { status: 400 });
+  }
+  return r;
+}
+
+export function fetchDeployScript(cfg) {
+  if (cfg.paths.fetchDeploy) return cfg.paths.fetchDeploy;
+  const fromCurrent = path.join(cfg.paths.currentLink, 'deploy', 'fetch-deploy.sh');
+  return fs.existsSync(fromCurrent) ? fromCurrent : null;
+}
+
+export function fetchDeploySpec(cfg, { ref, projects, allowRefSwitch = false } = {}) {
+  const script = fetchDeployScript(cfg);
+  if (!script) {
+    throw Object.assign(new Error('Няма deploy/fetch-deploy.sh в текущия release — пусни fetch-deploy.sh веднъж по SSH (виж deploy/README.md).'), { status: 400 });
+  }
+  const env = { REF: assertRef(ref), CSD_SELF_DEPLOY: '1' };
+  if (Array.isArray(projects) && projects.length) {
+    if (projects.length > KNOWN_PROJECTS.length) throw Object.assign(new Error('Твърде много проекти.'), { status: 400 });
+    for (const p of projects) {
+      if (!PROJECT_RX.test(p) || !KNOWN_PROJECTS.includes(p)) throw Object.assign(new Error(`Непознат проект: ${String(p).slice(0, 40)}`), { status: 400 });
+    }
+    env.PROJECTS = [...new Set(projects)].join(' ');
+  }
+  // Пазачът на ref-а в fetch-deploy.sh спира смяна на ref за продукт, разгърнат от
+  // друг клон. Разрешението е изрично и само от човек (не и от предложение на агент).
+  if (allowRefSwitch === true) env.ALLOW_REF_SWITCH = '1';
+  return {
+    title: `Деплой от GitHub: ${env.REF} (${env.PROJECTS || 'всички проекти'})`,
     cmd: 'bash',
     args: [script],
     env,
@@ -175,12 +229,19 @@ export async function productHealth(cfg) {
           const headers = c.host ? { host: String(c.host).slice(0, 253) } : undefined;
           const req = reqFn(u, { method: 'GET', timeout: 5000, headers }, (res) => {
             res.resume();
+            // 3xx се брои за „жив" (иначе деплоят вдига критична аларма за
+            // работещ сайт), но се ПОМНИ: пробата към `/` на продукт зад HTTPS
+            // пренасочване мери само пренасочването — medqr отговаряше 308 и
+            // SLO-то му беше вечно зелено дори при мъртва база (поука на
+            // Наблюдателя). Самопроверката и „Продукти" го казват с поправка.
+            const redirect = res.statusCode >= 300 && res.statusCode < 400;
             resolve({
               name: c.name,
               url: c.url,
               host: c.host || null,
               up: res.statusCode >= 200 && res.statusCode < 400,
               status: res.statusCode,
+              ...(redirect ? { redirect: String(res.headers.location || '').slice(0, 200) || true } : {}),
               ms: Date.now() - started,
             });
           });

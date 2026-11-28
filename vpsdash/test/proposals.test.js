@@ -117,3 +117,46 @@ test('каталог: всяко действие има заглавие и к�
     assert.match(a.cls, /^[ABC]$/, type);
   }
 });
+
+// ── Деплой от GitHub (fetch-deploy.sh) — бутонът и предложението ──────────────
+import { fetchDeploySpec, assertRef } from '../src/deploy.js';
+test('деплой от GitHub: ref по правилото на fetch-deploy.sh, без PR от чужд форк', () => {
+  for (const ok of ['main', 'v1.17.3', 'claude/vps-dashboard-full-s7ftx3', 'a'.repeat(40)]) assert.equal(assertRef(ok), ok);
+  assert.equal(assertRef(''), 'main', 'празно = main');
+  for (const bad of ['pull/5/head', 'refs/pull/5/head', '../etc', 'a..b', '-rf', '/abs', 'main;reboot', 'клон']) {
+    assert.throws(() => assertRef(bad), /ref|Ref/, bad);
+  }
+});
+
+test('деплой от GitHub: проекти само от списъка, смяна на ref само изрично', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-fetchdeploy-'));
+  fs.mkdirSync(path.join(dir, 'cur', 'deploy'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'cur', 'deploy', 'fetch-deploy.sh'), '#!/bin/bash\n');
+  const cfg = { paths: { currentLink: path.join(dir, 'cur') } };
+  try {
+    const s = fetchDeploySpec(cfg, { ref: 'main', projects: ['vpsdashboard', 'medqr', 'vpsdashboard'] });
+    assert.equal(s.cmd, 'bash');
+    assert.deepEqual(s.args, [path.join(dir, 'cur', 'deploy', 'fetch-deploy.sh')]);
+    assert.equal(s.env.REF, 'main');
+    assert.equal(s.env.PROJECTS, 'vpsdashboard medqr');
+    assert.equal(s.env.CSD_SELF_DEPLOY, '1', 'панелът отлага собствения си рестарт');
+    assert.equal(s.env.ALLOW_REF_SWITCH, undefined);
+    assert.equal(fetchDeploySpec(cfg, { allowRefSwitch: 'true' }).env.ALLOW_REF_SWITCH, undefined, 'само булево true');
+    assert.equal(fetchDeploySpec(cfg, { allowRefSwitch: true }).env.ALLOW_REF_SWITCH, '1');
+    assert.throws(() => fetchDeploySpec(cfg, { projects: ['няма-такъв'] }), /Непознат проект/);
+    assert.throws(() => fetchDeploySpec({ paths: { currentLink: path.join(dir, 'няма') } }, {}), /fetch-deploy\.sh/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('предложение „деплой": агентът предлага само main или таг — клон/SHA/PR е отказ', () => {
+  const base = { agent: 'VPS-аджията', title: 'Нова версия', why: 'Поправка на X', review: 'Прегледано от Claude' };
+  const ok = validateProposal({ ...base, action: { type: 'deploy.fetch', params: { ref: 'main', projects: ['vpsdash'] } } });
+  assert.deepEqual(ok.action, { type: 'deploy.fetch', params: { ref: 'main', projects: ['vpsdash'] } });
+  validateProposal({ ...base, action: { type: 'deploy.fetch', params: { ref: 'v1.17.3' } } });
+  for (const ref of ['claude/x', 'a'.repeat(40), 'pull/1/head', 'main ', 'mainx']) {
+    assert.throws(() => validateProposal({ ...base, action: { type: 'deploy.fetch', params: { ref } } }), /Невалиден параметър/, ref);
+  }
+  assert.throws(() => validateProposal({ ...base, action: { type: 'deploy.fetch', params: { ref: 'main', allowRefSwitch: true } } }), /Непознат параметър/, 'смяната на ref е само на човека');
+});

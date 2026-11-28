@@ -85,7 +85,9 @@ export function lastUsedFromJournal(text) {
 }
 
 export async function sshdState() {
-  const r = await run('sshd', ['-T'], { timeout: 8000 });
+  // `-C`: с контекста на root — без него `sshd -T` не вижда `Match` блоковете,
+  // а точно там често седи „PasswordAuthentication no" за root.
+  const r = await run('sshd', ['-T', '-C', 'user=root,host=localhost,addr=127.0.0.1'], { timeout: 8000 });
   if (!r.ok) return { known: false };
   const kv = Object.fromEntries(
     r.stdout.split('\n').map((l) => l.trim().split(/\s+/)).filter((p) => p.length >= 2).map(([k, ...v]) => [k.toLowerCase(), v.join(' ')])
@@ -140,7 +142,25 @@ export function keyBackupDir(cfg) {
   return path.join(cfg?.paths?.stateDir || '/var/lib/vps-dashboard', 'ssh-keys');
 }
 
-export async function addKey(line, cfg, audit, user, { file = AUTH_KEYS } = {}) {
+// Една промяна на authorized_keys наведнъж. `removeKey` чете файла, чака
+// `sshd -T` (до 8 s) и пише списъка от СТАРОТО четене — ключ, добавен
+// междувременно, изчезваше, а одитът го пазеше като добавен.
+let keyLock = Promise.resolve();
+function withKeyLock(fn) {
+  const p = keyLock.then(fn, fn);
+  keyLock = p.catch(() => {});
+  return p;
+}
+
+export function addKey(line, cfg, audit, user, opts = {}) {
+  return withKeyLock(() => addKeyNow(line, cfg, audit, user, opts));
+}
+
+export function removeKey(fingerprint, cfg, audit, user, opts = {}) {
+  return withKeyLock(() => removeKeyNow(fingerprint, cfg, audit, user, opts));
+}
+
+async function addKeyNow(line, cfg, audit, user, { file = AUTH_KEYS } = {}) {
   const s = String(line ?? '').trim();
   if (!s || s.includes('\n') || s.includes('\r') || s.length > 16384) throw err('Един ключ на един ред (както е в .pub файла).');
   if (/[\x00-\x1f\x7f]/.test(s)) throw err('Ключът съдържа управляващи знаци.');
@@ -162,7 +182,7 @@ export async function addKey(line, cfg, audit, user, { file = AUTH_KEYS } = {}) 
   return { fingerprint: k.fingerprint, type: k.type };
 }
 
-export async function removeKey(fingerprint, cfg, audit, user, { file = AUTH_KEYS, sshd = sshdState } = {}) {
+async function removeKeyNow(fingerprint, cfg, audit, user, { file = AUTH_KEYS, sshd = sshdState } = {}) {
   const fp = String(fingerprint ?? '');
   if (!/^SHA256:[A-Za-z0-9+/]{43}$/.test(fp)) throw err('Невалиден отпечатък.');
   const lines = fs.readFileSync(file, 'utf8').split('\n').filter((l) => l.trim());
@@ -174,6 +194,11 @@ export async function removeKey(fingerprint, cfg, audit, user, { file = AUTH_KEY
     // „Не знам" затяга: без отговор от sshd не приемаме, че паролата ще спаси.
     if (!st.known) throw err('Това е последният ключ, а не мога да проверя дали входът с парола е включен (sshd -T не отговори). Добави друг ключ първо.', 409);
     if (!st.passwordAuth) throw err('Това е последният ключ, а входът с парола е изключен — ще заключиш машината. Добави друг ключ първо.', 409);
+    // Паролата спасява root САМО при `PermitRootLogin yes`. При „prohibit-password"
+    // (точно каквото препоръчва „Сигурност") root вече не влиза никак.
+    if (st.permitRootLogin !== 'yes') {
+      throw err(`Това е последният ключ, а root не влиза с парола (PermitRootLogin ${st.permitRootLogin || '?'}) — ще заключиш root навън. Добави друг ключ първо.`, 409);
+    }
   }
   writeKeys(file, keep, keyBackupDir(cfg));
   audit.log({ action: 'ssh.keyRemove', fingerprint: fp, left: validLeft, user });
@@ -248,6 +273,52 @@ export function installSpec(name) {
     exclusive: 'system',
     timeoutMs: 30 * 60 * 1000,
   };
+}
+
+// Инсталирането също е по ВИДЯН план. Без ТОЧНО име apt тълкува аргумента като
+// регулярен израз без котви: `apt-get install -y lib.6` слага libc6, libc6-dev и
+// libc6-dbg като root, без преглед (Кодаджията 28.11, apt 2.8.4). Затова: симулация
+// → отказ, ако apt е избрал „по израз/шаблон" → човекът вижда Inst/Remv → заявката
+// носи видения списък → сървърът симулира наново и сверява.
+export function parseInstallPlan(text) {
+  const s = String(text || '');
+  return {
+    installs: [...s.matchAll(/^Inst (\S+)/gm)].map((m) => m[1]).sort(),
+    removes: [...s.matchAll(/^Remv (\S+)/gm)].map((m) => m[1]).sort(),
+    // „Note, selecting 'libc6' for regex 'lib.6'" / „… for glob …"
+    fuzzy: /\bfor (regex|glob|wildcard) '/i.test(s),
+  };
+}
+
+export async function installPlan(name, { exec = run } = {}) {
+  const pkg = assertPkg(name);
+  const sim = await exec('apt-get', ['-s', 'install', '--no-install-recommends', '--', pkg], { timeout: 60000, env: APT_ENV, maxBuffer: 8 * 1024 * 1024 });
+  if (sim.code === 'ENOENT') throw Object.assign(err('apt-get липсва на тази машина — пакетите не могат да се управляват оттук.', 503), { safe: true });
+  const plan = parseInstallPlan(`${sim.stdout}\n${sim.stderr}`);
+  const fuzzy = `Няма пакет с ТОЧНО името „${pkg}" — apt би избрал по шаблон. Провери името в търсенето.`;
+  if (plan.fuzzy) throw err(fuzzy, 404);
+  if (!sim.ok) throw err(`apt не може да направи план: ${(sim.stderr || sim.stdout).slice(0, 200)}`, 409);
+  // Бележката „selecting … for regex" apt 2.8.4 НЕ печата, когато изходът не е
+  // терминал (хванато в лабораторията: `lib.6` → 303 пакета, нула бележки). Затова
+  // решава СЪСТАВЪТ: исканото име е в Inst, или вече е инсталирано — иначе apt е
+  // избрал нещо друго вместо него.
+  if (!plan.installs.some((n) => n.replace(/:[\w-]+$/, '') === pkg)) {
+    const st = await exec('dpkg-query', ['-W', '-f', '${db:Status-Abbrev}', '--', pkg], { timeout: 10000 });
+    if (!(st.ok && /^ii/.test(st.stdout))) throw err(fuzzy, 404);
+  }
+  const hit = plan.removes.filter((p) => PROTECTED_PKGS.has(p.replace(/:\w+$/, '')));
+  if (hit.length) throw err(`За „${pkg}" apt иска да махне основни пакети: ${hit.join(', ')} — не оттук.`, 403);
+  return { name: pkg, ...plan };
+}
+
+export async function installPlanned(name, expect, { plan = installPlan } = {}) {
+  const p = await plan(name);
+  const seen = expect && typeof expect === 'object' ? expect : {};
+  const same = (a, b) => (Array.isArray(b) ? b.map(String).sort().join(' ') : '') === a.join(' ');
+  if (!same(p.installs, seen.installs) || !same(p.removes, seen.removes || [])) {
+    throw err('Планът за инсталиране се промени, откакто го видя — прегледай го пак.', 409);
+  }
+  return installSpec(p.name);
 }
 
 export function parseRemovePlan(text) {
@@ -383,7 +454,9 @@ export function removeSwapSpec(info = swapInfo()) {
   }
   const shell = [
     'set -e',
-    `swapoff ${SWAPFILE} 2>/dev/null || true`,
+    // Без `|| true`: провален swapoff (ENOMEM) се казва. Иначе fstab се редактира,
+    // а `rm` на активен swap пада с EPERM — половинчато състояние.
+    `if grep -q '^${SWAPFILE} ' /proc/swaps; then swapoff ${SWAPFILE}; fi`,
     'cp -a /etc/fstab "/etc/fstab.преди-swap-$(date +%Y%m%d-%H%M%S)"',
     `sed -i '\\#^[[:space:]]*${SWAPFILE}[[:space:]]#d' /etc/fstab`,
     `rm -f ${SWAPFILE}`,
