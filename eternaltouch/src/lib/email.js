@@ -1,20 +1,24 @@
 // Eternal Touch — Email module
-// SMTP via Register.it (authsmtp.register.it:465 SSL).
+// SMTP via Brevo (Sendinblue SAS, France — EU): smtp-relay.brevo.com:587 STARTTLS.
+// Owner's decision (2026-11-25): every product sends email through Brevo. The
+// info@eternaltouch.it mailbox itself stays at Register.it (receiving only).
 // Lazy initialization, save-first-send-second philosophy: emails are an
 // enhancement on top of DB persistence, never the primary path.
 
 import nodemailer from 'nodemailer';
 
 // --- Configuration --------------------------------------------------
-const SMTP_HOST   = process.env.SMTP_HOST   || 'authsmtp.register.it';
+const SMTP_HOST   = process.env.SMTP_HOST   || 'smtp-relay.brevo.com';
 // Default to 587 (submission + STARTTLS): port 465 is blocked outbound on many
 // hosts (e.g. Hetzner), whereas 587 is virtually always open. Override via .env.
 const SMTP_PORT   = parseInt(process.env.SMTP_PORT || '587', 10);
 const SMTP_SECURE = (process.env.SMTP_SECURE || 'false') === 'true'; // true=465 implicit TLS, false=587 STARTTLS
 const SMTP_USER   = process.env.SMTP_USER   || '';
 const SMTP_PASS   = process.env.SMTP_PASS   || '';
-const SMTP_FROM   = process.env.SMTP_FROM   || `Eternal Touch <${SMTP_USER}>`;
-const NOTIFY_TO   = process.env.NOTIFY_TO   || SMTP_USER;
+// With Brevo, SMTP_USER is the relay login (…@smtp-brevo.com), NOT a mailbox — so
+// the sender and the notification recipient are explicit, never derived from it.
+const SMTP_FROM   = process.env.SMTP_FROM   || 'Eternal Touch <info@eternaltouch.it>';
+const NOTIFY_TO   = process.env.NOTIFY_TO   || 'info@eternaltouch.it';
 const SITE_URL    = process.env.SITE_URL    || 'https://eternaltouch.it';
 // Some providers (e.g. Register.it) front their SMTP with a shared platform
 // whose TLS certificate does NOT list the connect hostname — Register.it's
@@ -22,7 +26,13 @@ const SITE_URL    = process.env.SITE_URL    || 'https://eternaltouch.it';
 // Setting SMTP_TLS_SERVERNAME to a name that IS in the presented certificate
 // lets us keep full certificate validation (rejectUnauthorized stays on) while
 // connecting to SMTP_HOST. Prefer this over disabling validation.
-const SMTP_TLS_SERVERNAME = process.env.SMTP_TLS_SERVERNAME || '';
+// Brevo's certificate matches its own host: a leftover Register.it servername would
+// make TLS fail silently, so it is ignored for Brevo (review of PR #492).
+const IS_BREVO = /^smtp-relay\.brevo\.com$/i.test(SMTP_HOST);
+if (IS_BREVO && process.env.SMTP_TLS_SERVERNAME) {
+  console.warn('[email] SMTP_TLS_SERVERNAME is ignored for Brevo — remove it from .env.');
+}
+const SMTP_TLS_SERVERNAME = IS_BREVO ? '' : process.env.SMTP_TLS_SERVERNAME || '';
 
 // --- Transporter (lazy singleton) -----------------------------------
 let _transporter = null;
@@ -202,45 +212,6 @@ const CONFIRM_COPY = {
   }
 };
 
-function customerConfirmationHtml({ name, message, language }) {
-  const c = CONFIRM_COPY[language] || CONFIRM_COPY.en;
-  const greet = (GREETING[language] || GREETING.en)(esc(name));
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(c.title)}</title></head>
-<body style="margin:0;padding:0;background:${COLOR.cream2};font-family:Georgia,serif;color:${COLOR.ink};">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${COLOR.cream2};padding:32px 16px;">
-<tr><td align="center">
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:${COLOR.cream};border:1px solid ${COLOR.line};">
-    <tr><td align="center" style="padding:40px 40px 8px 40px;">
-      <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${COLOR.gold};">${esc(c.eyebrow)}</div>
-    </td></tr>
-    <tr><td align="center" style="padding:8px 40px 24px 40px;">
-      <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:400;margin:0;color:${COLOR.ink};line-height:1.2;">${esc(c.title)}</h1>
-    </td></tr>
-    <tr><td style="padding:8px 40px 24px 40px;">
-      <p style="font-family:Georgia,serif;font-size:16px;line-height:1.7;color:${COLOR.ink};margin:0 0 16px 0;">${greet}</p>
-      <p style="font-family:Georgia,serif;font-size:16px;line-height:1.7;color:${COLOR.ink};margin:0 0 14px 0;">${esc(c.body1)}</p>
-      <p style="font-family:Georgia,serif;font-size:16px;line-height:1.7;color:${COLOR.ink};margin:0;">${esc(c.body2)}</p>
-    </td></tr>
-    <tr><td style="padding:8px 40px 24px 40px;">
-      <div style="background:${COLOR.cream2};border-left:3px solid ${COLOR.gold};padding:18px 22px;">
-        <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${COLOR.muted};margin-bottom:10px;">${esc(c.yourMsgLabel)}</div>
-        <div style="font-family:Georgia,serif;font-size:14px;line-height:1.7;color:${COLOR.ink};white-space:pre-wrap;">${esc(message)}</div>
-      </div>
-    </td></tr>
-    <tr><td style="padding:24px 40px 32px 40px;border-top:1px solid ${COLOR.line};">
-      <p style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:${COLOR.ink};margin:0 0 6px 0;">${esc(c.signoff)}</p>
-      <p style="font-family:Georgia,serif;font-size:16px;color:${COLOR.ink};margin:0 0 16px 0;letter-spacing:0.3px;"><strong style="color:${COLOR.goldDark};font-weight:600;">${esc(c.team)}</strong></p>
-      <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:${COLOR.muted};margin:0 0 4px 0;line-height:1.6;">${esc(c.location)}</p>
-      <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:${COLOR.muted};margin:0;line-height:1.6;">${esc(c.phones)}</p>
-    </td></tr>
-    <tr><td align="center" style="padding:16px 40px 24px 40px;background:${COLOR.cream2};">
-      <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:${COLOR.muted};margin:0;line-height:1.5;">${esc(c.footerNote)}</p>
-    </td></tr>
-  </table>
-</td></tr></table>
-</body></html>`;
-}
-
 function customerConfirmationText({ name, message, language }) {
   const c = CONFIRM_COPY[language] || CONFIRM_COPY.en;
   const greet = (GREETING[language] || GREETING.en)(name);
@@ -294,8 +265,9 @@ export async function sendContactNotifications(payload) {
       from: SMTP_FROM,
       to: `${name} <${email}>`,
       subject: confirmCopy.subject,
-      text: customerConfirmationText({ name, message, language: lang }),
-      html: customerConfirmationHtml({ name, message, language: lang })
+      // Само текст: писмо до клиента без HTML не носи пиксел за отваряне (Brevo го слага в HTML) —
+      // проследяване на клиента без съгласие би било проблем по чл. 5(3) ePrivacy (преглед на PR #492).
+      text: customerConfirmationText({ name, message, language: lang })
     })
   ]);
 

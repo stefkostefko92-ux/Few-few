@@ -15,13 +15,13 @@ Docker Compose на VPS-а, зад nginx на хоста с Let's Encrypt. Че�
 
 ## 0. Какво трябва да имаш преди да започнеш
 
-| Нещо                                                                 | Откъде                                                      |
-| -------------------------------------------------------------------- | ----------------------------------------------------------- |
-| DNS `A`/`AAAA` запис за `piuma.carbonstealth.eu` → VPS-а             | регистраторът на домейна                                    |
-| Meta App с продукт **Instagram** (Instagram Login)                   | developers.facebook.com → My Apps                           |
-| `IG_APP_ID` + `IG_APP_SECRET`                                        | същото приложение → Instagram → API setup                   |
-| Instagram **професионален** акаунт (Business/Creator), свързан ръчно | инвариант 1 — Meta забранява автоматизирано създаване       |
-| `ANTHROPIC_API_KEY` _(по избор)_                                     | console.anthropic.com — без него черновите се пишат на ръка |
+| Нещо                                                                 | Откъде                                                |
+| -------------------------------------------------------------------- | ----------------------------------------------------- |
+| DNS `A`/`AAAA` запис за `piuma.carbonstealth.eu` → VPS-а             | регистраторът на домейна                              |
+| Meta App с продукт **Instagram** (Instagram Login)                   | developers.facebook.com → My Apps                     |
+| `IG_APP_ID` + `IG_APP_SECRET`                                        | същото приложение → Instagram → API setup             |
+| Instagram **професионален** акаунт (Business/Creator), свързан ръчно | инвариант 1 — Meta забранява автоматизирано създаване |
+| Google Cloud проект с Claude във Vertex AI _(по избор)_              | §1а — без него черновите се пишат на ръка             |
 
 Разрешенията (`IG_SCOPES`) искат преглед от Meta преди да излязат от режим
 „разработка". Подготовката е работа на **Тайния агент** (агентът за одобрения).
@@ -54,7 +54,11 @@ IG_REDIRECT_URI=https://piuma.carbonstealth.eu/auth/instagram/callback
 IG_GRAPH_VERSION=v24.0
 
 TOTP_ISSUER=Piuma
-ANTHROPIC_API_KEY=<по избор>
+# По избор — Claude през Google Cloud Vertex AI в ЕС (§1а). Празно = генерирането е изключено.
+VERTEX_PROJECT_ID=
+VERTEX_REGION=eu
+VERTEX_MODEL=claude-opus-5-5
+GOOGLE_APPLICATION_CREDENTIALS=
 
 # Къде води „Поискай достъп“ на витрината (страница или mailto:). По подразбиране carbonstealth.eu.
 CONTACT_URL=mailto:<адрес за запитвания>
@@ -76,6 +80,46 @@ TZ=Europe/Sofia
 извън `releases/`, тоест преживява и прочистването на старите release-и, и връщане
 назад). Няма файл там → скриптът пропуска Piuma с предупреждение и **не измисля тайни**:
 полу-вдигнат панел, който държи чужди токени, е по-лош изход от ясен отказ.
+
+---
+
+## 1а. Чернови от Claude — Google Cloud Vertex AI в ЕС (по избор)
+
+Черновите се пишат от Claude **само** през Google Cloud Vertex AI на мулти-региона `eu`.
+Първостепенният Claude API няма обработка в ЕС (`inference_geo` е само `us`/`global`), затова
+пътят през `ANTHROPIC_API_KEY` е махнат. Без тази стъпка панелът, публикуването и `/health`
+работят — генерирането просто казва, че AI не е настроен.
+
+1. **Проект и API:** Google Cloud проект с фактуриране → `gcloud services enable
+aiplatform.googleapis.com --project <ПРОЕКТ>`.
+2. **Модел:** Model Garden → Claude Opus 5.5 → Enable. Наличността в `eu` се сверява в
+   таблицата „EU multi-region“ на
+   https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency.
+3. **Квота:** Vertex AI → Quotas — квота за модела в `eu` (новият проект често е с 0).
+4. **Service account с една роля:**
+   ```bash
+   gcloud iam service-accounts create piuma-vertex --project <ПРОЕКТ> --display-name "Piuma чернови"
+   gcloud projects add-iam-policy-binding <ПРОЕКТ> \
+     --member "serviceAccount:piuma-vertex@<ПРОЕКТ>.iam.gserviceaccount.com" \
+     --role roles/aiplatform.user
+   gcloud iam service-accounts keys create piuma-vertex.json \
+     --iam-account piuma-vertex@<ПРОЕКТ>.iam.gserviceaccount.com
+   ```
+   Само `roles/aiplatform.user` (Vertex AI User) — никакви Owner/Editor.
+5. **Ключът на сървъра** — копира се директно (scp), не минава през репото/имейл/чат, после
+   се трие локално. Собственик uid 1000 = потребителят `node` в образа, който го чете:
+   ```bash
+   sudo install -m 600 -o 1000 -g 1000 piuma-vertex.json /opt/few-few/shared/piuma/vertex-sa.json
+   ```
+   В `.env`: `VERTEX_PROJECT_ID=<ПРОЕКТ>`, `VERTEX_REGION=eu`,
+   `GOOGLE_APPLICATION_CREDENTIALS=/opt/few-few/shared/piuma/vertex-sa.json` (пътят на хоста —
+   Compose го монтира само за четене като `/run/secrets/vertex-sa.json`).
+6. **Проверка:** `/admin/settings` → „Генериране с модел“ е включено. Файл, по-отворен от 600,
+   липсващ или нечетим → генерирането е изключено, а не „полу-работи“. Регион, различен от
+   `eu` → процесът не тръгва. Разходът на всяко извикване е в лога като `ai.usage` (само
+   токени, без съдържание).
+7. **Договор и поверителност:** Google е обработващ по Cloud Data Processing Addendum (чл. 28
+   GDPR) — приеми го в конзолата; текстът за поверителност минава през Правния Разбирач.
 
 ---
 

@@ -4,6 +4,7 @@ import { errorMessage, logger } from '../logger.js';
 import { kickOutbox } from '../mail/outbox.js';
 import { activatePayment } from './orders.js';
 import { BillingError } from './billing-core.js';
+import { queueRefundNotice, REFUND_DUE_MS } from './refund-notice.js';
 import {
   createRevolutOrder,
   findRevolutOrderByReference,
@@ -188,7 +189,24 @@ async function markForReview(
       targetId: payment.id,
       details: { reason, ...details },
     });
+    // Общите условия, т. 6: връщаме до 14 дни — мастърите научават веднага, не само от одита.
+    const row = await tx.payment.findUniqueOrThrow({
+      where: { id: payment.id },
+      select: { amountCents: true, currency: true, organization: { select: { legalName: true } } },
+    });
+    await queueRefundNotice(tx, {
+      reason,
+      organizationId: payment.organizationId,
+      legalName: row.organization.legalName,
+      paymentId: payment.id,
+      amountCents: row.amountCents,
+      paidCents: row.amountCents,
+      currency: row.currency,
+      paidAt: paidAt.toISOString(),
+      dueBy: new Date(paidAt.getTime() + REFUND_DUE_MS).toISOString(),
+    });
   });
+  kickOutbox();
   logger.warn({ paymentId: payment.id, reason }, 'плащане с карта чака решение на мастъра');
 }
 

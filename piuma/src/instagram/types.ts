@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 export const shortLivedTokenSchema = z.object({
   access_token: z.string().min(1),

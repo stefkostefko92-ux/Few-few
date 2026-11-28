@@ -323,7 +323,7 @@ const shareSheet = (preview, ringApp = "Viber") => {
 S["my-location"] = (() => {
   const mp = osm(17, V17.cx, V17.cy, 390, 698);
   const [x, y] = mp.pt(73912.74, 48476.23);
-  return mapScreen(`${mp.html}${blueDot(x, y)}`, `${mapsTop()}${myLocFab(1)}${OSM_CR("left:6px;bottom:68px")}${mapsNav}`,
+  return mapScreen(`${mp.html}${blueDot(x, y)}`, `${mapsTop()}${myLocFab(1)}${OSM_CR("left:6px;top:182px")}${mapsNav}`,
     tip("Докоснете кръгчето долу вдясно — картата се центрира върху синята точка (това сте Вие)", "left:14px;top:508px;width:220px;z-index:40", { arrow: "r", at: "54%" }));
 })();
 

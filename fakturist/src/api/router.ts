@@ -13,6 +13,7 @@ import { DOCUMENT_ROW_SELECT, documentJson } from './serialize.js';
 import { issueHandler } from './issue.js';
 import { ID } from '../ids.js';
 import { rejectControlChars } from '../http/body-guard.js';
+import { hasPending, pendingLegal } from '../legal/pending.js';
 
 /**
  * REST API v1 (SPEC 53): `Authorization: Bearer fkt_…`, JSON, без бисквитки и без CSRF (няма сесия).
@@ -81,6 +82,11 @@ export function apiRouter(): Router {
     if (!api.planAllows) return fail(res, 403, 'plan');
     // Създателят вече не е член (махнат, напуснал, закрит профил) — ключът не чете и не издава.
     if (!api.creatorActive) return fail(res, 403, 'access');
+    // SPEC 92: ключът работи от името на създателя — докато той не е приел актуалните условия (а за
+    // своята фирма и договора за обработване), интеграцията спира като приложението (Разбивача, 25.11.2026).
+    if (api.createdById && hasPending(await pendingLegal(api.createdById))) {
+      return fail(res, 403, 'legal');
+    }
     req.api = api;
     next();
   });

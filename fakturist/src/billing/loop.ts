@@ -1,11 +1,13 @@
 import { errorMessage, logger } from '../logger.js';
 import { reconcileCardPayments } from './card.js';
 import { recheckUnreadDisputes } from './disputes.js';
+import { pollOpenDisputes } from './dispute-poll.js';
 import { expireSubscriptions } from './expiry.js';
 
 /**
  * Работникът на плащанията (на 10 минути): висящите плащания с карта (webhook-ът може да се изгуби),
- * споровете, които още не са прочетени от Revolut (disputes.ts), и изтеклите платени периоди. Грешката
+ * споровете, които още не са прочетени от Revolut (disputes.ts), откритите спорове без уебхук
+ * (dispute-poll.ts) и изтеклите платени периоди. Грешката
  * само се записва — следващият път опитва пак.
  */
 export function startBillingLoop(): NodeJS.Timeout {
@@ -20,6 +22,13 @@ export function startBillingLoop(): NodeJS.Timeout {
       .then(() => recheckUnreadDisputes())
       .catch((error: unknown) =>
         logger.error({ err: errorMessage(error) }, 'повторното четене на споровете не мина'),
+      )
+      .then(() => pollOpenDisputes())
+      .then((count) => {
+        if (count > 0) logger.warn({ count }, 'открити спорове без уебхук — записани');
+      })
+      .catch((error: unknown) =>
+        logger.error({ err: errorMessage(error) }, 'проверката за открити спорове не мина'),
       )
       .then(() => expireSubscriptions())
       .then((count) => {

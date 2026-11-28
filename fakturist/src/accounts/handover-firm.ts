@@ -2,6 +2,7 @@ import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { INVITE_TTL_MS, lockOrganization, TransferError } from './transfer-core.js';
 import { revokeOpenMemberInvites } from './member-invite-revoke.js';
+import { mandateInForce } from '../auth/roles.js';
 import { LEGAL_DOCUMENTS } from '../legal/documents.js';
 import {
   checkOwnerPassword,
@@ -31,11 +32,14 @@ export async function startFirmHandover(
       where: { firmId_clientId: { firmId: input.firmId, clientId: input.organizationId } },
       select: {
         status: true,
+        validFrom: true,
+        validTo: true,
         firm: { select: { kind: true, legalName: true, deletedAt: true, terminatedAt: true } },
       },
     });
     if (
-      mandate?.status !== 'ACTIVE' ||
+      !mandate ||
+      !mandateInForce(mandate, now) ||
       mandate.firm.kind !== 'ACCOUNTING_FIRM' ||
       mandate.firm.deletedAt ||
       mandate.firm.terminatedAt
@@ -232,9 +236,9 @@ export async function decideFirmHandover(input: {
     }
     const mandate = await tx.clientMandate.findUnique({
       where: { firmId_clientId: { firmId: input.firmId, clientId: proposal.organizationId } },
-      select: { status: true },
+      select: { status: true, validFrom: true, validTo: true },
     });
-    if (mandate?.status !== 'ACTIVE') throw new HandoverError('noMandate');
+    if (!mandate || !mandateInForce(mandate, now)) throw new HandoverError('noMandate');
     const owner = proposal.fromUserId
       ? await tx.membership.findUnique({
           where: {

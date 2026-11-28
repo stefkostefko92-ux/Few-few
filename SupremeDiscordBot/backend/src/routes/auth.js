@@ -4,7 +4,7 @@ import { isBlacklistActive } from "../lib/blacklist.js";
 import { randomBytes } from "crypto";
 import { encrypt } from "../lib/crypto.js";
 import axios from "axios";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser } from "../middleware/auth.js";
 import { SUPPORTED_LANGUAGES, isSupportedLanguage } from "../lib/languages.js";

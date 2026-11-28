@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 import { themeById, type WarmTheme } from "@/lib/themes";
 
 // Споделен слой за персонализация — ползва се от ВСИЧКИ инструменти:

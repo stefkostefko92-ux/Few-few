@@ -1,0 +1,137 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <h1>Дашборд</h1>
+  <p class="muted small" id="updated">Обновено <%= updatedText %> · опреснява се на 5 мин</p>
+</div>
+
+<div class="overview">
+  <section class="status card" aria-labelledby="status-title">
+    <% if (groups.length === 0) { %>
+    <h2 id="status-title" class="status-line">Още няма семки.</h2>
+    <p class="status-sub">Добави първата партида тук вдясно или с команда в Discord, например <code>/amnesia брой:10 дюрейшън:100</code>.</p>
+    <% } else if (first) { %>
+    <h2 id="status-title" class="status-line<%= first.urgent ? ' urgent' : '' %>">Първо изтича <a href="/batches#b<%= first.id %>"><%= first.label %> #<%= first.id %></a> — след <span class="num"><%= first.leftText %></span>.</h2>
+    <% } else { %>
+    <h2 id="status-title" class="status-line urgent">Всички партиди са изтекли.</h2>
+    <% } %>
+    <% if (groups.length > 0) { %>
+    <p class="status-sub">
+      <% if (!hasRules) { %>Няма включени правила за известия — <a href="/alerts">добави правило</a>, за да тагва ботът.<% } else if (crossing) { %>Следващ таг: <strong><%= crossing.thresholdText %></strong> за <a href="/batches#b<%= crossing.id %>"><%= crossing.label %> #<%= crossing.id %></a> след <span class="num"><%= crossing.inText %></span> <span class="muted">(<%= crossing.atText %>)</span>.<% } else { %>Няма предстоящи прагове от правилата.<% } %>
+    </p>
+    <dl class="figures">
+      <div><dt>семки</dt><dd class="num"><%= stats.seeds %></dd></div>
+      <div><dt>партиди</dt><dd class="num"><%= stats.batches %></dd></div>
+      <div class="<%= stats.soon > 0 ? 'hot' : '' %>"><dt>изтичат до 24 ч</dt><dd class="num"><%= stats.soon %></dd></div>
+      <div class="<%= stats.expired > 0 ? 'cold' : '' %>"><dt>изтекли</dt><dd class="num"><%= stats.expired %></dd></div>
+    </dl>
+    <% if (stats.expired > 0) { %>
+    <form method="post" action="/batches/delete-expired" class="inline" data-confirm="Да изтрия ли всички изтекли партиди?">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button type="submit" class="btn ghost small">Изтрий изтеклите (<%= stats.expired %>)</button>
+    </form>
+    <% } %>
+    <% } %>
+  </section>
+
+  <section class="quick card" aria-labelledby="quick-title">
+    <h2 id="quick-title">Нова партида</h2>
+    <form method="post" action="/batches" id="quick">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="hidden" name="back" value="/">
+      <fieldset class="pick-type">
+        <legend class="sr">Вид</legend>
+        <% types.forEach(function (t, i) { %>
+        <label class="pill"><input type="radio" name="seedTypeKey" value="<%= t.key %>" <%= i === 0 ? 'checked' : '' %> required><span class="swatch sw-<%= t.swatch %>" aria-hidden="true"></span><%= t.label %></label>
+        <% }) %>
+      </fieldset>
+      <div class="quick-row">
+        <label>Брой
+          <input id="q-count" type="number" name="count" min="1" max="100000" step="1" required inputmode="numeric" placeholder="напр. 10">
+        </label>
+        <label>Трайност, %
+          <input id="q-percent" type="text" name="percent" required inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" value="100">
+        </label>
+        <button type="submit" class="btn">Добави</button>
+      </div>
+      <p class="hint">Като <code>/amnesia брой дюрейшън</code> в Discord. Всяко добавяне е нова партида.</p>
+    </form>
+  </section>
+</div>
+
+<div class="groups">
+<% groups.forEach(function (g) { %>
+<section class="group" aria-labelledby="g-<%= g.key %>">
+  <header class="group-head">
+    <h2 id="g-<%= g.key %>"><span class="swatch sw-<%= g.swatch %>" aria-hidden="true"></span><%= g.label %></h2>
+    <p class="group-stats muted small">
+      <span><strong class="num"><%= g.seeds %></strong> семки в <%= g.batches %> партиди</span><% if (g.expired > 0) { %><span><%= g.expired %> изтекли</span><% } %><span>най-нисък <strong class="num"><%= g.lowestText %></strong></span><span>първо изтича след <strong class="num"><%= g.soonestText %></strong></span>
+    </p>
+  </header>
+  <div class="tiles">
+    <% g.tiles.forEach(function (t) { %>
+    <a class="tile h-<%= t.health.stage %>" href="/batches#b<%= t.id %>" title="<%= t.title %>">
+      <div class="tile-scene" data-scene="<%= t.id %>" role="img" aria-label="<%= t.health.label %> семена, <%= t.title %>">
+        <span class="seed-fallback" aria-hidden="true"></span>
+      </div>
+      <div class="tile-info">
+        <div class="tile-top">
+          <span class="tile-pct num"><% if (t.expired) { %>0<% } else { %><%= t.percentWhole %><% } %><small>%</small></span>
+          <span class="health"><%= t.health.label %></span>
+        </div>
+        <progress class="life" max="100" value="<%= t.percent.toFixed(2) %>"><%= t.percentText %></progress>
+        <div class="tile-meta">
+          <span class="num">×<%= t.count %></span>
+          <span class="num"><%= t.expired ? 'изтекла' : t.leftText %></span>
+        </div>
+        <% if (t.status) { %><div class="tile-flag"><%= t.status %></div><% } %>
+      </div>
+      <span class="tile-id num">#<%= t.id %></span>
+    </a>
+    <% }) %>
+  </div>
+</section>
+<% }) %>
+
+</div>
+
+<% if (empty.length > 0 && groups.length > 0) { %>
+<p class="muted small">Без партиди: <%= empty.join(', ') %>.</p>
+<% } %>
+
+<% if (groups.length > 0) { %>
+<section class="legend-strip" aria-labelledby="legend-title">
+  <h2 id="legend-title" class="small">Как изглежда семето според трайността</h2>
+  <ul>
+    <% legend.forEach(function (l) { %>
+    <li class="h-<%= l.stage %>">
+      <div class="legend-scene" data-legend="<%= l.stage %>" aria-hidden="true"><span class="seed-fallback"></span></div>
+      <span class="health"><%= l.label %></span>
+      <span class="muted small num"><%= l.range %></span>
+    </li>
+    <% }) %>
+  </ul>
+</section>
+<% } %>
+
+<% if (chart.series.length > 0) { %>
+<details class="card fold">
+  <summary><h2>Прогноза във времето</h2> <span class="muted small">следващите <%= Math.round(chart.hours / 24) %> дни, <%= timezone %></span></summary>
+  <ul class="legend" aria-label="Легенда">
+    <% chart.legend.forEach(function (l) { %>
+    <li><span class="swatch line sw-<%= l.swatch %>" aria-hidden="true"></span> <%= l.label %> <span class="muted"><%= l.count %> бр.</span></li>
+    <% }) %>
+    <% if (chart.thresholds.length > 0) { %>
+    <li><span class="swatch line dashed" aria-hidden="true"></span> праг за таг</li>
+    <% } %>
+  </ul>
+  <figure class="chart-wrap" id="chart">
+    <canvas class="chart-canvas" tabindex="0" role="img" aria-label="Трайност на партидите във времето: всяка линия е една партида, от текущия процент сега до 0% при изтичане. Същите данни са в „Партиди“."></canvas>
+    <div class="chart-tip" role="status" hidden></div>
+  </figure>
+  <p class="muted small">Посочи графиката (или я фокусирай и ползвай ← →), за да видиш процентите в избрания момент.</p>
+</details>
+<% } %>
+
+<script type="application/json" id="scene-data"><%- sceneJson %></script>
+<script type="application/json" id="chart-data"><%- chart.clientJson %></script>
+<%- include('partials/foot') %>

@@ -1,0 +1,44 @@
+# LiftCon
+
+> LiftCon è il servizio di consulenza tecnica per ascensori di Carbon Stealth VCC, per amministratori di condominio, proprietari e gestori immobiliari a Milano, nella Città metropolitana di Milano, in provincia di Monza e della Brianza e in tutta la Lombardia (Milano, Monza e Brianza, Bergamo, Brescia, Como, Cremona, Lecco, Lodi, Mantova, Pavia, Sondrio, Varese). Offre sopralluoghi descrittivi, controllo qualità dei lavori, analisi dei preventivi, supporto al committente, preparazione documentale alla verifica straordinaria e relazioni con report fotografico.
+
+Limiti dichiarati: LiftCon NON esegue verifiche periodiche o straordinarie ai sensi del DPR 162/1999, non rilascia verbali ufficiali, certificazioni di sicurezza o di conformità, dichiarazioni ai sensi del DM 37/2008, progetti, asseverazioni o perizie giudiziarie, e non esegue prove o manovre sugli impianti. Le relazioni descrivono fatti, documenti e condizioni osservate.
+
+Contatti: telefono +39 379 296 9699, email info@liftcon.it, modulo https://liftcon.it/contatti/. Lingua del sito: italiano.
+
+## Servizi
+- [Sopralluogo tecnico dell'ascensore](https://liftcon.it/servizi/sopralluogo-tecnico-ascensore/): Sopralluogo tecnico descrittivo dell'ascensore a Milano e in Lombardia: cabina, porte, accessi, vano e locali tecnici, con relazione e report fotografico.
+- [Controllo qualità dei lavori sull'ascensore](https://liftcon.it/servizi/controllo-qualita-lavori-ascensore/): Controllo qualità dei lavori sull'ascensore: sostituzioni, avanzamento, fine lavori e correzioni, confrontati con preventivo, ordine e documenti.
+- [Analisi e confronto dei preventivi per l'ascensore](https://liftcon.it/servizi/analisi-preventivi-ascensore/): Analisi e confronto dei preventivi per manutenzione, riparazione e ammodernamento dell'ascensore, con richieste di offerta e capitolati descrittivi.
+- [Supporto tecnico al committente e in assemblea](https://liftcon.it/servizi/supporto-tecnico-committente/): Supporto tecnico al committente per l'ascensore: incontri con il manutentore, assemblee condominiali, registro delle criticità e archivio documentale.
+- [Preparazione documentale alla verifica straordinaria](https://liftcon.it/servizi/preparazione-verifica-straordinaria/): Preparazione documentale alla verifica straordinaria dell'ascensore: documenti, prescrizioni dei verbali, evidenze dei lavori e punti da chiarire.
+- [Relazioni tecniche e report fotografici](https://liftcon.it/servizi/relazioni-tecniche-report-fotografici/): Relazioni di sopralluogo, report fotografici, verbali di riunione e rapporti di controllo per ascensori in condominio, a Milano e in Lombardia.
+- [Tutti i servizi](https://liftcon.it/servizi/): panoramica dei servizi per area di lavoro
+
+## Per chi
+- [Amministratori di condominio](https://liftcon.it/amministratori-di-condominio/): preventivi, controllo lavori, assemblee, verifiche e documenti
+- [Proprietari e privati](https://liftcon.it/proprietari-e-privati/): edifici di proprietà, acquisto di immobili, preventivi e lavori
+
+## Zone servite
+- [Milano](https://liftcon.it/consulenza-ascensori-milano/): tutti i nove Municipi
+- [Provincia di Milano](https://liftcon.it/consulenza-ascensori-provincia-milano/): comuni della Città metropolitana di Milano
+- [Lombardia](https://liftcon.it/consulenza-ascensori-lombardia/): le dodici province lombarde, con Monza e Brianza
+
+## Guide (con riferimenti al testo vigente su Normattiva)
+- [Verifica periodica dell'ascensore: ogni quanto e chi la esegue](https://liftcon.it/guide/verifica-periodica-ascensore/): Ogni quanto va fatta la verifica periodica dell'ascensore, chi deve chiederla, chi può eseguirla e che cosa succede dopo il verbale (DPR 162/1999, art. 13).
+- [Manutenzione dell'ascensore: obblighi del proprietario e del manutentore](https://liftcon.it/guide/manutenzione-ascensore-obblighi/): A chi affidare la manutenzione dell'ascensore, che cosa controlla il manutentore ogni sei mesi e quali obblighi ha il proprietario (DPR 162/1999, art. 15).
+- [Ammodernamento dell'ascensore in condominio: decidere, spendere, controllare](https://liftcon.it/guide/ammodernamento-ascensore-condominio/): Ammodernamento dell'ascensore in condominio: quando è una modifica costruttiva, chi decide, come si ripartiscono le spese e come controllare i lavori.
+- [Ripartizione delle spese dell'ascensore in condominio](https://liftcon.it/guide/spese-ascensore-condominio-ripartizione/): Come si ripartiscono le spese di manutenzione e sostituzione dell'ascensore in condominio (art. 1124 c.c.) e chi decide i lavori straordinari (art. 1135 c.c.).
+- [Verifica straordinaria dell'ascensore: quando serve e come prepararsi](https://liftcon.it/guide/verifica-straordinaria-ascensore/): I tre casi in cui serve la verifica straordinaria dell'ascensore (art. 14 DPR 162/1999): esito negativo, incidente, modifiche costruttive; chi la fa e chi paga.
+- [Come confrontare i preventivi per l'ascensore del condominio](https://liftcon.it/guide/confrontare-preventivi-ascensore/): Come rendere confrontabili i preventivi per manutenzione, riparazione o ammodernamento dell'ascensore: oggetto, voci, esclusioni, tempi, garanzie e pagamenti.
+- [Il libretto dell'ascensore: contenuto, targa in cabina e smarrimento](https://liftcon.it/guide/libretto-ascensore-targa-cabina/): Che cosa contiene il libretto dell'ascensore, quando va reso disponibile e quali dati deve riportare la targa esposta in cabina (DPR 162/1999, art. 16).
+- [Messa in esercizio dell'ascensore e numero di matricola](https://liftcon.it/guide/messa-in-esercizio-matricola-ascensore/): Entro quanto comunicare al Comune la messa in esercizio dell'ascensore, che cosa contiene la comunicazione e quando arriva la matricola (DPR 162/1999, art. 12).
+- [Fine lavori sull'ascensore: che cosa controllare prima del saldo](https://liftcon.it/guide/fine-lavori-ascensore-cosa-controllare/): Che cosa controllare a fine lavori sull'ascensore prima del saldo: lavori ordinati e dichiarati, componenti sostituiti, documenti consegnati e anomalie.
+- [Glossario](https://liftcon.it/glossario/): termini tecnici e normativi dell'ascensore in condominio
+- [Domande frequenti](https://liftcon.it/domande-frequenti/): risposte brevi su servizi, norme e verifiche
+
+## Optional
+- [Il metodo](https://liftcon.it/metodo/): lettera d'incarico, principi di lavoro e limiti dell'incarico
+- [Chi siamo](https://liftcon.it/chi-siamo/): il servizio LiftCon e l'azienda Carbon Stealth VCC
+- [Note legali](https://liftcon.it/note-legali/): dati societari del fornitore
+- [Testo completo per assistenti AI](https://liftcon.it/llms-full.txt): il contenuto delle pagine principali in testo semplice

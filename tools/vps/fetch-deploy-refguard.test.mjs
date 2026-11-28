@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const script = readFileSync(join(root, "deploy", "fetch-deploy.sh"), "utf8");
 const fn = (name) => script.match(new RegExp(`^${name}\\(\\) \\{\\n[\\s\\S]*?^\\}\\n`, "m"))?.[0];
-const FUNCS = ["ref_key", "ref_guard_check", "ref_guard_record"];
+const FUNCS = ["ref_key", "ref_skipped", "ref_guard_check", "ref_guard_record"];
 
 test("функциите на пазача съществуват в fetch-deploy.sh", () => {
   for (const f of FUNCS) assert.ok(fn(f), `${f}() е в fetch-deploy.sh`);
@@ -102,4 +102,20 @@ test("псевдонимите са един продукт (Gaming = aso = gami
   assert.equal(run({ REF: "main", PROJECTS: "aso" }, "ref_guard_check", d).status, 1, "aso е същият продукт като Gaming");
   run({ REF: "main", PROJECTS: "../../etc/x" }, `ref_guard_record "${join(d, "autodeploy.sh")}"`, d);
   for (const f of readdirSync(join(d, "refs"))) assert.doesNotMatch(f, /\//);
+});
+
+// Преглед на PR #492 (VPS-аджията): продукт, пропуснат от autodeploy.sh (напр. eternaltouch без Brevo в
+// .env), върви на предишния си код — записът „разгърнат от REF“ за него би лъгал пазача.
+test("пропуснат от autodeploy продукт не се записва; старият му запис остава", (t) => {
+  const d = withDir(t);
+  run({ REF: "claude/old", PROJECTS: "zabobovdol" }, `ref_guard_record "${join(d, "autodeploy.sh")}"`, d);
+  writeFileSync(join(d, "skipped.txt"), "zabobovdol\n");
+  const r = run({ REF: "main", SKIPPED_FILE: join(d, "skipped.txt") }, `ref_guard_record "${join(d, "autodeploy.sh")}"`, d);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(readFileSync(join(d, "refs", "zabobovdol"), "utf8"), /^claude\/old /, "пропуснатият пази стария си ref");
+  assert.match(readFileSync(join(d, "refs", "medqr"), "utf8"), /^main /, "останалите се записват");
+});
+
+test("fetch-deploy подава SKIPPED_FILE на autodeploy.sh", () => {
+  assert.match(script, /SKIPPED_FILE="\$SKIPPED_FILE" ARCHIVE="\$ARCHIVE_PATH" bash "\$WORK\/deploy\/autodeploy\.sh"/);
 });

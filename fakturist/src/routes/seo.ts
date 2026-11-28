@@ -75,6 +75,7 @@ export function robotsTxt(base: string): string {
     'Disallow: /admin/',
     'Disallow: /auth/',
     'Disallow: /webhooks/',
+    'Disallow: /api/',
     '',
     `Sitemap: ${base}/sitemap.xml`,
     '',

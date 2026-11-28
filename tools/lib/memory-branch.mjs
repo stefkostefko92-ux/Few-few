@@ -16,7 +16,9 @@
 //     пресметнато табло). Така PR-ът agents/memory → main винаги е без конфликти и се слива бързо.
 //  3. pendingLessons — memory-preload добавя поуките от клона, които ги няма в текущия checkout,
 //     значи следващият агент (в тази или в нова сесия) ги вижда още преди PR-а да е слят.
-// Обединяването е по СЪДЪРЖАНИЕ (редове поуки), не с git merge машинария — нула конфликтни маркери.
+// Обединяването на ПАМЕТТА е по СЪДЪРЖАНИЕ (редове поуки), не с git merge машинария — нула конфликтни маркери.
+// Всички ДРУГИ пътища (продуктите) се сливат тристранно с `git merge-tree --write-tree` (git ≥ 2.38); конфликт
+// там → отказ без commit (инцидент 23.11.2026, c6ddb80d96: дървото на `base` върна Фактурист 2.1 → 2.0).
 //
 // CLI:  node tools/lib/memory-branch.mjs --sync [--no-push] [--no-fetch]
 
@@ -49,7 +51,7 @@ const IDENTITY = { GIT_AUTHOR_NAME: "Claude", GIT_AUTHOR_EMAIL: "noreply@anthrop
 
 function git(cwd, args, { input, env, timeout = 20000, raw = false } = {}) {
   const r = spawnSync("git", args, { cwd, input, encoding: "utf8", timeout, maxBuffer: 1 << 28, env: { ...process.env, ...env } });
-  return { ok: r.status === 0, out: raw ? (r.stdout || "") : (r.stdout || "").replace(/\n$/, ""), err: r.stderr || "" };
+  return { ok: r.status === 0, status: r.status, out: raw ? (r.stdout || "") : (r.stdout || "").replace(/\n$/, ""), err: r.stderr || "" };
 }
 const rev = (cwd, ref) => { const r = git(cwd, ["rev-parse", "-q", "--verify", `${ref}^{commit}`]); return r.ok ? r.out : null; };
 const isAncestor = (cwd, a, b) => git(cwd, ["merge-base", "--is-ancestor", a, b]).ok;
@@ -84,12 +86,15 @@ export function withRepoLock(cwd, fn, { waitMs = 15000 } = {}) {
 // Fail-closed (инцидент 2026-09-25): ред `<<<<<<< `/`>>>>>>> ` или неразчитаем `.json` — в записваните
 // файлове ИЛИ в пазените пътища на полученото дърво (замърсена основа: main/отдалечения клон) → хвърля
 // ConflictContentError ПРЕДИ commit-tree. Няма commit, няма update-ref, временният индекс се трие.
-function commitFiles(cwd, baseCommit, files, parents, message) {
+// `overlay` — готови записи за `update-index --index-info` (непаметните пътища от тристранното сливане),
+// прилагани върху дървото на `baseCommit` ПРЕДИ `files`; същият временен индекс, същите проверки.
+function commitFiles(cwd, baseCommit, files, parents, message, overlay = []) {
   assertCleanFiles(files);
   const idx = gitPath(cwd, `agents-memory-index-${process.pid}-${Date.now()}`);
   const env = { GIT_INDEX_FILE: idx, ...IDENTITY };
   try {
     if (!git(cwd, ["read-tree", baseCommit], { env }).ok) throw new Error("read-tree");
+    if (overlay.length && !git(cwd, ["update-index", "--replace", "-z", "--index-info"], { input: overlay.join("\0") + "\0", env }).ok) throw new Error("update-index --index-info");
     for (const [path, content] of Object.entries(files)) {
       const blob = git(cwd, ["hash-object", "-w", "--stdin"], { input: content, env });
       if (!blob.ok) throw new Error("hash-object " + path);
@@ -275,13 +280,55 @@ function monotonicDashboard(cwd, base, other, files) {
   } catch { /* ignore */ }
 }
 
-/** Обединява `other` в `base` по съдържание: дървото на base + поуките, които other е добавил след общия им предшественик. */
+/** Пътища, които обединяването сглобява само (поуки, табло, append-only) — върху дървото на `base`, както досега. */
+const isMemoryManaged = (p) => {
+  if (p === DASH_JSON || p === DASH_HTML || APPEND_ONLY.includes(p)) return true;
+  if (!p.startsWith(MEM_PATH + "/")) return false;
+  const f = p.slice(MEM_PATH.length + 1);
+  return AGENT_FILE.test(f) && !NOT_AGENT.test(f);
+};
+const MERGE_TREE = ["merge-tree", "--write-tree", "-z", "--name-only", "--no-messages"];
+const NULL_OID = /^0+$/;
+
+/**
+ * Непаметните пътища на обединението — от ТРИСТРАННОТО сливане `git merge-tree --write-tree base other`
+ * (с merge-base, без HEAD/индекс/работно дърво). Връща записи за `update-index --index-info` само за пътищата,
+ * в които сливането се различава от `base`. Конфликт в непаметен път → ConflictContentError (fail-closed,
+ * никога тихо едната страна); липсващ `--write-tree` (git < 2.38) → грешка, нула commit.
+ */
+function mergedProductTree(cwd, base, other) {
+  const r = git(cwd, [...MERGE_TREE, base, other]);
+  if (r.status !== 0 && r.status !== 1) {
+    throw new Error(`git merge-tree --write-tree не е наличен или се провали (нужен git ≥ 2.38) — обединяването на agents/memory е отказано, нищо не е комитнато: ${(r.err.split("\n")[0] || "изход " + r.status).trim()}`);
+  }
+  const [tree, ...conflicted] = r.out.split("\0").filter(Boolean);
+  if (!/^[0-9a-f]{40,64}$/.test(tree || "")) throw new Error(`git merge-tree: неочакван изход — обединяването е отказано: ${String(tree).slice(0, 80)}`);
+  const bad = [...new Set(conflicted.filter((p) => !isMemoryManaged(p)))];
+  if (r.status === 1 && !conflicted.length) throw new Error("git merge-tree: конфликт без списък с пътища — обединяването е отказано");
+  if (bad.length) throw new ConflictContentError(bad.map((p) => `${p}: конфликт при тристранно сливане на ${base.slice(0, 10)} ↔ ${other.slice(0, 10)} (непаметен път — реши го човек)`));
+  const d = git(cwd, ["diff-tree", "-r", "-z", "--no-renames", base, tree]);
+  if (!d.ok) throw new Error("diff-tree " + d.err.trim());
+  const parts = d.out.split("\0"), del = [], put = [];
+  for (let i = 0; i + 1 < parts.length; i += 2) {
+    const meta = parts[i].replace(/^:/, "").split(" "), path = parts[i + 1];
+    if (meta.length < 5 || !path || isMemoryManaged(path)) continue;
+    const [, mode, , oid] = meta;
+    if (NULL_OID.test(oid)) del.push(`0 ${"0".repeat(oid.length)}\t${path}`);
+    else put.push(`${mode} ${oid}\t${path}`);
+  }
+  return [...del, ...put];
+}
+
+/**
+ * Обединява `other` в `base`: паметта по съдържание (поуките, които other е добавил след общия им
+ * предшественик; табло; append-only) върху дървото на base, а непаметните пътища — тристранно (`mergedProductTree`).
+ */
 function unionCommit(cwd, base, other, message, date) {
   const since = mergeBase(cwd, base, other);
   const { files } = mergedMemoryFiles(cwd, base, other, since, date);
   Object.assign(files, appendOnlyUnion(cwd, base, other));
   monotonicDashboard(cwd, base, other, files);
-  return commitFiles(cwd, base, files, [other, base], message);
+  return commitFiles(cwd, base, files, [other, base], message, mergedProductTree(cwd, base, other));
 }
 
 /** Локален буфер за записи за употреба (в .git — не цапа клона на задачата). */

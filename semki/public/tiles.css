@@ -1,0 +1,202 @@
+/* Дашборд: групите по вид, плочките със семената (3D в .tile-scene) и легендата по здраве. */
+
+/* ── групите по вид: две колони на широк екран ── */
+.groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
+  gap: 0.5rem 2rem;
+  align-items: start;
+}
+
+.group {
+  margin-bottom: 2rem;
+}
+
+.group-head {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.group-head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font: 700 1.75rem/1 var(--font-num);
+}
+
+.group-head .swatch {
+  width: 12px;
+  height: 12px;
+}
+
+.group-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+  margin: 0;
+}
+
+.group-stats strong {
+  color: var(--bone);
+  font-weight: 650;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 156px), 1fr));
+  gap: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius);
+  border: 1px solid var(--rule);
+  background: var(--panel);
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--bone);
+}
+
+.tile:hover {
+  border-color: color-mix(in srgb, var(--h) 55%, var(--rule));
+}
+
+.tile-scene,
+.legend-scene {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  max-width: 100%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(90% 80% at 50% 40%, #1f2722, #0d110f 75%);
+  overflow: hidden;
+}
+
+.tile-scene canvas,
+.legend-scene canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+.tile-scene canvas.is-ready,
+.legend-scene canvas.is-ready {
+  opacity: 1;
+}
+
+.has-3d .seed-fallback {
+  visibility: hidden;
+}
+
+.tile-info {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem 0.8rem 0.8rem;
+}
+
+.tile-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.tile-pct {
+  font: 750 2.1rem/0.9 var(--font-num);
+}
+
+.tile-pct small {
+  font-size: 0.55em;
+  color: var(--ash);
+  margin-left: 0.05em;
+}
+
+.tile-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: var(--ash);
+  font-size: 0.85rem;
+}
+
+.tile-flag {
+  justify-self: start;
+  color: var(--h-aging);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.tile-id {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--ash);
+  background: color-mix(in srgb, var(--night) 70%, transparent);
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+}
+
+.tile.h-dead .tile-pct {
+  color: var(--h-dead);
+}
+
+/* ── легендата: по едно семе за всяка степен ── */
+.legend-strip {
+  margin: 0 0 2rem;
+}
+
+.legend-strip h2 {
+  color: var(--ash);
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.legend-strip ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+@media (max-width: 720px) {
+  .legend-strip ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.legend-strip li {
+  display: grid;
+  justify-items: start;
+  gap: 0.3rem;
+}
+
+.legend-scene {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile-scene canvas,
+  .legend-scene canvas {
+    transition: none;
+  }
+}

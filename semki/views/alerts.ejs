@@ -1,0 +1,59 @@
+<%- include('partials/head') %>
+<div class="page-head">
+  <h1>Известия<small class="num"><%= rules.length %></small></h1>
+  <a class="btn" href="#new">Ново правило</a>
+</div>
+
+<p class="lead muted">Правилото тагва роля в канал, когато партида стигне прага: <strong>праг в %</strong> — при ≤ X%, <strong>оставащо време</strong> — когато до 0% останат X часа. Тагва веднъж или, с повторение, на всеки X минути, докато партидата е под прага. Партиди, въведени вече под прага, не се тагват. Часовете за тагване са в <a href="/settings#window">Настройки</a>.</p>
+<% if (channels.length === 0 || roles.length === 0) { %>
+<p class="flash err" role="status">Ботът още не вижда каналите и ролите на сървъра — презареди след малко.</p>
+<% } %>
+
+<% if (rules.length === 0) { %>
+<p class="empty">Още няма правила — без тях ботът не тагва никого. Добави първото отдолу.</p>
+<% } else { %>
+<ul class="rules">
+  <% rules.forEach(function (r) { %>
+  <li class="rule<%= r.enabled ? '' : ' off' %>" id="r<%= r.id %>">
+    <div class="rule-head">
+      <span class="rule-threshold num"><%= r.thresholdText %></span>
+      <span class="rule-what"><%= r.seedText %></span>
+      <span class="tag<%= r.enabled ? ' on' : '' %>"><%= r.enabled ? 'включено' : 'изключено' %></span>
+    </div>
+    <p class="rule-line">Тагва <strong class="<%= r.roleUsable ? '' : 'warn-text' %>"><%= r.roleName %></strong> в <strong class="<%= r.channelUsable ? '' : 'warn-text' %>"><%= r.channelName %></strong> — <%= r.repeatText %>.</p>
+    <% if (r.messageInput) { %><p class="rule-msg">„<%= r.messageInput %>“</p><% } %>
+    <% if (r.channelKnown && !r.channelUsable) { %><p class="warn-text small">Ботът няма View Channel и Send Messages в този канал — известията не тръгват.</p><% } %>
+    <% if (r.roleKnown && !r.roleUsable) { %><p class="warn-text small">Ролята не може да бъде тагната: включи „Allow anyone to @mention this role“ или дай на бота Mention Everyone — дотогава известията чакат.</p><% } %>
+    <div class="rule-actions">
+      <details class="rule-edit">
+        <summary class="btn ghost small">Редакция</summary>
+        <form method="post" action="/alerts/<%= r.id %>" class="fields edit-body">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <%- include('partials/rule-fields', { rule: r, prefix: 'r' + r.id }) %>
+          <button type="submit" class="btn">Запази</button>
+        </form>
+      </details>
+      <form method="post" action="/alerts/<%= r.id %>/test" class="inline">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button type="submit" class="btn ghost small">Пробно съобщение</button>
+      </form>
+      <form method="post" action="/alerts/<%= r.id %>/delete" class="inline" data-confirm="Да изтрия ли правилото <%= r.thresholdText %>?">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button type="submit" class="btn danger small">Изтрий</button>
+      </form>
+    </div>
+  </li>
+  <% }) %>
+</ul>
+<p class="muted small">„Пробно съобщение“ пише в канала без да тагва ролята — проверява правата на бота.</p>
+<% } %>
+
+<section class="card new-rule" id="new" aria-labelledby="new-title">
+  <h2 id="new-title">Ново правило</h2>
+  <form method="post" action="/alerts" class="fields">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <%- include('partials/rule-fields', { rule: null, prefix: 'new' }) %>
+    <button type="submit" class="btn">Добави правилото</button>
+  </form>
+</section>
+<%- include('partials/foot') %>

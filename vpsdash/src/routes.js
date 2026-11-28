@@ -87,7 +87,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.17.1';
+export const VERSION = '1.17.2';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -2346,6 +2346,22 @@ export function buildRouter(ctx) {
   );
 
   // ── Седмичен дайджест ──────────────────────────────────────────────────────
+  // ── Петъчният отчет „Бизнесът тази седмица" ───────────────────────
+  r.get(
+    '/api/alerts/business',
+    guard(J(async () => ({ ...ctx.alerts.business.status(cfg), preview: await ctx.alerts.businessText() })))
+  );
+  r.post(
+    '/api/alerts/business/send',
+    guard(
+      J(async (req) => {
+        audit.log({ action: 'alerts.business.sendNow', user: req.user });
+        return ctx.alerts.sendBusiness(Date.now(), { manual: true }); // { text, delivered, channels }
+      }),
+      { mutating: true }
+    )
+  );
+
   r.get(
     '/api/alerts/digest',
     guard(J(() => ({ ...ctx.alerts.digest.status(cfg), preview: ctx.alerts.digestText() })))

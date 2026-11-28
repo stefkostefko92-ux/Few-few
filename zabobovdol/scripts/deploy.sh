@@ -163,6 +163,13 @@ fi
 bold "1/3 Строя и вдигам стека (приложение, база, бекъп, nginx)…"
 $DC up -d --build
 
+# nginx, който не е пресъздаден, да види новия app веднага (пресъздаденият app
+# може да е с нов IP). Конфигурацията и сама пита DNS-а на Docker (resolve), но
+# презареждането затваря и прозореца до следващото питане. Безопасно и бързо.
+if $DC ps nginx 2>/dev/null | grep -qiE 'up|running'; then
+  $DC exec -T nginx nginx -s reload >/dev/null 2>&1 || warn "nginx не се презареди — проверете: $DC logs nginx"
+fi
+
 # Приложението върви като nextjs (1001), а томът със снимките може да е създаден още
 # когато вървеше като root → качването пада с EACCES. Идемпотентно и бързо.
 # app е без capabilities (cap_drop: ALL) — root вътре в него НЕ може chown. Затова:

@@ -19,7 +19,7 @@
 // touch Stripe-provisioned servers (mutual exclusivity, both directions).
 
 import { Router } from "express";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { writeAudit } from "../lib/auditLog.js";
 import { requireBotSecret } from "../middleware/auth.js";

@@ -1,0 +1,19 @@
+{
+  "name": "liftcon",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "LiftCon by Carbon Stealth VCC — сайт за консултантски услуги за асансьори в Милано и Ломбардия (статичен генератор без зависимости + бекенд на формата в server/).",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "keywords": ["Carbon Stealth", "LiftCon", "consulenza tecnica ascensori", "consulenza ascensori Milano", "ascensori Lombardia"],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node build.mjs && node --test test/*.test.mjs && node ../tools/qa/static-site-check.mjs public",
+    "brand": "python3 scripts/brand-assets.py"
+  }
+}

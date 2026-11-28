@@ -33,6 +33,7 @@ import { spawnSync } from "node:child_process";
 // Тайните в билда — по единствения списък (същият като secret-scan/куките), в отделен модул.
 import { findSecretsIn } from "./artifact-secrets.mjs";
 import { isMain } from "../lib/is-main.mjs";
+import { buildAppData, embedJson } from "./agents-app.mjs";
 export { findSecretsIn };
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -45,10 +46,37 @@ const git = (args, cwd = ROOT) => {
   const r = spawnSync("git", args, { cwd, encoding: "utf8", maxBuffer: 1 << 28 });
   return r.status === 0 ? r.stdout : null;
 };
-/** Най-пресният връх на паметта (sha) или null. Никога не хвърля. */
+const LOCAL_MEMORY = MEMORY_REFS[0];
+const refSha = (ref, cwd) => (git(["rev-parse", "-q", "--verify", `${ref}^{commit}`], cwd) || "").trim() || null;
+/** `a` е строг предшественик на `b` (всичко от `a` е и в `b`, а `b` има още). */
+const strictlyBehind = (a, b, cwd) => a !== b && spawnSync("git", ["merge-base", "--is-ancestor", a, b], { cwd }).status === 0;
+
+/** Най-пресният връх на паметта (sha) или null. Никога не хвърля.
+ *  Локалният клон печели, освен ако е ИЗЦЯЛО зад отдалечения (нищо непуснато) — тогава отдалеченият е
+ *  по-пресен. Иначе застоял локален клон (27.11.2026: b70dc760 от 04.11 срещу caf797a4) показва флота три
+ *  седмици назад. Разклонени — локалният: там може да има непуснато учене. */
 export function memoryTip(cwd = ROOT) {
-  for (const ref of MEMORY_REFS) { const r = git(["rev-parse", "-q", "--verify", `${ref}^{commit}`], cwd); if (r) return r.trim(); }
-  return null;
+  const local = refSha(LOCAL_MEMORY, cwd), remote = refSha(MEMORY_REFS[1], cwd);
+  if (local && remote && strictlyBehind(local, remote, cwd)) return remote;
+  return local || remote;
+}
+
+/**
+ * След публикуване: изостаналият локален `agents/memory` се премества напред до публикувания връх.
+ * Куката artifact-sync (.claude/hooks) гледа САМО локалния клон — иначе след публикуване на отдалечения
+ * връх тя сравнява стария локален и иска публикуване завинаги. Мести само при строго изоставане (нищо
+ * локално не се губи), атомарно (update-ref със старата стойност) и никога клон, изваден в работно дърво.
+ * Връща какво е направено: "moved" | "same" | "skip:<защо>".
+ */
+export function fastForwardLocalMemory(sha, cwd = ROOT) {
+  const local = refSha(LOCAL_MEMORY, cwd);
+  if (!local) return "skip:няма локален клон";
+  if (local === sha) return "same";
+  if (!strictlyBehind(local, sha, cwd)) return "skip:локалният не е изцяло зад публикувания";
+  const trees = git(["worktree", "list", "--porcelain"], cwd) || "";
+  if (trees.split("\n").includes(`branch ${LOCAL_MEMORY}`)) return "skip:клонът е изваден в работно дърво";
+  const r = spawnSync("git", ["update-ref", "-m", "artifact: публикуван връх", LOCAL_MEMORY, sha, local], { cwd });
+  return r.status === 0 ? "moved" : "skip:update-ref отказа";
 }
 /** Файл, в който се помни кой връх на паметта е ПУБЛИКУВАН в артефакта (в .git — не се комитва). */
 export function statePath(cwd = ROOT) {
@@ -72,6 +100,18 @@ export function dashReader(ref = null, cwd = ROOT) {
     read: (p) => { const r = git(["show", `${ref}:agents-dashboard/${p}`], cwd); if (r == null) throw new Error(`няма agents-dashboard/${p} в ${ref}`); return r; },
     readBuf: (p) => { const r = spawnSync("git", ["show", `${ref}:agents-dashboard/${p}`], { cwd, maxBuffer: 1 << 28 }); if (r.status !== 0) throw new Error(`няма agents-dashboard/${p} в ${ref}`); return r.stdout; },
     list: (d) => (git(["ls-tree", "--name-only", `${ref}:agents-dashboard/${d}`], cwd) || "").split("\n").filter(Boolean),
+  };
+}
+
+/** Четец на РЕПОТО (пътища от корена) — дефинициите, екипите и уменията за страницата „Агентите“. */
+export function repoReader(ref = null, cwd = ROOT) {
+  if (!ref) return {
+    read: (p) => readFileSync(join(cwd, p), "utf8"),
+    list: (d) => readdirSync(join(cwd, d)),
+  };
+  return {
+    read: (p) => { const r = git(["show", `${ref}:${p}`], cwd); if (r == null) throw new Error(`няма ${p} в ${ref}`); return r; },
+    list: (d) => (git(["ls-tree", "--name-only", `${ref}:${d}`], cwd) || "").split("\n").filter(Boolean),
   };
 }
 
@@ -185,13 +225,16 @@ export function assertPublishable(html, embedded = {}) {
   if (leaks.length)
     throw new Error(`билдът съдържа шаблон за тайна — НЕ публикувай (махни я от източника: _memory → sync-dashboard):\n  ${
       leaks.map((l) => `${l.name} · ред ${l.line}, кол. ${l.col}${l.agent ? ` · агент ${l.agent}` : ""}`).join("\n  ")}`);
+  // Първо вграденото: `</script>` в него затваря блока по-рано и оголва остатъка като разметка. Ако
+  // проверката за обвивка върви преди тази, съобщението сочи „<html“ от оголената проза, не причината
+  // (2026-11-13: docs.js с `</script>` от FiveM/CLAUDE.md се докладваше като „остана обвиващ таг“).
+  for (const [what, text] of Object.entries(embedded))
+    if (/<\/script/i.test(String(text))) throw new Error(`${what} съдържа "</script>" — ще затвори блока по-рано`);
   const markup = html
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "<script></script>")
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "<style></style>");
   for (const tag of WRAPPER_TAGS)
     if (markup.toLowerCase().includes(tag)) throw new Error(`остана обвиващ таг: ${tag}`);
-  for (const [what, text] of Object.entries(embedded))
-    if (/<\/script/i.test(String(text))) throw new Error(`${what} съдържа "</script>" — ще затвори блока по-рано`);
   return true;
 }
 
@@ -218,6 +261,39 @@ export function versionRegressions(html, mem) {
     else if (shown[a.id] < real) out.push(`${a.id}: ${shown[a.id]} < ${real}`);
   }
   return out;
+}
+
+// ── Страницата „Агентите“ (26.11.2026): карти по екипи, профили, чат. Главна страница на артефакта;
+// галактиката отива до нея като `galaxy.html` (страница в `files` — цял документ, без обвивка от публикуването).
+const APP_DATA_RE = /<script type="application\/json" id="app-data">[\s\S]*?<\/script>/;
+const APP_MASCOTS_RE = /<script type="application\/json" id="app-mascots">[\s\S]*?<\/script>/;
+
+/** app.html + данните от репото (repo) + маскотите (dash). Връща текста за публикуване, portraits.json и числата.
+ *  Портретите (~0,9 MB) не са в главната страница: тя ги взима при първия профил (преглед на PR #498). */
+export function buildApp(dash = DASH, reader = null, repo = repoReader(null)) {
+  // Шаблонът е КОД — от работното дърво (в паметта още може да го няма); данните и маскотите — от reader/repo.
+  let html = stripDocumentWrapper(readFileSync(join(dash, "app.html"), "utf8"));
+  if (!APP_DATA_RE.test(html) || !APP_MASCOTS_RE.test(html)) throw new Error("app.html няма местата за данни (app-data/app-mascots) — страницата е сменена");
+  const data = buildAppData(repo);
+  // Само растерни кадри: правилото „никога SVG“ (страницата и без това приема само webp/png/jpeg).
+  const raster = (m) => Object.fromEntries(Object.entries(m).filter(([, u]) => /^data:image\/(webp|png|jpeg);base64,/.test(u)));
+  const mascots = { icons: raster(mascotDataUris(join(dash, "mascots"), reader)), portraits: {} };
+  const portraitsJson = JSON.stringify(raster(mascotPortraitUris(join(dash, "mascots"), reader)));
+  const dataJson = embedJson(data), mascotsJson = embedJson(mascots);
+  html = html.replace(APP_DATA_RE, () => `<script type="application/json" id="app-data">${dataJson}</script>`);
+  html = html.replace(APP_MASCOTS_RE, () => `<script type="application/json" id="app-mascots">${mascotsJson}</script>`);
+  assertPublishable(html, { "данните на агентите": dataJson, "маскотите": mascotsJson });
+  const leaks = findSecretsIn(portraitsJson); // публикува се до страницата — същата проверка за тайни
+  if (leaks.length) throw new Error(`portraits.json съдържа шаблон за тайна (${leaks.map((l) => l.name).join(", ")}) — НЕ публикувай`);
+  return { html, portraitsJson, agents: data.agents.length, teams: data.teams.length };
+}
+
+/** Галактиката като самостоятелна страница (`galaxy.html` в `files`): цял документ + връщане към агентите. */
+export function galaxyDocument(inner) {
+  const back = '<a href="index.html" onclick="if(history.length>1){history.back();return false}" '
+    + 'style="position:fixed;z-index:9999;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:8px 14px;border-radius:999px;'
+    + 'background:rgba(15,18,40,.82);color:#fff;font:600 14px/1.2 system-ui,sans-serif;text-decoration:none;border:1px solid rgba(255,255,255,.2)">← Агентите</a>';
+  return `<!doctype html>\n<html lang="bg"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>\n${back}\n${inner}</body></html>\n`;
 }
 
 /** Целият билд. Връща готовия за публикуване текст + числата за доклада. */
@@ -279,6 +355,8 @@ if (isMain(import.meta.url)) {
     if (!sha) { console.error("✗ няма връх на паметта за отбелязване"); process.exit(1); }
     writeFileSync(statePath(), JSON.stringify({ published: sha, url: ARTIFACT_URL, at: new Date().toISOString() }, null, 2) + "\n");
     console.log(`✓ артефактът е отбелязан като публикуван от ${sha.slice(0, 8)}`);
+    const ff = fastForwardLocalMemory(sha);
+    if (ff === "moved") console.log(`✓ локалният agents/memory е преместен напред до ${sha.slice(0, 8)} (беше изцяло зад него)`);
     process.exit(0);
   }
   const out = argv.find((a, i) => !a.startsWith("--") && argv[i - 1] !== "--ref") || join(ROOT, "galaxy-artifact.html");
@@ -300,9 +378,22 @@ if (isMain(import.meta.url)) {
       process.exit(1);
     }
   }
-  writeFileSync(out, r.html);
-  console.log(`\x1b[32m✓\x1b[0m ${out} · ${(r.html.length / 1024 / 1024).toFixed(2)} MB · ${r.icons} маскота вградени`);
+  // Главната страница = „Агентите“ (карти, профили, чат); галактиката — до нея като galaxy.html.
+  let app;
+  try { app = buildApp(DASH, ref ? reader : null, repoReader(ref)); } catch (e) {
+    console.error(`\x1b[31m✗ страницата „Агентите“: ${e.message}\x1b[0m`);
+    process.exit(1);
+  }
+  const galaxyOut = join(dirname(out), "galaxy.html"), portraitsOut = join(dirname(out), "portraits.json");
+  writeFileSync(out, app.html);
+  writeFileSync(galaxyOut, galaxyDocument(r.html));
+  writeFileSync(portraitsOut, app.portraitsJson);
+  console.log(`\x1b[32m✓\x1b[0m ${out} · ${(app.html.length / 1024 / 1024).toFixed(2)} MB · ${app.agents} агента в ${app.teams} екипа`);
+  console.log(`\x1b[32m✓\x1b[0m ${galaxyOut} · ${(r.html.length / 1024 / 1024).toFixed(2)} MB · ${r.icons} маскота вградени`);
   console.log(`  източник: ${reader.source} · агенти: ${r.agents} · сума проверени поуки: ${r.lessons}`);
   console.log(`  публикувай на СЪЩИЯ адрес: ${ARTIFACT_URL}`);
+  console.log(`    file_path: ${out}`);
+  console.log(`    files: { "galaxy.html": "${galaxyOut}", "portraits.json": "${portraitsOut}" }`);
+  console.log("    capabilities (само при първото публикуване на новата страница): { sample: {}, db: {}, user: {} }");
   if (ref) console.log(`  после: node tools/docs/build-artifact.mjs --mark-published ${ref}`);
 }
