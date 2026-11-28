@@ -9,6 +9,7 @@ import { collegatiPerBrowser } from '../ordini/collegati-browser.js';
 import { discrepanzeDi, improntaDi } from '../ordini/collegati.js';
 import { moduliDopo, moduloFieldOf, withPrefill } from '../ordini/form.js';
 import { COLONNE, SLOTS } from '../ordini/registry.js';
+import { avvisoModulo } from '../ordini/moduli.js';
 import { activeParts, SECTIONS } from '../schede/fields.js';
 import { MAX_MISURE, misuraOf, misuraTemplateRow, misureFormRows } from '../schede/misure.js';
 import { FISSE, ORDINABILI, sezioniOrdinate } from '../schede/ordine.js';
@@ -137,6 +138,7 @@ export async function renderForm(
     maxMisure: MAX_MISURE,
     misuraOf,
     moduli: SLOTS,
+    avvisoModulo,
     moduliDopo,
     moduloFieldOf,
     collegati: {

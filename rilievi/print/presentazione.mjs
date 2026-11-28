@@ -1,8 +1,9 @@
 // Презентацията на Rilievi Impianti — А4, лице и гръб като флаера (собственикът, 16 ноември 2026: „Направи ми
 // презентация а4 за софтуера ни“, после „Направи го 2 страници като флеъра“). Текстовете са италиански (порталът е
-// само на италиански) и казват само каквото порталът прави — прегледани от Преводача. Модулът на Pelazza е
-// истинският PDF от портала с примерни данни („Ascensori Esempio S.r.l.“), превърнат в SVG (pdftocairo —
-// векторен); двата екрана на телефона са снимки на портала (390 × 844, DPR 3) — print/presentazione/.
+// само на италиански) и казват само каквото порталът прави — прегледани от Преводача. Документът е първата
+// страница на PDF-а на картата от портала с примерни данни („Ascensori Esempio S.r.l.“, pdftoppm 230 dpi, в сиво);
+// модул на доставчик не се показва (правилото на собственика; 26 ноември 2026 — чуждият документ не стои в
+// публичното репо); двата екрана на телефона са снимки на портала (390 × 844, DPR 3) — print/presentazione/.
 // Пише print/presentazione-a4.html (за преглед), два PDF-а и прегледите на двете страни:
 //   presentazione-a4.pdf         — точно A4 (210 × 297 mm), за принтер в офиса и за пращане по имейл;
 //   presentazione-a4-stampa.pdf  — A4 с 3 mm „bleed“ от всяка страна (216 × 303 mm), за печатница;
@@ -197,9 +198,9 @@ ${passi}
     <div class="vista">
       <figure><img class="telefono" src="${A}telefono-scheda.png" alt="La scheda di rilievo aperta su un telefono"><figcaption>La scheda sul telefono.</figcaption></figure>
       <figure><img class="telefono" src="${A}telefono-firma.png" alt="Le firme del tecnico e del cliente sul telefono"><figcaption>Le firme sul foglio di intervento.</figcaption></figure>
-      <figure><img class="doc" src="${A}modulo-pelazza.svg" alt="Il modulo d'ordine del quadro Pelazza compilato"><figcaption>Il modulo d'ordine del quadro Pelazza, compilato con i dati della scheda.</figcaption></figure>
+      <figure><img class="doc" src="${A}scheda-pdf.png" alt="La prima pagina della scheda di rilievo in PDF A4"><figcaption>La scheda di rilievo in PDF A4, con il logo della tua azienda.</figcaption></figure>
     </div>
-    <p class="nota">Schermate e documento del portale con dati di esempio. I marchi citati appartengono ai rispettivi titolari.</p>
+    <p class="nota">Schermate e documento del portale con dati di esempio. I marchi citati appartengono ai rispettivi titolari: Rilievi Impianti non è affiliato a questi produttori.</p>
     <div class="griglia">
 ${funzioni}
     </div>

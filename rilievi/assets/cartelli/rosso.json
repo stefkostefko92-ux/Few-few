@@ -1,50 +1,40 @@
 {
   "id": "rosso",
   "titolo": "Rosso",
-  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 01_Rosso_Corporate.pdf, ingrandita per la stampa il 31/10/2026 con Real-ESRGAN x4plus (3:1 con Lanczos) e riportata a 2× con Lanczos (scripts/cartelli/upscale.py)",
+  "fonte": "Disegnato da Carbon Stealth VCC il 28/11/2026 con scripts/cartelli/disegna.py: grafica e scritte generate dal codice (Fira Sans, SIL OFL 1.1), foto: nostro rendering 3D (public/img/site/vano-2400.webp)",
   "file": "rosso.jpg",
-  "sha256": "007e8593fded3c382ffca0224b3043f5378d49af2a2b6412c95f97a3718ff9b8",
-  "larghezza": 1518,
-  "altezza": 1094,
+  "sha256": "2c8bd83c02e92812c35a7aad01df71874ba406eb71f0be3bf843d638f98ff6d2",
+  "larghezza": 1750,
+  "altezza": 1220,
   "scala": 2,
-  "copri": [
-    {
-      "rect": [73, 138, 738, 170]
-    },
-    {
-      "rect": [69, 648, 993, 690]
-    },
-    {
-      "rect": [69, 786, 1115, 924]
-    }
-  ],
+  "copri": [],
   "logo": {
-    "box": [76, 18, 336, 116]
+    "box": [70, 16, 350, 146]
   },
   "azienda": {
-    "box": [356, 22, 990, 116],
-    "colore": "#1a1a1a",
-    "dimensione": 21
+    "box": [372, 16, 1690, 146],
+    "colore": "#14100f",
+    "dimensione": 24
   },
   "valori": {
-    "y": 679,
-    "dimensione": 31,
-    "colore": "#111111",
+    "y": 566,
+    "dimensione": 40,
+    "colore": "#14100f",
     "colonne": [
-      [79, 225],
-      [316, 285],
-      [614, 205],
-      [830, 155]
+      [70, 250],
+      [360, 560],
+      [950, 330],
+      [1310, 370]
     ]
   },
   "testo": {
-    "x": 78,
-    "y": 816,
-    "larghezza": 1025,
-    "riga": 33.3,
-    "righe": 4,
-    "dimensione": 28,
-    "colore": "#111111"
+    "x": 70,
+    "y": 772,
+    "larghezza": 1000,
+    "riga": 58,
+    "righe": 5,
+    "dimensione": 44,
+    "colore": "#14100f"
   },
   "scritte": []
 }

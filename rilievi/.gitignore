@@ -15,3 +15,5 @@ scripts/render/out/
 # Логото: оригиналът от scripts/logo/logo.py (кодира се с `npm run brand:logo`).
 scripts/logo/out/
 __pycache__/
+# Модулите на доставчиците — в git само шифровани (assets/moduli/sigillati/, `npm run moduli:sigilla`).
+assets/moduli/*.pdf

@@ -9,7 +9,9 @@ import { setFlash } from '../http/flash.js';
 import { ADMIN_RESET_HOURS } from '../services/auth.js';
 import { addMembership, changeMembershipRole, removeMembership } from '../services/memberships.js';
 import { azzeraDueFattori } from '../services/due-fattori.js';
+import { cancellaAccount } from '../services/cancellazione-account.js';
 import { createResetLink, getUser, setActive, updateAccount } from '../services/users.js';
+import { confermaPassword } from './conferma-password.js';
 
 /**
  * Един човек: фирмите и ролите му (тези, които гледащият вижда), акаунтът (име, имейл, парола) и
@@ -102,6 +104,42 @@ usersManageRouter.post('/utenti/:id/stato', manage, requireCsrf, async (req, res
   }[esito];
   setFlash(res, esito === 'ok' ? 'ok' : 'error', chiave);
   back(res, id);
+});
+
+/**
+ * Изтриването на акаунта (Allegato A, A.9; правният преглед, 28 ноември 2026): само деактивиран, от който може да
+ * го деактивира, и с паролата на действащия — не се връща. После човекът го няма (списъкът, страницата — 404).
+ */
+usersManageRouter.post('/utenti/:id/elimina', manage, requireCsrf, async (req, res) => {
+  const actor = principalOf(req).user;
+  const id = String(req.params.id);
+  const target = await getUser(actor, id);
+  if (!target) {
+    sendError(req, res, 404, 'error.notFoundTitle', 'error.notFound');
+    return;
+  }
+  if (!target.deletable) {
+    setFlash(res, 'error', 'flash.notAllowed');
+    res.redirect(303, `/utenti/${encodeURIComponent(id)}`);
+    return;
+  }
+  const password = await confermaPassword(req, res);
+  if (password === 'bloccato') return;
+  if (password === 'errata') {
+    await renderUser(req, res, 422, null, 'users.cancella.errorePassword');
+    return;
+  }
+  const esito = await cancellaAccount(actor, target.id);
+  if (esito === 'assente') {
+    sendError(req, res, 404, 'error.notFoundTitle', 'error.notFound');
+    return;
+  }
+  setFlash(
+    res,
+    esito === 'ok' ? 'ok' : 'error',
+    esito === 'ok' ? 'flash.userCancellato' : 'flash.notAllowed',
+  );
+  res.redirect(303, esito === 'ok' ? '/utenti' : `/utenti/${encodeURIComponent(id)}`);
 });
 
 usersManageRouter.post('/utenti/:id/reimposta', manage, requireCsrf, async (req, res) => {

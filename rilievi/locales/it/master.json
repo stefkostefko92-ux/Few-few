@@ -277,6 +277,7 @@
         "interessati": "Interessati",
         "sub": "Sub-responsabile",
         "base": "Base giuridica",
+        "destinatari": "Destinatari",
         "conservazione": "Conservazione",
         "nome": "Sub-responsabile",
         "sede": "Sede",
@@ -291,6 +292,7 @@
       "nessunaFirma": "Senza firma registrata",
       "subResponsabili": "Sub-responsabili",
       "trasferimenti": "Trasferimenti verso paesi terzi (art. 30, par. 2, lett. c))",
+      "trasferimentiTitolare": "Trasferimenti verso paesi terzi come titolare (art. 30, par. 1, lett. e))",
       "misure": "Misure tecniche e organizzative (art. 30, par. 2, lett. d))",
       "stampa": "Stampa il registro"
     },

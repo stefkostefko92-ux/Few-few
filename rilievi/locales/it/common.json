@@ -118,6 +118,7 @@
     "profileSaved": "Nome aggiornato.",
     "roleChanged": "Ruolo aggiornato.",
     "userDeactivated": "Account disattivato: le sue sessioni sono state chiuse.",
+    "userCancellato": "Account cancellato: restano solo i nomi nei documenti firmati e le voci del registro.",
     "userReactivated": "Account riattivato.",
     "inviteRevoked": "Invito revocato: il link non funziona più.",
     "notAllowed": "Operazione non consentita per il tuo ruolo.",

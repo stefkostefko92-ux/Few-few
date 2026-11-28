@@ -289,6 +289,8 @@ describe('switching provider', () => {
       ],
       [null, null, null, false],
     );
+    // The revocation leaves its mark: a later request no longer lifts the read-only (art. 12.7, B.6).
+    assert.ok(annullata.cambioRevocatoAt, 'the revocation is kept');
     const azioni = await prisma.auditLog.findMany({
       where: { aziendaId: azienda.id, action: { startsWith: 'AZIENDA_CAMBIO' } },
       orderBy: { at: 'asc' },

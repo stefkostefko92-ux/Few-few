@@ -105,6 +105,33 @@ describe('the subscription of a company', () => {
       },
     });
     assert.equal((await tecnico.get('/schede/nuova', HTML)).status, 200);
+
+    // Revoked (B.6): from the revocation the read-only of art. 12.5 applies again, and a new request after a
+    // revocation does not lift it — otherwise request, revoke, request again was free service for ever (art. 12.7;
+    // the legal review, 28 November 2026). Export and the change of provider stay open.
+    await prisma.azienda.update({
+      where: { id: azienda.id },
+      data: {
+        cambioRichiestoAt: null,
+        cambioFineAt: null,
+        cambioEsito: null,
+        cambioRevocatoAt: new Date(),
+      },
+    });
+    assert.equal((await tecnico.get('/schede/nuova', HTML)).status, 403);
+    await prisma.azienda.update({
+      where: { id: azienda.id },
+      data: {
+        cambioRichiestoAt: new Date(),
+        cambioFineAt: new Date(Date.now() + 10 * GIORNO),
+        cambioEsito: 'ALTRO_FORNITORE',
+      },
+    });
+    assert.equal((await tecnico.get('/schede/nuova', HTML)).status, 403);
+    assert.equal(
+      (await admin.get(`/impostazioni/esportazione?azienda=${azienda.id}`, HTML)).status,
+      200,
+    );
   });
 
   it('warns before the end of the trial, with the way to renew for the ADMIN only', async () => {

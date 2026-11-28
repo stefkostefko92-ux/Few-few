@@ -26,6 +26,8 @@ export const TIPI_ALLARME = [
   'segnalazione',
   'sogliaIva',
   'notaCredito',
+  'fattura',
+  'contestazioneDaValutare',
 ] as const;
 export type TipoAllarme = (typeof TIPI_ALLARME)[number];
 
@@ -77,6 +79,8 @@ export const PAUSA_MS: Record<TipoAllarme, number> = {
   segnalazione: 10 * 60_000,
   sogliaIva: 6 * 60 * 60_000,
   notaCredito: 12 * 60 * 60_000,
+  fattura: 12 * 60 * 60_000,
+  contestazioneDaValutare: 12 * 60 * 60_000,
 };
 
 /** Може ли да тръгне сега; ако да — записва момента. Без база: паметта на процеса. */

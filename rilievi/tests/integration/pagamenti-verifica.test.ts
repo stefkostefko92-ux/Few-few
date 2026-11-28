@@ -10,6 +10,7 @@
 //   twice), MASTER records what was given back.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
+import { businessDay } from '../../src/time.js';
 import {
   avviaRevolutFinto,
   CHIAVE,
@@ -292,10 +293,13 @@ describe('a payment that does not go the plain way', () => {
     assert.match(csv.body, /"99,00"/);
     assert.equal((await browser.get('/master/pagamenti/esporta.csv')).status, 403);
 
+    // The number and the date of the invoice are required (fatture.test.ts has the details).
+    // The day in Rome: the invoice is never dated before the payment (segnaFatturato) — also just after midnight.
+    const fattura = { numero: 'F-1', data: businessDay() };
     await master.browser.submit(
       '/master/pagamenti',
       `/master/pagamenti/${ordine.reference}/fatturato`,
-      {},
+      fattura,
     );
     const fatto = await prisma.pagamento.findUniqueOrThrow({ where: { id: ordine.reference } });
     assert.ok(fatto.fatturataAt);
@@ -305,7 +309,7 @@ describe('a payment that does not go the plain way', () => {
     await master.browser.submit(
       '/master/pagamenti',
       `/master/pagamenti/${ordine.reference}/fatturato`,
-      {},
+      fattura,
     );
     assert.equal(
       await prisma.auditLog.count({

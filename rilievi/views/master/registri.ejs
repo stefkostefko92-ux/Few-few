@@ -57,6 +57,7 @@
         <th scope="col"><%= t('master.registri.colonne.dati') %></th>
         <th scope="col"><%= t('master.registri.colonne.interessati') %></th>
         <th scope="col"><%= t(parte === 'responsabile' ? 'master.registri.colonne.sub' : 'master.registri.colonne.base') %></th>
+        <% if (parte === 'titolare') { %><th scope="col"><%= t('master.registri.colonne.destinatari') %></th><% } %>
         <th scope="col"><%= t('master.registri.colonne.conservazione') %></th>
       </tr></thead>
       <tbody>
@@ -66,6 +67,7 @@
           <td data-label="<%= t('master.registri.colonne.dati') %>"><%= x.dati %></td>
           <td data-label="<%= t('master.registri.colonne.interessati') %>"><%= x.interessati %></td>
           <td data-label="<%= t(parte === 'responsabile' ? 'master.registri.colonne.sub' : 'master.registri.colonne.base') %>"><%= parte === 'responsabile' ? x.sub : x.base %></td>
+          <% if (parte === 'titolare') { %><td data-label="<%= t('master.registri.colonne.destinatari') %>"><%= x.destinatari %></td><% } %>
           <td data-label="<%= t('master.registri.colonne.conservazione') %>"><%= x.conservazione %></td>
         </tr>
         <% } %>
@@ -87,6 +89,14 @@
     <h2 class="section__title" id="h-trasf"><%= t('master.registri.trasferimenti') %></h2>
     <ul>
       <% for (const x of r.responsabile.trasferimenti) { %><li><%= x %></li>
+      <% } %>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-trasf-titolare">
+    <h2 class="section__title" id="h-trasf-titolare"><%= t('master.registri.trasferimentiTitolare') %></h2>
+    <ul>
+      <% for (const x of r.titolare.trasferimenti) { %><li><%= x %></li>
       <% } %>
     </ul>
   </section>

@@ -30,7 +30,12 @@ export async function avvisaScadenze(now: Date = new Date()): Promise<number> {
         gt: new Date(now.getTime() - DAY),
         lte: new Date(now.getTime() + 14 * DAY),
       },
-      OR: [{ cambioFineAt: null }, { cambioFineAt: { lte: now } }],
+      // Смяната в ход спира само четенето — освен след оттеглено искане (чл. 12.7): тогава известията тръгват.
+      OR: [
+        { cambioFineAt: null },
+        { cambioFineAt: { lte: now } },
+        { cambioRevocatoAt: { not: null } },
+      ],
     },
     select: {
       id: true,

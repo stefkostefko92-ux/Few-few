@@ -71,6 +71,9 @@ services:
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?липсва PUBLIC_BASE_URL}
       JWT_SECRET: ${JWT_SECRET:?липсва JWT_SECRET}
       INTERVENTI_SEAL_KEY: ${INTERVENTI_SEAL_KEY:?липсва INTERVENTI_SEAL_KEY}
+      # Ключът на шифрованите модули на доставчиците (src/ordini/moduli-sigillo.ts). Не е `:?` — тогава compose
+      # би спрял и командите само към базата; deploy.sh го иска в check_secrets, преди всичко друго.
+      MODULI_KEY: ${MODULI_KEY:-}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-2525}
       SMTP_SECURE: ${SMTP_SECURE:-false}

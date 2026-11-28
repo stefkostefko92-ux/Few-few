@@ -100,7 +100,8 @@
         "failed": "L'email non è partita. Riprova più tardi.",
         "approvazione": "La scheda va prima approvata.",
         "modulo": "Il modulo non è compilato."
-      }
+      },
+      "avviso": "I moduli dei fornitori si usano solo per chiedere un preventivo o fare un ordine al fornitore del modulo, non per altri scopi (Condizioni, art. 6.8)."
     },
     "ordini": {
       "titolo": "Ordini ai fornitori",

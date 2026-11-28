@@ -18,6 +18,7 @@
       <% for (const m of moduli) { %><option value="<%= m.path %>"<% if (m.path === valori.modulo) { %> selected<% } %>><%= m.titolo %></option>
       <% } %>
     </select>
+    <p class="field__hint"><%= t('flusso.invio.avviso') %></p>
   </div>
   <%# Празен адресник — без падащ списък само с „— Scrivi … —“: бележката казва какво да се направи (визуалната
       проверка, 16.11.2026); връзката към настройките — за който ги управлява. %>

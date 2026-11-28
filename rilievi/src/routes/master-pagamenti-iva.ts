@@ -4,7 +4,12 @@ import { nomeCsv, righeCsv } from '../http/csv.js';
 import { setFlash } from '../http/flash.js';
 import { salvaIva } from '../pagamenti/config.js';
 import { chiaveRegime } from '../pagamenti/importi.js';
-import { numeroDocumento, segnaNotaEmessa, tutteLeNoteCredito } from '../pagamenti/note-credito.js';
+import {
+  giornoDocumento,
+  numeroDocumento,
+  segnaNotaEmessa,
+  tutteLeNoteCredito,
+} from '../pagamenti/note-credito.js';
 import { formatoEuro } from '../pagamenti/offerta.js';
 import { importoDa } from '../pagamenti/rimborsi.js';
 import { businessDay } from '../time.js';
@@ -38,14 +43,6 @@ masterPagamentiIvaRouter.post(`${PATH}/iva`, manage, requireCsrf, async (req, re
   setFlash(res, 'ok', 'vies.master.ivaSalvato');
   res.redirect(303, `${PATH}#h-iva`);
 });
-
-/** Денят на документа („2026-11-14“) — не в бъдещето и не преди портала. */
-function giornoDocumento(raw: unknown): Date | null {
-  if (typeof raw !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
-  const d = new Date(`${raw}T12:00:00Z`);
-  if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== raw) return null;
-  return raw >= '2026-01-01' && raw <= businessDay() ? d : null;
-}
 
 masterPagamentiIvaRouter.post(
   `${PATH}/note-credito/:id/emessa`,
@@ -82,6 +79,7 @@ masterPagamentiIvaRouter.get(`${PATH}/note-credito.csv`, manage, async (_req, re
       c('ragioneSociale'),
       c('partitaIva'),
       c('fattura'),
+      c('fatturaData'),
       c('imponibile'),
       c('iva'),
       c('totale'),
@@ -97,6 +95,7 @@ masterPagamentiIvaRouter.get(`${PATH}/note-credito.csv`, manage, async (_req, re
       n.pagamento.ragioneSociale,
       n.pagamento.partitaIva,
       n.pagamento.fatturaNumero ?? '',
+      n.pagamento.fatturaData ? fmt.dayRoma(n.pagamento.fatturaData) : '',
       formatoEuro(n.imponibileCent),
       formatoEuro(n.ivaCent),
       formatoEuro(n.totaleCent),
