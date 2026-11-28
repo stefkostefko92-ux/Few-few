@@ -114,6 +114,28 @@ describe('deleting an account', () => {
       /Mario Cancellabile|Utente cancellato/,
     );
     assert.notEqual((await new Browser().login(vecchiaEmail)).status, 302);
+    // Nobody brings it back or writes into it: the name and email, reactivation, a new company (the review of
+    // Кодаджията — `loadTarget` read deleted accounts too). Refused, never a 500, and the row stays anonymous.
+    const { browser: master } = await signedIn('MASTER');
+    const altra = await makeAzienda('Dopo la Cancellazione Srl');
+    for (const [chi, azione, campi] of [
+      [admin, 'account', { name: 'Mario Cancellabile', email: vecchiaEmail, password: PASSWORD }],
+      [admin, 'stato', { active: '1' }],
+      [master, 'account', { name: 'Mario Cancellabile', email: vecchiaEmail, password: PASSWORD }],
+      [master, 'stato', { active: '1' }],
+      [master, 'aziende', { azienda: altra.id, role: 'TECNICO' }],
+    ] as const) {
+      const r = await chi.submit('/account', `${pagina}/${azione}`, campi);
+      assert.ok(r.status < 500, `${azione}: ${r.status}`);
+    }
+    const ancora = await prisma.user.findUniqueOrThrow({
+      where: { id: tecnico.id },
+      include: { memberships: true },
+    });
+    assert.equal(ancora.name, 'Utente cancellato');
+    assert.equal(ancora.email, dopo.email);
+    assert.ok(ancora.deactivatedAt);
+    assert.ok(!ancora.memberships.some((m) => m.aziendaId === altra.id), 'no new company');
     // Twice: nothing to delete any more.
     assert.equal((await admin.submit('/account', elimina, { password: PASSWORD })).status, 404);
   });
@@ -140,7 +162,22 @@ describe('deleting an account', () => {
       null,
     );
     // The MASTER may: the account is the portal's to manage.
-    const { browser: master } = await signedIn('MASTER');
+    const { browser: master, user: masterUser } = await signedIn('MASTER');
+    // Never the MASTER: not even another MASTER may delete one.
+    const altroMaster = await makeUser('MASTER');
+    await prisma.user.update({
+      where: { id: altroMaster.id },
+      data: { deactivatedAt: new Date() },
+    });
+    const suMaster = await master.submit('/account', `/utenti/${altroMaster.id}/elimina`, {
+      password: PASSWORD,
+    });
+    assert.ok([303, 404].includes(suMaster.status), String(suMaster.status));
+    assert.equal(
+      (await prisma.user.findUniqueOrThrow({ where: { id: altroMaster.id } })).cancellatoAt,
+      null,
+    );
+    assert.ok(masterUser.id);
     const fatto = await master.submit(
       `/utenti/${condiviso.id}`,
       `/utenti/${condiviso.id}/elimina`,

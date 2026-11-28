@@ -56,7 +56,7 @@ const PUBBLICATI: Record<string, string> = {
   // signatures on screen (6.10), our email in the preamble, the credit note and the VIES name (12.9, 12.10), the
   // account deletion (A.9), the second netcup server (S.1); new clauses in art. 24 (17.3, B.13, 23.4, 25.3, A.15).
   // The unpublished 2026-11-27 became this file. In force on its own day without announcement.
-  'condizioni-2026-11-29': '61bdf215c1f6e7a5f9e8f0ec900bc92e789f12fe156adc0f9376232cbddf6859',
+  'condizioni-2026-11-29': '37a304ca5c436436c038f5995bca309a01ddf8fc43ca1f04bf691a33f55542ef',
 };
 
 const tutto = (doc: TestoLegaleDoc): string => testoPiano(doc);

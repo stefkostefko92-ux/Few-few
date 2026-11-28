@@ -26,6 +26,8 @@ const PAGINA: Record<TipoAllarme, string> = {
   segnalazione: '/master/segnalazioni',
   sogliaIva: '/master/pagamenti',
   notaCredito: '/master/pagamenti#h-note',
+  fattura: '/master/pagamenti#h-fatturare',
+  contestazioneDaValutare: '/master/pagamenti#h-contestazioni',
 };
 
 /** Адресът е в паметта за минута: алармата не пита базата всеки път; записът от конзолата го сменя веднага. */

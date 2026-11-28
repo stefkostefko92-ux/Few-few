@@ -4,7 +4,7 @@ import { prisma } from '../db.js';
 import { setFlash } from '../http/flash.js';
 import { formatoEuro } from '../pagamenti/offerta.js';
 import { riconciliaRimborso } from '../pagamenti/rimborsi-riconcilia.js';
-import { convertiti, importoDa, rimborsoDovuto } from '../pagamenti/rimborsi.js';
+import { convertiti, fontiCredito, importoDa, rimborsoDovuto } from '../pagamenti/rimborsi.js';
 import { anteprimaRimborso, rimborsaSuRevolut } from '../pagamenti/rimborso-revolut.js';
 import { confermaPassword } from './conferma-password.js';
 
@@ -42,7 +42,7 @@ async function vista(
     p.stato === 'DA_VERIFICARE'
       ? p.totaleCent
       : p.stato === 'COMPLETATO' && cessazione && !(await convertiti()).has(p.id)
-        ? rimborsoDovuto(p, cessazione)
+        ? rimborsoDovuto(p, cessazione, await fontiCredito(prisma, p))
         : 0;
   const [anteprima, righe] = await Promise.all([
     anteprimaRimborso(p.id, dovutoCent),

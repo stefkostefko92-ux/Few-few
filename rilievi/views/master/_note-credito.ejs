@@ -1,10 +1,10 @@
-<%# The credit notes to issue (pagamenti/note-credito.ts): one for each refund and each lost dispute. The portal
+<%# The credit notes to issue (pagamenti/note-credito.ts): one for each refund and each lost dispute MASTER judged a termination. The portal
     issues nothing: the MASTER writes here the number and the day of the note issued in the invoicing software. %>
 <% const n = 'rimborsi.note.';
    const importi = (x) => x.ivaCent > 0
      ? t(n + 'conIva', { imponibile: euro(x.imponibileCent), iva: euro(x.ivaCent), totale: euro(x.totaleCent) })
      : t(n + 'senzaIva', { totale: euro(x.totaleCent) });
-   const fattura = (p) => p.fatturaNumero ? t(n + 'fattura', { numero: p.fatturaNumero }) : t(p.fatturataAt ? n + 'fatturaSenzaNumero' : n + 'fatturaNon');
+   const fattura = (p) => p.fatturaNumero ? (p.fatturaData ? t(n + 'fatturaDel', { numero: p.fatturaNumero, data: fmt.dayRoma(p.fatturaData) }) : t(n + 'fattura', { numero: p.fatturaNumero })) : t(p.fatturataAt ? n + 'fatturaSenzaNumero' : n + 'fatturaNon');
 %>
 <section class="panel pagamenti-pannello" aria-labelledby="h-note">
   <h2 class="section__title" id="h-note"><%= t(n + 'titolo') %></h2>

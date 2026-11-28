@@ -150,8 +150,9 @@ export async function getUser(actor: SessionUser, id: string): Promise<UserView 
 /** Човекът с ВСИЧКИТЕ му членства — проверката за управление гледа и фирмите извън обхвата. */
 export function loadTarget(id: string) {
   if (!USER_ID.test(id)) return Promise.resolve(null);
-  return prisma.user.findUnique({
-    where: { id },
+  // Изтритият акаунт не се управлява повече: нито име и имейл, нито достъп, нито нова фирма (ревюто на Кодаджията).
+  return prisma.user.findFirst({
+    where: { id, cancellatoAt: null },
     select: {
       id: true,
       master: true,

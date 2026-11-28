@@ -246,6 +246,7 @@
       "PAGAMENTO_RIMBORSO_AVVIATO": "Rimborso disposto su Revolut",
       "PAGAMENTO_RIMBORSO_FALLITO": "Rimborso su Revolut non riuscito",
       "PAGAMENTO_CONTESTATO": "Pagamento contestato (chargeback)",
+      "CONTESTAZIONE_DECISA": "Contestazione persa valutata (nota di credito o mancato pagamento)",
       "ALLARMI_IMPOSTATI": "Allarmi su Discord impostati",
       "ALLARMI_PROVA": "Allarme di prova inviato",
       "SEGNALAZIONE_RICEVUTA": "Segnalazione di contenuto illegale ricevuta",

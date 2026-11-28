@@ -73,6 +73,8 @@ const ANCHE_SCADUTA = new Set([
   '/calcolo-limitatore/:id/elimina',
   '/cartelli/:id/elimina',
   '/buoni/:id/elimina',
+  // Deleting a deactivated account (A.9 of the terms 2026-11-29) — here the person does not exist: 404.
+  '/utenti/:id/elimina',
   // Taking access away stays (art. 4.1).
   '/impostazioni/api/:id/revoca',
   '/impostazioni/accesso/disattiva',

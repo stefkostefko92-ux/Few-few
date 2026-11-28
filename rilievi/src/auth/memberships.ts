@@ -90,7 +90,11 @@ export function activeMemberships(
       !(
         row.azienda.cambioFineAt &&
         row.azienda.cambioFineAt.getTime() > now &&
-        !row.azienda.cambioRevocatoAt
+        // Брои само оттегляне при изтекъл план (в „само четене“): след нов платен план знакът не тежи.
+        !(
+          row.azienda.cambioRevocatoAt &&
+          row.azienda.cambioRevocatoAt.getTime() >= row.azienda.abbonamentoFino.getTime()
+        )
       )
         ? { solaLettura: true as const }
         : {}),

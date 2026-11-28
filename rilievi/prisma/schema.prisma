@@ -1860,8 +1860,11 @@ model Pagamento {
   rimborsatoAt      DateTime?
   /// Фактурата е издадена (извън портала) — отбелязва MASTER; празно = „da fatturare“.
   fatturataAt       DateTime?
-  /// Номерът на фактурата (по избор) — кредитното известие се издава към нея.
+  /// Номерът на фактурата — задължителен при отметката (от 28 ноември 2026); кредитното известие се издава към нея.
   fatturaNumero     String?           @db.VarChar(40)
+  /// Датата на фактурата (денят на документа, не на отметката — чл. 115, ал. 4 ЗДДС: известието я съдържа).
+  /// Празно — отметнато преди 28 ноември 2026, без дата.
+  fatturaData       DateTime?
   /// Проверката на ДДС номера във VIES при приемането на офертата (чл. 12.10; чл. 18, пар. 1, б. „а“ Регл.
   /// 282/2011): номерът на консултацията, кога и какво име и адрес е върнал VIES. Празно — български номер
   /// (20 % ДДС, без проверка) или плащане отпреди проверката.
@@ -1956,6 +1959,13 @@ model NotaCredito {
   @@index([emessaAt])
 }
 
+/// Изборът на MASTER за изгубен спор (чл. 115, ал. 1 и 3 ЗДДС — известие само при разваляне; неплащането е
+/// чл. 126б): кредитно известие (разваляне на договора) или никакво (неплатена извършена услуга).
+enum DecisioneContestazione {
+  NOTA_CREDITO
+  NESSUNA_NOTA
+}
+
 enum StatoContestazione {
   DA_RISPONDERE
   IN_ESAME
@@ -1965,7 +1975,7 @@ enum StatoContestazione {
 
 /// Спор за плащане (chargeback), отворен от клиента при банката му: Revolut го съобщава (`DISPUTE_*`), порталът
 /// го чете обратно (`GET /api/disputes/{id}`) и го показва на MASTER. Отговаря се в Revolut Business; порталът
-/// нищо не решава сам (чл. 12.9).
+/// нищо не решава сам (чл. 12.9) — и кредитното известие при изгубен спор е избор на MASTER (`decisione`).
 model Contestazione {
   /// id-то на спора в Revolut.
   id            String             @id @db.VarChar(100)
@@ -1979,6 +1989,9 @@ model Contestazione {
   valuta        String             @db.Char(3)
   rispostaEntro DateTime?
   apertaAt      DateTime?
+  /// Изгубен спор (PERSA) с плащане и без избор е „da valutare“; изборът — веднъж, с одит `CONTESTAZIONE_DECISA`.
+  decisione     DecisioneContestazione?
+  decisaAt      DateTime?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   notaCredito   NotaCredito?
