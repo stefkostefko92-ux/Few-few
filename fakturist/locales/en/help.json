@@ -350,7 +350,7 @@
         "2": "Reporting to the NRA — coming. Target: first quarter of 2028. It depends on the ordinance, which has not been published yet.",
         "3": "Mandatory structured e-invoices are planned under the bill from 1 July 2028. This is a bill, not a law in force.",
         "4": "You already have structured XML — UBL 2.1 and CII under EN 16931 — for every issued document.",
-        "5": "You already have the files for the VAT ledgers and the SAF-T data. You or your accountant file them."
+        "5": "The files for the VAT ledgers and the SAF-T data are being checked with the NRA’s tools and will be available after the check. You or your accountant file them."
       },
       "tips": {
         "1": "The dates are a target, not a promise. Until a feature is launched, Fakturist shows it as “coming”."
@@ -360,7 +360,7 @@
   "faq": {
     "1": {
       "q": "Does Fakturist file the VAT ledgers and SAF-T with the NRA?",
-      "a": "No. Fakturist gives you the files — PRODAGBI.TXT and POKUPKI.TXT for the ledgers and the month's sales for SAF-T — and the company or the accountant files them. The monthly SAF-T file also needs the general ledger, purchases and balances, which are kept in the accounting software."
+      "a": "No. Fakturist will give you the files — PRODAGBI.TXT and POKUPKI.TXT for the ledgers and the month's sales for SAF-T — once they pass the check with the NRA’s tools; the company or the accountant files them. The monthly SAF-T file also needs the general ledger, purchases and balances, which are kept in the accounting software."
     },
     "2": {
       "q": "Can I correct an invoice I have already issued?",

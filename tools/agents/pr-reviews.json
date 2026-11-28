@@ -518,6 +518,24 @@
       "konveyera",
       "pravniyat-razbirach",
       "razbivacha"
+    ],
+    "4c7815449c67f248d09b7937de129a87a28fd751": [
+      "ai-djiyata",
+      "kodadjiyata"
+    ],
+    "a4552724c6f5da1d5fe8024d35fd9724078042f7": [
+      "ai-djiyata",
+      "kodadjiyata"
+    ],
+    "f5a763a279d09cd9067adb851cc85dd21522f6db": [
+      "ai-djiyata",
+      "kodadjiyata",
+      "konveyera"
+    ],
+    "c300c02f96169bff8521053c699c0eaaab7e5bc3": [
+      "ai-djiyata",
+      "kodadjiyata",
+      "konveyera"
     ]
   },
   "runs": [
@@ -2544,6 +2562,86 @@
       "verdict": "чисто",
       "costUsd": 0.53,
       "date": "2026-11-27"
+    },
+    {
+      "pr": 513,
+      "sha": "4c7815449c67f248d09b7937de129a87a28fd751",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.08,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 513,
+      "sha": "4c7815449c67f248d09b7937de129a87a28fd751",
+      "agent": "ai-djiyata",
+      "verdict": "блокер",
+      "costUsd": 1.42,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 513,
+      "sha": "a4552724c6f5da1d5fe8024d35fd9724078042f7",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.22,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 513,
+      "sha": "a4552724c6f5da1d5fe8024d35fd9724078042f7",
+      "agent": "ai-djiyata",
+      "verdict": "поправки",
+      "costUsd": 1.8,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 515,
+      "sha": "f5a763a279d09cd9067adb851cc85dd21522f6db",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.11,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 515,
+      "sha": "f5a763a279d09cd9067adb851cc85dd21522f6db",
+      "agent": "ai-djiyata",
+      "verdict": "поправки",
+      "costUsd": 1.65,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 515,
+      "sha": "f5a763a279d09cd9067adb851cc85dd21522f6db",
+      "agent": "konveyera",
+      "verdict": "чисто",
+      "costUsd": 0.54,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 515,
+      "sha": "c300c02f96169bff8521053c699c0eaaab7e5bc3",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.34,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 515,
+      "sha": "c300c02f96169bff8521053c699c0eaaab7e5bc3",
+      "agent": "ai-djiyata",
+      "verdict": "поправки",
+      "costUsd": 2.4,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 515,
+      "sha": "c300c02f96169bff8521053c699c0eaaab7e5bc3",
+      "agent": "konveyera",
+      "verdict": "чисто",
+      "costUsd": 0.52,
+      "date": "2026-11-28"
     }
   ]
 }

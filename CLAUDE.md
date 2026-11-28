@@ -47,6 +47,7 @@ file holds only what is true across all products. Keep it that way.
 | `semki/` | Semki Bot — Discord бот за изтичането на семките във FiveM + дашборд с вход през Discord | Node 22 · TS · Express 5 · discord.js v14 · Prisma · PostgreSQL · Docker | BG · vps2.carbonstealth.eu (порт от 4340, `HTTP_PORT`) |
 | `liftcon/` | LiftCon — консултации за асансьори → `liftcon/CLAUDE.md` | статичен генератор + Node 22 · TS · Express 5 · Prisma · Brevo | IT · liftcon.it (порт 4370) · **никога** verifica ufficiale/certificazione |
 | `otgovorko/` | Отговорко — поддръжка → `otgovorko/CLAUDE.md` | Vertex ЕС | 4380 |
+| `studiopult/` | Студио пулт → `studiopult/CLAUDE.md` | Agent SDK | само 127.0.0.1 |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
@@ -146,7 +147,7 @@ Ours (BG, vetted; 67; metadata only until triggered): procedures (deploy · qual
 `guard-exfil` (secrets/PII out via any net verb, interpreter, Monitor or MCP argument) · `guard-readonly` ·
 `guard-config` (mid-session settings can't weaken guards) · `guard-self` (an agent can't rewrite hooks, settings, mods
 or memory; main session → human confirms) · `guard-model` (never Haiku). One secret list, fail-closed on a hit,
-red-teamed through the CLI; `permissions.deny` (read+write) for `.env`/keys (`.env.example` open). Hook context >10,000 chars never reaches an agent (doctrine = `agent-doctrine` skill).
+red-teamed through the CLI; `permissions.deny` (read+write) for `.env`/keys (`.env.example` open).
 **Learning ⇒ the fleet Artifact is republished, always** (owner's rule; `artifact-sync` Stop hook).
 Details → `.claude/hooks/README.md`.
 

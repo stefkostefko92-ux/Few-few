@@ -162,8 +162,8 @@ test('мастърът дава „Бизнес“ за 3 месеца от ка
     note: 'Партньор — пробен период',
   });
 
-  // Функциите на плана: SAF-T е в „Бизнес“, не в безплатния.
-  assert.equal(await orgHasFeature(companyId, 'saf-t'), true);
+  // Функциите на плана: сверката с банката е в „Бизнес“, не в безплатния.
+  assert.equal(await orgHasFeature(companyId, 'bank-matching'), true);
   // Няма прихващане при следваща поръчка — кредитът е само от плащане.
   assert.equal(await currentCredit(companyId, 'pro', 'MONTH'), null);
   // „План“ на фирмата казва, че е даден и до кога.

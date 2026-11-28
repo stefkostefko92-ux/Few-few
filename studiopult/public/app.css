@@ -1,0 +1,322 @@
+/* Студио пулт — тъмна монтажна, акцент като червената лампа „REC“. Системни шрифтове (нищо външно). */
+:root {
+  color-scheme: dark;
+  --bg: #121315;
+  --panel: #1b1d20;
+  --line: #2c3035;
+  --ink: #e9e6df;
+  --muted: #9a9890;
+  --rec: #e5484d;
+  --ok: #4cc38a;
+  --warn: #f0b429;
+  --focus: #7cb7ff;
+  --radius: 10px;
+  font-family: system-ui, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.5;
+}
+h1,
+h2 {
+  margin: 0;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+h1 {
+  font-size: 1.15rem;
+}
+h2 {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--rec);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+.sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.meter {
+  font-variant-numeric: tabular-nums;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+.meter.warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 16px;
+  padding: 16px 20px;
+}
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.agent-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+select,
+input,
+textarea,
+button {
+  font: inherit;
+  color: var(--ink);
+  background: #111214;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+textarea {
+  width: 100%;
+  resize: vertical;
+}
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+button {
+  cursor: pointer;
+  background: var(--rec);
+  border-color: var(--rec);
+  color: #fff;
+  font-weight: 600;
+}
+button.ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+.log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 280px;
+  max-height: 58vh;
+  overflow-y: auto;
+}
+.msg {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.msg.me {
+  background: #20242a;
+  border-color: #2f3640;
+  align-self: flex-end;
+  max-width: 85%;
+}
+.msg.agent {
+  background: #17191b;
+}
+.msg.sys {
+  color: var(--muted);
+  font-size: 0.85rem;
+  border-style: dashed;
+}
+.msg.err {
+  border-color: var(--rec);
+  color: #ffb4b6;
+}
+.who {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.approvals {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.approval {
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  padding: 12px;
+  background: #221d10;
+}
+.approval pre {
+  margin: 8px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+  background: #111214;
+  padding: 8px;
+  border-radius: 6px;
+  max-height: 240px;
+  overflow: auto;
+}
+.approval .row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.say {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.say-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.keep,
+.check {
+  color: var(--muted);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+}
+.task-form {
+  display: grid;
+  gap: 10px;
+}
+.task-form label:not(.check) {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.progress .bar {
+  height: 6px;
+  background: #111214;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress .bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--ok);
+  transition: width 0.3s linear;
+}
+.progress p {
+  margin: 6px 0 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.task-log {
+  margin: 0;
+  max-height: 200px;
+  overflow: auto;
+  font-size: 0.8rem;
+  background: #111214;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.task-log:empty {
+  display: none;
+}
+.preview-form {
+  display: flex;
+  gap: 8px;
+}
+.preview-form input {
+  flex: 1;
+  min-width: 0;
+}
+.preview video,
+.preview img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #000;
+}
+.selfcheck p {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+}
+.selfcheck .ok {
+  color: var(--ok);
+}
+.selfcheck .bad {
+  color: var(--rec);
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress .bar span {
+    transition: none;
+  }
+}

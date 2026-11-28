@@ -82,11 +82,12 @@ test('даване на съществуващ профил: грешен код
     (await prisma.user.findUniqueOrThrow({ where: { id: info.id } })).platformRole,
     'NONE',
   );
+  const accepted = await code();
   const result = await grantMaster({
     actorId: ownerId,
     email: ' INFO@example.test ',
     name: '',
-    code: await code(),
+    code: accepted,
   });
   assert.deepEqual(result, { userId: info.id, created: false });
   assert.equal(
@@ -107,10 +108,10 @@ test('даване на съществуващ профил: грешен код
   assert.match(granted.text, /двуфакторен вход/);
   const notice = await composeMasterMail('master.notice', 'admin@example.test', mails[1]!.payload);
   assert.match(notice.text, /info@example\.test/);
-  // Същият код втори път не минава (стъпката е записана).
-  const reused = totpCodeAt(ownerSecret, nowStep());
+  // Същият код втори път не минава (стъпката е записана). Точно приетият низ — не наново по часа: на
+  // границата на 30-секундната стъпка новият код е валиден и тестът падаше (28.11.2026).
   await assert.rejects(
-    grantMaster({ actorId: ownerId, email: 'other@example.test', name: 'Друг', code: reused }),
+    grantMaster({ actorId: ownerId, email: 'other@example.test', name: 'Друг', code: accepted }),
     (e: unknown) => e instanceof MasterError && e.code === 'badCode',
   );
   await assert.rejects(
