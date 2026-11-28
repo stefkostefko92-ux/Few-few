@@ -87,7 +87,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.18.0';
+export const VERSION = '1.18.1';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -457,6 +457,9 @@ export function buildRouter(ctx) {
     ENAMETOOLONG: 400,
     ELOOP: 400, // символна връзка в кръг
     EINVAL: 400,
+    // Дял само за четене (за процеса на панела) — не е „вътрешна грешка" и не
+    // бива да храни SLO-то с 5xx. /home е такава по замисъл на unit-а.
+    EROFS: 409,
   };
   const J = (fn) => async (req, res, params, url) => {
     let data;
@@ -473,6 +476,7 @@ export function buildRouter(ctx) {
   // Текстът е за ЧОВЕК, не преразказ на errno. Пътят не се повтаря в отговора —
   // той идва от заявката и ехото му обратно е ненужна повърхност.
   function errText(err, status) {
+    if (err?.code === 'EROFS') return 'Тук панелът е само за четене (дялът е монтиран „ro“ за него) — промени по SSH.';
     if (status === 404) return 'Няма такъв път.';
     if (status === 403) return 'Няма права за този път.';
     if (err?.code === 'ENOTDIR') return 'Пътят не е папка.';
@@ -1337,7 +1341,8 @@ export function buildRouter(ctx) {
       J((req, res, p, url) => {
         const out = files.listDir(url.searchParams.get('path'), { owners: fileops.owners() });
         const hidden = fileops.sandboxNote(out.path);
-        return hidden ? { ...out, sandboxHidden: hidden } : out;
+        const readOnly = fileops.readOnlyMount(out.path);
+        return { ...out, ...(hidden ? { sandboxHidden: hidden } : {}), ...(readOnly ? { readOnly } : {}) };
       })
     )
   );

@@ -6022,10 +6022,15 @@ async function renderFiles(path) {
     return;
   }
   if (FILES.path !== data.path) FILES.sel.clear();
-  // Пясъчникът на unit-а крие /home — празната таблица там НЕ значи „празно".
+  // Пясъчникът на unit-а крие /run/user — празната таблица там НЕ значи „празно".
+  // И Терминалът върви в СЪЩИЯ пясъчник, затова истината е само по SSH.
   const sandboxBanner = data.sandboxHidden
-    ? el('div', { class: 'banner banner-warn', style: 'margin-bottom:10px', text: 'Панелът не вижда тази папка: unit-ът е с ProtectHome=tmpfs и за него тя е празна. Истинското съдържание е на диска — виж го от „Терминал" или махни ProtectHome от deploy/vps-dashboard.service.' })
-    : null;
+    ? el('div', { class: 'banner banner-warn', style: 'margin-bottom:10px', text: 'Панелът не вижда тази папка: пясъчникът на unit-а я крие и за него тя е празна. Истинското съдържание е на диска — виж го по SSH (Терминалът е в същия пясъчник).' })
+    : data.readOnly
+      ? el('div', { class: 'banner banner-warn', style: 'margin-bottom:10px', text: data.readOnly === '/home'
+        ? 'Тук панелът само гледа: /home е видима само за четене (пясъчникът на unit-а — пазачът на SSH ключовете в /home/*/.ssh чете, не пипа). Промени в домашните папки — по SSH.'
+        : t(`Дялът ${data.readOnly} е монтиран само за четене — промени оттук няма да минат.`) })
+      : null;
   FILES.path = data.path;
   try { localStorage.setItem('csd.files.path', data.path); } catch { /* без памет — нищо */ }
   view.innerHTML = '';

@@ -1,6 +1,6 @@
 # systemd unit за Carbon Stealth VPS Dashboard.
 # Панелът управлява systemd/docker/деплой → трябва root. Затова затягаме всичко
-# останало: no-new-privileges, скрит /home, защитен kernel. Слуша само на localhost
+# останало: no-new-privileges, /home само за четене, защитен kernel. Слуша само на localhost
 # (127.0.0.1:7700) — публичният достъп минава през Nginx + TLS + Basic-auth по избор.
 [Unit]
 Description=Carbon Stealth VPS Dashboard
@@ -18,8 +18,8 @@ User=root
 WorkingDirectory=/opt/vps-dashboard
 Environment=NODE_ENV=production
 Environment=CSD_CONFIG=/etc/vps-dashboard/config.json
-# HOME за самия панел и за децата му (npm кеш, docker buildx state). Без него
-# всяко дете наследява HOME=/root, който при ProtectHome не се пише.
+# HOME за самия панел и за децата му (npm кеш, docker buildx state): кешовете на
+# панела не се трупат в /root, а в state (оттам ги чисти и „Диск" → кешове).
 Environment=HOME=/var/lib/vps-dashboard
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
@@ -58,26 +58,35 @@ NoNewPrivileges=true
 # пълен, а панелът върви като root — обратното е вярно, така проработва
 # СОБСТВЕНИЯТ sandbox на apt.
 AmbientCapabilities=CAP_SETUID CAP_SETGID
-# ВНИМАНИЕ, това е грешката, която направихме веднъж: `ProtectHome=read-only` +
-# `ReadWritePaths=/root` НЕ отваря /root за запис. Проверено срещу изходния код
-# на systemd v255 (src/core/namespace.c): при ЕДНАКВИ пътища `mount_path_compare`
-# подрежда по режим, а enum-ът MountMode е „ordered by priority" с MOUNT_READ_ONLY
-# ПРЕДИ MOUNT_READ_WRITE; `drop_duplicates()` пази ПЪРВИЯ (по-рестриктивния) и
-# OR-ва флага read_only. Влагането работи само за ПОД-директории, не за същия път.
-# Резултат при старата настройка: качването на архив от браузъра пада с EROFS,
-# а `autodeploy` (който само ЧЕТЕ) си върви — тоест провалът изглежда частичен и
-# необясним.
+# БЕЗ `ProtectHome=` — и това е урок, платен ДВА пъти.
 #
-# /root ни трябва с ЗАПИС по канона на репото: archiveDir=/root, autodeploy.sh
-# търси архива там, PTY стартира там. Затова: скриваме реалните домашни папки с
-# tmpfs и връщаме точно /root чрез BindPaths.
-ProtectHome=tmpfs
-BindPaths=/root
-# /home се връща САМО за четене: отпечатъкът на posture.js следи /home/*/.ssh/authorized_keys
-# (нов ключ на deploy = постоянен вход като ключ на root). Под голия tmpfs пазачът би бил сляп
-# и тих. Същият механизъм като BindPaths=/root (bind побеждава tmpfs за същия път); „-" —
-# машина без /home не проваля старта.
+# /root ни трябва с ЗАПИС по канона на репото: archiveDir=/root, fetch-deploy.sh
+# сваля архива там, autodeploy.sh го търси там, PTY стартира там.
+#
+# (1) `ProtectHome=read-only` + `ReadWritePaths=/root` НЕ отваря /root (systemd
+#     v255, src/core/namespace.c: при ЕДНАКВИ пътища `drop_duplicates()` пази
+#     по-рестриктивния режим). Качването на архив падаше с EROFS.
+# (2) Поправката тогава беше `ProtectHome=tmpfs` + `BindPaths=/root`. Тя работи
+#     на systemd 255 (Ubuntu 24.04), но на systemd 257 (Debian 13) /root пак е
+#     `ro` — каквото и да казват BindPaths/ReadWritePaths. Измерено в лаборатория
+#     с systemd като PID 1, шест комбинации: ВСЯКО `ProtectHome=` (tmpfs или
+#     read-only) оставя /root само за четене на 257. На живо: „Деплой от GitHub"
+#     падаше с `curl: (23) client returned ERROR on write` (curl не може да
+#     СЪЗДАДЕ файла в /root), а по SSH същият скрипт минаваше. Гейтът и
+#     лабораторията на 255 бяха зелени.
+#
+# Сега: /root е обикновена папка, а целта на ProtectHome (да не пипаме чужди
+# домашни папки) се постига с по-тесни директиви, които се държат еднакво на 255
+# и на 257 (проверено и на двете):
+#  · /home — видима, САМО за четене. Отпечатъкът на posture.js следи
+#    /home/*/.ssh/authorized_keys (нов ключ на deploy = постоянен вход като ключ
+#    на root) — скрита папка би направила пазача сляп и тих. „-" — машина без
+#    /home не проваля старта.
+#  · /run/user — скрита (празен tmpfs): там са runtime сокетите на влезлите
+#    потребители, панелът няма работа с тях.
+# `test/deployfiles.test.js` пада, ако някой върне ProtectHome.
 BindReadOnlyPaths=-/home
+TemporaryFileSystem=/run/user:ro
 # Префиксът „-" значи „пропусни, ако я няма". Без него липсваща папка проваля
 # СТАРТА с 226/NAMESPACE (namespace.c:1543) — а /opt/few-few още не съществува
 # на девствен сървър, тоест услугата не тръгва и install.sh казва само

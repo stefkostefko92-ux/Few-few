@@ -375,3 +375,20 @@ test('тайните: прегледът през символна връзка 
   assert.equal(isSensitive(path.join(d, 'панел', 'config.json')), true);
   assert.equal(isSensitive(path.join(d, 'друго.txt')), false);
 });
+
+test('файлове: дял само за четене се КАЗВА в списъка — преди първото провалено действие', () => {
+  // Ред от /proc/self/mountinfo: поле 5 е точката, поле 6 — опциите на ТОВА монтиране.
+  const mi = [
+    '25 1 8:1 / / rw,relatime shared:1 - ext4 /dev/sda1 rw',
+    '310 25 8:1 /home /home ro,nosuid,nodev,relatime - ext4 /dev/sda1 rw',
+    '311 25 7:0 / /snap/core22/1 ro,nodev,relatime - squashfs /dev/loop0 ro',
+    '312 25 8:2 / /mnt/с\\040интервал ro,relatime - ext4 /dev/sdb1 rw',
+  ].join('\n');
+  assert.equal(f.readOnlyMount('/home/deploy/.ssh', mi), '/home', 'bind на unit-а: /home е ro за панела');
+  assert.equal(f.readOnlyMount('/snap/core22/1/usr', mi), '/snap/core22/1');
+  assert.equal(f.readOnlyMount('/mnt/с интервал/x', mi), '/mnt/с интервал', 'интервалът е \\040 в mountinfo');
+  assert.equal(f.readOnlyMount('/root', mi), null, '/root е на rw корена');
+  assert.equal(f.readOnlyMount('/homework', mi), null, '/homework не е под /home');
+  // Опциите на СУПЕРБЛОКА (след „-") не решават: bind ro върху rw диск е ro.
+  assert.equal(f.readOnlyMount('/home', mi.replace('/home ro,nosuid', '/home rw,nosuid')), null);
+});
