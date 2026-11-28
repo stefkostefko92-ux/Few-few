@@ -17,6 +17,7 @@ function manageError(err, t) {
   if (code === "PREMIUM_REQUIRED") return t("tickets.manage.premium");
   if (code === "BOT_ACTION_FAILED") return t("tickets.manage.botFailed");
   if (code === "TICKET_NOT_OPEN") return t("tickets.manage.closed");
+  if (code === "NOT_A_MEMBER") return t("tickets.manage.noResults");
   return t("tickets.manage.error");
 }
 
@@ -42,8 +43,17 @@ export default function TicketManageDialog({ serverId, ticket, onClose }) {
   const onErr = (e) => toast.error(manageError(e, t));
   const prio = useMutation({ mutationFn: () => setTicketPriority(serverId, ticket.id, priority), onSuccess: () => { toast.success(t("tickets.manage.prioritySaved")); refresh(); }, onError: onErr });
   const release = useMutation({ mutationFn: () => unclaimTicket(serverId, ticket.id), onSuccess: () => { toast.success(t("tickets.manage.released")); refresh(); onClose(); }, onError: onErr });
-  const rename = useMutation({ mutationFn: () => renameTicket(serverId, ticket.id, name), onSuccess: () => { toast.success(t("tickets.manage.renamed")); setName(""); refresh(); }, onError: onErr });
-  const move = useMutation({ mutationFn: () => moveTicket(serverId, ticket.id, panelId), onSuccess: () => { toast.success(t("tickets.manage.moved")); refresh(); onClose(); }, onError: onErr });
+  const rename = useMutation({ mutationFn: () => renameTicket(serverId, ticket.id, name), onSuccess: (r) => { toast.success(t(r?.queued ? "tickets.manage.queued" : "tickets.manage.renamed")); setName(""); refresh(); }, onError: onErr });
+  const move = useMutation({
+    mutationFn: () => moveTicket(serverId, ticket.id, panelId),
+    onSuccess: (r) => {
+      if (r?.warnings?.length) toast.error(t("tickets.manage.movedWithWarnings"));
+      else toast.success(t("tickets.manage.moved"));
+      refresh();
+      onClose();
+    },
+    onError: onErr,
+  });
   const member = useMutation({
     mutationFn: ({ userId, action }) => ticketMember(serverId, ticket.id, userId, action),
     onSuccess: (_d, v) => toast.success(t(v.action === "add" ? "tickets.manage.added" : "tickets.manage.removed", { name: v.name })),

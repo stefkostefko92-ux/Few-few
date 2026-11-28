@@ -1306,6 +1306,22 @@ app.post("/internal/game-quest", async (req, res) => {
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 // Етап 3: trivia (POST публикува кръг от scheduler-а, CLOSE показва отговора при изтичане).
+// Паритет с /spawn: пусни спътник сега от таблото. Backend-ът вече е записал появата;
+// тук само се публикува — в канал, търсен САМО в този сървър (guildChannel).
+app.post("/internal/game-spawn", async (req, res) => {
+  const { serverId, channelId, data } = req.body || {};
+  if (!data?.spawn?.id) return res.status(400).json({ ok: false, error: "spawn data required" });
+  try {
+    const channel = await guildChannel(serverId, channelId);
+    if (!channel?.isTextBased?.()) return res.status(404).json({ ok: false, error: "Channel not found" });
+    const { postSpawn } = await import("./utils/game.js");
+    await postSpawn(channel, data, client);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[game-spawn]", err?.code || err?.message);
+    res.status(502).json({ ok: false, error: err?.message || "post failed" });
+  }
+});
 app.post("/internal/game-trivia", async (req, res) => {
   const { event, serverId, round } = req.body || {};
   if (!event || !serverId || !round) return res.status(400).json({ error: "event, serverId и round са задължителни" });

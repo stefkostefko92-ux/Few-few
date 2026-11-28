@@ -19,7 +19,12 @@ const textChannel = () => ({
   client: {},
 });
 const threadChannel = () => ({ ...textChannel(), isThread: () => true, members: { add: vi.fn(async () => ({})), remove: vi.fn(async () => ({})) } });
-const guild = { id: "333333333333333333", roles: { cache: new Map() } };
+const MEMBER = { id: "444444444444444444", user: { id: "444444444444444444" } };
+const guild = {
+  id: "333333333333333333",
+  roles: { cache: new Map([["555555555555555555", { id: "555555555555555555" }]]) },
+  members: { fetch: vi.fn(async (id) => { if (id === MEMBER.id) return MEMBER; throw Object.assign(new Error("Unknown Member"), { code: 10007 }); }) },
+};
 
 describe("manageTicket", () => {
   it("приоритет → обява в канала, без да се споменава никой", async () => {
@@ -38,12 +43,42 @@ describe("manageTicket", () => {
   it("добави в канал → право да вижда и пише (като /ticket add)", async () => {
     const ch = textChannel();
     await manageTicket({ guild, channel: ch, action: "add", userId: "444444444444444444" });
-    expect(ch.permissionOverwrites.create).toHaveBeenCalledWith("444444444444444444", { ViewChannel: true, SendMessages: true, ReadMessageHistory: true });
+    expect(ch.permissionOverwrites.create).toHaveBeenCalledWith(MEMBER, { ViewChannel: true, SendMessages: true, ReadMessageHistory: true });
   });
   it("махни от канал → маха правото", async () => {
     const ch = textChannel();
     await manageTicket({ guild, channel: ch, action: "remove", userId: "444444444444444444" });
-    expect(ch.permissionOverwrites.delete).toHaveBeenCalledWith("444444444444444444");
+    expect(ch.permissionOverwrites.delete).toHaveBeenCalledWith(MEMBER);
+  });
+  it("ревю: ID на роля или на @everyone НЕ минава като човек (командата приема само потребител)", async () => {
+    for (const userId of [guild.id, "555555555555555555"]) {
+      for (const action of ["add", "remove"]) {
+        const ch = textChannel();
+        const r = await manageTicket({ guild, channel: ch, action, userId });
+        expect(r).toMatchObject({ ok: false, code: "NOT_A_MEMBER" });
+        expect(ch.permissionOverwrites.create).not.toHaveBeenCalled();
+        expect(ch.permissionOverwrites.delete).not.toHaveBeenCalled();
+      }
+    }
+  });
+  it("ревю: човек, който не е в сървъра → не се добавя", async () => {
+    const ch = textChannel();
+    const r = await manageTicket({ guild, channel: ch, action: "add", userId: "666666666666666666" });
+    expect(r).toMatchObject({ ok: false, code: "NOT_A_MEMBER" });
+  });
+  it("ревю: напуснал човек — махат се само неговите лични права в канала", async () => {
+    const ch = textChannel();
+    const ow = { id: "666666666666666666", type: 1, delete: vi.fn(async () => ({})) };
+    ch.permissionOverwrites.cache = new Map([[ow.id, ow]]);
+    const r = await manageTicket({ guild, channel: ch, action: "remove", userId: "666666666666666666" });
+    expect(r.ok).toBe(true);
+    expect(ow.delete).toHaveBeenCalled();
+  });
+  it("ревю: преименуване, задържано от лимита на Discord → „на опашка“, не грешка", async () => {
+    const ch = textChannel();
+    ch.setName = vi.fn(() => new Promise(() => {}));
+    const r = await manageTicket({ guild, channel: ch, action: "rename", name: "vip", renameWaitMs: 5 });
+    expect(r).toEqual({ ok: true, queued: true });
   });
   it("в нишка → членство, не права", async () => {
     const ch = threadChannel();

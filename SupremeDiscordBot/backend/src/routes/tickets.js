@@ -163,7 +163,9 @@ async function activeTicket(req, res) {
 // Ботът прави действието в Discord. `botError` = Discord отказа или ботът не отговаря.
 async function botTicketAction(data) {
   const r = await notifyBotVerbose("TICKET_MANAGE", data);
-  return r && !r.botError && r.ok !== false ? { ok: true, warnings: r.warnings || [] } : { ok: false, error: r?.botError || r?.error || "bot error" };
+  return r && !r.botError && r.ok !== false
+    ? { ok: true, warnings: r.warnings || [], queued: !!r.queued }
+    : { ok: false, error: r?.botError || r?.error || "bot error", code: r?.code || null };
 }
 const botFailed = (res, error) => res.status(502).json({
   error: "The bot could not do this in Discord. Check that its role has Manage Channels and Manage Roles and sits above the roles it manages.",
@@ -216,8 +218,9 @@ router.post("/:serverId/:ticketId/rename", requireServerAdmin, requirePremium("t
     const bot = await botTicketAction({ action: "rename", serverId: tk.serverId, channelId: tk.channelId, name, actorId: req.user.id });
     if (!bot.ok) return botFailed(res, bot.error);
     await prisma.ticket.updateMany({ where: { id: tk.id, serverId: tk.serverId }, data: { renamedFrom: name, lastActivityAt: new Date() } });
-    await writeAudit({ actorId: req.user.id, serverId: tk.serverId, action: "TICKET_RENAMED", targetId: tk.id, metadata: { newName: name, via: "dashboard" } });
-    res.json({ ok: true, name });
+    await writeAudit({ actorId: req.user.id, serverId: tk.serverId, action: "TICKET_RENAMED", targetId: tk.id, metadata: { newName: name, via: "dashboard", queued: bot.queued } });
+    // queued: Discord задържа преименуването (лимит) — ще се приложи след малко.
+    res.json({ ok: true, name, queued: bot.queued });
   } catch (err) { next(err); }
 });
 
@@ -235,14 +238,19 @@ router.post("/:serverId/:ticketId/move", requireServerAdmin, requirePremium("tic
     if (!tk.channelId) return res.status(409).json({ error: "This ticket has no channel.", code: "NO_CHANNEL" });
     const current = tk.panelId ? await prisma.panel.findUnique({ where: { id: tk.panelId }, select: PANEL_ROUTING }) : null;
     const pick = (p) => (p ? { supportRoleIds: p.supportRoleIds || [], categoryOpenId: p.categoryOpenId || null, categoryId: p.categoryId || null } : null);
-    const bot = await botTicketAction({ action: "move", serverId: tk.serverId, channelId: tk.channelId, currentPanel: pick(current), targetPanel: pick(target), actorId: req.user.id });
-    if (!bot.ok) return botFailed(res, bot.error);
-    // Условно по стария панел: два едновременни „премести“ не се презаписват тихо.
-    const u = await prisma.ticket.updateMany({
+    // Първо се ЗАЕМА записът, условно по стария панел — така от две едновременни „премести“
+    // само едното стига до Discord (иначе Discord остава на по-късното, а базата на по-ранното).
+    // Ако Discord откаже, записът се връща (ревю на Кодаджията, 28.11.2026).
+    const claim = await prisma.ticket.updateMany({
       where: { id: tk.id, serverId: tk.serverId, panelId: tk.panelId },
       data: { panelId: target.id, lastActivityAt: new Date() },
     });
-    if (!u.count) return res.status(409).json({ error: "The ticket was moved by someone else.", code: "MOVED_ELSEWHERE" });
+    if (!claim.count) return res.status(409).json({ error: "The ticket was moved by someone else.", code: "MOVED_ELSEWHERE" });
+    const bot = await botTicketAction({ action: "move", serverId: tk.serverId, channelId: tk.channelId, currentPanel: pick(current), targetPanel: pick(target), actorId: req.user.id });
+    if (!bot.ok) {
+      await prisma.ticket.updateMany({ where: { id: tk.id, serverId: tk.serverId, panelId: target.id }, data: { panelId: tk.panelId } });
+      return botFailed(res, bot.error);
+    }
     await writeAudit({ actorId: req.user.id, serverId: tk.serverId, action: "TICKET_ESCALATED", targetId: tk.id, metadata: { fromPanelId: tk.panelId, toPanelId: target.id, via: "dashboard" } });
     res.json({ ok: true, panel: { id: target.id, name: target.name }, warnings: bot.warnings });
   } catch (err) { next(err); }
@@ -258,6 +266,7 @@ router.post("/:serverId/:ticketId/members", requireServerAdmin, async (req, res,
     if (!tk) return;
     if (!tk.channelId) return res.status(409).json({ error: "This ticket has no channel.", code: "NO_CHANNEL" });
     const bot = await botTicketAction({ action, serverId: tk.serverId, channelId: tk.channelId, userId, actorId: req.user.id });
+    if (!bot.ok && bot.code === "NOT_A_MEMBER") return res.status(400).json({ error: "This is not a member of the server.", code: "NOT_A_MEMBER" });
     if (!bot.ok) return botFailed(res, bot.error);
     await writeAudit({ actorId: req.user.id, serverId: tk.serverId, action: action === "add" ? "TICKET_MEMBER_ADDED" : "TICKET_MEMBER_REMOVED", targetId: tk.id, metadata: { userId, via: "dashboard" } });
     res.json({ ok: true });

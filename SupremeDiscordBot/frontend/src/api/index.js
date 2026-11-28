@@ -158,6 +158,9 @@ export const moveTicket = (serverId, ticketId, panelId) => api.post(`/tickets/${
 export const ticketMember = (serverId, ticketId, userId, action) =>
   api.post(`/tickets/${serverId}/${ticketId}/members`, { userId, action }).then((r) => r.data);
 export const searchServerMembers = (serverId, q) => api.get(`/tickets/${serverId}/member-search`, { params: { q } }).then((r) => r.data);
+// Паритет с /trivia и /spawn — „пусни сега“ от таблото
+export const startTriviaNow = (serverId, channelId, source) => api.post(`/game/${serverId}/trivia/start`, { channelId, source }).then((r) => r.data);
+export const spawnCompanionNow = (serverId, channelId) => api.post(`/game/${serverId}/spawn`, { channelId }).then((r) => r.data);
 
 // ─── Applications ─────────────────────────────────────────────────────────────
 export const getApplications = (serverId, params) =>

@@ -178,3 +178,45 @@ describe("П5 търсене на член (без да се пише Discord ID
     expect(r.body.members).toEqual([{ id: "444444444444444444", name: "Иван", username: "ivan" }]);
   });
 });
+
+describe("ревю на Кодаджията (28.11.2026)", () => {
+  it("П3: първо се заема записът (условно по стария панел), после Discord; при отказ записът се връща", async () => {
+    prismaMock.panel.findFirst.mockResolvedValue({ id: "p2", name: "Billing", supportRoleIds: ["r2"], categoryOpenId: "c2", categoryId: null });
+    prismaMock.panel.findUnique.mockResolvedValue({ id: "p1", name: "General", supportRoleIds: ["r1"], categoryOpenId: "c1", categoryId: null });
+    notifyBotVerbose.mockResolvedValue({ botError: "Missing Permissions" });
+    const r = await request(app()).post(`/api/tickets/${SID}/${TID}/move`).send({ panelId: "p2" });
+    expect(r.status).toBe(502);
+    const [claim, revert] = prismaMock.ticket.updateMany.mock.calls.map(([x]) => x);
+    expect(claim).toMatchObject({ where: { id: TID, serverId: SID, panelId: "p1" }, data: { panelId: "p2" } });
+    expect(revert).toMatchObject({ where: { id: TID, serverId: SID, panelId: "p2" }, data: { panelId: "p1" } });
+    expect(audited("TICKET_ESCALATED")).toEqual([]);
+  });
+  it("П3: друг вече го е преместил → 409, без Discord", async () => {
+    prismaMock.panel.findFirst.mockResolvedValue({ id: "p2", name: "Billing", supportRoleIds: [], categoryOpenId: null, categoryId: null });
+    prismaMock.ticket.updateMany.mockResolvedValue({ count: 0 });
+    const r = await request(app()).post(`/api/tickets/${SID}/${TID}/move`).send({ panelId: "p2" });
+    expect(r.status).toBe(409);
+    expect(botCalls("move")).toEqual([]);
+  });
+  it("П3: бележките от Discord стигат до таблото", async () => {
+    prismaMock.panel.findFirst.mockResolvedValue({ id: "p2", name: "Billing", supportRoleIds: [], categoryOpenId: null, categoryId: null });
+    notifyBotVerbose.mockResolvedValue({ ok: true, warnings: ["category"] });
+    const r = await request(app()).post(`/api/tickets/${SID}/${TID}/move`).send({ panelId: "p2" });
+    expect(r.body.warnings).toEqual(["category"]);
+  });
+  it("П2: преименуване на опашка (лимитът на Discord) → записва се и казва „на опашка“", async () => {
+    notifyBotVerbose.mockResolvedValue({ ok: true, queued: true });
+    const r = await request(app()).post(`/api/tickets/${SID}/${TID}/rename`).send({ name: "vip" });
+    expect(r.status).toBe(200);
+    expect(r.body).toMatchObject({ ok: true, queued: true });
+    expect(audited("TICKET_RENAMED")).toHaveLength(1);
+  });
+  it("П4: ботът казва „не е член“ → 400 NOT_A_MEMBER, без одит", async () => {
+    notifyBotVerbose.mockResolvedValue({ ok: false, code: "NOT_A_MEMBER" });
+    const r = await request(app()).post(`/api/tickets/${SID}/${TID}/members`).send({ userId: SID, action: "remove" });
+    expect(r.status).toBe(400);
+    expect(r.body.code).toBe("NOT_A_MEMBER");
+    expect(audited("TICKET_MEMBER_REMOVED")).toEqual([]);
+  });
+});
+

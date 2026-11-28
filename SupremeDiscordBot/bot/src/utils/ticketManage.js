@@ -9,8 +9,23 @@ import { moveTicketToPanel } from "./ticketLifecycle.js";
 import { t, resolveLangForGuild } from "../i18n/index.js";
 
 const REASON = "Supreme Bot: change from the dashboard";
+// Discord задържа преименуванията на канал (няколко за кратко време; не е в официалната
+// документация). discord.js чака сам — затова не чакаме повече от това и казваме „на опашка“,
+// вместо backend-ът да реши, че е провал, докато Discord после все пак го приложи (ревю, 28.11.2026).
+const RENAME_WAIT_MS = 8000;
+const notAMember = { ok: false, code: "NOT_A_MEMBER" };
 
-export async function manageTicket({ guild, channel, action, priority, name, userId, currentPanel, targetPanel }) {
+/**
+ * Човекът за /ticket add|remove — САМО член на сървъра, никога роля или @everyone.
+ * discord.js приема и ID на роля в permissionOverwrites (резолвва първо роля), затова
+ * суровото ID би могло да отвори тикета за целия сървър (ревю на Кодаджията, 28.11.2026).
+ */
+async function memberOf(guild, userId) {
+  if (!userId || userId === guild.id || guild.roles?.cache?.has?.(userId)) return null;
+  return guild.members.fetch(userId).catch(() => null);
+}
+
+export async function manageTicket({ guild, channel, action, priority, name, userId, currentPanel, targetPanel, renameWaitMs = RENAME_WAIT_MS }) {
   const thread = channel.isThread?.() === true;
   switch (action) {
     case "priority": {
@@ -21,17 +36,35 @@ export async function manageTicket({ guild, channel, action, priority, name, use
       });
       return { ok: true };
     }
-    case "rename":
-      await channel.setName(name, REASON);
+    case "rename": {
+      const done = channel.setName(name, REASON).then(() => "done");
+      done.catch(() => {}); // ако остане на опашка и после падне — да не е необработен отказ
+      const r = await Promise.race([done, new Promise((res) => { const t = setTimeout(() => res("queued"), renameWaitMs); t.unref?.(); })]);
+      return r === "queued" ? { ok: true, queued: true } : { ok: true };
+    }
+    case "add": {
+      const member = await memberOf(guild, userId);
+      if (!member) return notAMember;
+      if (thread) await channel.members.add(member.id);
+      else await channel.permissionOverwrites.create(member, { ViewChannel: true, SendMessages: true, ReadMessageHistory: true });
       return { ok: true };
-    case "add":
-      if (thread) await channel.members.add(userId);
-      else await channel.permissionOverwrites.create(userId, { ViewChannel: true, SendMessages: true, ReadMessageHistory: true });
-      return { ok: true };
-    case "remove":
-      if (thread) await channel.members.remove(userId);
-      else await channel.permissionOverwrites.delete(userId);
-      return { ok: true };
+    }
+    case "remove": {
+      if (!userId || userId === guild.id || guild.roles?.cache?.has?.(userId)) return notAMember;
+      const member = await memberOf(guild, userId);
+      if (thread) {
+        await channel.members.remove(userId);
+        return { ok: true };
+      }
+      if (member) {
+        await channel.permissionOverwrites.delete(member);
+        return { ok: true };
+      }
+      // Напуснал сървъра: махаме само ЛИЧНОТО право в канала (тип „член“), ако го има.
+      const ow = channel.permissionOverwrites.cache?.get?.(userId);
+      if (ow?.type === 1) { await ow.delete(REASON); return { ok: true }; }
+      return notAMember;
+    }
     case "move": {
       const r = await moveTicketToPanel(channel, guild, currentPanel, targetPanel);
       return { ok: true, warnings: r.warnings || [] };

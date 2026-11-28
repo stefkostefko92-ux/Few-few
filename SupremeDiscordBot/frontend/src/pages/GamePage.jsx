@@ -13,6 +13,7 @@ import { useToast } from "../contexts/ToastContext";
 import { PremiumBadge } from "../components/PremiumBadge";
 import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../components/DiscordPicker";
 import MemberName, { useMemberNames } from "../components/MemberName";
+import RunNowCard from "../components/game/RunNowCard";
 import {
   getGame, updateGameSettings, getGameShop, createGameShopItem, updateGameShopItem, deleteGameShopItem,
   getGameLeaderboard, getGamePurchases, getGameCompanions, getGameQuests, createGameQuest, cancelGameQuest, getGameMinigames,
@@ -440,6 +441,7 @@ function CompanionsTab({ data }) {
         </div>
       </div>
       <p className="text-xs text-cs-dim">{t("game.companions.hint", { slots: data.limits.companionSlots })}{!data.isPremium && <> <PremiumBadge small /></>}</p>
+      <section className="cs-card"><RunNowCard serverId={serverId} kind="spawn" isPremium={data.isPremium} /></section>
       {groups.map((g) => (
         <section key={g.r} className="cs-card">
           <h2 className="text-lg font-semibold text-cs-text mb-3 flex items-center gap-2">{g.items[0].rarityEmoji} {t(`game.companions.rarity.${g.r}`)} <span className="cs-badge">{g.items.length}</span></h2>
@@ -565,6 +567,7 @@ function QuestsTab({ data }) {
       <section className="cs-card space-y-3">
         <h2 className="text-lg font-semibold text-cs-text">{t("game.triviaStats.title")}</h2>
         <p className="text-xs text-cs-dim">{t("game.triviaStats.hint")}{!data.isPremium && <> <PremiumBadge small /> {t("game.trivia.dailyPremium")}</>}</p>
+        <RunNowCard serverId={serverId} kind="trivia" isPremium={data.isPremium} />
         {mg?.trivia && (
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
