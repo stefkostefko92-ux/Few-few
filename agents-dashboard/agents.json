@@ -17475,7 +17475,7 @@
           "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
           "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
         ],
-        "lessons": 52
+        "lessons": 64
       },
       "evolution": [
         {
@@ -17519,9 +17519,20 @@
           "date": "2026-11-28",
           "event": "v5.0 — учене",
           "detail": "Научи: YouTube конвертира пълния обхват (full) в ограничен (limited), не препоръчва RGB матриц… (+7 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-11-28",
+          "event": "v6.2 — учене",
+          "detail": "Научи: Аргументите на blender се изпълняват по реда на подаване, затова -o, -F, -x, -s, -e и -… (+11 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Аргументите на blender се изпълняват по реда на подаване, затова -o, -F, -x, -s, -e и -…\" (+11 още)"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
