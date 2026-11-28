@@ -1085,3 +1085,5 @@
 {"t":"handoff","ts":"2026-11-28T08:29:09.459Z","id":"r8c717581","from":"ai-studio","to":"pravniyat-razbirach","status":"има бележки","run":"a3797d8b"}
 {"t":"start","ts":"2026-11-28T08:32:18.437Z","id":"rde01527a","flow":"авто","lead":"ai-studio","auto":true}
 {"t":"handoff","ts":"2026-11-28T08:32:18.437Z","id":"rde01527a","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"440672eb"}
+{"t":"handoff","ts":"2026-11-28T08:33:55.298Z","id":"rde01527a","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"9fabd865"}
+{"t":"handoff","ts":"2026-11-28T08:34:39.154Z","id":"rde01527a","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"c93440b0"}
