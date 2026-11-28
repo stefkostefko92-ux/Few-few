@@ -33,7 +33,11 @@ const NET_INTERPRETER =
 // тревога върху нормален `node server.js` (там няма -e).
 const NET_INTERPRETER_INLINE =
   /\b(node|deno|bun|python3?|perl|ruby|php)\b[^\n]*\s-{1,2}(e|c|eval|exec|r)\b[^\n]*(require\s*\(\s*["']https?["']|\bhttps?\.request\b|\bhttp\.client\b|\bsmtplib\b|\bsocket\b|\burlopen\b|\baxios\b|\bnode-fetch\b|\bopen-uri\b|Net::(HTTP|SMTP)|\bsendmail\b)/i;
-const isNetChannel = (s) => NET_SEND.test(s) || NET_INTERPRETER.test(s) || NET_INTERPRETER_INLINE.test(s);
+// Прегледът на #513 (AI-джията, блокер, 28.11.2026): нашите инструменти за четене навън (doc/yt/reddit в
+// tools/research) теглят вътре с curl/fetch, затова командата им не съдържа нито един глагол отгоре — тайна
+// в адреса излизаше невидимо. Те са мрежов канал по име; самото четене на документация не носи тайни и минава.
+const NET_OUR_TOOL = /\b(node|deno|bun)\b[^\n]*\btools[\\/]research[\\/](doc|yt|reddit)\.mjs\b/i;
+const isNetChannel = (s) => NET_SEND.test(s) || NET_INTERPRETER.test(s) || NET_INTERPRETER_INLINE.test(s) || NET_OUR_TOOL.test(s);
 // Референция към тайна env-променлива ($NAME или ${NAME}), която изглежда секретна.
 // Case-insensitive (red-team F2: $mytoken минаваше; малки букви също са тайна).
 // Red-team F3: списъкът пропускаше чести имена. Добавени PASS/PAT/SK/JWT/COOKIE/SESSION/KEY.
@@ -263,6 +267,8 @@ export function detectBashExfil(command) {
   if (ENV_DUMP.test(s) || PS_ENV_DUMP.test(s)) return "пълен env dump към мрежата";
   if (findEgn(s, { needLabel: true })) return "ЕГН в мрежова команда (лични данни не напускат машината)";
   if (DATA_FILE_SEND.test(s)) return "чувствителен файл (secret/token/.env/.pem) изпращан навън";
+  // #513: същата проверка като за WebFetch (detectUrlExfil) — `?access_token=…` в адрес на мрежова команда.
+  if (URL_QUERY_SECRET.test(s)) return "секрет в URL query на мрежова команда";
   return null;
 }
 

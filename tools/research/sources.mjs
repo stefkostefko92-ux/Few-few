@@ -24,7 +24,7 @@ const LINE_RUN = new RegExp(`[${LINE_SEPS}]+`, "g");
 // Селектори на варианти и „празни“ букви, които guard-secrets не маха (Разбивача N3).
 const MORE_INVISIBLE = /[\uFE00-\uFE0F\u034F\u115F\u1160\uFFA0]|[\u{E0100}-\u{E01EF}]/gu;
 /** NFKC + без невидими знаци, Unicode Tags и селектори на варианти. */
-const clean = (s) => String(s ?? "").normalize("NFKC").replace(INVISIBLE, "").replace(MORE_INVISIBLE, "");
+export const clean = (s) => String(s ?? "").normalize("NFKC").replace(INVISIBLE, "").replace(MORE_INVISIBLE, "");
 const oneLine = (s) => clean(s).replace(LINE_RUN, " ").slice(0, 300);
 const plusDays = (d, n) => { const t = Date.parse(d); return Number.isFinite(t) ? new Date(t + n * 864e5).toISOString().slice(0, 10) : "?"; };
 

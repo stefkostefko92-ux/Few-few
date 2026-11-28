@@ -1087,3 +1087,5 @@
 {"t":"handoff","ts":"2026-11-28T08:32:18.437Z","id":"rde01527a","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"440672eb"}
 {"t":"handoff","ts":"2026-11-28T08:33:55.298Z","id":"rde01527a","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"9fabd865"}
 {"t":"handoff","ts":"2026-11-28T08:34:39.154Z","id":"rde01527a","from":"ai-studio","to":"kodadjiyata","status":"има бележки","run":"c93440b0"}
+{"t":"start","ts":"2026-11-28T08:36:40.958Z","id":"ra9059636","flow":"авто","lead":"ai-djiyata","auto":true}
+{"t":"handoff","ts":"2026-11-28T08:36:40.958Z","id":"ra9059636","from":"ai-djiyata","to":"kodadjiyata","status":"има бележки","run":"dfab5379"}

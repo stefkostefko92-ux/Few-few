@@ -518,6 +518,10 @@
       "konveyera",
       "pravniyat-razbirach",
       "razbivacha"
+    ],
+    "4c7815449c67f248d09b7937de129a87a28fd751": [
+      "ai-djiyata",
+      "kodadjiyata"
     ]
   },
   "runs": [
@@ -2544,6 +2548,22 @@
       "verdict": "чисто",
       "costUsd": 0.53,
       "date": "2026-11-27"
+    },
+    {
+      "pr": 513,
+      "sha": "4c7815449c67f248d09b7937de129a87a28fd751",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.08,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 513,
+      "sha": "4c7815449c67f248d09b7937de129a87a28fd751",
+      "agent": "ai-djiyata",
+      "verdict": "блокер",
+      "costUsd": 1.42,
+      "date": "2026-11-28"
     }
   ]
 }
