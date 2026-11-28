@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 822
+        "lessons": 823
       },
       "evolution": [
         {
@@ -2133,9 +2133,20 @@
           "date": "2026-11-28",
           "event": "v77.5 — учене",
           "detail": "Научи: В SupremeDiscordBot backend botRouter е монтиран под /api/bot (index.js:369) с router.u… (+88 още)"
+        },
+        {
+          "version": "77.6.0",
+          "date": "2026-11-28",
+          "event": "v77.6 — учене",
+          "detail": "Научи: В three 0.187 WebGLRenderer.dispose() не губи WebGL контекста; за освобождаване при раз…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „В three 0.187 WebGLRenderer.dispose() не губи WebGL контекста; за освобождаване при раз…\""
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
