@@ -9,6 +9,7 @@ const { prisma } = await import('../../src/db.js');
 const { register } = await import('../../src/accounts/register.js');
 const { seedPlans } = await import('../../src/billing/seed-plans.js');
 const { createServer } = await import('../../src/server.js');
+const { invalidateSettings } = await import('../../src/admin/settings.js');
 const { sofiaToday } = await import('../../src/time.js');
 const { buildEInvoice } = await import('../../src/einvoice/index.js');
 const { PURCHASE_RECORD_LENGTH } = await import('../../src/export/purchase-journal.js');
@@ -63,6 +64,13 @@ before(async () => {
   ).organizationId;
   // Шкафчето доставя само до потвърдена фирма.
   await prisma.organization.update({ where: { id: buyerId }, data: { verifiedAt: new Date() } });
+  // SPEC 99: функцията „проверява се“ — тестът е фирма за проверката (иначе файловете не се дават).
+  await prisma.setting.upsert({
+    where: { key: 'features.reviewOrgIds' },
+    create: { key: 'features.reviewOrgIds', value: [buyerId, sellerId].join(',') },
+    update: { value: [buyerId, sellerId].join(',') },
+  });
+  invalidateSettings();
   http = await startHttp(createServer);
   buyer = await http.login('buyer@example.test', PASSWORD);
   seller = await http.login('seller@example.test', PASSWORD);

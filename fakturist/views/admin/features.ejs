@@ -9,7 +9,7 @@
     <fieldset>
       <legend><%= t('features.groups.' + group) %></legend>
       <% features.filter((f) => f.group === group).forEach((f) => { %>
-        <label class="check"><input type="checkbox" name="f_<%= f.code %>"<%= enabled.get(f.code) !== false ? ' checked' : '' %>> <%= t('features.' + f.code + '.name') %> <span class="mono muted"><%= f.code %></span><% if (f.status === 'planned') { %> <span class="tag"><%= t('admin.planned') %> <%= f.target %></span><% } %></label>
+        <label class="check"><input type="checkbox" name="f_<%= f.code %>"<%= enabled.get(f.code) !== false ? ' checked' : '' %>> <%= t('features.' + f.code + '.name') %> <span class="mono muted"><%= f.code %></span><% if (f.status === 'planned') { %> <span class="tag"><%= t('admin.planned') %> <%= f.target %></span><% } else if (f.status === 'review') { %> <span class="tag"><%= t('admin.review') %></span><% } %></label>
       <% }) %>
     </fieldset>
   <% }) %>

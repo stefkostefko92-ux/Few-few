@@ -7,6 +7,7 @@ import { DAY, HOUR, sofiaToday } from '../time.js';
 import { salesJournal } from '../export/sales-journal.js';
 import { purchaseJournal } from '../export/purchase-journal.js';
 import { loadPurchases } from '../export/purchase-load.js';
+import { orgHasFeature } from '../billing/entitlements.js';
 
 /**
  * „Дневници по ДДС“ (SPEC 61, 69): за месец — PRODAGBI.TXT от издадените документи и POKUPKI.TXT от
@@ -89,8 +90,19 @@ async function buildPurchases(req: Request, access: OrgAccess) {
 export function appJournalRouter(): Router {
   const router = Router();
 
+  // „Проверява се“ (SPEC 99): страницата казва защо, файловете не се дават — освен на фирмите за проверката.
+  const ledgersOn = (access: OrgAccess) =>
+    orgHasFeature(access.organizationId, 'vat-ledgers', { viaFirmId: access.viaFirmId });
+
   router.get('/app/o/:orgId/dnevnik', limiter, async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
+    if (!(await ledgersOn(access))) {
+      const org = await prisma.organization.findUniqueOrThrow({
+        where: { id: access.organizationId },
+        select: { id: true, legalName: true },
+      });
+      return res.render('app/journal', { org, review: true });
+    }
     const { org, period, result } = await build(req, access);
     const purchases = await buildPurchases(req, access);
     res.render('app/journal', {
@@ -99,11 +111,14 @@ export function appJournalRouter(): Router {
       result,
       purchases: purchases.result,
       maxPeriod: sofiaToday().slice(0, 7),
+      review: false,
     });
   });
 
   router.get('/app/o/:orgId/dnevnik/PRODAGBI.TXT', limiter, async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
+    if (!(await ledgersOn(access)))
+      return res.redirect(303, `/app/o/${access.organizationId}/dnevnik`);
     const { org, period, result } = await build(req, access);
     if (!result) return res.redirect(303, `/app/o/${org.id}/dnevnik`);
     await prisma.$transaction((tx) =>
@@ -126,6 +141,8 @@ export function appJournalRouter(): Router {
 
   router.get('/app/o/:orgId/dnevnik/POKUPKI.TXT', limiter, async (req, res) => {
     const access = await requireOrg(req, 'documents.read');
+    if (!(await ledgersOn(access)))
+      return res.redirect(303, `/app/o/${access.organizationId}/dnevnik`);
     const { org, period, result } = await buildPurchases(req, access);
     if (!result) return res.redirect(303, `/app/o/${org.id}/dnevnik`);
     await prisma.$transaction((tx) =>

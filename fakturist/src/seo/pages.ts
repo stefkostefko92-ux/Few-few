@@ -1,11 +1,14 @@
 import type { Locale } from '../i18n.js';
+import { feature, type FeatureCode } from '../features.js';
 
 /**
  * Страниците на витрината — ЕДИНСТВЕНИЯТ списък: рутерът, sitemap, hreflang, breadcrumbs и llms.txt
  * четат оттук. Нова страница = нов ред + изглед `views/site/<id>.ejs` + ключовете `site.<id>.meta.*`.
  * Страница за рекламите — ред тук + `LANDING_IDS` в landing.ts + съдържанието в речника (общ изглед landing.ejs).
+ * Страница за една функция носи `feature`: публикува се само когато функцията е `live` (SPEC 99) — иначе
+ * няма адрес, не е в sitemap/llms.txt и витрината не води към нея.
  */
-export const SITE_PAGES = [
+const ALL_SITE_PAGES = [
   { id: 'home', paths: { bg: '/', en: '/en/' }, priority: 1.0, changefreq: 'weekly' },
   {
     id: 'pricing',
@@ -42,12 +45,14 @@ export const SITE_PAGES = [
     paths: { bg: '/dnevnitsi-po-dds', en: '/en/vat-ledgers' },
     priority: 0.7,
     changefreq: 'monthly',
+    feature: 'vat-ledgers',
   },
   {
     id: 'saft',
     paths: { bg: '/saf-t', en: '/en/saf-t' },
     priority: 0.7,
     changefreq: 'monthly',
+    feature: 'saf-t',
   },
   {
     id: 'help',
@@ -66,13 +71,23 @@ export const SITE_PAGES = [
   paths: Record<Locale, string>;
   priority: number;
   changefreq: 'daily' | 'weekly' | 'monthly';
+  feature?: FeatureCode;
 }>;
 
-export type SitePage = (typeof SITE_PAGES)[number];
+export type SitePage = (typeof ALL_SITE_PAGES)[number];
 export type SitePageId = SitePage['id'];
 
+/** Публикувана ли е страницата: без функция или с пусната функция (`live`). */
+export function isPublished(page: SitePage): boolean {
+  return !('feature' in page) || feature(page.feature).status === 'live';
+}
+
+/** Публикуваните страници — всичко, което витрината показва, връзва и подава на търсачките. */
+export const SITE_PAGES: readonly SitePage[] = ALL_SITE_PAGES.filter(isPublished);
+
+/** Страница по id — и непубликувана (адресът ѝ остава известен за деня на пускането). */
 export function sitePage(id: SitePageId): SitePage {
-  const page = SITE_PAGES.find((candidate) => candidate.id === id);
+  const page = ALL_SITE_PAGES.find((candidate) => candidate.id === id);
   if (!page) throw new Error(`Непозната страница ${id}`);
   return page;
 }

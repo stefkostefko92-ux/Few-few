@@ -13,6 +13,7 @@ const { prisma } = await import('../../src/db.js');
 const { register } = await import('../../src/accounts/register.js');
 const { seedPlans } = await import('../../src/billing/seed-plans.js');
 const { createServer } = await import('../../src/server.js');
+const { invalidateSettings } = await import('../../src/admin/settings.js');
 const { sofiaToday } = await import('../../src/time.js');
 
 /** SPEC 62: „Данни за SAF-T“ — планът, сметките и свързаните лица, ZIP с петте фрагмента по XSD 1.0.3. */
@@ -45,6 +46,13 @@ before(async () => {
       vatNumber: 'BG131063188',
     })
   ).organizationId;
+  // SPEC 99: функцията „проверява се“ — тестът е фирма за проверката (иначе файловете не се дават).
+  await prisma.setting.upsert({
+    where: { key: 'features.reviewOrgIds' },
+    create: { key: 'features.reviewOrgIds', value: orgId },
+    update: { value: orgId },
+  });
+  invalidateSettings();
   http = await startHttp(createServer);
   owner = await http.login('owner@example.test', PASSWORD);
   // Член само за четене: вижда данните, не сменя сметките.

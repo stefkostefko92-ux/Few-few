@@ -14,7 +14,7 @@
 <% sections.forEach((s, i) => { %>
 <section class="help-section" id="<%= s.id %>" aria-labelledby="<%= s.id %>-h">
   <h2 id="<%= s.id %>-h"><%= i + 1 %>. <%= s.title %></h2>
-  <% if (s.notInPlan) { %><p class="callout"><%= t('help.manual.notAvailable') %></p><% } %>
+  <% if (s.review) { %><p class="callout"><%= t('features.reviewNotice') %></p><% } else if (s.notInPlan) { %><p class="callout"><%= t('help.manual.notAvailable') %></p><% } %>
   <p><%= s.intro %></p>
   <ol class="help-steps">
     <% s.steps.forEach((step) => { %><li><%= step %></li><% }) %>
