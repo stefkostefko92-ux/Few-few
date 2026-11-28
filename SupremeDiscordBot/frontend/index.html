@@ -42,9 +42,8 @@
        and declared statically in sitemap.xml — keep all three in sync. -->
 
   <!-- ═══════════════════════════════════════════════════════════════ -->
-  <!-- GEO TAGS — Carbon Stealth HQ in Bobov Dol, BG.                  -->
-  <!-- An additional office in Sofia (BG) is declared as a separate    -->
-  <!-- LocalBusiness entity in the JSON-LD @graph below.               -->
+  <!-- GEO TAGS — Carbon Stealth HQ in Bobov Dol, BG (единственият     -->
+  <!-- адрес; офис в София няма — 28.11.2026, както в #315).           -->
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <meta name="geo.region" content="BG-10" />
   <meta name="geo.placename" content="Bobov Dol, Kyustendil, Bulgaria" />
@@ -94,7 +93,7 @@
 
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <!-- JSON-LD STRUCTURED DATA — Organization + WebSite + Software     -->
-  <!-- + Service + LocalBusiness (Bobov Dol, Sofia) +                  -->
+  <!-- + Service + LocalBusiness (Bobov Dol) +                          -->
   <!-- BreadcrumbList + WebPage (speakable) + FAQPage (for AEO)        -->
   <!--                                                                 -->
   <!-- Note: Google deprecated FAQPage rich results on 2026-05-07      -->
@@ -116,7 +115,7 @@
         "logo": "https://carbonstealth.eu/logo.svg",
         "image": "https://carbonstealth.eu/logo.svg",
         "slogan": "Изработка на уебсайтове и софтуер — Web & software development across Europe.",
-        "description": "Carbon Stealth (Карбон Стелт) is a digital solutions agency headquartered in Bobov Dol, Bulgaria, with an office in Sofia. We deliver website development (изработка на website), custom software, ERP, mobile apps, game development, and SEO/GEO/AEO for clients across Bulgaria and the European Union.",
+        "description": "Carbon Stealth (Карбон Стелт) is a digital solutions agency headquartered in Bobov Dol, Bulgaria. We deliver website development (изработка на website), custom software, ERP, mobile apps, game development, and SEO/GEO/AEO for clients across Bulgaria and the European Union.",
         "knowsAbout": [
           "Website development",
           "Изработка на уебсайт",
@@ -411,30 +410,6 @@
           { "@type": "Country", "name": "Italy" },
           { "@type": "Country", "name": "European Union" }
         ],
-        "parentOrganization": { "@id": "https://carbonstealth.eu/#organization" }
-      },
-      {
-        "@type": "LocalBusiness",
-        "@id": "https://carbonstealth.eu/#sofia",
-        "name": "Carbon Stealth VCC — Sofia Office",
-        "image": "https://carbonstealth.eu/logo.svg",
-        "url": "https://carbonstealth.eu/",
-        "email": "admin@carbonstealth.eu",
-        "telephone": "+359-877-414-874",
-        "priceRange": "€€",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Sofia",
-          "addressRegion": "Sofia City",
-          "postalCode": "1000",
-          "addressCountry": "BG"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": 42.6977,
-          "longitude": 23.3219
-        },
-        "areaServed": { "@type": "Country", "name": "Bulgaria" },
         "parentOrganization": { "@id": "https://carbonstealth.eu/#organization" }
       },
       {

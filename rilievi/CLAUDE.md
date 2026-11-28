@@ -278,7 +278,7 @@ public/              css/ (портал: base, buttons, shell, layout, plate, fo
                      витрината, `npm run render:encode`; brand/ и favicon-32/192.png — логата,
                      `npm run brand:logo`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
-deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh (базата + снимките, копие
+deploy/              rilascio.sh (деплоят с една команда — DEPLOY.md, т. 3) · deploy.sh · setup-env.sh · create-master.sh · backup.sh (базата + снимките, копие
                      извън сървъра) · restore-test.sh · backup-alert.sh · alert.sh (алармите на скриптовете —
                      Discord webhook или друг адрес) · nginx/ · systemd/
 ```
