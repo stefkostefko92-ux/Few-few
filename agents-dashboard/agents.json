@@ -17475,7 +17475,7 @@
           "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
           "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
         ],
-        "lessons": 16
+        "lessons": 30
       },
       "evolution": [
         {
@@ -17495,9 +17495,20 @@
           "date": "2026-11-28",
           "event": "v1.4 — учене",
           "detail": "Научи: В h264_nvenc, hevc_nvenc и av1_nvenc `-preset` е p1 (най-бърз, най-ниско качество) до p… (+11 още)"
+        },
+        {
+          "version": "2.8.0",
+          "date": "2026-11-28",
+          "event": "v2.8 — учене",
+          "detail": "Научи: Remotion CLI по подразбиране кодира h264; CRF диапазон/подразбиране са h264 1–51/18, h2… (+13 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Remotion CLI по подразбиране кодира h264; CRF диапазон/подразбиране са h264 1–51/18, h2…\" (+13 още)"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
