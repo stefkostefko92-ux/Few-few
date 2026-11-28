@@ -17475,7 +17475,7 @@
           "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
           "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
         ],
-        "lessons": 99
+        "lessons": 110
       },
       "evolution": [
         {
@@ -17555,9 +17555,20 @@
           "date": "2026-11-28",
           "event": "v9.7 — учене",
           "detail": "Научи: Само ProRes 4444 и 4444 XQ носят алфа канал (до 16 бита, математически без загуба в 444… (+9 още)"
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-11-28",
+          "event": "v10.8 — учене",
+          "detail": "Научи: Филтърът subtitles иска FFmpeg с --enable-libass (и libavcodec/libavformat, за да превъ… (+10 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Филтърът subtitles иска FFmpeg с --enable-libass (и libavcodec/libavformat, за да превъ…\" (+10 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
