@@ -34,7 +34,7 @@ file holds only what is true across all products. Keep it that way.
 | `adblock/` | Supreme AdBlock — блокира реклами, тракери и anti-adblock стени | Chrome MV3 · vanilla JS (без билд) · `declarativeNetRequest` | EN UI · Chrome Web Store |
 | `SupremeBot/` | Tanoth Master Bot — автоматизира дневната рутина в браузърната игра Tanoth | Chrome MV3 · vanilla JS · XML-RPC към играта · лиценз-сървър (Node · Docker · Caddy) | EN/многоезичен · **автоматизацията може да наруши ToS на Gameforge → бан на акаунта**; не се качва в Web Store |
 | `FiveM/` | Thraex PVP — директория на българските FiveM RP сървъри | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind | BG · жив статус от `info.json`/`dynamic.json` · **от `players.json` само имената, идентификаторите никога** (лични данни) · thraex.carbonstealth.eu |
-| `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + разследване на финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · отчет за всяка SSN структура · сигнали и аномалии · официални open data |
+| `ospedalitrasparenti/` | Ospedali Trasparenti — финансите на публичните болници в Италия (ETL + статичен сайт) | Node ≥20 · plain JS ESM · нула зависимости | IT · официални open data |
 | `mascot/` | Маскотът на Carbon Stealth — бранд персонаж | SVG (3 нива на детайл) · генериран React компонент · plain JS ESM · нула зависимости | BG · бранд асет, **не** продукт с деплой · продуктите копират каквото ползват |
 | `vpsdash/` | Carbon Stealth VPS Dashboard — контролен панел за сървъра → `vpsdash/CLAUDE.md` | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · owner: VPS-аджията |
 | `piuma/` | Piuma — Instagram контент-двигател (чернова → човешко одобрение → публикуване) + управлявани страници | Node 22 · TS · Express 5 · Prisma · PostgreSQL · BullMQ + Redis · Anthropic SDK | BG/EN/IT · официален Instagram Platform API · агентът — само чернови · акаунти се създават **ръчно** (ToS на Meta) |
@@ -47,6 +47,7 @@ file holds only what is true across all products. Keep it that way.
 | `semki/` | Semki Bot — Discord бот за изтичането на семките във FiveM + дашборд с вход през Discord | Node 22 · TS · Express 5 · discord.js v14 · Prisma · PostgreSQL · Docker | BG · vps2.carbonstealth.eu (порт от 4340, `HTTP_PORT`) |
 | `liftcon/` | LiftCon — консултации за асансьори → `liftcon/CLAUDE.md` | статичен генератор + Node 22 · TS · Express 5 · Prisma · Brevo | IT · liftcon.it (порт 4370) · **никога** verifica ufficiale/certificazione |
 | `otgovorko/` | Отговорко — поддръжка → `otgovorko/CLAUDE.md` | Vertex ЕС | 4380 |
+| `studiopult/` | Студио пулт → `studiopult/CLAUDE.md` | Agent SDK | само 127.0.0.1 |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,

@@ -1,0 +1,45 @@
+name: studiopult
+
+on:
+  push:
+    paths:
+      - 'studiopult/**'
+      - '.github/workflows/studiopult.yml'
+  pull_request:
+    paths:
+      - 'studiopult/**'
+      - '.github/workflows/studiopult.yml'
+
+concurrency:
+  group: studiopult-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    # Пултът тича на Windows при собственика — безопасният резолвер (UNC, \\?\, junction, CON…) се доказва и там.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: studiopult
+    steps:
+      # Пълен checkout: тестовете четат .claude/agents и пускат истинския guard-dangerous (самопроверката).
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: studiopult/package-lock.json
+      - run: npm ci
+      # prettier · tsc (src + tests) · tsx --test (фалшив runner, без мрежа и без ключ) · build
+      - run: npm run gate

@@ -49,6 +49,8 @@ export function artifactDue(tip, published) {
 }
 
 function main() {
+  // Студио пулт (28.11.2026): диспечерът не може и не бива да публикува артефакта — мълчим (задава я само пултът).
+  if (process.env.STUDIOPULT === "1") process.exit(0);
   let payload = {};
   try { payload = JSON.parse(readFileSync(0, "utf8")); } catch { /* fail-open */ }
   const tip = learnedTip(ROOT), published = publishedTip(ROOT);

@@ -1,0 +1,196 @@
+// Критерий 7: опциите на SDK са точно описаните — нашите .claude/ настройки (куки, пазачи, агенти),
+// режим default + canUseTool, без Bash/Write/Edit в allowedTools, задължителни тавани, ключът само в env на
+// SDK заедно със scrub и без автоматичната памет; главната нишка е диспечерът, който пуска НАШИЯ агент.
+import { test, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { buildOptions, listAgents, toUiEvent, DISPATCH } from '../src/agent.js';
+import { startTestServer, post, fakeRunner, FAKE_KEY } from './helpers.js';
+
+const repo = new URL('../..', import.meta.url).pathname.replace(/\/$/, '');
+const can = async () => ({ behavior: 'deny' as const, message: 'x' });
+
+test('диспечер → нашият агент; нашите настройки; режим default; тавани', () => {
+  const o = buildOptions({
+    agentId: 'ai-studio',
+    agents: ['ai-studio', 'seo'],
+    repoRoot: repo,
+    key: FAKE_KEY,
+    canUseTool: can,
+  });
+  assert.deepEqual(o.settingSources, ['project']);
+  assert.equal(o.cwd, repo);
+  assert.equal(o.permissionMode, 'default');
+  assert.equal(o.allowDangerouslySkipPermissions, undefined);
+  assert.equal(o.agent, DISPATCH);
+  assert.deepEqual(o.agents?.[DISPATCH]?.tools, ['Agent(ai-studio)']);
+  assert.equal(o.agents?.[DISPATCH]?.model, 'sonnet');
+  assert.equal(o.canUseTool, can);
+  assert.equal(o.maxBudgetUsd, 3);
+  assert.equal(o.maxTurns, 80);
+  for (const t of [
+    'Bash',
+    'PowerShell',
+    'Write',
+    'Edit',
+    'MultiEdit',
+    'NotebookEdit',
+    'Agent',
+    'Task',
+  ]) {
+    assert.equal(
+      o.allowedTools?.some((x) => x === t || x.startsWith(`${t}(`)),
+      false,
+      t,
+    );
+  }
+  assert.ok(o.allowedTools?.includes('Read'));
+});
+
+test('ключът е само в env на SDK, със scrub и без автоматична памет', () => {
+  const o = buildOptions({
+    agentId: 'seo',
+    agents: ['ai-studio', 'seo'],
+    repoRoot: repo,
+    key: FAKE_KEY,
+    canUseTool: can,
+  });
+  assert.equal(o.env?.ANTHROPIC_API_KEY, FAKE_KEY);
+  assert.equal(o.env?.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB, '1');
+  assert.equal(o.env?.CLAUDE_CODE_DISABLE_AUTO_MEMORY, '1');
+  assert.equal(o.env?.PATH, process.env.PATH, 'env заменя средата — PATH трябва да остане');
+});
+
+test('агент извън белия списък, самият диспечер или празно → грешка', () => {
+  for (const id of ['evil', DISPATCH, '', '../ai-studio', 'ai-studio)', 'general-purpose']) {
+    assert.throws(
+      () =>
+        buildOptions({
+          agentId: id,
+          agents: ['ai-studio'],
+          repoRoot: repo,
+          key: FAKE_KEY,
+          canUseTool: can,
+        }),
+      id,
+    );
+  }
+});
+
+test('белият списък са нашите 35 агента от .claude/agents (без _*)', () => {
+  const a = listAgents(repo);
+  assert.equal(a.length, 35);
+  assert.ok(a.includes('ai-studio'));
+  assert.ok(a.every((x) => /^[a-z0-9][a-z0-9-]*$/.test(x)));
+});
+
+test('съобщенията на SDK стават събития за страницата', () => {
+  assert.deepEqual(
+    toUiEvent({
+      type: 'stream_event',
+      parent_tool_use_id: null,
+      session_id: 's',
+      uuid: 'u',
+      event: {
+        type: 'content_block_delta',
+        index: 0,
+        delta: { type: 'text_delta', text: 'Здравей' },
+      },
+    } as never),
+    { type: 'text', text: 'Здравей', sub: false },
+  );
+  assert.deepEqual(
+    toUiEvent({
+      type: 'result',
+      subtype: 'success',
+      total_cost_usd: 0.42,
+      session_id: 's9',
+      result: 'готово',
+      is_error: false,
+    } as never),
+    { type: 'result', cost: 0.42, sessionId: 's9', ok: true },
+  );
+  assert.equal(toUiEvent({ type: 'system', subtype: 'init' } as never), null);
+});
+
+const p = await startTestServer({
+  runner: fakeRunner([
+    {
+      type: 'stream_event',
+      parent_tool_use_id: 'x',
+      session_id: 's1',
+      uuid: 'u1',
+      event: {
+        type: 'content_block_delta',
+        index: 0,
+        delta: { type: 'text_delta', text: 'Рендирам' },
+      },
+    },
+    {
+      type: 'result',
+      subtype: 'success',
+      total_cost_usd: 1.25,
+      session_id: 's1',
+      result: 'ok',
+      is_error: false,
+    },
+  ]),
+});
+after(() => p.close());
+
+test('HTTP: чат с нашия агент минава през runner-а, разходът влиза в дневния таван', async () => {
+  const r = await post(p, '/api/chat', {
+    agent: 'ai-studio',
+    text: 'Направи 4K60 от out/master.mov',
+  });
+  assert.equal(r.status, 202);
+  for (let i = 0; i < 50 && p.deps.budget.status().spent === 0; i++)
+    await new Promise((res) => setTimeout(res, 10));
+  assert.equal(p.deps.budget.status().spent, 1.25);
+  const call = (p.deps.runner as ReturnType<typeof fakeRunner>).calls[0]!;
+  assert.equal(call.prompt, 'Направи 4K60 от out/master.mov');
+  assert.equal((call.options as { agent: string }).agent, DISPATCH);
+  assert.equal((await post(p, '/api/chat', { agent: 'general-purpose', text: 'x' })).status, 400);
+  assert.equal((await post(p, '/api/chat', { agent: 'ai-studio', text: '' })).status, 400);
+});
+
+// Живата проба (28.11.2026): субагентът тръгна ФОНОВО и диспечерът отговори „още работи“, преди резултата;
+// Stop куките на работната сесия искаха от диспечера commit и артефакт.
+test('живата проба: субагентът е на преден план; пултът се представя на куките (STUDIOPULT=1)', async () => {
+  const o = buildOptions({
+    agentId: 'ai-studio',
+    agents: ['ai-studio'],
+    repoRoot: repo,
+    key: FAKE_KEY,
+    canUseTool: can,
+  });
+  assert.equal(o.env?.STUDIOPULT, '1');
+  const m = o.hooks?.PreToolUse?.find((x) => x.matcher === 'Agent');
+  assert.ok(m, 'PreToolUse кука за Agent');
+  const out = (await m.hooks[0]!(
+    {
+      hook_event_name: 'PreToolUse',
+      tool_name: 'Agent',
+      tool_input: { subagent_type: 'ai-studio', prompt: 'x', run_in_background: true },
+      tool_use_id: 't',
+    } as never,
+    't',
+    { signal: new AbortController().signal },
+  )) as { hookSpecificOutput?: { updatedInput?: Record<string, unknown> } };
+  assert.equal(out.hookSpecificOutput?.updatedInput?.run_in_background, false);
+  assert.equal(
+    out.hookSpecificOutput?.updatedInput?.subagent_type,
+    'ai-studio',
+    'останалото е непокътнато',
+  );
+  const other = (await m.hooks[0]!(
+    {
+      hook_event_name: 'PreToolUse',
+      tool_name: 'Bash',
+      tool_input: { command: 'x' },
+      tool_use_id: 'u',
+    } as never,
+    'u',
+    { signal: new AbortController().signal },
+  )) as Record<string, unknown>;
+  assert.deepEqual(other, {}, 'друг инструмент — без намеса');
+});
