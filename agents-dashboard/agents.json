@@ -14565,7 +14565,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 399
+        "lessons": 400
       },
       "evolution": [
         {
@@ -14741,9 +14741,20 @@
           "date": "2026-11-28",
           "event": "v39.3 — учене",
           "detail": "Научи: В Agent SDK без settingSources се зареждат user, project и local; с \"project\" идват .cl… (+4 още)"
+        },
+        {
+          "version": "39.4.0",
+          "date": "2026-11-28",
+          "event": "v39.4 — учене",
+          "detail": "Научи: guard-exfil пуска проверките за тайни (SECRET_ENV, SENSITIVE_READ_SUBST, ENV_DUMP) само…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „guard-exfil пуска проверките за тайни (SECRET_ENV, SENSITIVE_READ_SUBST, ENV_DUMP) само…\""
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
