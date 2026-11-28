@@ -1368,4 +1368,12 @@ export default {
   "game.runNow.error.BOT_ACTION_FAILED": "Der Bot konnte in diesem Kanal nicht posten. Prüfe dort seine Berechtigungen.",
   "tickets.manage.queued": "Discord erlaubt pro Kanal nur wenige Umbenennungen in kurzer Zeit. Der neue Name wird in ein paar Minuten übernommen.",
   "tickets.manage.movedWithWarnings": "Ticket verschoben, aber Discord hat einen Teil abgelehnt (Kategorie oder Berechtigungen). Prüfe den Kanal.",
+  "banner.label": "Discord-Banner",
+  "banner.hint": "Das Bild unter dem Panel-Text in Discord. Die fertigen Banner haben weder Text noch Logo und passen daher zu jedem Server.",
+  "banner.none": "Kein Banner",
+  "banner.custom": "Eigenes Bild",
+  "banner.reactor": "Reaktor",
+  "banner.armor": "Panzer",
+  "banner.shield": "Schild",
+  "banner.gold": "Gold",
 };

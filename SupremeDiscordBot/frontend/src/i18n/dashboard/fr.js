@@ -1368,4 +1368,12 @@ export default {
   "game.runNow.error.BOT_ACTION_FAILED": "Le bot n’a pas pu publier dans ce salon. Vérifiez ses permissions.",
   "tickets.manage.queued": "Discord n’autorise que quelques renommages par salon en peu de temps. Le nouveau nom s’appliquera dans quelques minutes.",
   "tickets.manage.movedWithWarnings": "Ticket déplacé, mais Discord a refusé une partie (catégorie ou permissions). Vérifiez le salon.",
+  "banner.label": "Bannière Discord",
+  "banner.hint": "L'image sous le texte du panneau dans Discord. Les bannières prêtes n'ont ni texte ni logo : elles conviennent à tous les serveurs.",
+  "banner.none": "Pas de bannière",
+  "banner.custom": "Votre propre image",
+  "banner.reactor": "Réacteur",
+  "banner.armor": "Armure",
+  "banner.shield": "Bouclier",
+  "banner.gold": "Or",
 };

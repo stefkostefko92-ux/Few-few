@@ -8,6 +8,7 @@ import {
   getVerificationPanels, createVerificationPanel, updateVerificationPanel,
   deleteVerificationPanel, spawnVerificationPanel,
 } from "../api";
+import BannerPicker from "../components/BannerPicker";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
@@ -27,6 +28,7 @@ const defaultForm = (t) => ({
   title: t("verify.default.title"),
   description: t("verify.default.description"),
   color: "#8fe600",
+  imageUrl: "", // банерът в Discord (BannerPicker)
   type: "BUTTON",
   buttonLabel: t("verify.default.button"),
   buttonEmoji: "",
@@ -57,6 +59,9 @@ function panelToForm(p, t) {
     failureMessage: p.failureMessage || "",
     logChannelId: p.logChannelId || "",
     dmSuccessMessage: p.dmSuccessMessage || "",
+    // null от базата не минава схемата (адрес или празно) — празно значи „без банер“.
+    imageUrl: p.imageUrl || "",
+    thumbnailUrl: p.thumbnailUrl || "",
   };
 }
 
@@ -242,6 +247,7 @@ export default function VerificationPage() {
               <span className="cs-label">{t("ui.embedDescription")}</span>
               <textarea className="cs-textarea" rows={2} value={form.description} onChange={(e) => set("description", e.target.value)} />
             </label>
+            <BannerPicker idPrefix="verify-banner" value={form.imageUrl} onChange={(v) => set("imageUrl", v)} />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label className="block">

@@ -267,6 +267,9 @@ const PAGES = [
   { path: `/dashboard/${SID}/activity-log`, name: "activity-log" },
   { path: `/dashboard/${SID}/backups`, name: "backups" },
   { path: `/dashboard/${SID}/backups`, name: "backups-open", click: BACKUP_VIEW },
+  // Редакторите с избора „Банер в Discord“ (Токсична броня, 28.11.2026).
+  { path: `/dashboard/${SID}/panels`, name: "panels-editor", click: `^${DICT["panels.new"]}$` },
+  { path: `/dashboard/${SID}/verification`, name: "verification-editor", click: `^${DICT["panels.new"]}$` },
   { path: "/dashboard/backups", name: "my-backups" },
   { path: `/dashboard/${SID}/kb?tab=ai`, name: "kb-ai" },
   // Старият адрес трябва да отвори новата страница, не „404“.

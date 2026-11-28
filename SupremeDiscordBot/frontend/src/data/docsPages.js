@@ -142,6 +142,7 @@ export const DOCS_PAGES = [
           "Fill in Internal name (only staff see it), Embed title and Embed description. These are the words members read above the button.",
           "Under Support roles (full access), pick the roles that should see and answer tickets.",
           "Under Categories & channels, pick a Category for open tickets.",
+          "Under Discord banner, pick one of the ready-made banners (Reactor, Armor, Shield, Gold) or keep No banner. The banners have no text or logo.",
           "A new panel starts with one button labelled Open ticket. Change its label or emoji if you like.",
           "Click Create panel.",
         ],
