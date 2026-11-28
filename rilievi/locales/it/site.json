@@ -192,11 +192,11 @@
       },
       "data": {
         "q": "Dove sono conservati i dati?",
-        "a": "Su server nell'Unione europea, con una copia di sicurezza ogni giorno."
+        "a": "Su server nell'Unione europea (Germania), con una copia di sicurezza ogni giorno, tenuta anche su un secondo server; le email passano dal servizio Brevo (UE)."
       },
       "costo": {
         "q": "Quanto costa?",
-        "a": "Il primo mese è gratuito, con tutte le funzioni. Poi scegli un piano in base al numero di persone: fino a 10, fino a 25 oppure oltre 25. Si paga in anticipo, non si rinnova da solo e i prezzi, IVA esclusa, li vedi prima di pagare."
+        "a": "Il primo mese è gratuito, con tutte le funzioni attive per la tua azienda. Poi scegli un piano in base al numero di persone: fino a 10, fino a 25 oppure oltre 25. Si paga in anticipo, non si rinnova da solo e i prezzi, IVA esclusa, li vedi prima di pagare."
       },
       "scadenza": {
         "q": "Cosa succede se l'abbonamento scade?",
@@ -221,7 +221,7 @@
       "next": {
         "title": "Cosa succede dopo",
         "s1": "Leggiamo la richiesta e ti rispondiamo per email.",
-        "s2": "Se è tutto a posto, creiamo lo spazio della tua azienda e l'amministratore riceve l'invito. Quando accetta le condizioni inizia un mese di prova gratuita, con tutte le funzioni.",
+        "s2": "Se è tutto a posto, creiamo lo spazio della tua azienda e l'amministratore riceve l'invito. Quando accetta le condizioni inizia un mese di prova gratuita, con tutte le funzioni attive per la tua azienda.",
         "prova": "Dopo la prova, per creare e modificare dati serve un piano a pagamento in base al numero di persone (fino a 10, fino a 25, oltre 25). Si paga in anticipo, non si rinnova da solo e i prezzi, IVA esclusa, li vedi nel portale prima di pagare. Senza piano il portale resta in sola lettura e l'esportazione dei dati è sempre gratuita. Il servizio è per imprese e professionisti.",
         "s3": "I dati servono solo per rispondere alla richiesta e li cancelliamo dopo {days} giorni."
       },
@@ -283,7 +283,8 @@
     "intro": "Questa informativa spiega quali dati personali tratta il portale Rilievi Impianti, perché, per quanto tempo li conserviamo e quali diritti avete secondo il Regolamento generale sulla protezione dei dati (GDPR).",
     "who": {
       "title": "Chi tratta i dati",
-      "contact": "Per domande sui dati personali scrivete a"
+      "contact": "Per domande sui dati personali scrivete a",
+      "dpo": "Non abbiamo nominato un responsabile della protezione dei dati (art. 37 GDPR): per ogni domanda usate l'indirizzo qui sopra."
     },
     "roles": {
       "title": "Titolare e responsabile",
@@ -303,10 +304,10 @@
         "kept": "{days} giorni dall'ultima modifica della richiesta, poi cancellati automaticamente; prima, se ce lo chiedete"
       },
       "account": {
-        "data": "Email, nome, aziende e ruolo in ognuna, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password e codici errati, blocchi consecutivi e sessioni attive; se la attivi, la verifica in due passaggi: la chiave dell'app (cifrata, AES-256-GCM) e i codici di recupero (solo come impronta HMAC); se colleghi l'accesso con Microsoft o Google, l'identificativo del tuo account presso quel fornitore (non la password); per le chiavi API dell'azienda: nome, prefisso, impronta della chiave, chi l'ha creata, ultimo uso e scadenza",
+        "data": "Email, nome, aziende e ruolo in ognuna, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password e codici errati, blocchi consecutivi e sessioni attive; se la attivi, la verifica in due passaggi: la chiave dell'app (cifrata, AES-256-GCM) e i codici di recupero (solo come impronta HMAC); se colleghi l'accesso con Microsoft o Google, l'identificativo del tuo account presso quel fornitore, l'email o il nome utente di quell'account e la directory o il dominio dell'azienda da cui arriva (non la password); per le chiavi API dell'azienda: nome, prefisso, impronta della chiave, chi l'ha creata, ultimo uso e scadenza",
         "why": "L'account e l'accesso al portale per conto dell'azienda",
         "basis": "Scelta dall'azienda titolare (di norma art. 6, par. 1, lett. b) o f) GDPR); Carbon Stealth tratta i dati per suo conto (art. 28 GDPR)",
-        "kept": "Finché l'account esiste; le sessioni fino all'uscita o alla scadenza. Chi lavora solo per un'azienda che smette di usare il portale: {endDays} giorni dopo la sua disattivazione, insieme ai suoi dati"
+        "kept": "Finché l'account esiste: un account disattivato resta finché chi gestisce gli account dell'azienda non lo cancella, e dopo la cancellazione restano solo il nome nei documenti firmati e le voci del registro delle attività; le sessioni fino all'uscita o alla scadenza; i link per una nuova password 30 giorni dopo la loro scadenza. Chi lavora solo per un'azienda che smette di usare il portale: {endDays} giorni dopo la sua disattivazione, insieme ai suoi dati"
       },
       "inviti": {
         "data": "Inviti: email e nome della persona invitata, azienda e ruolo",
@@ -333,13 +334,13 @@
         "kept": "{auditDays} giorni, poi cancellato automaticamente"
       },
       "accettazioni": {
-        "data": "Registro delle accettazioni: per l'accettazione delle Condizioni generali di servizio, nome, email e ruolo dell'amministratore, ragione sociale, sede e partita IVA dichiarate, data e ora, versione e impronta del testo, clausole approvate specificamente, invio e verifica del codice monouso, indirizzo IP e tipo di browser, impronta della copia inviata; per ogni offerta accettata, amministratore, azienda, piano, durata, prezzo, testo e impronta dell'offerta, data e ora, indirizzo IP e tipo di browser, riferimento del pagamento; per ogni utente, la presa visione delle regole d'uso e dell'avvertenza sui calcoli (data, ora, versione, indirizzo IP e tipo di browser)",
+        "data": "Registro delle accettazioni: per l'accettazione delle Condizioni generali di servizio, nome, email e ruolo dell'amministratore, ragione sociale, sede e partita IVA dichiarate, data e ora, versione e impronta del testo, clausole approvate specificamente, invio e verifica del codice monouso (i codici non usati sono cancellati un giorno dopo la scadenza), indirizzo IP e tipo di browser, impronta della copia inviata; per ogni offerta accettata, amministratore, azienda, piano, durata, prezzo, testo e impronta dell'offerta, data e ora, indirizzo IP e tipo di browser, riferimento del pagamento; per ogni utente, la presa visione delle regole d'uso e dell'avvertenza sui calcoli (data, ora e versione)",
         "why": "Dimostrare chi ha concluso il contratto per l'azienda, quando e su quale testo; accertare, esercitare o difendere un diritto in sede giudiziaria",
         "basis": "Conclusione del contratto, art. 6, par. 1, lett. b); conservazione per legittimo interesse, art. 6, par. 1, lett. f) GDPR. Titolare: Carbon Stealth",
         "kept": "Per tutta la durata del contratto e per 10 anni dalla cancellazione dei dati dell'azienda, che avviene entro {endDays} giorni dalla cessazione; in caso di contestazione, fino alla sua definizione (art. 17, par. 3, lett. e) GDPR)"
       },
       "pagamenti": {
-        "data": "Fatturazione e pagamenti dei piani: ragione sociale, sede e partita IVA dell'azienda, nome ed email dell'amministratore che acquista, piano, durata, prezzo, IVA, data, esito e riferimento del pagamento ricevuti da Revolut, esito e numero di consultazione della verifica della partita IVA nel VIES, fatture, rimborsi e contestazioni del pagamento (chargeback). Non riceviamo né conserviamo il numero della carta",
+        "data": "Fatturazione e pagamenti dei piani: ragione sociale, sede e partita IVA dell'azienda, nome ed email dell'amministratore che acquista, piano, durata, prezzo, IVA, data, esito e riferimento del pagamento ricevuti da Revolut, esito e numero di consultazione della verifica della partita IVA nel VIES, con il nome e l'indirizzo che il VIES restituisce per quella partita IVA, fatture, rimborsi e contestazioni del pagamento (chargeback). Non riceviamo né conserviamo il numero della carta",
         "why": "Vendere e attivare i piani Premium, emettere fatture e rimborsi, tenere la contabilità",
         "basis": "Esecuzione del contratto, art. 6, par. 1, lett. b); obblighi di legge contabili e fiscali, art. 6, par. 1, lett. c) GDPR. Titolare: Carbon Stealth",
         "kept": "Fatture e documenti contabili: 10 anni dal 1° gennaio dell'anno successivo a quello a cui si riferiscono (art. 12 della legge bulgara sulla contabilità), o più a lungo se lo richiede la legge fiscale; i dati del piano per la durata del contratto e i 10 anni successivi, come il registro delle accettazioni; in caso di contestazione, fino alla sua definizione"
@@ -354,13 +355,13 @@
         "data": "Indirizzo IP",
         "why": "Limitare i tentativi ripetuti di accesso e l'invio massiccio di richieste",
         "basis": "Legittimo interesse, art. 6, par. 1, lett. f) GDPR",
-        "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log. Fa eccezione l'accettazione delle condizioni, delle regole d'uso e delle offerte dei piani: l'indirizzo IP è conservato nel registro delle accettazioni, per i tempi indicati sopra"
+        "kept": "Nella memoria del server al massimo un'ora; per un accesso fallito, solo un'impronta cifrata (HMAC) della rete da cui arriva, mai l'indirizzo, per 24 ore. Non viene scritto nei log. Fa eccezione l'accettazione delle condizioni e delle offerte dei piani: l'indirizzo IP è conservato nel registro delle accettazioni, per i tempi indicati sopra"
       },
       "backup": {
         "data": "Copie di sicurezza del database e di foto e video (i dati qui sopra)",
         "why": "Ripristinare il portale dopo un guasto o un errore",
         "basis": "Sicurezza del trattamento (art. 32 GDPR), per conto dell'azienda titolare",
-        "kept": "Le copie giornaliere 14 giorni, poi cancellate: anche quello che eliminate resta nelle copie per questo tempo. Le copie fatte prima di ogni aggiornamento del portale: le ultime cinque"
+        "kept": "Le copie giornaliere 14 giorni, poi cancellate: anche quello che eliminate resta nelle copie per questo tempo. Le copie fatte prima di ogni aggiornamento del portale: al massimo le ultime cinque e mai oltre 14 giorni. Le stesse copie sono tenute anche su un secondo server separato, con gli stessi tempi"
       },
       "segnalazioni": {
         "data": "Segnalazioni di contenuti illegali: nome ed email di chi segnala, dove si trova il contenuto, i motivi e la dichiarazione di buona fede, data e ora; la decisione, con i motivi e la misura adottata; le comunicazioni a chi segnala e agli amministratori dell'azienda che ha caricato il contenuto; le richieste di riesame e il loro esito",
@@ -392,16 +393,17 @@
     },
     "recipients": {
       "title": "Chi altro vede i dati",
-      "hosting": "netcup GmbH, Karlsruhe, Germania — il server su cui funziona il portale, in un data center in Germania. Con netcup è in vigore un accordo sul trattamento dei dati (art. 28 GDPR).",
-      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale, il codice per firmare le condizioni di servizio e la copia delle condizioni accettate, le offerte accettate, gli avvisi di scadenza della prova e dei piani, gli avvisi sul cambio di fornitore e sulla cancellazione dei dati, i moduli di intervento e i verbali in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro o in copia a chi firma, e i moduli d'ordine che gli utenti inviano ai fornitori.",
+      "hosting": "netcup GmbH, Karlsruhe, Germania — il server su cui funziona il portale, in un data center in Germania, e un secondo server separato con una copia di sicurezza, nell'Unione europea. Con netcup è in vigore un accordo sul trattamento dei dati (art. 28 GDPR).",
+      "mail": "Sendinblue SAS (Brevo), Francia — l'invio delle email, quando è attivo: inviti, link per una nuova password, avvisi di sicurezza dell'account (verifica in due passaggi, cambio di email), avvisi di nuove richieste agli amministratori del portale, il codice per firmare le condizioni di servizio e la copia delle condizioni accettate, le offerte accettate, gli avvisi di scadenza della prova e dei piani, gli avvisi sul cambio di fornitore e sulla cancellazione dei dati, i fogli di intervento, i verbali, i buoni di lavoro, le schede e i preventivi in PDF, con i nomi e le firme, che gli utenti inviano a un indirizzo scelto da loro o in copia a chi firma, e i moduli d'ordine che gli utenti inviano ai fornitori.",
       "pagamenti": "Revolut Bank UAB, Lituania — la pagina di pagamento con carta dei piani Premium. Revolut riceve i dati della carta e del pagamento e li tratta secondo i propri termini e la propria informativa (revolut.com/legal); a noi comunica solo esito, importo e riferimento del pagamento.",
-      "text": "Non vendiamo dati e non li cediamo per pubblicità. Il portale e i suoi dati restano nell'Unione europea; Brevo può affidare parte dell'invio delle email a sub-responsabili fuori dall'UE, e in quel caso il trasferimento è tutelato da clausole contrattuali tipo (art. 46 GDPR). Per i pagamenti con carta vale anche l'informativa di Revolut.",
+      "identita": "Microsoft o Google — solo se la tua azienda attiva l'accesso con il loro account: il fornitore conferma la tua identità e ci comunica l'identificativo e l'email del tuo account. Per quei dati vale anche l'informativa del fornitore e il rapporto tra la tua azienda e il fornitore.",
+      "text": "Non vendiamo dati e non li cediamo per pubblicità. Il portale e i suoi dati restano nell'Unione europea; Brevo può affidare parte dell'invio delle email a sub-responsabili fuori dall'UE, e in quel caso il trasferimento è tutelato da una decisione di adeguatezza (art. 45 GDPR) o da clausole contrattuali tipo (art. 46 GDPR): potete chiederci copia delle garanzie all'indirizzo indicato in alto. Per i pagamenti con carta vale anche l'informativa di Revolut.",
       "contabili": "Il nostro consulente contabile e il software di fatturazione — i dati di fatturazione dei piani (ragione sociale, sede, partita IVA, importi), nei limiti necessari a emettere le fatture e a tenere la contabilità.",
-      "vies": "Commissione europea — il sistema VIES, per verificare la partita IVA di un'azienda di un altro Stato membro prima dell'acquisto di un piano. Il VIES riceve la partita IVA dell'azienda e la nostra e la confronta con la banca dati dell'amministrazione fiscale dello Stato che l'ha attribuita. Conserviamo l'esito e il numero di consultazione con il pagamento, per il tempo dei documenti contabili."
+      "vies": "Commissione europea — il sistema VIES, per verificare la partita IVA di un'azienda di un altro Stato membro prima dell'acquisto di un piano. Il VIES riceve la partita IVA dell'azienda e la nostra e la confronta con la banca dati dell'amministrazione fiscale dello Stato che l'ha attribuita. Conserviamo l'esito, il numero di consultazione e il nome e l'indirizzo restituiti dal VIES con il pagamento, per il tempo dei documenti contabili."
     },
     "security": {
       "title": "Sicurezza",
-      "text": "La connessione è solo HTTPS. Le password sono conservate come hash Argon2id, le sessioni stanno sul server e terminano subito all'uscita, al cambio della password o alla disattivazione dell'account. Il server web non tiene un registro delle richieste: registra un indirizzo IP solo nel suo log degli errori gravi, quando una richiesta non può essere servita. I log dell'applicazione non contengono indirizzi IP né password."
+      "text": "La connessione è solo HTTPS. Le password sono conservate come hash Argon2id, le sessioni stanno sul server e terminano subito all'uscita, al cambio della password o alla disattivazione dell'account. Il server web non tiene un registro delle richieste: registra un indirizzo IP solo nel suo log degli errori gravi, quando una richiesta non può essere servita. I log dell'applicazione non contengono indirizzi IP né password: riportano il tipo di browser e l'indirizzo della pagina, ruotano per dimensione (al massimo 30 MB) e i più vecchi sono sovrascritti dai nuovi."
     },
     "decisions": {
       "title": "Decisioni automatizzate",

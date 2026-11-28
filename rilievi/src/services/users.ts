@@ -3,6 +3,7 @@ import { postoLibero } from '../abbonamenti/persone.js';
 import { prisma } from '../db.js';
 import { writeUserAudit } from '../audit.js';
 import {
+  canDeleteAccount,
   canManageAccount,
   canManageMembership,
   canSetActive,
@@ -62,6 +63,8 @@ export interface UserView {
   manageable: boolean;
   /** Деактивиране / активиране. */
   activable: boolean;
+  /** Изтриване — само деактивиран (auth/manage.ts, `canDeleteAccount`). */
+  deletable: boolean;
   self: boolean;
 }
 
@@ -98,6 +101,7 @@ function viewOf(actor: SessionUser, row: UserRow, scope: Scope): UserView {
       })),
     manageable: canManageAccount(actor, target),
     activable: canSetActive(actor, target),
+    deletable: canDeleteAccount(actor, target, row.deactivatedAt),
     self: actor.id === row.id,
   };
 }
@@ -105,7 +109,10 @@ function viewOf(actor: SessionUser, row: UserRow, scope: Scope): UserView {
 /** Условие „човекът е в някоя от фирмите на обхвата“; за MASTER без филтър — всички (и MASTER). */
 function visibleWhere(scope: Scope, filter?: string | null): Prisma.UserWhereInput {
   const aziendaId = aziendaWhere(scope, filter).aziendaId;
-  return aziendaId === undefined ? {} : { memberships: { some: { aziendaId } } };
+  // Изтритият акаунт не е „човек“ — няма го в списъка и страницата му е 404 (services/cancellazione-account.ts).
+  return aziendaId === undefined
+    ? { cancellatoAt: null }
+    : { cancellatoAt: null, memberships: { some: { aziendaId } } };
 }
 
 /** Най-силната видима роля — за реда в списъка (MASTER горе, после по ранг, после по име). */

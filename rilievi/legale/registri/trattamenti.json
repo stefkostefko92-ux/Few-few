@@ -1,5 +1,5 @@
 {
-  "versione": "2026-11-14",
+  "versione": "2026-11-29",
   "revisione": "Rivisto ogni 6 mesi e a ogni modifica dei sub-responsabili; tenuto in forma elettronica (art. 30, par. 3) e messo a disposizione dell'autorità di controllo su richiesta (art. 30, par. 4).",
   "rappresentante": "Non necessario: il responsabile e titolare è stabilito nell'Unione (art. 27).",
   "rpd": "Non designato: nessun monitoraggio regolare e sistematico degli interessati su larga scala e nessuna categoria particolare di dati (art. 37). Valutazione da confermare a ogni revisione.",
@@ -24,8 +24,8 @@
       },
       {
         "id": "T3",
-        "nome": "Autenticazione degli utenti (password, verifica in due passaggi)",
-        "dati": "Dati degli account",
+        "nome": "Autenticazione degli utenti (password, verifica in due passaggi, accesso con il fornitore di identità del Cliente)",
+        "dati": "Dati degli account; identificativo, email o nome utente e directory o dominio presso il fornitore di identità del Cliente (Microsoft o Google), se il Cliente lo attiva",
         "interessati": "Utenti",
         "sub": "netcup GmbH",
         "conservazione": "Finché esiste l'account"
@@ -40,11 +40,11 @@
       },
       {
         "id": "T5",
-        "nome": "Copie di sicurezza",
+        "nome": "Copie di sicurezza (sul server del Portale e su un secondo server separato)",
         "dati": "Come T1",
         "interessati": "Quelli dell'art. A.4",
         "sub": "netcup GmbH",
-        "conservazione": "14 giorni"
+        "conservazione": "14 giorni, anche per le copie fatte prima di ogni aggiornamento (al massimo le ultime cinque) e per la copia su un secondo server netcup separato"
       },
       {
         "id": "T6",
@@ -81,7 +81,7 @@
     ],
     "trasferimenti": [
       "Nessun trasferimento diretto verso paesi terzi da parte del responsabile.",
-      "Brevo può affidare parte dell'invio delle email a propri sub-responsabili fuori dall'Unione, con clausole contrattuali tipo (art. 46, par. 2, lett. c)); allegare a ogni revisione l'elenco attuale di Brevo.",
+      "Brevo può affidare parte dell'invio delle email a propri sub-responsabili fuori dall'Unione, con una decisione di adeguatezza (art. 45) o clausole contrattuali tipo (art. 46, par. 2, lett. c)); allegare a ogni revisione l'elenco attuale di Brevo e il meccanismo indicato da Brevo.",
       "Nessuna deroga ai sensi dell'art. 49."
     ]
   },
@@ -94,15 +94,17 @@
         "dati": "Nome, azienda, email, telefono, messaggio",
         "interessati": "Chi compila il modulo",
         "base": "Misure precontrattuali (art. 6, par. 1, lett. b))",
-        "conservazione": "{richiesteGiorni} giorni dall'ultima modifica"
+        "conservazione": "{richiesteGiorni} giorni dall'ultima modifica",
+        "destinatari": "Sendinblue SAS (Brevo) per l'avviso all'amministrazione del portale (solo il nome dell'azienda)"
       },
       {
         "id": "C2",
         "nome": "Registri probatori dell'art. 19 delle Condizioni (accettazioni e calcoli emessi)",
-        "dati": "Nome ed email di chi accetta o scarica, IP, browser, codice di firma (come impronta), impronte dei documenti",
+        "dati": "Nome ed email di chi accetta o scarica; IP e browser solo per l'accettazione delle Condizioni (non per la presa visione delle regole d'uso); codice di firma (come impronta), impronte dei documenti",
         "interessati": "Amministratori e utenti dei Clienti",
         "base": "Legittimo interesse alla prova (art. 6, par. 1, lett. f))",
-        "conservazione": "{anni} anni"
+        "conservazione": "{anni} anni",
+        "destinatari": "Nessuno; autorità giudiziarie in caso di contenzioso"
       },
       {
         "id": "C3",
@@ -110,7 +112,8 @@
         "dati": "Tentativi errati, impronta HMAC della rete",
         "interessati": "Chi tenta di accedere",
         "base": "Legittimo interesse alla sicurezza (art. 6, par. 1, lett. f); art. 32)",
-        "conservazione": "1 giorno per le reti; i blocchi finché servono"
+        "conservazione": "1 giorno per le reti; i blocchi finché servono",
+        "destinatari": "Nessuno"
       },
       {
         "id": "C4",
@@ -118,15 +121,17 @@
         "dati": "Nome ed email degli amministratori",
         "interessati": "Amministratori dei Clienti",
         "base": "Esecuzione del contratto e obblighi di legge (art. 6, par. 1, lett. b) e c))",
-        "conservazione": "Finché esiste l'account"
+        "conservazione": "Finché esiste l'account",
+        "destinatari": "Sendinblue SAS (Brevo)"
       },
       {
         "id": "C5",
         "nome": "Fatturazione, pagamenti e abbonamenti",
-        "dati": "Ragione sociale, sede e partita IVA del Cliente; nome ed email dell'amministratore che paga; piano, periodo e importi; numero dell'ordine di Revolut; esito e numero di consultazione della verifica della partita IVA nel VIES; rimborsi e contestazioni del pagamento. I dati della carta restano a Revolut Bank UAB (titolare autonomo): il fornitore non li riceve. Destinatari: Revolut Bank UAB per il pagamento, la Commissione europea (VIES) per la verifica della partita IVA, il consulente contabile e il software di fatturazione del fornitore",
+        "dati": "Ragione sociale, sede e partita IVA del Cliente; nome ed email dell'amministratore che paga; piano, periodo e importi; numero dell'ordine di Revolut; esito e numero di consultazione della verifica della partita IVA nel VIES, con il nome e l'indirizzo che il VIES restituisce; rimborsi e contestazioni del pagamento. I dati della carta restano a Revolut Bank UAB (titolare autonomo): il fornitore non li riceve. Destinatari: Revolut Bank UAB per il pagamento, la Commissione europea (VIES) per la verifica della partita IVA, il consulente contabile e il software di fatturazione del fornitore",
         "interessati": "Amministratori dei Clienti",
         "base": "Esecuzione del contratto e obblighi di legge contabili e fiscali (art. 6, par. 1, lett. b) e c))",
-        "conservazione": "10 anni dalla fine dell'esercizio (art. 12 della legge bulgara sulla contabilità)"
+        "conservazione": "10 anni dalla fine dell'esercizio (art. 12 della legge bulgara sulla contabilità)",
+        "destinatari": "Revolut Bank UAB (pagamento), Commissione europea (VIES), consulente contabile e software di fatturazione del fornitore"
       },
       {
         "id": "C6",
@@ -134,7 +139,8 @@
         "dati": "Nome ed email di chi accetta, azienda, testo e impronta dell'offerta, data e ora, IP e browser, sigillo",
         "interessati": "Amministratori dei Clienti",
         "base": "Legittimo interesse alla prova del contratto (art. 6, par. 1, lett. f))",
-        "conservazione": "{anni} anni dalla cancellazione dei dati del Cliente"
+        "conservazione": "{anni} anni dalla cancellazione dei dati del Cliente",
+        "destinatari": "Revolut Bank UAB (riferimento del pagamento)"
       },
       {
         "id": "C7",
@@ -142,7 +148,8 @@
         "dati": "Nome ed email degli amministratori, data di scadenza, livello",
         "interessati": "Amministratori dei Clienti",
         "base": "Esecuzione del contratto (art. 6, par. 1, lett. b))",
-        "conservazione": "Finché esiste l'account; dell'avviso inviato resta solo la soglia raggiunta"
+        "conservazione": "Finché esiste l'account; dell'avviso inviato resta solo la soglia raggiunta",
+        "destinatari": "Sendinblue SAS (Brevo)"
       },
       {
         "id": "C8",
@@ -150,15 +157,21 @@
         "dati": "Nome ed email di chi segnala; posizione del contenuto e motivi; dichiarazione di buona fede; data e ora; decisione, misura e motivazione; comunicazioni al segnalante e agli Amministratori dell'azienda interessata; richieste di riesame ed esito; eventuale comunicazione alle autorità (art. 18)",
         "interessati": "Chi segnala; persone citate o ritratte nel contenuto segnalato; Amministratori dell'azienda che ha caricato il contenuto",
         "base": "Obbligo di legge (art. 6, par. 1, lett. c); artt. 16–18 Reg. (UE) 2022/2065; per i dati relativi a reati, art. 10 GDPR in base all'art. 18 del Regolamento); conservazione a fini di prova: legittimo interesse (art. 6, par. 1, lett. f))",
-        "conservazione": "5 anni dalla decisione o dall'esito del riesame; segnalazioni non esaminabili: 1 anno dalla risposta; in caso di contestazione, fino alla definizione"
+        "conservazione": "5 anni dalla decisione o dall'esito del riesame; segnalazioni non esaminabili: 1 anno dalla risposta; in caso di contestazione, fino alla definizione",
+        "destinatari": "Sendinblue SAS (Brevo); autorità competenti (art. 18 Reg. (UE) 2022/2065)"
       }
+    ],
+    "trasferimenti": [
+      "Nessun trasferimento diretto verso paesi terzi da parte del titolare.",
+      "Le email inviate tramite Brevo possono essere trattate da suoi sub-responsabili fuori dall'Unione, con le garanzie dell'art. 45 o dell'art. 46 indicate da Brevo.",
+      "Nessuna deroga ai sensi dell'art. 49."
     ]
   },
   "subResponsabili": [
     {
       "nome": "netcup GmbH",
       "sede": "Emmy-Noether-Straße 10, 76131 Karlsruhe, Germania",
-      "attivita": "Infrastruttura: server, database, copie di sicurezza, in data center in Germania",
+      "attivita": "Infrastruttura: server, database, copie di sicurezza (anche su un secondo server separato), in data center nell'Unione europea",
       "accordo": "Accordo ai sensi dell'art. 28 in vigore"
     },
     {

@@ -179,7 +179,7 @@ sudo REF=main PROJECTS="rilievi" bash /opt/few-few/current/deploy/fetch-deploy.s
 2. `docker compose build app worker` (приложението — с poppler-utils за картинката на табелата — и
    фоновият процес на снимките — той с ffmpeg) —
    провал тук не пипа работещите контейнери (код 1);
-3. бекъп на базата ПРЕДИ миграцията (`backups/pre-deploy-*.sql.gz`, последните 5) — без бекъп няма
+3. бекъп на базата ПРЕДИ миграцията (`backups/pre-deploy-*.sql.gz`, последните 5 и никое над 14 дни) — без бекъп няма
    миграция;
 4. страницата за поддръжка (`deploy/nginx/manutenzione.html` → `/var/www/rilievi/`): докато приложението се
    рестартира, nginx показва нея (502/503/504, `Retry-After`) вместо гола 502; после `docker compose up` —
@@ -350,7 +350,7 @@ Google не поддържа IndexNow — там sitemap-ът се открив�
 
 ## 6. Бекъпи
 
-- Преди всяка миграция: `/opt/few-few/shared/rilievi/backups/pre-deploy-*.sql.gz` (последните 5).
+- Преди всяка миграция: `/opt/few-few/shared/rilievi/backups/pre-deploy-*.sql.gz` (последните 5 и никое над 14 дни — условията, A.11).
 - Дневно 03:10 UTC: `rilievi-backup.timer` → `deploy/backup.sh` (последните 14 от всяко):
   - базата — `backups/daily/rilievi-*.sql.gz`;
   - снимките и клиповете — `backups/media/<дата>/`: моментна снимка с твърди връзки към тома
@@ -368,13 +368,21 @@ Google не поддържа IndexNow — там sitemap-ът се открив�
   `/opt/few-few/shared/rilievi/backup.env` (600, `root`):
 
   ```bash
-  RILIEVI_OFFSITE=u123456@u123456.your-storagebox.de:rilievi   # папката там я създай веднъж
-  RILIEVI_OFFSITE_SSH="-p 23 -i /root/.ssh/rilievi_backup"      # ключ само за това, без парола
+  RILIEVI_OFFSITE=backup@<вторият-сървър-на-netcup>:/srv/rilievi   # папката там я създай веднъж
+  RILIEVI_OFFSITE_SSH="-i /root/.ssh/rilievi_backup"                 # ключ само за това, без парола
   RILIEVI_HEARTBEAT_URL=https://…/push/…   # Uptime Kuma push / Healthchecks: пропуснат ден = аларма
   RILIEVI_ALERT_URL=https://discord.com/api/webhooks/…   # аларма при провал („Аларми в Discord“)
   ```
 
   Всяка нощ дъмповете (`daily/`) и снимките (`media/`) отиват там по SSH.
+
+  **Решение на собственика (28 ноември 2026, правният преглед): вторият сървър е на netcup** — същият
+  подобработващ (S.1 на условията 2026-11-29 и политиката го казват: „un secondo server separato“). Изисквания,
+  защото текстовете ги обещават: (1) центърът на данните — **в ЕС** (Германия, Австрия или Нидерландия; никога
+  Manassas/САЩ или Сингапур); (2) друг физически сървър, не друга папка на същия; (3) достъп само с ключа
+  `rilievi_backup`, без парола, `rrsync`/само тази папка; (4) `--delete` пази там същите 14 дни като тук. Друг
+  доставчик (Storage Box на Hetzner и подобни) — само след нова версия на условията с ред в S.1, обявена 30 дни
+  по-рано (A.8).
 
 - **Тайните не ги изнася нито скриптът, нито агент.** `INTERVENTI_SEAL_KEY` (в
   `/opt/few-few/shared/rilievi/.env`) не е в дъмпа на базата, а без него потвърдените листове за
@@ -533,7 +541,7 @@ sudo RILIEVI_SKIP_BACKUP=1 bash "$PWD/deploy/deploy.sh"
 прави нов `INTERVENTI_SEAL_KEY` и възстановената база става безполезна (2FA, плащания, печати, API ключове —
 т. 1). Нужни от копието на тайните, качени на новия сървър в `/root/rilievi-tajni/`: `.env` (с `MODULI_KEY`;
 ако го няма в копието — `moduli-chiave.sh` с ключа от мениджъра на пароли), `backup.env` и
-ключът за Storage Box `rilievi_backup` (без тях — само дъмп без снимки и без ключ, т.е. нищо). Колко трае — да
+ключът за втория сървър `rilievi_backup` (без тях — само дъмп без снимки и без ключ, т.е. нищо). Колко трае — да
 се измери при първата проба и да се сравни с RTO на `/stato` (8 ч).
 
 1. Сървърът: Docker с compose plugin, nginx, certbot, rsync, `flock` (util-linux) и втвърдяването (ufw 22/80/443,

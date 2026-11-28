@@ -56,9 +56,10 @@ const persona = (user: SessionUser) => {
 
 /**
  * Правилата за ползване (чл. 4.5 от условията) — всеки човек сам, с една отметка. Пише доказателството
- * (запечатано), версията за пропуска и одита в една транзакция.
+ * (запечатано), версията за пропуска и одита в една транзакция. Без IP и браузър: прочитането на правилата не е
+ * договор, стигат човекът, часът, версията и печатът (чл. 5(1)(c) GDPR — правният преглед, 28 ноември 2026).
  */
-export async function accettaRegole(user: SessionUser, ctx: Contesto): Promise<void> {
+export async function accettaRegole(user: SessionUser): Promise<void> {
   const doc = leggiTesto('REGOLE');
   await prisma.$transaction(async (tx) => {
     const at = new Date();
@@ -69,7 +70,8 @@ export async function accettaRegole(user: SessionUser, ctx: Contesto): Promise<v
       hash: await registraTesto(tx, doc),
       clausole: [] as string[],
       ...persona(user),
-      ...contesto(ctx),
+      ip: null,
+      userAgent: null,
     };
     await tx.accettazione.create({
       data: {

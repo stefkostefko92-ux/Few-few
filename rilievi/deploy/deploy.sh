@@ -35,6 +35,8 @@ LE_DIR="${RILIEVI_LE_DIR:-/etc/letsencrypt}"
 HEALTH_WAIT="${RILIEVI_HEALTH_WAIT:-90}"
 MIGRATION_WAIT="${RILIEVI_MIGRATION_WAIT:-1800}"
 KEEP_BACKUPS="${RILIEVI_KEEP_BACKUPS:-5}"
+# Дните на копията преди миграция: същите 14 като дневните (backup.sh, RILIEVI_KEEP_DAILY) — обещани в условията.
+BACKUP_DAYS=14
 SKIP_BACKUP="${RILIEVI_SKIP_BACKUP:-0}"
 LAST_GOOD="${RILIEVI_LAST_GOOD:-$SHARED/last-good}"
 LOCK="${RILIEVI_LOCK:-/run/lock/rilievi-deploy.lock}"
@@ -242,6 +244,9 @@ backup_db() {
   fi
   find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -printf '%T@ %p\n' | sort -rn |
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
+  # Никое копие не стои повече от 14 дни (условията, A.11 и M.1; регистърът, T5) — и тези преди деплой.
+  # Току-що направеното остава винаги: то е по-ново от прага.
+  find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' ! -newer "$file" -mmin +$((BACKUP_DAYS * 24 * 60)) -delete
 }
 
 # Миграция, която още тече (entrypoint-ът на app я прилага): ред в _prisma_migrations без край, без

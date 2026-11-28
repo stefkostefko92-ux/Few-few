@@ -17,7 +17,7 @@ import {
   testoPiano,
   type TestoLegaleDoc,
 } from '../src/legale/testi.js';
-import { ANNI_CONSERVAZIONE, VERSIONE } from '../src/legale/versioni.js';
+import { ANNI_CONSERVAZIONE, STORIA, VERSIONE } from '../src/legale/versioni.js';
 
 // The seal key comes from the server config, read only when first used.
 process.env.PUBLIC_BASE_URL ??= 'https://rilievi.carbonstealth.eu';
@@ -32,6 +32,9 @@ const t = translatorFor('it');
 const PUBBLICATI: Record<string, string> = {
   'condizioni-2026-11-10': '01ebcd73a5da55b524c5b51dc622209124fa2adbe89553192aaa8234374622cc',
   'regole-2026-11-10': '8c3ab4b662c2cc9f1d4adbb0514ad433a09b8e1b4d95c362519887ba0d9475e3',
+  // The calculation notice names the Client, not the employee (5.1 of the terms); API and export; what every page
+  // of a calculation sheet carries; signatures on screen (6.10). Legal review before release, 28 Nov 2026.
+  'regole-2026-11-29': '1693ac71a4fd58646a4a6d21c56d89ceab559b8153af9a69f6b9bad27a956414',
   // Allegato B (Data Act) — never in force: its whole text is inside 2026-11-12 (versioni.ts).
   'condizioni-2027-01-12': '94fdec9fafbe730a38703ec96e49f0750d296b31e2ea9e12a572f4708a772903',
   // Allegato B + the free month, the Plans and read-only at the end (art. 12) — in force on its own day.
@@ -48,8 +51,12 @@ const PUBBLICATI: Record<string, string> = {
   'condizioni-2026-11-15': 'dc43326c4e1953c80b96695ad174e65444f887ec0cf391ada4cad0a0a31fe7ae',
   // The suppliers' forms: «Moduli di terzi» (6.6), only for orders to their owner (6.8), changed or withdrawn by
   // us (6.9), not ours (13.1), the marks without a list and without affiliation (13.4), 5.5, the export (B.8 f, j);
-  // the specific approval names it (art. 24). In force on its own day without announcement (owner, 26 Nov 2026).
-  'condizioni-2026-11-27': '7f842e7033fc1c0227e3272c5a485c97b950948977e99e92e5239955a2536fd0',
+  // and the legal review before release (owner, 28 Nov 2026): the trial once and from 12 November 2026 (12.2,
+  // 12.8), the revoked switch (12.7), API and export (4.4 d), the calculation documents (6.3, 6.5, 9.2, 10.1),
+  // signatures on screen (6.10), our email in the preamble, the credit note and the VIES name (12.9, 12.10), the
+  // account deletion (A.9), the second netcup server (S.1); new clauses in art. 24 (17.3, B.13, 23.4, 25.3, A.15).
+  // The unpublished 2026-11-27 became this file. In force on its own day without announcement.
+  'condizioni-2026-11-29': '61bdf215c1f6e7a5f9e8f0ec900bc92e789f12fe156adc0f9376232cbddf6859',
 };
 
 const tutto = (doc: TestoLegaleDoc): string => testoPiano(doc);
@@ -162,7 +169,10 @@ describe('the sub-processors', () => {
 
 describe('the rules of use', () => {
   it('carry the calculation notice word for word: a new notice means new rules to accept', () => {
-    assert.ok(tutto(leggiTesto('REGOLE')).includes(t('calcoli.avvertenza.testo')));
+    // The newest rules: the notice printed from today is the one they carry (2026-11-29 enters by itself).
+    assert.ok(
+      tutto(leggiTesto('REGOLE', STORIA.REGOLE.at(-1))).includes(t('calcoli.avvertenza.testo')),
+    );
   });
 });
 

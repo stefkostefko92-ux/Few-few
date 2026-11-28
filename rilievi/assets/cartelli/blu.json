@@ -1,84 +1,40 @@
 {
   "id": "blu",
   "titolo": "Blu tecnico",
-  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 04_Blu_Tecnico.pdf, ingrandita per la stampa il 31/10/2026 con Real-ESRGAN x4plus (3:1 con Lanczos) e riportata a 4× con Lanczos (scripts/cartelli/upscale.py)",
+  "fonte": "Disegnato da Carbon Stealth VCC il 28/11/2026 con scripts/cartelli/disegna.py: grafica e scritte generate dal codice (Fira Sans, SIL OFL 1.1), foto: nostro rendering 3D (public/img/site/vano-2400.webp)",
   "file": "blu.jpg",
-  "sha256": "c62c032b19d0c8255531bc34037cf72a5805d640078e7e3f3e083a162a62f9b8",
-  "larghezza": 794,
-  "altezza": 918,
-  "scala": 4,
-  "copri": [
-    {
-      "rect": [40, 114, 540, 152]
-    },
-    {
-      "rect": [642, 542, 794, 569]
-    },
-    {
-      "rect": [195, 571, 317, 602]
-    },
-    {
-      "rect": [333, 571, 493, 602]
-    },
-    {
-      "rect": [517, 571, 615, 602]
-    },
-    {
-      "rect": [643, 571, 794, 602]
-    },
-    {
-      "rect": [195, 686, 794, 788]
-    },
-    {
-      "rect": [195, 804, 794, 832]
-    }
-  ],
+  "sha256": "4126a5047df6d8757dbbd4a9135913559999bc9f80da4c2e797824c52989d40f",
+  "larghezza": 1220,
+  "altezza": 1750,
+  "scala": 2,
+  "copri": [],
   "logo": {
-    "box": [44, 14, 260, 112]
+    "box": [60, 24, 340, 150]
   },
   "azienda": {
-    "box": [276, 18, 780, 112],
-    "colore": "#1a1a1a",
-    "dimensione": 18
+    "box": [362, 24, 1170, 150],
+    "colore": "#06235a",
+    "dimensione": 24
   },
   "valori": {
-    "y": 595,
-    "dimensione": 24,
-    "colore": "#111111",
+    "y": 1164,
+    "dimensione": 32,
+    "colore": "#06235a",
     "colonne": [
-      [202, 110],
-      [340, 148],
-      [524, 86],
-      [650, 138]
+      [60, 190],
+      [275, 340],
+      [640, 215],
+      [880, 280]
     ]
   },
   "testo": {
-    "x": 202,
-    "y": 707,
-    "larghezza": 588,
-    "riga": 24.7,
-    "righe": 4,
-    "dimensione": 21,
-    "colore": "#111111"
+    "x": 70,
+    "y": 1352,
+    "larghezza": 1080,
+    "riga": 54,
+    "righe": 5,
+    "dimensione": 42,
+    "colore": "#06235a"
   },
-  "scritte": [
-    {
-      "testo": "UBICAZIONE IMPIANTO",
-      "x": 650,
-      "y": 563,
-      "larghezza": 138,
-      "dimensione": 21,
-      "colore": "#1f1f1f",
-      "peso": "normale"
-    },
-    {
-      "testo": "CERTI DELLA VOSTRA COLLABORAZIONE, PORGIAMO I NOSTRI CORDIALI SALUTI",
-      "x": 202,
-      "y": 825,
-      "larghezza": 588,
-      "dimensione": 21,
-      "colore": "#111111",
-      "peso": "normale"
-    }
-  ]
+  "scritte": []
 }

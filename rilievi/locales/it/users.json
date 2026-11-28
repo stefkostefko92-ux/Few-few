@@ -93,6 +93,13 @@
       "attiva": "Attiva: dopo la password l'accesso chiede il codice dell'app. Se la persona ha perso il telefono e i codici di recupero, puoi disattivarla: le arriva un'email e potrà riattivarla dal suo account.",
       "spenta": "Non attiva. La attiva solo la persona, dal suo account.",
       "azzera": "Disattiva la verifica in due passaggi"
+    },
+    "cancella": {
+      "title": "Cancellare l'account",
+      "text": "L'account è disattivato. Cancellandolo togliamo il nome, l'email, la password, la verifica in due passaggi e gli accessi collegati; nelle schede e nel registro l'autore diventa «Utente cancellato», e i nomi scritti nei documenti firmati restano. Non si può annullare.",
+      "password": "La tua password, per confermare",
+      "errorePassword": "Password non corretta: l'account non è stato cancellato.",
+      "submit": "Cancella l'account"
     }
   },
   "audit": {
@@ -126,6 +133,7 @@
       "INVITE_ACCEPT": "Invito accettato",
       "USER_ROLE": "Ruolo cambiato",
       "USER_DEACTIVATE": "Account disattivato",
+      "USER_DELETE": "Account cancellato",
       "USER_REACTIVATE": "Account riattivato",
       "PASSWORD_CHANGE": "Password cambiata",
       "PASSWORD_RESET_LINK": "Link password creato",

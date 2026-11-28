@@ -129,7 +129,10 @@ describe('the rules of use, accepted by every person', () => {
     assert.equal(riga.userNome, user.name);
     assert.equal(riga.aziendaId, azienda.id);
     assert.equal(riga.ruolo, 'TECNICO');
-    assert.ok(riga.ip, 'the address is kept in the register');
+    // Reading the rules is not a contract: no address and no browser (minimisation, art. 5(1)(c) GDPR — the legal
+    // review, 28 November 2026). The user, the time, the version and the seal are enough.
+    assert.equal(riga.ip, null);
+    assert.equal(riga.userAgent, null);
     assert.ok(sigilloValido(riga, CAMPI_ACCETTAZIONE), 'sealed');
     assert.equal(
       sigilloValido({ ...riga, userNome: 'Qualcun altro' }, CAMPI_ACCETTAZIONE),

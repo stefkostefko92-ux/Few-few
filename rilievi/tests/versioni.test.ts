@@ -20,7 +20,7 @@ import { leggiTesto } from '../src/legale/testi.js';
 
 afterEach(() => impostaAnnunci([]));
 
-/** A history with a version still to be announced (the real one has none after 2026-11-27). */
+/** A history with a version still to be announced (the real one has none after 2026-11-29). */
 const FUTURA = ['2026-11-10', '2027-01-12'] as const;
 
 describe('the versions of the legal texts', () => {
@@ -52,7 +52,7 @@ describe('the versions of the legal texts', () => {
     });
     assert.equal(versioneVigente('CONDIZIONI', new Date('2026-11-13T23:00:00Z')), '2026-11-14');
     // 2027-01-12 never comes in: its text is inside 2026-11-12.
-    assert.equal(versioneVigente('CONDIZIONI', new Date('2027-06-01T10:00:00Z')), '2026-11-27');
+    assert.equal(versioneVigente('CONDIZIONI', new Date('2027-06-01T10:00:00Z')), '2026-11-29');
   });
 
   it('put 2026-11-15 in force at midnight (Rome) of its own day, without an announcement', () => {
@@ -68,36 +68,37 @@ describe('the versions of the legal texts', () => {
     assert.equal(versioneVigente('CONDIZIONI', new Date('2026-11-14T23:00:00Z')), '2026-11-15');
   });
 
-  it('put 2026-11-27 in force at midnight (Rome) of its own day, without an announcement', () => {
+  it('put 2026-11-29 in force at midnight (Rome) of its own day, without an announcement', () => {
     // The owner, 26 November 2026: "Веднага, без обява" — the suppliers' forms (6.6, 6.8, 6.9, 13.1, 13.4, B.8);
-    // still only his test companies in the portal.
-    const giorno = new Date('2026-11-26T10:00:00Z');
+    // 28 November 2026, before the first deploy of that text: the legal review ("Искам да сме перфектни"), so the
+    // unpublished 2026-11-27 became 2026-11-29. Still only his test companies in the portal.
+    const giorno = new Date('2026-11-28T10:00:00Z');
     assert.equal(versioneVigente('CONDIZIONI', giorno), '2026-11-15');
     assert.deepEqual(versioneProssima('CONDIZIONI', giorno), {
-      versione: '2026-11-27',
-      dal: new Date('2026-11-26T23:00:00Z'),
+      versione: '2026-11-29',
+      dal: new Date('2026-11-28T23:00:00Z'),
       annunciataAt: null,
     });
-    assert.equal(versioneVigente('CONDIZIONI', new Date('2026-11-26T23:00:00Z')), '2026-11-27');
+    assert.equal(versioneVigente('CONDIZIONI', new Date('2026-11-28T23:00:00Z')), '2026-11-29');
   });
 
   it('count a company as having accepted with the version in force or a later one', () => {
     // The existing companies were marked with 2026-11-14 the day before it came into force (the owner: active
     // without a signature while the mail is down): they are not asked on the 13th, nor again on the 14th.
     const prima = new Date('2026-11-13T10:00:00Z');
-    // A later version counts too (accepted ahead): 2026-11-15 and 2026-11-27 are in the history, not yet in force.
+    // A later version counts too (accepted ahead): 2026-11-15 and 2026-11-29 are in the history, not yet in force.
     assert.deepEqual(versioniValide(prima), [
       '2026-11-13',
       '2026-11-14',
       '2026-11-15',
-      '2026-11-27',
+      '2026-11-29',
     ]);
     assert.equal(condizioniValide('2026-11-14', prima), true);
     assert.equal(condizioniValide('2026-11-13', prima), true);
     assert.equal(condizioniValide('2026-11-12', prima), false);
     assert.equal(condizioniValide(null, prima), false);
     const dopo = new Date('2026-11-13T23:00:00Z');
-    assert.deepEqual(versioniValide(dopo), ['2026-11-14', '2026-11-15', '2026-11-27']);
+    assert.deepEqual(versioniValide(dopo), ['2026-11-14', '2026-11-15', '2026-11-29']);
     assert.equal(condizioniValide('2026-11-13', dopo), false);
     assert.equal(condizioniValide('2026-11-14', dopo), true);
     assert.equal(
@@ -112,21 +113,22 @@ describe('the versions of the legal texts', () => {
   it('have the administrator sign the version that enters by itself, not the one of the last day', () => {
     const vigilia = new Date('2026-11-13T10:00:00Z');
     assert.equal(versioneVigente('CONDIZIONI', vigilia), '2026-11-13');
-    // The last of the versions that enter by themselves (2026-11-14, 2026-11-15, 2026-11-27) — signed once.
-    assert.equal(versioneDaFirmare('CONDIZIONI', vigilia), '2026-11-27');
+    // The last of the versions that enter by themselves (2026-11-14, 2026-11-15, 2026-11-29) — signed once.
+    assert.equal(versioneDaFirmare('CONDIZIONI', vigilia), '2026-11-29');
     // What is signed is accepted at once and stays accepted when its day comes.
     assert.equal(condizioniValide(versioneDaFirmare('CONDIZIONI', vigilia), vigilia), true);
-    assert.equal(versioneDaFirmare('CONDIZIONI', new Date('2026-11-14T10:00:00Z')), '2026-11-27');
-    const dopo = new Date('2026-11-27T10:00:00Z');
+    assert.equal(versioneDaFirmare('CONDIZIONI', new Date('2026-11-14T10:00:00Z')), '2026-11-29');
+    const dopo = new Date('2026-11-29T10:00:00Z');
     assert.equal(versioneDaFirmare('CONDIZIONI', dopo), versioneVigente('CONDIZIONI', dopo));
-    assert.equal(versioneDaFirmare('CONDIZIONI', new Date('2026-11-11T10:00:00Z')), '2026-11-27');
-    assert.equal(versioneDaFirmare('REGOLE', vigilia), versioneVigente('REGOLE', vigilia));
+    assert.equal(versioneDaFirmare('CONDIZIONI', new Date('2026-11-11T10:00:00Z')), '2026-11-29');
+    // The rules of 2026-11-29 enter by themselves too (the legal review, 28 November 2026).
+    assert.equal(versioneDaFirmare('REGOLE', vigilia), '2026-11-29');
   });
 
   it('never have a version signed before its announced day', () => {
     const storia = [...STORIA.CONDIZIONI, '2027-03-01'];
     const oggi = new Date('2026-12-01T10:00:00Z');
-    assert.equal(versioneDaFirmare('CONDIZIONI', oggi, storia), '2026-11-27');
+    assert.equal(versioneDaFirmare('CONDIZIONI', oggi, storia), '2026-11-29');
     impostaAnnunci([
       {
         tipo: 'CONDIZIONI',
@@ -135,7 +137,7 @@ describe('the versions of the legal texts', () => {
       },
     ]);
     // Announced and with a date: still the one in force until that day (art. 18.1 — the notice runs first).
-    assert.equal(versioneDaFirmare('CONDIZIONI', oggi, storia), '2026-11-27');
+    assert.equal(versioneDaFirmare('CONDIZIONI', oggi, storia), '2026-11-29');
     assert.equal(
       versioneDaFirmare('CONDIZIONI', new Date('2027-03-01T10:00:00Z'), storia),
       '2027-03-01',
@@ -151,7 +153,7 @@ describe('the versions of the legal texts', () => {
       dal: null,
       annunciataAt: null,
     });
-    assert.equal(versioneVigente('REGOLE', dopo), '2026-11-10');
+    assert.equal(versioneVigente('REGOLE', dopo), '2026-11-29');
     assert.equal(versioneProssima('REGOLE', dopo), null);
   });
 

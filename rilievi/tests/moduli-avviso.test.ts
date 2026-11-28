@@ -1,5 +1,5 @@
 // The notice next to every supplier's form (owner, 26 November 2026 — „Направи всичко възможно да няма бъдещи
-// спорове“; the text — the legal reviewer; Condizioni 2026-11-27, art. 6.8): the form belongs to its supplier and is
+// спорове“; the text — the legal reviewer; Condizioni 2026-11-29, art. 6.8): the form belongs to its supplier and is
 // used only to ask that supplier for a quote or to order. Our own sheets (AMI 100, the hoist data) carry none;
 // the 2SG sheet is ours, redrawn on their form, and says so. Nothing is written on the supplier's PDF itself.
 import assert from 'node:assert/strict';

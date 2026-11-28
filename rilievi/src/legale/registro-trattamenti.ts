@@ -19,6 +19,8 @@ const riga = z
     interessati: z.string().min(1),
     sub: z.string().min(1).optional(),
     base: z.string().min(1).optional(),
+    /** I destinatari (art. 30, par. 1, lett. d)) — nelle attività del titolare. */
+    destinatari: z.string().min(1).optional(),
     conservazione: z.string().min(1),
   })
   .strict();
@@ -36,7 +38,14 @@ const schema = z
         trasferimenti: z.array(z.string().min(1)).min(1),
       })
       .strict(),
-    titolare: z.object({ titolo: z.string().min(1), trattamenti: z.array(riga).min(1) }).strict(),
+    titolare: z
+      .object({
+        titolo: z.string().min(1),
+        trattamenti: z.array(riga.extend({ destinatari: z.string().min(1) })).min(1),
+        /** I trasferimenti verso paesi terzi come titolare (art. 30, par. 1, lett. e)). */
+        trasferimenti: z.array(z.string().min(1)).min(1),
+      })
+      .strict(),
     subResponsabili: z.array(
       z
         .object({

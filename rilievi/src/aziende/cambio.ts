@@ -97,7 +97,10 @@ export async function prorogaCambio(
   return true;
 }
 
-/** Оттеглянето — докато преходът тече; фирмата продължава, сякаш искане не е имало. */
+/**
+ * Оттеглянето — докато преходът тече; фирмата продължава, сякаш искане не е имало, но от оттеглянето важи пак
+ * „само четене“ при изтекъл план (чл. 12.5), и ново искане вече не го вдига (чл. 12.7, B.6 — условията 2026-11-29).
+ */
 export async function annullaCambio(
   actor: SessionUser,
   aziendaId: string,
@@ -116,6 +119,8 @@ export async function annullaCambio(
         cambioFineAt: null,
         cambioEsito: null,
         cambioProrogato: false,
+        // Знакът остава: ново искане след оттегляне не вдига „само четене“ (чл. 12.7 и B.6).
+        cambioRevocatoAt: now,
       },
     });
     await writeAudit(

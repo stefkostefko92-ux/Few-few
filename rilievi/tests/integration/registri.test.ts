@@ -40,6 +40,10 @@ describe('the GDPR registers', () => {
     assert.match(page.body, /Registro delle categorie di attività svolte come responsabile/);
     assert.match(page.body, /Registri Ascensori/);
     assert.match(page.body, /netcup GmbH/);
+    // Art. 30(1)(d) and (e): who receives the data of each activity as controller, and the transfers.
+    assert.match(page.body, /Destinatari/);
+    assert.match(page.body, /Revolut Bank UAB \(riferimento del pagamento\)/);
+    assert.match(page.body, /Trasferimenti verso paesi terzi come titolare/);
     assert.doesNotMatch(page.body, /\{auditGiorni\}|\{anni\}/, 'the periods come from the code');
     const { browser: admin } = await signedIn('ADMIN');
     assert.equal((await admin.get('/master/registri')).status, 403);

@@ -132,6 +132,10 @@ model Azienda {
   cambioEsito              CambioEsito?
   /// Преходът е удължен веднъж (чл. 25(5) Data Act — правото е еднократно).
   cambioProrogato          Boolean      @default(false)
+  /// Последното оттегляне на смяната (B.6): от него важи пак само четенето (чл. 12.5), а ново искане след
+  /// оттегляне не го вдига (чл. 12.7 — правният преглед, 28 ноември 2026: иначе искане, оттегляне, искане
+  /// беше безплатна услуга без край). Износът и смяната остават винаги.
+  cambioRevocatoAt         DateTime?
   /// Информацията по чл. 13 GDPR на страницата на подписа (листът за интервенция, протоколът), както
   /// фирмата я е написала — тя е администраторът; null — моделът, попълнен с данните ѝ (legale/informativa.ts).
   informativaFirme         String?      @db.VarChar(4000)
@@ -217,6 +221,10 @@ model User {
   colori             Json?
   /// Деактивиран акаунт не влиза; сесиите му падат при деактивирането.
   deactivatedAt      DateTime?
+  /// Изтрит акаунт (Allegato A, A.9; правният преглед, 28 ноември 2026): обезличен — име и имейл заменени,
+  /// сесии, 2FA, кодове, връзки и външни самоличности изтрити (src/services/cancellazione-account.ts).
+  /// Остава редът, за да не се губят авторът на картите и редовете на регистъра. Само деактивиран (CHECK).
+  cancellatoAt       DateTime?
   /// Първият MASTER от скрипта сменя паролата при първия вход.
   mustChangePassword Boolean   @default(false)
   failedLogins       Int       @default(0)
@@ -1007,14 +1015,14 @@ model Intervento {
 /// текстът към хората. Облеклото ѝ е шаблонът, избран от фирмата, а главата — логото и данните ѝ, взети
 /// при всяко рисуване на PDF-а.
 model Cartello {
-  id          String   @id @default(cuid())
-  aziendaId   String
-  azienda     Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
-  data        DateTime @db.Date
-  indirizzo   String?  @db.VarChar(200)
-  citta       String?  @db.VarChar(80)
-  ubicazione  String?  @db.VarChar(120)
-  testo       String   @db.VarChar(600)
+  id                   String    @id @default(cuid())
+  aziendaId            String
+  azienda              Azienda   @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  data                 DateTime  @db.Date
+  indirizzo            String?   @db.VarChar(200)
+  citta                String?   @db.VarChar(80)
+  ubicazione           String?   @db.VarChar(120)
+  testo                String    @db.VarChar(600)
   /// Спиране поради опасност (D.P.R. 162/1999, чл. 15, ал. 7): поддържащият спира асансьора и уведомява
   /// собственика, проверяващия (soggetto delle verifiche periodiche) и общината — денят на всяко
   /// уведомяване. Без `pericolo` датите са празни (CHECK `Cartello_pericolo_check`). 15 ноември 2026.
@@ -1024,14 +1032,14 @@ model Cartello {
   avvisoComuneAt       DateTime? @db.Date
   /// Картата на уредбата, от която е попълнена (същата фирма — проверява се при записа). Окончателно
   /// изтритата карта оставя табелата без връзка; табела без карта е нормална.
-  schedaId    String?
-  scheda      Scheda?  @relation(fields: [schedaId], references: [id], onDelete: SetNull)
-  createdById String?
-  createdBy   User?    @relation("CartelliCreati", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedById String?
-  updatedBy   User?    @relation("CartelliModificati", fields: [updatedById], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  schedaId             String?
+  scheda               Scheda?   @relation(fields: [schedaId], references: [id], onDelete: SetNull)
+  createdById          String?
+  createdBy            User?     @relation("CartelliCreati", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById          String?
+  updatedBy            User?     @relation("CartelliModificati", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   @@index([aziendaId, createdAt])
   @@index([schedaId, createdAt])
