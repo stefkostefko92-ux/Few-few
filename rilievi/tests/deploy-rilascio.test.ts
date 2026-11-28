@@ -30,7 +30,12 @@ printf 'curl %s\\n' "$url" >>"$LOG"
 case "$url" in
   *"/compare/"*) [ "\${COMPARE_EXIT:-0}" = 0 ] || exit "$COMPARE_EXIT"; printf '%s' "$COMPARE_BODY" ;;
   *"/health") [ "\${HEALTH_EXIT:-0}" = 0 ] || exit "$HEALTH_EXIT"; printf '{"status":"ok","app":"rilievi"}' ;;
-  *"/novita") printf '%s' "\${NOVITA_BODY:-<h2>Versione 5.9: cartelli</h2>}" ;;
+  *"/novita")
+    printf '%s' "\${NOVITA_BODY:-<h2>Versione 5.9: cartelli</h2>}"
+    # The real page is ~40 KB with the title near the top — more than a pipe holds. Like the real curl, a reader
+    # that stops early breaks the pipe and this stand-in fails (the real one exits 23).
+    if [ "\${NOVITA_GRANDE:-0}" = 1 ]; then yes 'riga della pagina' | head -c 300000; fi
+    ;;
   *) exit 6 ;;
 esac
 `;
@@ -157,6 +162,10 @@ describe('the deploy of rilievi in one command', () => {
       const r = rilascio({ ref: 'claude/altro-lavoro', vars });
       assert.equal(r.status, 1, JSON.stringify(vars));
       assert.equal(fetchDi(r.passi), undefined, JSON.stringify(vars));
+      assert.ok(
+        !r.passi.includes('backup'),
+        'not even a backup: the daily copies stay as they are',
+      );
       assert.match(r.stderr, /claude\/altro-lavoro/);
     }
     // A ref with odd characters is not even sent to GitHub.
@@ -182,6 +191,13 @@ describe('the deploy of rilievi in one command', () => {
     const morto = rilascio({ vars: { HEALTH_EXIT: '7' } });
     assert.equal(morto.status, 1);
     assert.match(morto.stderr, /health/);
+  });
+
+  it('reads the whole news page: the version near the top of a long page is not a failure', () => {
+    // VPS-аджията: `curl | grep -q` under pipefail — grep stops early, curl gets EPIPE (23) and a good deploy
+    // was reported as failed.
+    const r = rilascio({ vars: { NOVITA_GRANDE: '1' } });
+    assert.equal(r.status, 0, r.stderr);
   });
 
   it('works on a first deploy without a previous release (the deploy makes its own backup)', () => {

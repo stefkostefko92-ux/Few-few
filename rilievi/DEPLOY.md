@@ -172,14 +172,14 @@ sudo certbot certonly --nginx -d rilievi.carbonstealth.eu --deploy-hook 'systemc
 
 ```bash
 curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
-  | tar -xz -C /root --strip-components=1 --wildcards \
+  | sudo tar -xz -C /root --strip-components=1 --wildcards \
       '*/rilievi/deploy/*' '*/rilievi/src/versione.ts' '*/deploy/fetch-deploy.sh'
 sudo bash /root/rilievi/deploy/rilascio.sh
 ```
 
-Скриптът сам: пита `MODULI_KEY` скрито само ако липсва в `.env`; прави бекъп (`backup.sh` от `last-good`); ако rilievi
-е разгърнат от друг клон, пита GitHub дали той е изцяло в `main` (`compare`: `behind`/`identical`) и тогава пуска с
-`ALLOW_REF_SWITCH=1` — иначе спира, без да пипа нищо; деплойва от `main` (командата отдолу); проверява `/health` и
+Скриптът сам: пита `MODULI_KEY` скрито само ако липсва в `.env`; ако rilievi е разгърнат от друг клон, пита GitHub
+дали той е изцяло в `main` (`compare`: `behind`/`identical`) и тогава пуска с `ALLOW_REF_SWITCH=1` — иначе спира, без
+да пипа нищо (и бекъпите); прави бекъп (`backup.sh` от `last-good`); деплойва от `main` (командата отдолу); проверява `/health` и
 че `/novita` показва версията от `src/versione.ts` на архива; напомня за `RILIEVI_OFFSITE`. Пуснат пак — същото.
 
 Ръчно, стъпка по стъпка:

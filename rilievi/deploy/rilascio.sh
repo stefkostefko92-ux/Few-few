@@ -4,16 +4,16 @@
 # „искам да направиш всичко възможно най-автоматизирано за този деплой“).
 #
 #   curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
-#     | tar -xz -C /root --strip-components=1 --wildcards \
+#     | sudo tar -xz -C /root --strip-components=1 --wildcards \
 #         '*/rilievi/deploy/*' '*/rilievi/src/versione.ts' '*/deploy/fetch-deploy.sh'
 #   sudo bash /root/rilievi/deploy/rilascio.sh
 #
 # Решава сам това, което досега решаваше човек, и спира само там, където трябва човек:
 # 1. MODULI_KEY в .env — ако липсва или не е 64 hex, пита го скрито (moduli-chiave.sh), веднъж; без него — стоп.
-# 2. Бекъп преди всичко — backup.sh от последния работещ release (пръв деплой: само бекъпът на самия деплой).
-# 3. Пазачът на ref-а (fetch-deploy.sh): rilievi е разгърнат от друг клон → питаме GitHub дали клонът е изцяло в
+# 2. Пазачът на ref-а (fetch-deploy.sh): rilievi е разгърнат от друг клон → питаме GitHub дали клонът е изцяло в
 #    main (compare: behind/identical) → ALLOW_REF_SWITCH=1. Не е слят, GitHub не отговаря, странно име → стоп,
-#    нищо не е пипано (иначе бихме върнали нечия неслята работа).
+#    нищо не е пипано, и бекъпите — не (иначе бихме върнали нечия неслята работа).
+# 3. Бекъп — backup.sh от последния работещ release (пръв деплой: само бекъпът на самия деплой).
 # 4. fetch-deploy.sh с REF=main PROJECTS=rilievi (build, проверка на модулите, бекъп, миграции, health, откат на
 #    кода при провал — deploy.sh).
 # 5. Проверка: /health на 127.0.0.1:<HTTP_PORT> и че /novita показва версията от src/versione.ts на архива;
@@ -22,7 +22,7 @@
 # Идемпотентен: пуснат пак, прави същото (ключът вече е там, ref-ът е main).
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
-umask 077
+# Без umask 077: той би стигнал до autodeploy.sh и новият release би станал 700 (VPS-аджията). Тайни тук не се пишат.
 
 REPO="${REPO:-stefkostefko92-ux/Few-few}"
 SHARED="${RILIEVI_SHARED:-/opt/few-few/shared/rilievi}"
@@ -93,11 +93,11 @@ passo_ref() {
   risposta="$(curl -fsS -m 20 -H 'Accept: application/vnd.github+json' \
     "$GITHUB_API/repos/$REPO/compare/main...$prev")" ||
     fail "GitHub не отговори за „$prev“ — не сменям ref-а на сляпо. Опитай пак след малко."
-  if printf '%s' "$risposta" | grep -Eq '"status": *"(behind|identical)"'; then
+  if printf '%s' "$risposta" | grep -E '"status": *"(behind|identical)"' >/dev/null; then
     CAMBIO_REF=1
     ok "„$prev“ е изцяло в main — сменям на main (ALLOW_REF_SWITCH=1)."
   else
-    fail "„$prev“ НЕ е слят в main — деплой от main би върнал работата му. Слей клона или пиши на разработчика."
+    fail "„$prev“ НЕ е изцяло в main (неслят, или в клона има commit-и след сливането) — деплой от main би върнал работата му. Слей клона или пиши на разработчика."
   fi
 }
 
@@ -117,18 +117,19 @@ passo_verifica() {
   local port versione
   port="$(env_value HTTP_PORT | tr -dc '0-9')"
   port="${port:-4330}"
-  curl -fsS -m 10 "http://127.0.0.1:$port/health" | grep -q '"app":"rilievi"' ||
+  # Никога `curl | grep -q` под pipefail: grep спира рано и curl пада с 23 при дълго тяло (VPS-аджията).
+  curl -fsS -m 10 "http://127.0.0.1:$port/health" | grep -F '"app":"rilievi"' >/dev/null ||
     fail "/health на 127.0.0.1:$port не отговаря като Rilievi. Виж: docker compose logs --tail=80 app"
   ok "/health на 127.0.0.1:$port — наред."
   versione="$(sed -n "s/.*VERSIONE_SOFTWARE = '\([0-9.]*\)'.*/\1/p" "$VERSIONE_TS" 2>/dev/null | head -n 1)"
   if [ -n "$versione" ]; then
-    curl -fsS -m 15 "http://127.0.0.1:$port/novita" | grep -q "Versione $versione" ||
+    curl -fsS -m 15 "http://127.0.0.1:$port/novita" | grep -F "Versione $versione" >/dev/null ||
       fail "/novita не показва Versione $versione — порталът още е на старата версия."
     ok "версията е $versione."
   else
     warn "не намерих src/versione.ts до скрипта — версията не е проверена."
   fi
-  if curl -fsS -m 15 "$PUBLIC_URL/health" | grep -q '"app":"rilievi"'; then
+  if curl -fsS -m 15 "$PUBLIC_URL/health" | grep -F '"app":"rilievi"' >/dev/null; then
     ok "$PUBLIC_URL/health — наред."
   else
     warn "$PUBLIC_URL/health не отговаря отвън — провери nginx и DNS (порталът на сървъра е жив)."
@@ -139,15 +140,15 @@ passo_promemoria() {
   if ! grep -Eq '^RILIEVI_OFFSITE=.+' "$SHARED/backup.env" 2>/dev/null; then
     warn "няма копие извън сървъра: сложи RILIEVI_OFFSITE в $SHARED/backup.env (вторият сървър на netcup в ЕС — DEPLOY.md, т. 6)."
   fi
-  log "условията и правилата 2026-11-29 влизат сами в полунощ по Рим; ADMIN подписва с кода по имейл."
+  log "нова версия на условията: ADMIN на всяка фирма подписва с кода по имейл, когато влезе (/condizioni/prossima)."
 }
 
 main() {
   [ "$(id -u)" = "0" ] || [ "${RILIEVI_RILASCIO_NONROOT:-0}" = "1" ] || fail "пусни като root (sudo)."
   command -v curl >/dev/null || fail "липсва curl."
   passo_chiave
-  passo_backup
   passo_ref
+  passo_backup
   passo_deploy
   passo_verifica
   passo_promemoria
