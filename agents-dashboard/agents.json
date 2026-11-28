@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 822
+        "lessons": 821
       },
       "evolution": [
         {
@@ -15689,7 +15689,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 230
+        "lessons": 228
       },
       "evolution": [
         {
@@ -16667,28 +16667,17 @@
           "detail": "Научи: Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо… (+21 още)"
         },
         {
-          "version": "36.4.0",
-          "date": "2026-11-28",
-          "event": "v36.4 — учене",
-          "detail": "Научи: Chrome праща HttpOnly SameSite=Strict бисквитка, зададена от http://127.0.0.1:A, и на с… (+8 още)"
-        },
-        {
           "version": "36.6.0",
           "date": "2026-11-28",
           "event": "v36.6 — учене",
-          "detail": "Научи: vpsdash assertMutable блокира CRITICAL с точно Array.includes(full), а assertCreatable … (+1 още)"
+          "detail": "Научи: Chrome праща HttpOnly SameSite=Strict бисквитка, зададена от http://127.0.0.1:A, и на с… (+10 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-28",
           "type": "learning",
-          "summary": "Научи: „vpsdash assertMutable блокира CRITICAL с точно Array.includes(full), а assertCreatable …\" (+1 още)"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Chrome праща HttpOnly SameSite=Strict бисквитка, зададена от http://127.0.0.1:A, и на с…\" (+8 още) · 3 в карантина"
+          "summary": "Научи: „Chrome праща HttpOnly SameSite=Strict бисквитка, зададена от http://127.0.0.1:A, и на с…\" (+10 още) · 3 в карантина"
         },
         {
           "date": "2026-11-24",
