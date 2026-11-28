@@ -13523,7 +13523,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 224
+        "lessons": 225
       },
       "evolution": [
         {
@@ -13873,9 +13873,20 @@
           "date": "2026-11-28",
           "event": "v22.1 — учене",
           "detail": "Научи: Одит на покритието на таблото не бива да се чете само от frontend/src/api/index.js; час…"
+        },
+        {
+          "version": "22.2.0",
+          "date": "2026-11-28",
+          "event": "v22.2 — учене",
+          "detail": "Научи: discord.js 14.28.1 channels.create няма параметър flags (REQUIRE_TAG на форум се задава…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „discord.js 14.28.1 channels.create няма параметър flags (REQUIRE_TAG на форум се задава…\" · 1 в карантина"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
