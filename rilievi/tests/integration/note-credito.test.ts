@@ -4,10 +4,11 @@
 //  - a refund completed by Revolut leaves ONE note due on the payment whose order got the money back, for the sum
 //    refunded, to be issued within 5 days; the owner is told on Discord, without names;
 //  - a refund marked by hand (a bank transfer) leaves one too; with Bulgarian VAT the taxable amount and the VAT
-//    are split out of the refunded sum;
+//    are split out of the refunded sum; when the plan holds credit converted from an older payment (art. 12.4),
+//    the refund is split by origin — each part on its own invoice, with the VAT of THAT invoice's regime (M2);
 //  - a dispute lost at the bank leaves one too: note-credito-contestazione.test.ts;
-//  - the MASTER records the number and the day of the note issued elsewhere — once, never in the future — and may
-//    record the number of the invoice when ticking "invoiced";
+//  - the MASTER records the number and the day of the note issued elsewhere — once, never in the future — and the
+//    number and the date of the invoice when ticking "invoiced" (art. 115(4): the note carries both);
 //  - the accountant downloads the notes as CSV (the amounts are the credit, without a sign).
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
@@ -176,10 +177,21 @@ describe('the credit note due after a refund', () => {
       (await prisma.pagamento.findUniqueOrThrow({ where: { id: pagamento.id } })).fatturataAt,
       null,
     );
+    // Paid two days ago: the invoice is never dated before the payment (segnaFatturato).
+    await prisma.pagamento.update({
+      where: { id: pagamento.id },
+      data: { completatoAt: new Date(Date.now() - 2 * GIORNO) },
+    });
+    const ieri = new Date(Date.now() - GIORNO).toISOString().slice(0, 10);
     await master.browser.submit(CONSOLE, `${CONSOLE}/${pagamento.id}/fatturato`, {
       numero: '2026/0042',
+      data: ieri,
     });
-    assert.match((await master.browser.get(CONSOLE, HTML)).body, /n\. 2026\/0042/);
+    const [aa, mm, gg] = ieri.split('-');
+    assert.match(
+      (await master.browser.get(CONSOLE, HTML)).body,
+      new RegExp(`n\\. 2026/0042 del ${gg}/${mm}/${aa}`),
+    );
 
     // Without a number, or with a day in the future: nothing is recorded.
     const domani = new Date(Date.now() + 2 * GIORNO).toISOString().slice(0, 10);
@@ -219,7 +231,7 @@ describe('the credit note due after a refund', () => {
     assert.match(csv.headers.get('content-type') ?? '', /text\/csv/);
     assert.match(csv.body, /"Imponibile a credito";"IVA a credito";"Totale a credito"/);
     assert.match(csv.body, /"290,00";"0,00";"290,00"/);
-    assert.match(csv.body, /"2026\/0042"/);
+    assert.match(csv.body, /"2026\/0042";"\d{2}\/\d{2}\/\d{4}"/);
     assert.match(csv.body, /"NC-7"/);
     // Only for MASTER.
     const { browser: admin } = await signedIn('ADMIN');
@@ -247,5 +259,113 @@ describe('the credit note due after a refund', () => {
     const pagina = await master.browser.get(CONSOLE, HTML);
     assert.match(pagina.body, /290,00 € \+ IVA 58,00 € = 348,00 €/);
     assert.match(pagina.body, /83,33 € \+ IVA 16,67 € = 100,00 €/);
+  });
+
+  it('splits a refund by hand by origin when the plan holds credit from an older payment', async () => {
+    // The old plan was sold with the reverse charge; its unused days became days of the new plan, sold with
+    // Bulgarian VAT (the number was no longer valid in VIES). The new plan has not started: all of it is due.
+    const vecchio = await pagato('inversione', 50000, 0);
+    const inizio = new Date(Date.now() + GIORNO);
+    const nuovo = await prisma.pagamento.create({
+      data: {
+        aziendaNome: 'Fuori Portale Srl',
+        livello: 2,
+        mesi: 12,
+        imponibileCent: 36500,
+        ivaCent: 7300,
+        totaleCent: 43800,
+        regimeIva: 'iva-bg-ue',
+        ragioneSociale: 'Fuori Portale S.r.l.',
+        sede: 'Via Roma 1, Milano',
+        partitaIva: 'IT00743110157',
+        stato: 'COMPLETATO',
+        ambiente: 'SANDBOX',
+        revolutOrderId: `ord-fuori-${++fuori}`,
+        completatoAt: new Date(),
+        inizio,
+        fine: new Date(inizio.getTime() + 365 * GIORNO),
+        creditoCent: 36500,
+        creditoDa: [vecchio.id],
+      },
+    });
+    // What is due: 365,00 € + 20 % of the new plan, and 365,00 € of credit without VAT (it was reverse charge).
+    assert.match((await master.browser.get(CONSOLE, HTML)).body, /803,00 €/);
+    const via = await master.browser.submit(CONSOLE, `${CONSOLE}/${nuovo.id}/rimborso`, {
+      importo: '803,00',
+    });
+    assert.equal(via.status, 303);
+    const [sulNuovo, ...altreNuovo] = await prisma.notaCredito.findMany({
+      where: { pagamentoId: nuovo.id },
+    });
+    assert.equal(altreNuovo.length, 0);
+    assert.deepEqual(
+      [sulNuovo!.imponibileCent, sulNuovo!.ivaCent, sulNuovo!.totaleCent],
+      [36500, 7300, 43800],
+    );
+    const [sulVecchio, ...altreVecchio] = await prisma.notaCredito.findMany({
+      where: { pagamentoId: vecchio.id },
+    });
+    assert.equal(altreVecchio.length, 0);
+    assert.deepEqual(
+      [sulVecchio!.imponibileCent, sulVecchio!.ivaCent, sulVecchio!.totaleCent],
+      [36500, 0, 36500],
+    );
+    assert.equal(sulVecchio!.origine, 'RIMBORSO');
+    const fatto = await prisma.pagamento.findUniqueOrThrow({ where: { id: nuovo.id } });
+    assert.equal(fatto.stato, 'RIMBORSATO');
+    assert.equal(fatto.rimborsoCent, 80300);
+  });
+
+  it('says how much of a refund by hand found no invoice to credit, never loses it silently', async () => {
+    // The review of Кодаджията: the older invoice already carries credit notes up to its total, so its part of the
+    // refund cannot go on it. The note on the new plan is written; the rest is in the register for MASTER.
+    const vecchio = await pagato('inversione', 50000, 0);
+    await prisma.notaCredito.create({
+      data: {
+        pagamentoId: vecchio.id,
+        origine: 'RIMBORSO',
+        imponibileCent: 50000,
+        ivaCent: 0,
+        totaleCent: 50000,
+        eventoAt: new Date(),
+        entroIl: new Date(Date.now() + 5 * GIORNO),
+      },
+    });
+    const inizio = new Date(Date.now() + GIORNO);
+    const nuovo = await prisma.pagamento.create({
+      data: {
+        aziendaNome: 'Fuori Portale Srl',
+        livello: 2,
+        mesi: 12,
+        imponibileCent: 36500,
+        ivaCent: 7300,
+        totaleCent: 43800,
+        regimeIva: 'iva-bg-ue',
+        ragioneSociale: 'Fuori Portale S.r.l.',
+        sede: 'Via Roma 1, Milano',
+        partitaIva: 'IT00743110157',
+        stato: 'COMPLETATO',
+        ambiente: 'SANDBOX',
+        revolutOrderId: `ord-fuori-${++fuori}`,
+        completatoAt: new Date(),
+        inizio,
+        fine: new Date(inizio.getTime() + 365 * GIORNO),
+        creditoCent: 36500,
+        creditoDa: [vecchio.id],
+      },
+    });
+    const via = await master.browser.submit(CONSOLE, `${CONSOLE}/${nuovo.id}/rimborso`, {
+      importo: '803,00',
+    });
+    assert.equal(via.status, 303);
+    assert.equal(
+      (await prisma.notaCredito.findFirstOrThrow({ where: { pagamentoId: nuovo.id } })).totaleCent,
+      43800,
+    );
+    assert.equal(await prisma.notaCredito.count({ where: { pagamentoId: vecchio.id } }), 1);
+    const voce = await prisma.auditLog.findFirstOrThrow({
+      where: { action: 'PAGAMENTO_RIMBORSATO', targetId: nuovo.id },
+    });
+    assert.deepEqual(voce.meta, { rimborsoCent: 80300, senzaNotaCent: 36500 });
   });
 });

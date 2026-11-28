@@ -3,7 +3,11 @@ import { prisma } from './db.js';
 import { errorMessage, logger } from './logger.js';
 import { allarme } from './allarmi/servizio.js';
 import { eseguiPassi, ricordaManutenzione } from './manutenzione-passi.js';
-import { aggiornaContestazioniAperte } from './pagamenti/contestazioni.js';
+import {
+  aggiornaContestazioniAperte,
+  ricordaContestazioniDaValutare,
+} from './pagamenti/contestazioni.js';
+import { ricordaFattureInScadenza } from './pagamenti/fatture.js';
 import { ricordaNoteInScadenza } from './pagamenti/note-credito.js';
 import { riconciliaRimborsi } from './pagamenti/rimborsi-riconcilia.js';
 import { pulisciSegnalazioni } from './segnalazioni/servizio.js';
@@ -89,6 +93,9 @@ export async function runMaintenance(): Promise<void> {
       ['contestazioni', () => aggiornaContestazioniAperte()],
       // Кредитните известия със срок до ден (5 дни от връщането) — напомняне в Discord; нищо не се трие.
       ['noteCredito', async () => (await ricordaNoteInScadenza(quando), 0)],
+      // Фактурите със срок до ден (5 дни от плащането) и изгубените спорове, които чакат избора на MASTER.
+      ['fatture', async () => (await ricordaFattureInScadenza(quando), 0)],
+      ['contestazioniDaValutare', async () => (await ricordaContestazioniDaValutare(), 0)],
       // Решените сигнали за незаконно съдържание след срока им (5 години; неразгледаемите — 1).
       ['segnalazioni', () => pulisciSegnalazioni(quando)],
       ['piani', () => avviaPianiInCoda(quando)],

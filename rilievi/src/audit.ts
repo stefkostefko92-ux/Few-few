@@ -20,6 +20,7 @@ export const AUDIT_ACTIONS = [
   'USER_EDIT',
   'USER_DEACTIVATE',
   'USER_REACTIVATE',
+  'USER_DELETE',
   'PASSWORD_CHANGE',
   'PASSWORD_RESET_LINK',
   'PASSWORD_RESET',
@@ -158,6 +159,8 @@ export const AUDIT_ACTIONS = [
   'PAGAMENTO_RIMBORSO_AVVIATO',
   'PAGAMENTO_RIMBORSO_FALLITO',
   'PAGAMENTO_CONTESTATO',
+  // Изборът на MASTER за изгубен спор: кредитно известие (разваляне) или никакво (неплащане) — без сумата.
+  'CONTESTAZIONE_DECISA',
   // Алармите към Discord (src/allarmi/): включени ли са и нов ли е адресът — без адреса; пробата — само изходът.
   'ALLARMI_IMPOSTATI',
   'ALLARMI_PROVA',

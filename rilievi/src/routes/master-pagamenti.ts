@@ -7,6 +7,7 @@ import { leggiConfig, registraIlWebhook, salvaConfig } from '../pagamenti/config
 import { formatoEuro, GIORNI_FATTURA } from '../pagamenti/offerta.js';
 import { attivaPiano, creaPiano, leggiPiano, tuttiIPiani } from '../pagamenti/piani.js';
 import { elencoContestazioni } from '../pagamenti/contestazioni.js';
+import { DICITURA_INVERSIONE, fatturaEntroIl, whereDaFatturare } from '../pagamenti/fatture.js';
 import { elencoNoteCredito } from '../pagamenti/note-credito.js';
 import { GIORNI_NOTA_CREDITO } from '../pagamenti/note-credito-importi.js';
 import { riconcilia } from '../pagamenti/riconcilia.js';
@@ -14,7 +15,7 @@ import { quotaSoglia, SOGLIA_UE_CENT, venditeSenzaVies } from '../pagamenti/sogl
 import { businessDay } from '../time.js';
 import { ErroreRevolut } from '../pagamenti/revolut.js';
 import { rimborsiDovuti } from '../pagamenti/rimborsi.js';
-import { isProduction } from '../config.js';
+import { avvisoNomeVies } from '../pagamenti/vies-nome.js';
 import { clearSessionCookie } from '../auth/sessions.js';
 import { sendMail } from '../mail/mailer.js';
 import { pagamentiCambiatiMail } from '../mail/templates-pagamenti.js';
@@ -50,6 +51,8 @@ async function vista(
     viesConsultazione: true,
     viesAt: true,
     viesNome: true,
+    viesIndirizzo: true,
+    sede: true,
     regimeIva: true,
   } as const;
   const [cfg, piani, pagamenti, daVerificare, daFatturare, rimborsi, contestazioni, note, vendite] =
@@ -66,11 +69,7 @@ async function vista(
       }),
       // За фактуриране (до 5 дни от плащането): завършените без отметка; пробите в Sandbox на живия сървър — не.
       prisma.pagamento.findMany({
-        where: {
-          stato: 'COMPLETATO',
-          fatturataAt: null,
-          ...(isProduction() ? { ambiente: 'PRODUZIONE' as const } : {}),
-        },
+        where: whereDaFatturare(),
         orderBy: { completatoAt: 'asc' },
         take: 100,
         select: riga,
@@ -92,12 +91,18 @@ async function vista(
     piani,
     pagamenti,
     daVerificare,
-    daFatturare,
+    // H1: името във VIES ≠ декларираното (или липсва) — бележка на реда; H2: срокът на фактурата.
+    daFatturare: daFatturare.map((p) => ({
+      ...p,
+      entroIl: fatturaEntroIl(p.completatoAt ?? p.createdAt),
+      avvisoVies: avvisoNomeVies(p),
+    })),
     rimborsi,
     contestazioni,
     note: { ...note, giorni: GIORNI_NOTA_CREDITO, adesso: new Date(), oggi: businessDay() },
     iva: { senzaVies: cfg.senzaVies, vendite, soglia: SOGLIA_UE_CENT, quota: quotaSoglia(vendite) },
     giorniFattura: GIORNI_FATTURA,
+    dicituraInversione: DICITURA_INVERSIONE,
     euro: formatoEuro,
     errore: extra.errore ?? null,
     erroreConfig: extra.erroreConfig ?? null,

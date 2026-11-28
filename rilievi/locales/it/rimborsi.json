@@ -68,15 +68,29 @@
     },
     "contestazioni": {
       "titolo": "Contestazioni",
-      "testo": "I pagamenti contestati dal cliente presso la sua banca (chargeback). Si risponde in Revolut Business entro la scadenza. Il portale non cambia nulla da solo: l'abbonamento e l'eventuale rimborso li decidi tu.",
+      "testo": "I pagamenti contestati dal cliente presso la sua banca (chargeback). Si risponde in Revolut Business entro la scadenza. Il portale non cambia nulla da solo: l'abbonamento e l'eventuale rimborso li decidi tu. Per una contestazione persa scegli tu se emettere la nota di credito: solo se il contratto è risolto (art. 115 della legge bulgara sull'IVA); se il servizio è stato reso e il cliente non ha pagato è un mancato pagamento, senza nota (la rettifica, se serve, è dell'art. 126b — chiedi al commercialista).",
       "colonna": {
         "aperta": "Aperta il",
         "azienda": "Azienda",
         "importo": "Importo",
         "stato": "Stato",
         "entro": "Rispondere entro",
-        "motivo": "Motivo"
+        "motivo": "Motivo",
+        "decisione": "Nota di credito"
       },
+      "daValutare": "Da valutare",
+      "scelta": {
+        "NOTA_CREDITO": "Nota di credito (risoluzione)",
+        "NESSUNA_NOTA": "Nessuna nota (mancato pagamento)"
+      },
+      "decisione": {
+        "NOTA_CREDITO": "Nota di credito scelta (risoluzione)",
+        "NESSUNA_NOTA": "Nessuna nota: mancato pagamento"
+      },
+      "sceltaPer": "Nota di credito per la contestazione di {azienda}",
+      "decidi": "Registra la scelta",
+      "decisa": "Scelta registrata.",
+      "decisioneErrore": "Scegli una delle due voci: la scelta si registra una volta sola, per una contestazione persa.",
       "stato": {
         "DA_RISPONDERE": "Da rispondere",
         "IN_ESAME": "In esame",
@@ -88,7 +102,7 @@
     },
     "note": {
       "titolo": "Note di credito",
-      "testo": "Per ogni rimborso e per ogni contestazione persa va emessa una nota di credito sulla fattura del piano, entro {giorni} giorni (art. 12.9 delle Condizioni; art. 115 della legge bulgara sull'IVA). Il portale non emette documenti: emetti la nota nel tuo programma di fatturazione, inviala al cliente e scrivi qui numero e data.",
+      "testo": "Per ogni rimborso e per ogni contestazione persa per cui hai scelto la nota (risoluzione) va emessa una nota di credito sulla fattura del piano, entro {giorni} giorni (art. 12.9 delle Condizioni; art. 115 della legge bulgara sull'IVA). Il portale non emette documenti: emetti la nota nel tuo programma di fatturazione, inviala al cliente e scrivi qui numero e data.",
       "nessuna": "Nessuna nota di credito da emettere.",
       "colonna": {
         "evento": "Rimborso del",
@@ -102,8 +116,9 @@
         "RIMBORSO": "Rimborso",
         "CONTESTAZIONE": "Contestazione persa"
       },
-      "contestazione": "Per una contestazione persa chiedi al commercialista se serve la nota di credito (art. 115) o un altro documento (artt. 126a–126b).",
+      "contestazione": "Contestazione persa: hai scelto la nota di credito (risoluzione del contratto, art. 115).",
       "fattura": "n. {numero}",
+      "fatturaDel": "n. {numero} del {data}",
       "fatturaSenzaNumero": "emessa, numero non indicato",
       "fatturaNon": "non ancora fatturato",
       "conIva": "{imponibile} € + IVA {iva} € = {totale} €",
@@ -128,6 +143,7 @@
         "ragioneSociale": "Ragione sociale",
         "partitaIva": "Partita IVA",
         "fattura": "Fattura n.",
+        "fatturaData": "Data fattura",
         "imponibile": "Imponibile a credito",
         "iva": "IVA a credito",
         "totale": "Totale a credito",

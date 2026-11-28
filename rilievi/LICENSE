@@ -1,0 +1,13 @@
+Rilievi Impianti
+Copyright (c) 2026 Carbon Stealth VCC, Bobov Dol, Bulgaria (EIK 208725180). All rights reserved.
+
+This software and its documentation are proprietary. The source code is published in a public
+repository for transparency only: no licence is granted to copy, modify, distribute, sublicense,
+host or otherwise use it, in whole or in part, without the prior written permission of
+Carbon Stealth VCC. Customers use the service under the Condizioni generali di servizio
+(https://rilievi.carbonstealth.eu/condizioni).
+
+Third-party components keep their own licences (see package.json and package-lock.json); the
+Fira Sans fonts are served with the SIL Open Font License 1.1 (/static/fonts/*-OFL.txt).
+Suppliers' order forms are not part of this software: they belong to their owners and are kept
+in this repository only in encrypted form (assets/moduli/sigillati/).

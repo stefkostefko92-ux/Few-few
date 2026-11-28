@@ -4,6 +4,7 @@ import type { Role } from '@prisma/client';
 import {
   canAssignRole,
   canManageAccount,
+  canDeleteAccount,
   canManageMembership,
   canSetActive,
   type Actor,
@@ -117,6 +118,26 @@ describe('who manages whom', () => {
     assert.equal(canSetActive(admin, shared), false);
     // ADMIN in both companies: the whole account is theirs.
     assert.equal(canManageAccount(person('a2', { [A]: 'ADMIN', [B]: 'ADMIN' }), shared), true);
+  });
+
+  // The deletion of an account (the legal review, 28 November 2026 — part B, H2; Allegato A, A.9): only a deactivated
+  // one, by whoever may deactivate it; never the MASTER, never oneself.
+  it('lets delete only a deactivated account, by whoever may deactivate it', () => {
+    const tecnico = target('t', { [A]: 'TECNICO' });
+    assert.equal(canDeleteAccount(admin, tecnico, null), false, 'active: deactivate it first');
+    assert.equal(canDeleteAccount(admin, tecnico, new Date()), true);
+    assert.equal(canDeleteAccount(master, tecnico, new Date()), true);
+    assert.equal(canDeleteAccount(admin, target('t', { [B]: 'TECNICO' }), new Date()), false);
+    const shared = target('s', { [A]: 'TECNICO', [B]: 'TECNICO' });
+    assert.equal(
+      canDeleteAccount(admin, shared, new Date()),
+      false,
+      'also in a company not theirs',
+    );
+    assert.equal(canDeleteAccount(master, shared, new Date()), true);
+    const owner: Target = { id: 'other', master: true, memberships: [] };
+    assert.equal(canDeleteAccount(master, owner, new Date()), false);
+    assert.equal(canDeleteAccount(master, { ...owner, id: 'master' }, new Date()), false);
   });
 
   it('never lets anyone but the MASTER touch the MASTER', () => {

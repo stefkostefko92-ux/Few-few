@@ -36,12 +36,13 @@ const testoSchema = z
     ),
     /**
      * Клаузите за специалното одобрение (чл. 1341–1342 c.c.): номер на член или на точка („17.2“) от
-     * `articoli` и описанието им, както е в члена за одобрението.
+     * `articoli`, или член на приложение („A.15“), и описанието им, както е в члена за одобрението.
      */
     clausoleSpecifiche: z.array(
       z
         .object({
-          numero: z.string().regex(/^[0-9]{1,2}(\.[0-9]{1,2})?$/),
+          // „17.2“ — точка на член; „A.15“, „B.13“ — цял член на приложение (условията 2026-11-29).
+          numero: z.string().regex(/^(?:[0-9]{1,2}(?:\.[0-9]{1,2})?|[A-Z]\.[0-9]{1,2})$/),
           descrizione: z.string().min(1).max(300),
         })
         .strict(),
@@ -93,6 +94,9 @@ export interface ClausolaSpecifica {
 /** Клаузите за специалното одобрение с текста им; хвърля, ако клауза сочи несъществуващ член или точка. */
 export function clausoleSpecifiche(doc: TestoLegaleDoc): ClausolaSpecifica[] {
   return doc.clausoleSpecifiche.map(({ numero, descrizione }) => {
+    // Член на приложение („A.15“) — целият член; иначе „17.2“ е точка от член 17.
+    const intero = /^[A-Z]\./.test(numero) ? articoloDi(doc, numero) : null;
+    if (intero) return { numero, descrizione, paragrafi: intero.paragrafi };
     const [base = '', punto] = numero.split('.');
     const articolo = articoloDi(doc, base);
     if (!articolo) throw new Error(`clausola specifica ${numero}: няма такъв член`);

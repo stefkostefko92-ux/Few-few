@@ -2,6 +2,7 @@ import type { Pagamento } from '@prisma/client';
 import { DEFAULT_LOCALE, translatorFor } from '../i18n.js';
 import { chiaveRegime } from '../pagamenti/importi.js';
 import { durataMesi, formatoEuro, GIORNI_FATTURA } from '../pagamenti/offerta.js';
+import { avvisoNomeVies } from '../pagamenti/vies-nome.js';
 import { BUSINESS_TZ } from '../time.js';
 import type { MailMessage } from './mailer.js';
 
@@ -73,8 +74,23 @@ export function pagamentoMasterMail(params: {
       (p.creditoCent > 0
         ? `\n\n${t('pagamenti.mail.masterCredito', { credito: formatoEuro(p.creditoCent) })}`
         : '') +
-      (params.ricalcolato ? `\n\n${t('pagamenti.mail.masterRicalcolato')}` : ''),
+      (params.ricalcolato ? `\n\n${t('pagamenti.mail.masterRicalcolato')}` : '') +
+      viesNome(p),
   };
+}
+
+/** H1: името във VIES не е декларираното (или VIES не го дава) — фактурата е на името и адреса от VIES. */
+function viesNome(p: Pagamento): string {
+  const avviso = avvisoNomeVies(p);
+  if (avviso === 'assente')
+    return `\n\n${t('pagamenti.mail.masterViesAssente', { dichiarato: p.ragioneSociale })}`;
+  if (avviso === 'diverso')
+    return `\n\n${t('pagamenti.mail.masterViesNome', {
+      dichiarato: p.ragioneSociale,
+      vies: p.viesNome ?? '',
+      indirizzo: p.viesIndirizzo ?? '—',
+    })}`;
+  return '';
 }
 
 /** Платено, а периодът не е даден — до всеки MASTER: връща парите или го дава на ръка. */

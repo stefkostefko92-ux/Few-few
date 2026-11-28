@@ -1,51 +1,41 @@
 {
   "id": "grafite-oro",
   "titolo": "Grafite e oro",
-  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 05_Grafite_Oro.pdf, ingrandita per la stampa il 31/10/2026 con Real-ESRGAN x4plus (3:1 con Lanczos) e riportata a 4× con Lanczos (scripts/cartelli/upscale.py)",
+  "fonte": "Disegnato da Carbon Stealth VCC il 28/11/2026 con scripts/cartelli/disegna.py: grafica e scritte generate dal codice (Fira Sans, SIL OFL 1.1), foto: nostro rendering 3D (public/img/site/vano-portrait-1200.webp)",
   "file": "grafite-oro.jpg",
-  "sha256": "170c4fe2a5fe7150dd79adf61e6500886b68127560002e4397d87c94e88c230d",
-  "larghezza": 930,
-  "altezza": 918,
-  "scala": 4,
-  "copri": [
-    {
-      "rect": [63, 121, 589, 148]
-    },
-    {
-      "rect": [59, 569, 903, 600]
-    },
-    {
-      "rect": [59, 688, 883, 805]
-    }
-  ],
+  "sha256": "9d24112cbe843f40994b54b1332907a394927762a21d9df1157516e22b4d235c",
+  "larghezza": 1220,
+  "altezza": 1750,
+  "scala": 2,
+  "copri": [],
   "logo": {
-    "box": [66, 18, 300, 108],
+    "box": [60, 40, 340, 150],
     "lastra": "#ffffff"
   },
   "azienda": {
-    "box": [318, 22, 900, 108],
-    "colore": "#f2f2f2",
-    "dimensione": 18
+    "box": [362, 40, 1170, 150],
+    "colore": "#f4ecd6",
+    "dimensione": 24
   },
   "valori": {
-    "y": 592,
-    "dimensione": 23,
-    "colore": "#ffffff",
+    "y": 822,
+    "dimensione": 32,
+    "colore": "#f4ecd6",
     "colonne": [
-      [68, 150],
-      [228, 215],
-      [454, 150],
-      [614, 280]
+      [60, 190],
+      [275, 340],
+      [640, 215],
+      [880, 280]
     ]
   },
   "testo": {
-    "x": 67,
-    "y": 713,
-    "larghezza": 800,
-    "riga": 28.3,
-    "righe": 4,
-    "dimensione": 23,
-    "colore": "#f2f2f2"
+    "x": 96,
+    "y": 1058,
+    "larghezza": 1030,
+    "riga": 72,
+    "righe": 6,
+    "dimensione": 52,
+    "colore": "#f4ecd6"
   },
   "scritte": []
 }

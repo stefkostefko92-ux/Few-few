@@ -42,8 +42,14 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
       # Целият гейт на продукта: prisma generate, prettier, типове, unit тестове (вкл. PDF с DejaVu
-      # от ubuntu-latest), билд.
+      # от ubuntu-latest), билд. Модулите на доставчиците са в репото само шифровани: ключът — от тайната
+      # RILIEVI_MODULI_KEY на репото (без нея тестовете на модулите падат, не се пропускат).
+      - run: '[ -n "$MODULI_KEY" ] || { echo "::error::липсва тайната RILIEVI_MODULI_KEY (rilievi/DEPLOY.md, т. 1)"; exit 1; }'
+        env:
+          MODULI_KEY: ${{ secrets.RILIEVI_MODULI_KEY }}
       - run: npm run check
+        env:
+          MODULI_KEY: ${{ secrets.RILIEVI_MODULI_KEY }}
 
   integration:
     runs-on: ubuntu-latest
@@ -87,3 +93,5 @@ jobs:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
       - run: npx prisma generate
       - run: npm run test:integration
+        env:
+          MODULI_KEY: ${{ secrets.RILIEVI_MODULI_KEY }}

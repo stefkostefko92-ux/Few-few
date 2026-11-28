@@ -1,59 +1,40 @@
 {
   "id": "fuori-servizio",
   "titolo": "Fuori servizio",
-  "fonte": "«5_Cartelli_Riprodotti_Fedeli_Senza_Logo.zip» caricato dal proprietario del portale il 30/10/2026: l'immagine JPEG del PDF 03_Fuori_Servizio.pdf, ingrandita per la stampa il 31/10/2026 con Real-ESRGAN x4plus (3:1 con Lanczos) e riportata a 3× con Lanczos (scripts/cartelli/upscale.py)",
+  "fonte": "Disegnato da Carbon Stealth VCC il 28/11/2026 con scripts/cartelli/disegna.py: grafica e scritte generate dal codice (Fira Sans, SIL OFL 1.1), foto: nostro rendering 3D (public/img/site/bottoniera-1600.webp)",
   "file": "fuori-servizio.jpg",
-  "sha256": "bf94df632c9efcfda409649df76714b08b4a00cbbd785dfa967051877603c485",
-  "larghezza": 1216,
-  "altezza": 918,
-  "scala": 3,
-  "copri": [
-    {
-      "rect": [347, 109, 829, 139]
-    },
-    {
-      "rect": [497, 556, 623, 588]
-    },
-    {
-      "rect": [643, 556, 803, 588]
-    },
-    {
-      "rect": [833, 556, 931, 588]
-    },
-    {
-      "rect": [965, 556, 1208, 588]
-    },
-    {
-      "rect": [497, 662, 1163, 766]
-    }
-  ],
+  "sha256": "dda34a45cac2c035a6a16e96d5dc1aea39c4695f133d2328d67f6e0639f543c7",
+  "larghezza": 1750,
+  "altezza": 1220,
+  "scala": 2,
+  "copri": [],
   "logo": {
-    "box": [500, 14, 700, 104]
+    "box": [520, 24, 800, 134]
   },
   "azienda": {
-    "box": [716, 18, 1200, 104],
-    "colore": "#1a1a1a",
-    "dimensione": 18
+    "box": [822, 24, 1700, 134],
+    "colore": "#161a20",
+    "dimensione": 22
   },
   "valori": {
-    "y": 580,
-    "dimensione": 24,
-    "colore": "#111111",
+    "y": 724,
+    "dimensione": 36,
+    "colore": "#161a20",
     "colonne": [
-      [505, 115],
-      [651, 150],
-      [840, 88],
-      [972, 228]
+      [520, 200],
+      [750, 400],
+      [1180, 240],
+      [1450, 250]
     ]
   },
   "testo": {
-    "x": 504,
-    "y": 683,
-    "larghezza": 650,
-    "riga": 25.3,
+    "x": 520,
+    "y": 940,
+    "larghezza": 1170,
+    "riga": 54,
     "righe": 4,
-    "dimensione": 21,
-    "colore": "#111111"
+    "dimensione": 42,
+    "colore": "#161a20"
   },
   "scritte": []
 }
