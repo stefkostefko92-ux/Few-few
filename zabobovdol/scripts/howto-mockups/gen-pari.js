@@ -7,6 +7,9 @@
 // Стартиране (от zabobovdol/):  node scripts/howto-mockups/gen-pari.js   (ONLY=име1,име2 — само избрани)
 const path = require("node:path");
 const { phone, scene, ms, tip, appIcon, banknote, coin, photo, ASSETS, render } = require("./_shell");
+// Посочване на източника — условие на ЕЦБ за образците и снимките (правният преглед от 27.11.2026).
+const ECB_CREDIT_TEXT = "Образци и снимки: © ЕЦБ (монети: обща страна © ЕС, българска © БНБ)";
+const ECB_CREDIT = `<div style="font-size:11.5px;color:#6b7280;text-align:center;margin-top:12px">${ECB_CREDIT_TEXT}</div>`;
 
 const S = {};
 const ic = (n, o = {}) => ms(n, { size: 24, ...o });
@@ -61,11 +64,12 @@ S["pari-koga-evro"] = (() => {
     </div>
     <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-top:20px">${coin("2e", "bg", { scale: 6 })}${coin("1e", "bg", { scale: 6 })}${coin("50c", "bg", { scale: 6 })}</div>
     ${ft("От 1 януари 2026 г. еврото е официалната валута", "u", "50%", "18px auto 0")}
+    ${ECB_CREDIT}
   </div>`, { pad: 26 });
 })();
 
 // e-zashto — портфейл с банкноти и монети на ЕЦБ (общата страна на монетите)
-S["pari-obshta-valuta"] = scene(`<div style="position:relative;width:540px;height:372px">
+S["pari-obshta-valuta"] = scene(`<div style="position:relative;width:540px;height:396px">
   <div style="position:absolute;left:0;top:54px;width:300px;height:224px;border-radius:22px;background:linear-gradient(150deg,#6b4226 0%,#4a2c17 55%,#3a2210 100%);box-shadow:inset 0 2px 2px rgba(255,255,255,.18),inset 0 -6px 12px rgba(0,0,0,.4),0 22px 28px -10px rgba(0,0,0,.5)">
     <div style="position:absolute;inset:9px;border:1.5px dashed rgba(240,214,170,.55);border-radius:15px"></div>
     <div style="position:absolute;left:20px;right:20px;top:92px;height:104px;border-radius:14px;background:linear-gradient(180deg,#59361d,#4a2c17);box-shadow:inset 0 3px 8px rgba(0,0,0,.55)"></div>
@@ -75,6 +79,7 @@ S["pari-obshta-valuta"] = scene(`<div style="position:relative;width:540px;heigh
   <div style="position:absolute;left:336px;top:140px;transform:rotate(-3deg)">${banknote(10, "front", 176)}</div>
   <div style="position:absolute;left:400px;top:262px">${coin("2e", "common", { scale: 4.2 })}</div>
   ${tip("Една и съща валута — евро — в много страни от Европейския съюз", "left:0;top:300px;width:340px;max-width:340px", { arrow: "u", at: "22%" })}
+  <div style="position:absolute;left:0;right:0;bottom:0;font-size:11.5px;color:#6b7280;text-align:center">${ECB_CREDIT_TEXT}</div>
 </div>`, { pad: 28 });
 
 // e-gubia-li-pari — превалутиране без загуба: същата стойност, показана в банковото приложение
@@ -143,6 +148,7 @@ S["pari-kasa-samo-evro"] = scene(`<div style="width:500px;position:relative">
   <div style="height:16px;width:330px;margin:0 auto;background:linear-gradient(180deg,#b6bbc3,#7d838c);border-radius:0 0 8px 8px;box-shadow:0 12px 16px -8px rgba(0,0,0,.4)"></div>
   <div style="display:flex;align-items:center;justify-content:center;gap:22px;margin-top:26px">${banknote(20, "front", 188)}<div style="display:flex;flex-direction:column;gap:10px;align-items:center">${coin("2e", "bg", { scale: 6 })}${coin("50c", "bg", { scale: 6 })}</div></div>
   ${ft("От 1 февруари 2026 г. единствено законно платежно средство е еврото", "u", "50%", "22px auto 0")}
+  ${ECB_CREDIT}
 </div>`, { pad: 28 });
 
 // e-obmiana-bezplatno — разписка за обмяна (БНБ — безсрочно и безплатно)
@@ -281,6 +287,7 @@ S["pari-shpargalka-kurs"] = scene(`<div style="width:430px">
     <div style="font-size:14.5px;margin-top:14px;line-height:1.4">Груба сметка: лева ÷ 2 = евро</div></div>
   ${ft("Запомнете курса: 1 евро ≈ 1,96 лева. За груба сметка делете на две", "d", "50%", "0 auto 22px").replace("margin:0 auto 22px", "margin:0 auto;order:-1")}
   <div style="display:flex;justify-content:center;gap:18px;margin-top:26px;align-items:center">${coin("2e", "bg", { scale: 5 })}${coin("1e", "bg", { scale: 5 })}${coin("20c", "bg", { scale: 5 })}</div>
+  ${ECB_CREDIT}
 </div>`.replace('<div style="width:430px">', '<div style="width:430px;display:flex;flex-direction:column">'), { pad: 28 });
 
 // money-limit-karta — дневен лимит на картата

@@ -81,7 +81,7 @@ test('член без нужната роля не влиза; с ролята �
     const jar = await login(app.url);
     const { res, html } = await page(jar, '/');
     assert.equal(res.status, 200);
-    assert.match(html, /<h1>Семки<\/h1>/);
+    assert.match(html, /<h1>Дашборд<\/h1>/); // главната е дашбордът
   }));
 
 test('админ добавя партида и я вижда; грешен процент дава съобщение', () =>
@@ -229,8 +229,8 @@ test('дашборд: изтрий отметнатите и всички от �
     assert.match(none.html, /Не си избрал нито една партида/);
     assert.equal(await db.batch.count(), 4);
 
-    // Две отметки — поле `ids` два пъти.
-    const { html } = await page(jar, '/');
+    // Две отметки — поле `ids` два пъти (на страницата „Партиди“).
+    const { html } = await page(jar, '/batches');
     assert.match(html, /name="ids" value="\d+" form="bulk"/);
     const body = new URLSearchParams({ _csrf: csrfFrom(html) });
     body.append('ids', String(a2.id));
@@ -276,7 +276,7 @@ test('правило с повторение и съобщение от дашб
     assert.equal(rule.repeatMinutes, 120);
     assert.equal(rule.message, 'Освежете семките!');
     const { html } = await page(jar, '/alerts');
-    assert.match(html, /тагва на всеки 2 ч/);
+    assert.match(html, /— на всеки 2 ч\./);
     assert.match(html, /„Освежете семките!“/);
 
     await post(jar, `/alerts/${rule.id}`, { ...fields, repeatMinutes: '', message: '' });
@@ -299,41 +299,86 @@ test('страницата „Дашборд“: числа, графика, л�
       roleId: ROLE.id,
       enabled: 'on',
     });
-    const { res, html } = await page(jar, '/dashboard');
+    const { res, html } = await page(jar, '/');
     assert.equal(res.status, 200);
     assert.match(html, /<h1>Дашборд<\/h1>/);
-    assert.match(html, /<a href="\/dashboard" class="on">Дашборд<\/a>/);
-    assert.match(html, /<meta http-equiv="refresh" content="300">/);
-    assert.match(html, /class="kpi-value">7</); // 5 + 2 семки
-    assert.match(html, /<span class="kpi-label">Семки<\/span>\s+<span/); // интервал и без CSS
-    // Собственикът: никога SVG — стъклениците са 3D (WebGL), графиката е <canvas>.
+    assert.match(html, /<a href="\/" aria-current="page">Дашборд<\/a>/);
+    // опресняването е в JS и чака, докато се пише във формата — без meta refresh
+    assert.doesNotMatch(html, /http-equiv="refresh"/);
+    // състоянието в едно изречение: първо изтича Purple (10%); следващият таг — Amnesia до 20%
+    assert.match(html, /Първо изтича <a href="\/batches#b2">Purple #2<\/a>/);
+    assert.match(
+      html,
+      /Следващ таг: <strong>≤ 20%<\/strong> за <a href="\/batches#b1">Amnesia #1<\/a>/,
+    );
+    assert.match(html, /<dt>семки<\/dt><dd class="num">7<\/dd>/); // 5 + 2
+    assert.match(html, /<input type="hidden" name="back" value="\/">/); // бързото добавяне се връща тук
+    // Собственикът: никога SVG — семената са 3D (WebGL), графиката е <canvas>.
     assert.doesNotMatch(html, /<svg|\.svg/);
-    assert.match(html, /class="swatch line sw-amnesia"/); // легендата
+    assert.match(html, /class="swatch line sw-amnesia"/); // легендата на графиката
     assert.match(html, /class="swatch line sw-purple"/);
     assert.match(html, /<canvas class="chart-canvas"/);
     assert.match(html, /<script type="application\/json" id="chart-data">\{/);
-    const scene = /<script type="application\/json" id="shelves-data">(.*?)<\/script>/.exec(html);
-    const shelves = JSON.parse(scene?.[1] ?? 'null') as Array<{ key: string; vials: unknown[] }>;
+    // плочките: по една на партида, здравето по процента, минатият праг
+    assert.equal((html.match(/<a class="tile h-/g) ?? []).length, 2);
+    assert.match(html, /<a class="tile h-fresh" href="\/batches#b1"/);
+    // Purple е въведена на 10% — докато се отвори страницата, вече е малко под (гние)
+    assert.match(html, /<a class="tile h-(spoiling|rotting)" href="\/batches#b2"/);
+    assert.match(html, /<span class="health">(Разваля се|Гние)<\/span>/);
+    assert.match(html, /под 20%/);
+    assert.equal((html.match(/data-legend="/g) ?? []).length, 6); // по семе за всяка степен
+    const raw = /<script type="application\/json" id="scene-data">(.*?)<\/script>/.exec(html);
+    const scene = JSON.parse(raw?.[1] ?? 'null') as {
+      tiles: Array<{ id: number; type: string; layout: unknown[] }>;
+      legend: unknown[];
+      legendType: string;
+    };
     assert.deepEqual(
-      shelves.map((s) => [s.key, s.vials.length]),
+      scene.tiles.map((t) => [t.id, t.type, t.layout.length]),
       [
-        ['amnesia', 1],
-        ['purple', 1],
+        [1, 'amnesia', 5],
+        [2, 'purple', 2],
       ],
     );
+    assert.equal(scene.legend.length, 6);
+    assert.equal(scene.legendType, 'amnesia');
     assert.match(
       html,
       /<script type="module" src="\/js\/dashboard.js(\?v=[0-9a-f]{10})?"><\/script>/,
     );
-    assert.match(html, /<link rel="stylesheet" href="\/style.css\?v=[0-9a-f]{10}">/);
-    assert.match(html, /<link rel="stylesheet" href="\/dashboard.css\?v=[0-9a-f]{10}">/);
-    assert.equal((html.match(/<figure class="vial/g) ?? []).length, 2); // по стъкленица на партида
-    assert.equal((html.match(/class="vial-slot" data-vial="\d+"/g) ?? []).length, 2);
-    assert.match(html, /id="shelf-amnesia"/);
-    assert.match(html, /id="shelf-purple"/);
-    assert.match(html, /под 20%/); // Purple 10%
-    // таблицата: първо изтича Purple (10%)
-    const purple = html.indexOf('Purple</td>');
-    const amnesia = html.indexOf('Amnesia</td>');
-    assert.ok(purple > 0 && amnesia > purple);
+    assert.match(html, /<link rel="stylesheet" href="\/base.css\?v=[0-9a-f]{10}">/);
+    assert.match(html, /<link rel="stylesheet" href="\/tiles.css\?v=[0-9a-f]{10}">/);
+    // старият адрес води към главната
+    const old = await page(jar, '/dashboard');
+    assert.equal(old.res.status, 301);
+    assert.equal(old.res.headers.get('location'), '/');
+  }));
+
+test('партиди: бързото добавяне се връща на главната, иначе към „Партиди“; скоростта — към „Настройки“', () =>
+  withApp(async () => {
+    guild.members.set(USER_ID, { isOwner: false, isAdmin: true, roleIds: [] });
+    const jar = await login(app.url);
+    const home = await post(jar, '/batches', {
+      seedTypeKey: 'ak',
+      count: '3',
+      percent: '100',
+      back: '/',
+    });
+    assert.equal(home.res.headers.get('location'), '/');
+    // само „/“ или „/batches“ — никога чужд адрес
+    const evil = await post(jar, '/batches', {
+      seedTypeKey: 'ak',
+      count: '3',
+      percent: '100',
+      back: 'https://example.com/',
+    });
+    assert.equal(evil.res.headers.get('location'), '/batches');
+    const { html } = await page(jar, '/batches');
+    assert.match(html, /<h1>Партиди<small class="num">2<\/small><\/h1>/);
+    assert.match(html, /<li class="brow h-fresh" id="b1">/);
+    assert.match(html, /<section class="bgroup" id="t-ak"/);
+    assert.match(html, /Изтрий всички AK/);
+    const rate = await post(jar, '/types/ak', { decayPercent: '0,5', decayMinutes: '60' });
+    assert.equal(rate.res.headers.get('location'), '/settings');
+    assert.match(rate.html, /Скорост на спада по видове/);
   }));

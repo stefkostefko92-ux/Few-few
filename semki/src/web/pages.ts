@@ -1,5 +1,5 @@
-// Страниците на дашборда: партиди и видове, правила за известия, настройки. Всяка POST форма води
-// обратно към страницата си с флаш съобщение (Post/Redirect/Get).
+// Страниците: дашбордът (главна), партиди, правила за известия, настройки (с видовете). Всяка POST
+// форма води обратно към страницата си с флаш съобщение (Post/Redirect/Get).
 import { Router as createRouter, type Request, type Response, type Router } from 'express';
 import type { ZodType } from 'zod';
 import { formatThreshold } from '../domain/messages.js';
@@ -71,23 +71,39 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
     res.redirect(303, back);
   }
 
-  router.get('/dashboard', dashboardPage(kit));
+  // ── Дашбордът е главната; старият адрес води към нея ──
+  router.get('/', dashboardPage(kit));
+  router.get('/dashboard', (_req, res) => res.redirect(301, '/'));
 
-  // ── Партиди и видове ──
-  router.get('/', async (req, res) => {
+  // ── Партиди ──
+  router.get('/batches', async (req, res) => {
     const { settings } = getContext(req);
     const [types, batches] = await Promise.all([listSeedTypes(db), listBatches(db)]);
+    const rows = batchRows(batches, types, kit.now(), settings.timezone);
     kit.render(req, res, 'batches', {
-      title: 'Семки',
+      title: 'Партиди',
       active: 'batches',
-      rows: batchRows(batches, types, kit.now(), settings.timezone),
+      pageCss: ['batches.css'],
+      pageJs: 'js/manage.js',
+      rows,
+      groups: seedTypeViews(types, batches)
+        .map((t) => ({ ...t, rows: rows.filter((r) => r.typeKey === t.key) }))
+        .filter((t) => t.rows.length > 0),
       types: seedTypeViews(types, batches),
       timezone: settings.timezone,
     });
   });
 
+  // Бързото добавяне от дашборда се връща там; иначе — към партидите. Само тези два адреса (не произволен).
+  function backOf(req: Request): string {
+    const body: unknown = req.body;
+    const raw = typeof body === 'object' && body !== null && 'back' in body ? body.back : undefined;
+    return raw === '/' ? '/' : '/batches';
+  }
+
   router.post('/batches', async (req, res) => {
-    const input = parse(batchCreateSchema, req.body, res, '/');
+    const back = backOf(req);
+    const input = parse(batchCreateSchema, req.body, res, back);
     if (!input) return;
     const { user } = getContext(req);
     const { batch, passed } = await createBatch(
@@ -100,24 +116,24 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
     const note = passed.length
       ? ` Вече е под ${[...new Set(passed.map((r) => formatThreshold(r.kind, r.threshold)))].join(', ')} — без пинг за тях.`
       : '';
-    done(res, '/', true, `Добавена партида #${batch.id}.${note}`);
+    done(res, back, true, `Добавена партида #${batch.id}.${note}`);
   });
 
   router.post('/batches/delete-expired', async (_req, res) => {
     const n = await deleteExpiredBatches(db, kit.now());
-    done(res, '/', true, n ? `Изтрити изтекли партиди: ${n}.` : 'Няма изтекли партиди.');
+    done(res, '/batches', true, n ? `Изтрити изтекли партиди: ${n}.` : 'Няма изтекли партиди.');
   });
 
   // Отметнатите в списъка (поле `ids` — едно или няколко).
   router.post('/batches/delete-selected', async (req, res) => {
     const body: unknown = req.body;
     const raw = typeof body === 'object' && body !== null && 'ids' in body ? body.ids : undefined;
-    const ids = parse(idListSchema, raw, res, '/');
+    const ids = parse(idListSchema, raw, res, '/batches');
     if (!ids) return;
     const removed = await deleteBatches(db, ids);
     done(
       res,
-      '/',
+      '/batches',
       removed.length > 0,
       `Изтрити партиди: ${removed.length}.`,
       'Няма такива партиди.',
@@ -126,14 +142,14 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
 
   router.post('/types/:key/delete-all', async (req, res) => {
     const key = seedKeySchema.safeParse(req.params.key);
-    if (!key.success) return done(res, '/', false, '');
+    if (!key.success) return done(res, '/batches', false, '');
     const removed = await deleteBatchesOfType(db, key.data);
-    done(res, '/', true, `Изтрити партиди: ${removed.length}.`);
+    done(res, '/batches', true, `Изтрити партиди: ${removed.length}.`);
   });
 
   router.post('/batches/:id', async (req, res) => {
     const id = idOf(req);
-    const input = parse(batchEditSchema, req.body, res, '/');
+    const input = parse(batchEditSchema, req.body, res, '/batches');
     if (!input) return;
     // Процентът е сменен само ако се различава от показания при зареждането на страницата.
     const body: unknown = req.body;
@@ -146,7 +162,7 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
       !Number.isFinite(shown) || Math.round(shown * 100) !== Math.round(input.percent * 100);
     done(
       res,
-      '/',
+      '/batches',
       id !== null &&
         (await updateBatch(
           db,
@@ -162,7 +178,7 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
     const id = idOf(req);
     done(
       res,
-      '/',
+      '/batches',
       id !== null && (await deleteBatch(db, id)) !== null,
       `Партида #${id} е изтрита.`,
     );
@@ -170,10 +186,15 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
 
   router.post('/types/:key', async (req, res) => {
     const key = seedKeySchema.safeParse(req.params.key);
-    const input = parse(seedTypeSchema, req.body, res, '/');
+    const input = parse(seedTypeSchema, req.body, res, '/settings');
     if (!input) return;
     const ok = key.success && (await updateSeedTypeRate(db, key.data, input, kit.now()));
-    done(res, '/', ok, 'Скоростта е сменена — важи от сега, текущите проценти са запазени.');
+    done(
+      res,
+      '/settings',
+      ok,
+      'Скоростта е сменена — важи от сега, текущите проценти са запазени.',
+    );
   });
 
   // ── Правила за известия ──
@@ -184,6 +205,7 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
     kit.render(req, res, 'alerts', {
       title: 'Известия',
       active: 'alerts',
+      pageCss: ['batches.css', 'rules.css'],
       rules: ruleViews(rules, types, channels, roles),
       types,
       channels,
@@ -258,12 +280,15 @@ export function createPages(kit: WebKit, auth: AuthKit): Router {
   });
 
   // ── Настройки ──
-  router.get('/settings', (req, res) => {
+  router.get('/settings', async (req, res) => {
     const { settings } = getContext(req);
+    const [types, batches] = await Promise.all([listSeedTypes(db), listBatches(db)]);
     kit.render(req, res, 'settings', {
       title: 'Настройки',
       active: 'settings',
+      pageCss: ['batches.css', 'rules.css'],
       settings,
+      types: seedTypeViews(types, batches),
       roles: deps.guild.roles(),
       timezones: TIMEZONES,
     });

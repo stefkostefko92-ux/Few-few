@@ -1,28 +1,24 @@
 // Обработката на slash командите, автокомплийта и компонентите (менюто за триене).
 import {
+  DiscordAPIError,
   MessageFlags,
   type AutocompleteInteraction,
   type ChatInputCommandInteraction,
   type Interaction,
 } from 'discord.js';
 import type { PrismaClient } from '@prisma/client';
-import { msLeft, percentAt } from '../domain/decay.js';
-import {
-  batchStatus,
-  buildInfoMessages,
-  formatDuration,
-  formatPercent,
-  formatThreshold,
-  seedLabel,
-} from '../domain/messages.js';
+import { seedCards, type SeedCard } from '../domain/cards.js';
+import { buildInfoEmbeds, infoAsText } from '../domain/info.js';
+import { batchStatus, formatThreshold, healthDot, seedLabel } from '../domain/messages.js';
 import { isSeedKey } from '../domain/seeds.js';
 import { batchCreateSchema, seedKeySchema } from '../domain/validation.js';
 import type { Logger } from '../log.js';
 import { createBatch, listBatches, listSeedTypes } from '../services/batches.js';
 import { labelsOf } from '../services/mapping.js';
 import { CMD_DELETE, CMD_INFO, OPTION_COUNT, OPTION_PERCENT, OPTION_TYPE } from './commands.js';
+import { cardPayload, infoPayload, type CardPayload, type InfoPayload } from './cards.js';
 import { actorName, ensureManager, NO_PINGS } from './common.js';
-import { createRemoveFlow } from './remove-flow.js';
+import { batchOptionLabel, createRemoveFlow } from './remove-flow.js';
 
 export interface InteractionDeps {
   db: PrismaClient;
@@ -34,6 +30,26 @@ export interface InteractionDeps {
 export function createInteractionHandler(deps: InteractionDeps) {
   const now = deps.now ?? (() => new Date());
   const removal = createRemoveFlow({ db: deps.db, now });
+
+  // Отговор със снимките на семената отдолу; откаже ли Discord прикачването — само текстът.
+  type ReplyOptions = { content: string; allowedMentions: typeof NO_PINGS } & Partial<CardPayload>;
+  async function withCards(
+    send: (o: ReplyOptions) => Promise<unknown>,
+    content: string,
+    cards: readonly SeedCard[],
+  ): Promise<void> {
+    const media = cardPayload(cards);
+    if (media.files.length > 0) {
+      try {
+        await send({ content, allowedMentions: NO_PINGS, ...media });
+        return;
+      } catch (err) {
+        if (!(err instanceof DiscordAPIError)) throw err;
+        deps.log.warn({ code: err.code, status: err.status }, 'Discord отказа снимките');
+      }
+    }
+    await send({ content, allowedMentions: NO_PINGS });
+  }
 
   async function addBatch(i: ChatInputCommandInteraction) {
     if (!(await ensureManager(deps.db, i))) return;
@@ -59,13 +75,13 @@ export function createInteractionHandler(deps: InteractionDeps) {
     );
     const labels = labelsOf(await listSeedTypes(deps.db));
     const lines = [
-      `Добавена партида **${seedLabel(labels, batch.seedTypeKey)}** #${batch.id} ${batchStatus(batch, at)}`,
+      `Добавена партида **${seedLabel(labels, batch.seedTypeKey)}**: ${healthDot(batch, at)} ${batchStatus(batch, at)}`,
     ];
     if (passed.length > 0) {
       const list = [...new Set(passed.map((r) => formatThreshold(r.kind, r.threshold)))].join(', ');
       lines.push(`Вече е под праг ${list} — за тях няма да има пинг.`);
     }
-    await i.editReply({ content: lines.join('\n'), allowedMentions: NO_PINGS });
+    await withCards((o) => i.editReply(o), lines.join('\n'), seedCards([batch], labels, at));
   }
 
   async function info(i: ChatInputCommandInteraction) {
@@ -74,31 +90,38 @@ export function createInteractionHandler(deps: InteractionDeps) {
     const key = filter ? seedKeySchema.safeParse(filter) : null;
     const [types, all] = await Promise.all([listSeedTypes(deps.db), listBatches(deps.db)]);
     const batches = key?.success ? all.filter((b) => b.seedTypeKey === key.data) : all;
-    const [first, ...rest] = buildInfoMessages(batches, labelsOf(types), now());
-    await i.editReply({ content: first ?? 'Няма въведени семки.', allowedMentions: NO_PINGS });
-    for (const content of rest) await i.followUp({ content, allowedMentions: NO_PINGS });
+    const at = now();
+    const labels = labelsOf(types);
+    // Карта за всеки вид: всички партиди на редове, снимката на най-ниската от вида (domain/info.ts).
+    type Reply = Partial<InfoPayload> & { allowedMentions: typeof NO_PINGS };
+    for (const [n, message] of buildInfoEmbeds(batches, labels, at).entries()) {
+      const send = (o: Reply) => (n === 0 ? i.editReply(o) : i.followUp(o));
+      try {
+        await send({ ...infoPayload(message), allowedMentions: NO_PINGS });
+      } catch (err) {
+        // Отказ от API (4xx) — нищо не е публикувано: същото съобщение като текст, справката не се губи.
+        if (!(err instanceof DiscordAPIError)) throw err;
+        deps.log.warn(
+          { code: err.code, status: err.status },
+          'Discord отказа картите на /infosemki',
+        );
+        const [first = '', ...rest] = infoAsText(message);
+        await send({ content: first, allowedMentions: NO_PINGS });
+        for (const content of rest) await i.followUp({ content, allowedMentions: NO_PINGS });
+      }
+    }
   }
 
   async function autocomplete(i: AutocompleteInteraction) {
     if (i.commandName !== CMD_DELETE) return i.respond([]);
-    const query = String(i.options.getFocused()).trim().toLowerCase().replace(/^#/, '');
+    const query = String(i.options.getFocused()).trim().toLowerCase();
     const at = now();
     const [types, batches] = await Promise.all([listSeedTypes(deps.db), listBatches(deps.db)]);
     const labels = labelsOf(types);
     const choices = batches
-      .map((b) => {
-        const left = msLeft(b, b.rate, at);
-        const name =
-          `#${b.id} ${seedLabel(labels, b.seedTypeKey)} ×${b.count} · ` +
-          `${formatPercent(percentAt(b, b.rate, at))} · ${left > 0 ? formatDuration(left) : 'изтекла'}`;
-        return { name: name.slice(0, 100), value: b.id };
-      })
-      // Само цифри — по номера на партидата (иначе „12“ хваща и „87,12%“); иначе — по текста.
-      .filter((c) =>
-        /^\d+$/.test(query)
-          ? String(c.value).startsWith(query)
-          : !query || c.name.toLowerCase().includes(query),
-      )
+      // Без номера — вид, брой семки, здраве, процент; търси се по този текст („ak“, „202“, „свежа“).
+      .map((b) => ({ name: batchOptionLabel(b, labels, at), value: b.id }))
+      .filter((c) => !query || c.name.toLowerCase().includes(query))
       .slice(0, 25);
     await i.respond(choices);
   }

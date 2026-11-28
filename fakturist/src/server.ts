@@ -14,6 +14,7 @@ import { isLocale, translator, type Locale } from './i18n.js';
 import { assetVersion } from './http/assets.js';
 import { SITE_PAGES } from './seo/pages.js';
 import { healthRouter } from './routes/health.js';
+import { internalRouter } from './routes/internal.js';
 import { seoRouter } from './routes/seo.js';
 import { siteRouter } from './routes/site.js';
 import { pwaRouter } from './routes/pwa.js';
@@ -132,6 +133,7 @@ export function createServer(): Express {
   app.use(cookieParser());
 
   app.use(healthRouter());
+  app.use(internalRouter());
   app.use(pwaRouter());
   app.use(seoRouter());
   app.use(siteRouter());

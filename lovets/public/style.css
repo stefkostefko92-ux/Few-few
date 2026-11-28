@@ -181,3 +181,18 @@ footer {
 footer a {
   color: inherit;
 }
+/* Черновата на първия имейл: формата е под присъдата, на цялата ширина на картата. */
+form.draft {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+form.draft > p,
+form.draft > div,
+form.draft label:has(textarea) {
+  grid-column: 1 / -1;
+}
+form.draft textarea[readonly] {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}

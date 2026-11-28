@@ -8,6 +8,7 @@ import type { ComplianceStore } from '../store/types.js';
 import { apiRoutes } from './api-routes.js';
 import { authRoutes } from './auth-routes.js';
 import { requireOwner, sameOrigin } from './guards.js';
+import { publicRoutes } from './public-routes.js';
 
 export interface AppDeps {
   config: AppConfig;
@@ -57,6 +58,9 @@ export function createApp(deps: AppDeps): express.Express {
   app.get('/robots.txt', (_req, res) =>
     res.type('text/plain').send('User-agent: *\nDisallow: /\n'),
   );
+
+  // Публично е само отписването — преди парсерите, sameOrigin и requireOwner (виж public-routes.ts).
+  app.use('/u', publicRoutes({ store: deps.store, unsubKey: config.unsubKey }));
 
   app.use(express.json({ limit: '25mb' }));
   app.use(cookieParser());

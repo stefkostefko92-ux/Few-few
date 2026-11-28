@@ -1,0 +1,11 @@
+/* Само без JavaScript (зарежда се в <noscript>): менюто е обикновен списък с връзки. */
+.nav-item:focus-within>.panel{opacity:1;visibility:visible;transform:translateY(0)}
+.nav-item:focus-within>.panel-mega{transform:translate(-50%,0)}
+.nav-toggle{display:none}
+@media (max-width:1099px){
+  .header-in{flex-wrap:wrap}
+  .menu-btn{display:none!important}
+  .nav{position:static;transform:none;visibility:visible;padding:0 0 16px;flex-basis:100%;order:3}
+  .panel,.panel-mega{display:block}
+}
+.hero-pic img{animation:none!important}

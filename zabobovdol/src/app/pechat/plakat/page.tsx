@@ -101,10 +101,10 @@ export default async function PosterPage({
         {/* Гербът с прозрачен фон — без бяла кутия върху тъмния лист. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/brand/bobov-dol-grb-mark.png"
-          alt="Герб на Бобов дол"
-          width={120}
-          height={173}
+          src="/brand/za-bobov-dol-mark.png"
+          alt="За Бобов дол"
+          width={128}
+          height={128}
           className="h-28 w-auto sm:h-32 print:h-24"
         />
 

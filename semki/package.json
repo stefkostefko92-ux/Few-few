@@ -26,6 +26,7 @@
     "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "prisma generate && tsc -p tsconfig.json && node scripts/build-client.mjs",
     "build:client": "node scripts/build-client.mjs",
+    "render:seeds": "tsx scripts/render-seeds.ts",
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json && tsc -p tsconfig.client.json",
     "check": "prisma generate && npm run format:check && npm run typecheck && npm test && npm run build",
@@ -51,6 +52,8 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@fontsource-variable/sofia-sans": "5.3.0",
+    "@fontsource-variable/sofia-sans-extra-condensed": "5.3.0",
     "@types/cookie-parser": "1.4.10",
     "@types/ejs": "3.1.5",
     "@types/express": "5.0.6",

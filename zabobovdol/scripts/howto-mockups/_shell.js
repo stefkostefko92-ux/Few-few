@@ -417,6 +417,13 @@ async function render(screens) {
     try {
       // Фрагментите (без <!doctype>) се увиват автоматично в рамката на телефон.
       const full = html.trimStart().startsWith("<!doctype") ? html : phone(html);
+      // Посочване на източника — условие на лиценза (правният преглед от 27.11.2026).
+      if (/\/assets\/ecb\//.test(full) && !/ЕЦБ|Европейска централна банка/.test(full))
+        throw new Error("има образци на ЕЦБ без надпис „© ЕЦБ“ (условие на ecb.europa.eu)");
+      if (/\/assets\/(apps\/tiles\/|misc\/osm-|more\/osm\/)/.test(full) && !/OpenStreetMap/.test(full))
+        throw new Error("има карта от OpenStreetMap без „© OpenStreetMap contributors“ (ODbL)");
+      // CHECK_ONLY=1 — само проверката на източниците, без рендериране (за всички генератори).
+      if (process.env.CHECK_ONLY) { ok++; continue; }
       const f = path.join(tmp, "s.html");
       fs.writeFileSync(f, full);
       await page.goto(pathToFileURL(f).href, { waitUntil: "load" });

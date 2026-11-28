@@ -1,6 +1,8 @@
 // Данните за шаблоните: всичко е вече форматирано, шаблонът само показва.
 import type { AlertRule, SeedType } from '@prisma/client';
+import { swatchKey } from '../domain/chart.js';
 import { expiresAt, msLeft, percentAt } from '../domain/decay.js';
+import { healthOf, type Health } from '../domain/health.js';
 import {
   formatDuration,
   formatNumber,
@@ -26,6 +28,7 @@ export interface BatchRowView {
   id: number;
   typeKey: string;
   typeLabel: string;
+  swatch: string;
   count: number;
   percent: number;
   percentText: string;
@@ -33,7 +36,7 @@ export interface BatchRowView {
   leftText: string;
   expiresText: string;
   expired: boolean;
-  level: 'ok' | 'warn' | 'low';
+  health: Health;
   createdByName: string;
   createdText: string;
   sourceText: string;
@@ -61,6 +64,7 @@ export function batchRows(
         id: b.id,
         typeKey: b.seedTypeKey,
         typeLabel: labels.get(b.seedTypeKey) ?? b.seedTypeKey,
+        swatch: swatchKey(b.seedTypeKey),
         count: b.count,
         percent: p,
         percentText: formatPercent(p),
@@ -68,7 +72,7 @@ export function batchRows(
         leftText: left > 0 ? formatDuration(left) : 'изтекла',
         expiresText: fmt(expiresAt(b, b.rate)),
         expired: left <= 0,
-        level: p > 30 ? 'ok' : p > 10 ? 'warn' : 'low',
+        health: healthOf(p, left <= 0),
         createdByName: b.createdByName,
         createdText: fmt(b.createdAt),
         sourceText: b.source === 'command' ? 'команда' : 'дашборд',
