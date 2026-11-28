@@ -130,8 +130,8 @@ export const createForm = (serverId, data) => api.post(`/forms/${serverId}`, dat
 export const updateForm = (serverId, formId, data) => api.put(`/forms/${serverId}/${formId}`, data).then((r) => r.data);
 export const deleteForm = (serverId, formId, force = false) =>
   api.delete(`/forms/${serverId}/${formId}${force ? "?force=true" : ""}`).then((r) => r.data);
-export const spawnForm = (serverId, formId, channelId) =>
-  api.post(`/forms/${serverId}/${formId}/spawn`, { channelId }).then((r) => r.data);
+export const spawnForm = (serverId, formId, channelId, buttonLabel) =>
+  api.post(`/forms/${serverId}/${formId}/spawn`, { channelId, ...(buttonLabel ? { buttonLabel } : {}) }).then((r) => r.data);
 
 // ─── Reaction Roles (v33) ─────────────────────────────────────────────────────
 export const getReactionRoles = (serverId) => api.get(`/reactionroles/${serverId}`).then((r) => r.data);
@@ -149,6 +149,15 @@ export const claimTicket = (serverId, ticketId) =>
   api.post(`/tickets/${serverId}/${ticketId}/claim`).then((r) => r.data);
 export const replyToTicket = (serverId, ticketId, content) =>
   api.post(`/tickets/${serverId}/${ticketId}/reply`, { content }).then((r) => r.data);
+// Паритет с командите (28.11.2026): /ticket priority|unclaim|add|remove, /rename, /escalate
+export const setTicketPriority = (serverId, ticketId, priority) =>
+  api.patch(`/tickets/${serverId}/${ticketId}/priority`, { priority }).then((r) => r.data);
+export const unclaimTicket = (serverId, ticketId) => api.post(`/tickets/${serverId}/${ticketId}/unclaim`).then((r) => r.data);
+export const renameTicket = (serverId, ticketId, name) => api.post(`/tickets/${serverId}/${ticketId}/rename`, { name }).then((r) => r.data);
+export const moveTicket = (serverId, ticketId, panelId) => api.post(`/tickets/${serverId}/${ticketId}/move`, { panelId }).then((r) => r.data);
+export const ticketMember = (serverId, ticketId, userId, action) =>
+  api.post(`/tickets/${serverId}/${ticketId}/members`, { userId, action }).then((r) => r.data);
+export const searchServerMembers = (serverId, q) => api.get(`/tickets/${serverId}/member-search`, { params: { q } }).then((r) => r.data);
 
 // ─── Applications ─────────────────────────────────────────────────────────────
 export const getApplications = (serverId, params) =>

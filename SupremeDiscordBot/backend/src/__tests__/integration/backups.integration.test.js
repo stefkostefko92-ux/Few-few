@@ -95,15 +95,38 @@ describe("резервни копия — жива база", () => {
 
   it("Б17: срок при махане, падане при покана, изтриване на изтеклите", async () => {
     const b = await createBackup(SID, { kind: "MANUAL", tier, snapshot: snap(), createdBy: null });
-    const t0 = new Date("2026-01-01T00:00:00Z");
-    await markServerBackupsExpiring(SID, t0);
-    expect((await prisma.serverBackup.findUnique({ where: { id: b.backup.id } })).expiresAt.toISOString()).toBe("2026-04-01T00:00:00.000Z");
+    const now = new Date();
+    await markServerBackupsExpiring(SID, now);
+    const exp = (await prisma.serverBackup.findUnique({ where: { id: b.backup.id } })).expiresAt;
+    expect(exp.getTime()).toBe(now.getTime() + 90 * 24 * 60 * 60 * 1000);
     await clearServerBackupsExpiry(SID);
     expect((await prisma.serverBackup.findUnique({ where: { id: b.backup.id } })).expiresAt).toBeNull();
+    // Изтекло копие не се „съживява“ от повторна покана — чака чистката.
+    const t0 = new Date("2026-01-01T00:00:00Z");
     await markServerBackupsExpiring(SID, t0);
+    await clearServerBackupsExpiry(SID);
+    expect((await prisma.serverBackup.findUnique({ where: { id: b.backup.id } })).expiresAt.toISOString()).toBe("2026-04-01T00:00:00.000Z");
     await purgeExpiredBackups(new Date("2026-03-31T00:00:00Z"));
     expect(await prisma.serverBackup.count()).toBe(1);
     await purgeExpiredBackups(new Date("2026-04-02T00:00:00Z"));
     expect(await prisma.serverBackup.count()).toBe(0);
+  });
+
+  it("ревю: три едновременни ръчни копия при лимит 2 → записват се точно 2 (ключ за сървъра)", async () => {
+    const outs = await Promise.all([1, 2, 3].map(() => createBackup(SID, { kind: "MANUAL", tier, snapshot: snap(), createdBy: "111111111111111111" })));
+    expect(outs.filter((o) => o.ok)).toHaveLength(1); // второто пада на паузата от 10 минути
+    expect(await prisma.serverBackup.count({ where: { serverId: SID, kind: "MANUAL" } })).toBe(1);
+  });
+
+  it("ревю: паралелни доклади и пулсове не губят нищо от картата", async () => {
+    const b = await createBackup(SID, { kind: "AUTO", tier, snapshot: snap() });
+    const r = await prisma.backupRestore.create({ data: { backupId: b.backup.id, sourceServerId: SID, targetServerId: SID, mode: "NEW", status: "RUNNING", activeServerId: SID } });
+    const ids = Array.from({ length: 12 }, (_, i) => [String(500000000000000100n + BigInt(i)), String(600000000000000100n + BigInt(i))]);
+    await Promise.all([
+      ...ids.map(([o, n]) => asBot(request(botApp()).post(`/api/bot/backup-restores/${r.id}/progress`)).send({ idMap: { roles: { [o]: n } } })),
+      ...Array.from({ length: 6 }, () => asBot(request(botApp()).post(`/api/bot/backup-restores/${r.id}/progress`)).send({})),
+    ]);
+    const done = await prisma.backupRestore.findUnique({ where: { id: r.id } });
+    expect(Object.keys(done.idMap.roles).sort()).toEqual(ids.map(([o]) => o).sort());
   });
 });

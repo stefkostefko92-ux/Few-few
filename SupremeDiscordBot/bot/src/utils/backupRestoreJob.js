@@ -35,7 +35,7 @@ export function preflightGuild(guild, { roleIds = [], channelIds = [] } = {}) {
  * @param {string} restoreId
  * @param {{api:{get:Function, post:Function}, resolveGuild:(id:string)=>Promise<object|null>, retryDelayMs?:number}} deps
  */
-export async function runRestoreJob(restoreId, { api, resolveGuild, retryDelayMs = 2000 }) {
+export async function runRestoreJob(restoreId, { api, resolveGuild, retryDelayMs = 2000, heartbeatMs = HEARTBEAT_MS }) {
   if (RUNNING.has(restoreId)) return { ok: true, running: true };
   RUNNING.add(restoreId);
   const path = `/bot/backup-restores/${restoreId}/progress`;
@@ -43,7 +43,7 @@ export async function runRestoreJob(restoreId, { api, resolveGuild, retryDelayMs
 
   // Докладът носи картата стар → нов ID. Изгубен доклад = дубликат при следващия опит, затова
   // се повтаря няколко пъти, преди задачата да се откаже (пазачът я буди наново по-късно).
-  const post = async (body) => {
+  const postNow = async (body) => {
     let lastErr;
     for (let i = 0; i < REPORT_ATTEMPTS; i += 1) {
       try {
@@ -55,6 +55,14 @@ export async function runRestoreJob(restoreId, { api, resolveGuild, retryDelayMs
       }
     }
     throw lastErr;
+  };
+  // Докладите (пулсът и стъпките) минават един след друг: backend-ът и без това ги слива под
+  // ключ, но така и редът на добавките в картата е редът на създаването.
+  let chain = Promise.resolve();
+  const post = (body) => {
+    const p = chain.then(() => postNow(body));
+    chain = p.catch(() => {});
+    return p;
   };
   const fail = (code) => post({ status: "FAILED", warnings: [{ kind: "server", code }] });
 
@@ -71,6 +79,12 @@ export async function runRestoreJob(restoreId, { api, resolveGuild, retryDelayMs
 
     const guild = await resolveGuild(restore.targetServerId);
     if (!guild) { await fail("BOT_NOT_IN_SERVER"); return { ok: false }; }
+    // Свеж кеш преди проверката и преди „има ли го вече“: сървър, дошъл през REST вместо от
+    // gateway кеша, може да е без `members.me` и с празни роли/канали — тогава ботът би
+    // казал „нямам Administrator“ или би създал наново съществуващото (ревю, 28.11.2026).
+    await guild.members?.fetchMe?.().catch?.(() => null);
+    await guild.roles?.fetch?.().catch?.(() => null);
+    await guild.channels?.fetch?.().catch?.(() => null);
     // Правата се проверяват пак в МОМЕНТА на старта — между плана и старта човек може да ги е махнал.
     if (!guild.members?.me?.permissions?.has?.(ADMINISTRATOR)) { await fail("BOT_NOT_ADMIN"); return { ok: false }; }
 
@@ -81,7 +95,7 @@ export async function runRestoreJob(restoreId, { api, resolveGuild, retryDelayMs
       if (r?.stop) stop = true;
       return { stop };
     };
-    heartbeat = setInterval(() => { report({}).catch(() => {}); }, HEARTBEAT_MS);
+    heartbeat = setInterval(() => { report({}).catch(() => {}); }, heartbeatMs);
     heartbeat.unref?.();
 
     const out = await runRestore({ guild, snapshot, mode: restore.mode, idMap: restore.idMap || {}, report });

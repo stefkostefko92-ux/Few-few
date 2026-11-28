@@ -19,14 +19,22 @@ const STAGE = 13;
 const ROLE_OVERWRITE = 0;
 // Тип, който сървърът не приема (напр. обявления без Community) → най-близкият обикновен.
 const FALLBACK_TYPE = { 5: 0, 13: 2, 15: 0, 16: 0 };
-const TYPE_REJECTED = new Set([50024, 50035]); // Cannot execute action on this channel type · Invalid form body
+// 50024 „Cannot execute action on this channel type“ — винаги за типа. 50035 „Invalid form body“ —
+// само ако грешката сочи полето `type`; иначе отказът е за друго (таг, битрейт) и форум НЕ бива
+// да става тихо текстов канал (ревю на Дискорджията, 28.11.2026).
+const typeRejected = (err) => {
+  const code = Number(err?.code ?? err?.rawError?.code);
+  return code === 50024 || (code === 50035 && !!err?.rawError?.errors?.type);
+};
 const MAX_ROLES_CODE = "30005";
 const MAX_CHANNELS_CODE = "30013";
 
 const clean = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null));
 const codeOf = (err) => String(err?.code ?? err?.rawError?.code ?? "ERROR").slice(0, 40);
 const reasonOf = (err) => String(err?.message || err || "error").slice(0, 300);
-const byPos = (a, b) => a.position - b.position || (a.id < b.id ? -1 : 1);
+const idOrder = (a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : BigInt(a.id) > BigInt(b.id) ? 1 : 0);
+const byPos = (a, b) => a.position - b.position || idOrder(a, b);
+const REQUIRE_TAG = 1 << 4;
 
 /**
  * @param {{guild:object, snapshot:object, mode:"SAME"|"NEW", idMap?:{roles?:object, channels?:object},
@@ -70,7 +78,8 @@ export async function runRestore({ guild, snapshot, mode, idMap = {}, report, re
 
   // ─── 1. Роли ────────────────────────────────────────────────────────────────
   let roleLimit = false;
-  for (const r of [...snapshot.roles].sort((a, b) => b.position - a.position || (a.id < b.id ? -1 : 1))) {
+  const createdRoles = []; // [{ newId, position }] — за реда в същия сървър
+  for (const r of [...snapshot.roles].sort((a, b) => b.position - a.position || idOrder(a, b))) {
     if (stopped) break;
     const m = map.roles[r.id];
     if (m && guild.roles.cache.has(m)) { counts.rolesCreated += 1; continue; } // създадена при предишен опит
@@ -87,11 +96,28 @@ export async function runRestore({ guild, snapshot, mode, idMap = {}, report, re
       });
       map.roles[r.id] = created.id;
       counts.rolesCreated += 1;
+      createdRoles.push({ newId: created.id, position: r.position });
       await send({ idMap: { roles: { [r.id]: created.id } } });
     } catch (err) {
       counts.failed += 1;
       if (codeOf(err) === MAX_ROLES_CODE) roleLimit = true;
       await warn("role", r.name, err);
+    }
+  }
+
+  // ─── 1б. Ред на ролите в същия сървър ───────────────────────────────────────
+  // Новата роля влиза най-отдолу. В нов сървър създаването от най-високата надолу вече дава
+  // реда; в същия липсващите трябва да се върнат на старото си място сред съществуващите.
+  // Ботът подрежда само под собствената си най-висока роля (permissions.md: Permission Hierarchy).
+  if (!stopped && same && createdRoles.length && typeof guild.roles.setPositions === "function") {
+    const top = guild.members?.me?.roles?.highest?.position ?? Infinity;
+    const moves = createdRoles
+      .map(({ newId, position }) => ({ role: newId, position: Math.max(1, Math.min(position, top - 1)) }))
+      .filter((m) => Number.isFinite(m.position));
+    try {
+      if (moves.length) await guild.roles.setPositions(moves);
+    } catch (err) {
+      await warn("role", "order", err);
     }
   }
 
@@ -122,7 +148,8 @@ export async function runRestore({ guild, snapshot, mode, idMap = {}, report, re
       const max = type === STAGE ? 64000 : (guild.maximumBitrate || 96000);
       Object.assign(o, clean({
         bitrate: c.bitrate ? Math.max(8000, Math.min(c.bitrate, max)) : undefined,
-        userLimit: c.userLimit,
+        // Discord: до 99 за гласов, до 10 000 за сцена (channel.md → user_limit).
+        userLimit: c.userLimit == null ? undefined : Math.min(c.userLimit, type === STAGE ? 10000 : 99),
         rtcRegion: c.rtcRegion,
         videoQualityMode: c.videoQualityMode,
         nsfw: c.nsfw,
@@ -155,7 +182,7 @@ export async function runRestore({ guild, snapshot, mode, idMap = {}, report, re
         created = await guild.channels.create(optionsFor(c, type, parent));
       } catch (err) {
         const fb = FALLBACK_TYPE[type];
-        if (fb === undefined || !TYPE_REJECTED.has(Number(codeOf(err)))) throw err;
+        if (fb === undefined || !typeRejected(err)) throw err;
         created = await guild.channels.create(optionsFor(c, fb, parent));
         await send({ warnings: [{ kind, name: c.name.slice(0, 120), code: "TYPE_FALLBACK", reason: `type ${type} → ${fb}` }] });
       }
@@ -168,6 +195,11 @@ export async function runRestore({ guild, snapshot, mode, idMap = {}, report, re
     map.channels[c.id] = created.id;
     counts.channelsCreated += 1;
     await send({ idMap: { channels: { [c.id]: created.id } } });
+    // „Изисква етикет“ на форум/медиен канал: create няма поле flags, само edit
+    // (discord.js GuildChannelManager.create срещу .edit). Бележка при отказ, без да спира.
+    if (THREAD_ONLY.has(created.type ?? type) && (Number(c.flags || 0) & REQUIRE_TAG) && typeof created.edit === "function") {
+      try { await created.edit({ flags: REQUIRE_TAG, reason }); } catch (err) { await warn(kind, c.name, err); }
+    }
   };
 
   const cats = [...snapshot.categories].sort(byPos);

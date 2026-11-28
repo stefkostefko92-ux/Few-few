@@ -9,6 +9,7 @@ import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
 import { requirePremium } from "../lib/premium.js";
 import { tokenizedArchiveUrl, archiveTokenMatches } from "../lib/archiveToken.js";
 import { closeTicketIfOpen, archiveBase } from "../lib/ticketClose.js";
+import { writeAudit } from "../lib/auditLog.js";
 
 const router = Router();
 
@@ -139,6 +140,129 @@ router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
 });
 
 // ─── GET /api/tickets/:serverId/:ticketId ─────────────────────────────────────
+
+// ═══ Действия с тикет от таблото — паритет с командите (28.11.2026) ═════════
+// /ticket priority, /rename, /escalate, /ticket add|remove вече имат място и в таблото.
+// Правилата са същите като в бота: rename и escalate са Premium. Действието в Discord
+// става ПРЕДИ записа (ботът през /internal/ticket-manage) — ако Discord откаже, нищо не се
+// записва и човекът вижда защо. Изключение е приоритетът: той е наше поле, а обявата в
+// канала е вторична.
+const ACTIVE_TICKET = ["OPEN", "CLAIMED"];
+const PRIORITIES = ["LOW", "NORMAL", "HIGH", "URGENT"];
+const SNOWFLAKE = /^\d{15,22}$/;
+
+async function activeTicket(req, res) {
+  const tk = await prisma.ticket.findFirst({
+    where: { id: req.params.ticketId, serverId: req.params.serverId },
+    select: { id: true, serverId: true, status: true, channelId: true, panelId: true, priority: true },
+  });
+  if (!tk) { res.status(404).json({ error: "Ticket not found" }); return null; }
+  if (!ACTIVE_TICKET.includes(tk.status)) { res.status(409).json({ error: "This ticket is closed.", code: "TICKET_NOT_OPEN" }); return null; }
+  return tk;
+}
+// Ботът прави действието в Discord. `botError` = Discord отказа или ботът не отговаря.
+async function botTicketAction(data) {
+  const r = await notifyBotVerbose("TICKET_MANAGE", data);
+  return r && !r.botError && r.ok !== false ? { ok: true, warnings: r.warnings || [] } : { ok: false, error: r?.botError || r?.error || "bot error" };
+}
+const botFailed = (res, error) => res.status(502).json({
+  error: "The bot could not do this in Discord. Check that its role has Manage Channels and Manage Roles and sits above the roles it manages.",
+  code: "BOT_ACTION_FAILED", detail: String(error || "").slice(0, 200),
+});
+/** Същото чистене като /rename в бота: малки латински букви, цифри, тирета; без тире в краищата. */
+export function cleanTicketName(raw) {
+  return String(raw || "").toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "").slice(0, 100);
+}
+
+// ─── GET /api/tickets/:serverId/member-search?q= ──────────────────────────────
+// За „добави човек в тикета“ — по име, не по Discord ID на ръка. Връща само ID и имена.
+router.get("/:serverId/member-search", requireServerAdmin, async (req, res, next) => {
+  const q = String(req.query.q || "").trim();
+  if (q.length < 2 || q.length > 32) return res.status(400).json({ error: "Type at least 2 characters." });
+  try {
+    const r = await notifyBotVerbose("MEMBER_SEARCH", { guildId: req.params.serverId, q });
+    if (!r || r.botError || !Array.isArray(r.members)) return res.status(503).json({ error: "The bot could not search members right now.", code: "BOT_UNAVAILABLE" });
+    res.json({ members: r.members.slice(0, 10).map((m) => ({ id: String(m.id), name: String(m.name || "").slice(0, 100), username: String(m.username || "").slice(0, 100) })).filter((m) => SNOWFLAKE.test(m.id)) });
+  } catch (err) { next(err); }
+});
+
+// ─── PATCH /api/tickets/:serverId/:ticketId/priority ─────────────────────────
+router.patch("/:serverId/:ticketId/priority", requireServerAdmin, async (req, res, next) => {
+  const priority = String(req.body?.priority || "");
+  if (!PRIORITIES.includes(priority)) return res.status(400).json({ error: `priority must be one of ${PRIORITIES.join(", ")}` });
+  try {
+    const tk = await activeTicket(req, res);
+    if (!tk) return;
+    const u = await prisma.ticket.updateMany({
+      where: { id: tk.id, serverId: tk.serverId, status: { in: ACTIVE_TICKET } },
+      data: { priority, lastActivityAt: new Date() },
+    });
+    if (!u.count) return res.status(409).json({ error: "This ticket is closed.", code: "TICKET_NOT_OPEN" });
+    await writeAudit({ actorId: req.user.id, serverId: tk.serverId, action: "TICKET_PRIORITY_CHANGED", targetId: tk.id, metadata: { priority, from: tk.priority, via: "dashboard" } });
+    // Обявата в канала е като при командата — вторична: провал не връща записа назад.
+    if (tk.channelId) botTicketAction({ action: "priority", serverId: tk.serverId, channelId: tk.channelId, priority, actorId: req.user.id }).catch(() => {});
+    res.json(await prisma.ticket.findUnique({ where: { id: tk.id } }));
+  } catch (err) { next(err); }
+});
+
+// ─── POST /api/tickets/:serverId/:ticketId/rename ────────────────────────────
+router.post("/:serverId/:ticketId/rename", requireServerAdmin, requirePremium("ticket.rename"), async (req, res, next) => {
+  const name = cleanTicketName(req.body?.name);
+  if (!name) return res.status(400).json({ error: "Use letters a–z, digits or dashes.", code: "INVALID_NAME" });
+  try {
+    const tk = await activeTicket(req, res);
+    if (!tk) return;
+    if (!tk.channelId) return res.status(409).json({ error: "This ticket has no channel.", code: "NO_CHANNEL" });
+    const bot = await botTicketAction({ action: "rename", serverId: tk.serverId, channelId: tk.channelId, name, actorId: req.user.id });
+    if (!bot.ok) return botFailed(res, bot.error);
+    await prisma.ticket.updateMany({ where: { id: tk.id, serverId: tk.serverId }, data: { renamedFrom: name, lastActivityAt: new Date() } });
+    await writeAudit({ actorId: req.user.id, serverId: tk.serverId, action: "TICKET_RENAMED", targetId: tk.id, metadata: { newName: name, via: "dashboard" } });
+    res.json({ ok: true, name });
+  } catch (err) { next(err); }
+});
+
+// ─── POST /api/tickets/:serverId/:ticketId/move ──────────────────────────────
+const PANEL_ROUTING = { id: true, name: true, supportRoleIds: true, categoryOpenId: true, categoryId: true };
+router.post("/:serverId/:ticketId/move", requireServerAdmin, requirePremium("ticket.escalate"), async (req, res, next) => {
+  const panelId = String(req.body?.panelId || "");
+  if (!panelId || panelId.length > 40) return res.status(400).json({ error: "Choose a panel." });
+  try {
+    const tk = await activeTicket(req, res);
+    if (!tk) return;
+    const target = await prisma.panel.findFirst({ where: { id: panelId, serverId: tk.serverId }, select: PANEL_ROUTING });
+    if (!target) return res.status(404).json({ error: "Panel not found" });
+    if (target.id === tk.panelId) return res.status(409).json({ error: "The ticket is already in this panel.", code: "SAME_PANEL" });
+    if (!tk.channelId) return res.status(409).json({ error: "This ticket has no channel.", code: "NO_CHANNEL" });
+    const current = tk.panelId ? await prisma.panel.findUnique({ where: { id: tk.panelId }, select: PANEL_ROUTING }) : null;
+    const pick = (p) => (p ? { supportRoleIds: p.supportRoleIds || [], categoryOpenId: p.categoryOpenId || null, categoryId: p.categoryId || null } : null);
+    const bot = await botTicketAction({ action: "move", serverId: tk.serverId, channelId: tk.channelId, currentPanel: pick(current), targetPanel: pick(target), actorId: req.user.id });
+    if (!bot.ok) return botFailed(res, bot.error);
+    // Условно по стария панел: два едновременни „премести“ не се презаписват тихо.
+    const u = await prisma.ticket.updateMany({
+      where: { id: tk.id, serverId: tk.serverId, panelId: tk.panelId },
+      data: { panelId: target.id, lastActivityAt: new Date() },
+    });
+    if (!u.count) return res.status(409).json({ error: "The ticket was moved by someone else.", code: "MOVED_ELSEWHERE" });
+    await writeAudit({ actorId: req.user.id, serverId: tk.serverId, action: "TICKET_ESCALATED", targetId: tk.id, metadata: { fromPanelId: tk.panelId, toPanelId: target.id, via: "dashboard" } });
+    res.json({ ok: true, panel: { id: target.id, name: target.name }, warnings: bot.warnings });
+  } catch (err) { next(err); }
+});
+
+// ─── POST /api/tickets/:serverId/:ticketId/members ───────────────────────────
+router.post("/:serverId/:ticketId/members", requireServerAdmin, async (req, res, next) => {
+  const userId = String(req.body?.userId || "");
+  const action = req.body?.action;
+  if (!SNOWFLAKE.test(userId) || !["add", "remove"].includes(action)) return res.status(400).json({ error: "Choose a member and add or remove." });
+  try {
+    const tk = await activeTicket(req, res);
+    if (!tk) return;
+    if (!tk.channelId) return res.status(409).json({ error: "This ticket has no channel.", code: "NO_CHANNEL" });
+    const bot = await botTicketAction({ action, serverId: tk.serverId, channelId: tk.channelId, userId, actorId: req.user.id });
+    if (!bot.ok) return botFailed(res, bot.error);
+    await writeAudit({ actorId: req.user.id, serverId: tk.serverId, action: action === "add" ? "TICKET_MEMBER_ADDED" : "TICKET_MEMBER_REMOVED", targetId: tk.id, metadata: { userId, via: "dashboard" } });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
 
 router.get("/:serverId/:ticketId", requireServerAdmin, async (req, res, next) => {
   try {

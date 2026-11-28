@@ -29,6 +29,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ADD_ROLE = (await import(`../src/i18n/dashboard/${process.env.MP_LANG || "en"}.js`)).default["picker.addRole"];
 // Бутонът „Виж“ на резервно копие — също от речника, за да работи проверката на всеки език.
 const BACKUP_VIEW = (await import(`../src/i18n/dashboard/${process.env.MP_LANG || "en"}.js`)).default["backups.view"];
+const TICKET_MANAGE = (await import(`../src/i18n/dashboard/${process.env.MP_LANG || "en"}.js`)).default["tickets.manage.open"];
 const DIST = join(ROOT, "dist");
 const SHOTS = join(ROOT, "scripts", "mobile-proof-shots");
 
@@ -156,7 +157,11 @@ const FIX = {
     { id: "f1", name: "Staff Application", isApplication: true, questions: [], acceptRoleIds: [], denyRoleIds: [],
       removeRoleIds: [], managerRoleIds: [], pingRoleIds: [], published: true },
   ],
-  [`GET /api/tickets/${SID}`]: { tickets: [], total: 0 },
+  // Два тикета (отворен и поет) — за да има бутон „Управлявай“ и дълги имена за прелива.
+  [`GET /api/tickets/${SID}`]: { total: 2, tickets: [
+    { id: "tk000000000000000000000001", number: 41, status: "OPEN", priority: "HIGH", createdAt: new Date().toISOString(), panelId: "p1", panel: { name: "Общи въпроси и поддръжка на играчи" }, creator: { username: "a-very-long-username-that-should-wrap", avatar: null }, assignee: null, archiveUrl: null },
+    { id: "tk000000000000000000000002", number: 42, status: "CLAIMED", priority: "URGENT", createdAt: new Date().toISOString(), panelId: "p1", panel: { name: "Плащания" }, creator: { username: "ivan", avatar: null }, assignee: { username: "maria" }, archiveUrl: null },
+  ] },
   // v52 — канал-стръв (секцията на страница Verification); вътрешният път е /honeypot.
   [`GET /api/honeypot/${SID}`]: { enabled: true, channelId: "223", action: "softban", logChannelId: "224", dmUser: true, warningMessageId: "1", caughtCount: 17, lastCaughtAt: new Date().toISOString() },
   [`GET /api/reactionroles/${SID}`]: [],
@@ -272,6 +277,7 @@ const PAGES = [
   { path: `/dashboard/${SID}/game`, name: "game-companions", tab: "Companions" },
   { path: `/dashboard/${SID}/game`, name: "game-quests", tab: "Quests & mini-games" },
   { path: `/dashboard/${SID}/tickets`, name: "tickets" },
+  { path: `/dashboard/${SID}/tickets`, name: "tickets-manage", click: TICKET_MANAGE },
   { path: `/dashboard/${SID}/premium`, name: "premium" },
   { path: `/dashboard/${SID}/verification`, name: "verification" },
   { path: `/dashboard/${SID}/webhooks`, name: "webhooks" },

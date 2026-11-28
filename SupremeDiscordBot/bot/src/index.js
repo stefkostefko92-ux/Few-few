@@ -30,6 +30,7 @@ import { handleApplicationReviewed } from "./internal/applicationHandler.js";
 import { bootAllCustomClients, shutdownCustomClient, customClients, getClientForGuild } from "./services/clientManager.js";
 import { captureGuild } from "./utils/backupCapture.js";
 import { runRestoreJob, preflightGuild } from "./utils/backupRestoreJob.js";
+import { manageTicket, searchMembers } from "./utils/ticketManage.js";
 import { roleAssignabilityReason } from "./utils/reactionRoles.js";
 import { presentMembers } from "./utils/giveawayMembers.js";
 import { memberCacheWarmer } from "./utils/memberCacheWarm.js";
@@ -1382,6 +1383,39 @@ app.post("/internal/admin-broadcast", async (req, res) => {
 // messages to this user"), когато получателят е спрял DM от сървъри или е
 // блокирал бота. Отговаряме 200 с { ok:false, reason } — иначе backend-ът би
 // го отчел като провал и би ретрайвал известие, което никога няма да мине.
+// ─── Действия с тикет от таблото (паритет с командите, 28.11.2026) ─────────────
+// Backend-ът вече е проверил правата, Premium и че тикетът е на този сървър; тук каналът се
+// търси САМО в този сървър (guildChannel), така че чужд channelId не може да се пипне.
+const TICKET_ACTIONS = new Set(["priority", "rename", "add", "remove", "move"]);
+app.post("/internal/ticket-manage", async (req, res) => {
+  const b = req.body || {};
+  if (!TICKET_ACTIONS.has(b.action)) return res.status(400).json({ ok: false, error: "unknown action" });
+  if (["add", "remove"].includes(b.action) && !/^\d{15,22}$/.test(String(b.userId || ""))) return res.status(400).json({ ok: false, error: "invalid userId" });
+  try {
+    const channel = await guildChannel(b.serverId, b.channelId);
+    if (!channel) return res.status(404).json({ ok: false, error: "Channel not found" });
+    const out = await manageTicket({ ...b, guild: channel.guild, channel });
+    res.json(out);
+  } catch (err) {
+    console.error("[ticket-manage]", b.action, err?.code || err?.message);
+    res.status(502).json({ ok: false, error: err?.message || "Discord refused", code: err?.code ?? null });
+  }
+});
+
+// Търсене на член по име (за „добави човек“ в таблото). Само ID и имена излизат.
+app.post("/internal/member-search", async (req, res) => {
+  const q = String(req.body?.q || "").trim().slice(0, 32);
+  if (q.length < 2) return res.status(400).json({ ok: false, error: "query too short" });
+  try {
+    const guild = client.guilds.cache.get(req.body?.guildId) || await client.guilds.fetch(req.body?.guildId).catch(() => null);
+    if (!guild) return res.status(404).json({ ok: false, error: "Guild not found" });
+    res.json({ ok: true, members: await searchMembers(guild, q) });
+  } catch (err) {
+    console.error("[member-search]", err?.message);
+    res.status(500).json({ ok: false, error: "search failed" });
+  }
+});
+
 // ─── Резервни копия на сървъра (docs/BACKUP_SPEC.md) ─────────────────────────
 // Сървърът може да се обслужва от white-label клиент — първо него, после главния.
 async function backupGuild(guildId) {

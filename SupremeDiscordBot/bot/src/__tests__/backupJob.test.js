@@ -110,3 +110,30 @@ describe("preflightGuild (Б11)", () => {
     });
   });
 });
+
+describe("ревю: свеж кеш преди старта", () => {
+  it("преди проверката на правата и възстановяването чете бота, ролите и каналите наново", async () => {
+    const g = guild();
+    const order = [];
+    g.members.fetchMe = vi.fn(async () => { order.push("me"); return g.members.me; });
+    g.roles.fetch = vi.fn(async () => { order.push("roles"); return g.roles.cache; });
+    g.channels.fetch = vi.fn(async () => { order.push("channels"); return g.channels.cache; });
+    const origCreate = g.roles.create;
+    g.roles.create = vi.fn(async (o) => { order.push("create"); return origCreate(o); });
+    await runRestoreJob(RID, { api: apiFake(), resolveGuild: async () => g, retryDelayMs: 0 });
+    expect(order.slice(0, 3).sort()).toEqual(["channels", "me", "roles"]);
+    expect(order.indexOf("create")).toBeGreaterThan(2);
+  });
+});
+
+describe("ревю на Кодаджията: докладите един след друг", () => {
+  it("пулсът и докладът за стъпка не се застъпват (никога два доклада едновременно)", async () => {
+    const g = guild();
+    let inFlight = 0, maxInFlight = 0;
+    const api = apiFake({ postImpl: async () => { inFlight += 1; maxInFlight = Math.max(maxInFlight, inFlight); await new Promise((r) => setTimeout(r, 5)); inFlight -= 1; return { data: { ok: true, stop: false } }; } });
+    // по-бърз пулс, за да се застъпи с докладите
+    await runRestoreJob(RID, { api, resolveGuild: async () => g, retryDelayMs: 0, heartbeatMs: 1 });
+    expect(maxInFlight).toBe(1);
+  });
+});
+

@@ -19,7 +19,7 @@ import { writeAudit } from "../lib/auditLog.js";
 import { getServerTier } from "../lib/premium.js";
 import { captureFromBot, preflightFromBot, kickRestore } from "../lib/backupBot.js";
 import {
-  createBackup, backupLimits, getServerBackup, openBackup, publicBackup,
+  createBackup, backupLimits, getServerBackup, openBackup, publicBackup, isExpired, liveWhere,
   BACKUP_PUBLIC_SELECT, MANUAL_COOLDOWN_MS,
 } from "../lib/backups.js";
 import { summarizeSnapshot, planRestore, snapshotIds } from "../lib/backupSnapshot.js";
@@ -61,7 +61,7 @@ async function loadRestoreSource(req, res) {
   const row = await prisma.serverBackup.findUnique({ where: { id: backupId } });
   const target = req.params.serverId;
   const sameServer = !!row && row.serverId === target;
-  if (!row || (!sameServer && (!row.ownerId || row.ownerId !== req.user.id))) {
+  if (!row || isExpired(row) || (!sameServer && (!row.ownerId || row.ownerId !== req.user.id))) {
     res.status(404).json({ error: "Backup not found", code: "NOT_FOUND" });
     return null;
   }
@@ -78,7 +78,7 @@ async function buildPlan(target, { snapshot, sameServer }) {
 router.get("/mine", async (req, res, next) => {
   try {
     const rows = await prisma.serverBackup.findMany({
-      where: { ownerId: req.user.id },
+      where: { ownerId: req.user.id, ...liveWhere() },
       orderBy: { createdAt: "desc" },
       select: BACKUP_PUBLIC_SELECT,
       take: 300,
@@ -103,7 +103,7 @@ router.get("/server/:serverId", requireServerAdmin, async (req, res, next) => {
   const serverId = req.params.serverId;
   try {
     const [backups, tier, lastRestore] = await Promise.all([
-      prisma.serverBackup.findMany({ where: { serverId }, orderBy: { createdAt: "desc" }, select: BACKUP_PUBLIC_SELECT }),
+      prisma.serverBackup.findMany({ where: { serverId, ...liveWhere() }, orderBy: { createdAt: "desc" }, select: BACKUP_PUBLIC_SELECT }),
       getServerTier(serverId),
       prisma.backupRestore.findFirst({ where: { targetServerId: serverId }, orderBy: { createdAt: "desc" }, select: RESTORE_PUBLIC_SELECT }),
     ]);
@@ -139,7 +139,10 @@ router.post("/server/:serverId", requireServerAdmin, async (req, res, next) => {
     if (!cap?.ok) return res.status(503).json({ error: "The bot could not read the server right now. Nothing was saved — try again in a minute.", code: "BOT_UNAVAILABLE" });
 
     const out = await createBackup(serverId, { kind: "MANUAL", tier, snapshot: cap.snapshot, createdBy: req.user.id });
-    if (!out.ok) return res.status(out.status).json({ error: out.error || out.code, code: out.code, limit: out.limit });
+    if (!out.ok) {
+      if (out.retryAfterSec) res.set("Retry-After", String(out.retryAfterSec));
+      return res.status(out.status).json({ error: out.error || out.code, code: out.code, limit: out.limit, retryAfterSec: out.retryAfterSec });
+    }
 
     await writeAudit({
       actorId: req.user.id, serverId, action: "BACKUP_CREATED", targetId: out.backup.id,

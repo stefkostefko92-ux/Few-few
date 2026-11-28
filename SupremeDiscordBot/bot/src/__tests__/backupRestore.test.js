@@ -239,3 +239,61 @@ describe("Б14 спиране от таблото", () => {
     expect(g.channels.create).not.toHaveBeenCalled();
   });
 });
+
+// ─── Ревю на Дискорджията (28.11.2026) ────────────────────────────────────────
+describe("ревю: форумите, отказите, редът на ролите", () => {
+  it("„изисква етикет“ на форум се връща с edit след създаването (create няма flags)", async () => {
+    const g = targetGuild();
+    const edits = [];
+    const orig = g.channels.create;
+    g.channels.create = vi.fn(async (o) => { const c = await orig(o); c.edit = vi.fn(async (e) => { edits.push([o.name, e]); return c; }); return c; });
+    await runRestore({ guild: g, snapshot: snapshot(), mode: "NEW", idMap: {}, report: reporter() });
+    expect(edits).toEqual([["форум", expect.objectContaining({ flags: 16 })]]);
+  });
+  it("50035 за друго поле (не за типа) → НЕ става текстов канал, а бележка", async () => {
+    const g = targetGuild({ failChannel: (o) => (o.type === 15 ? Object.assign(new Error("Invalid Form Body"), { code: 50035, rawError: { errors: { available_tags: {} } } }) : null) });
+    const report = reporter();
+    await runRestore({ guild: g, snapshot: snapshot(), mode: "NEW", idMap: {}, report });
+    expect(g.channels.create.mock.calls.filter(([o]) => o.name === "форум").map(([o]) => o.type)).toEqual([15]);
+    expect(report.calls.flatMap((c) => c.warnings || [])).toContainEqual(expect.objectContaining({ name: "форум", code: "50035" }));
+  });
+  it("50035 за типа → текстов", async () => {
+    const g = targetGuild({ failChannel: (o) => (o.type === 15 ? Object.assign(new Error("Invalid Form Body"), { code: 50035, rawError: { errors: { type: {} } } }) : null) });
+    await runRestore({ guild: g, snapshot: snapshot(), mode: "NEW", idMap: {}, report: reporter() });
+    expect(g.channels.create.mock.calls.filter(([o]) => o.name === "форум").map(([o]) => o.type)).toEqual([15, 0]);
+  });
+  it("в същия сървър създадените роли отиват на старото си място (под ролята на бота)", async () => {
+    const g = targetGuild({ id: G, roles: [{ id: ID(1), name: "Админ" }] });
+    g.members = { me: { roles: { highest: { position: 3 } } } };
+    g.roles.setPositions = vi.fn(async () => ({}));
+    await runRestore({ guild: g, snapshot: snapshot(), mode: "SAME", idMap: {}, report: reporter() });
+    // „Член“ е била на позиция 1; ботът е на 3 → може
+    expect(g.roles.setPositions).toHaveBeenCalledWith([{ role: expect.any(String), position: 1 }]);
+  });
+  it("в нов сървър редът вече е верен — не се пипа", async () => {
+    const g = targetGuild();
+    g.roles.setPositions = vi.fn(async () => ({}));
+    await runRestore({ guild: g, snapshot: snapshot(), mode: "NEW", idMap: {}, report: reporter() });
+    expect(g.roles.setPositions).not.toHaveBeenCalled();
+  });
+  it("ID-тата с различна дължина се сравняват като числа", () => {
+    const g = sourceGuild();
+    const a = { id: "99999999999999999", type: 0, name: "a", parentId: null, rawPosition: 7, isThread: () => false, permissionOverwrites: { cache: new Map() } };
+    const b = { id: "100000000000000000", type: 0, name: "b", parentId: null, rawPosition: 7, isThread: () => false, permissionOverwrites: { cache: new Map() } };
+    g.channels.cache.set(a.id, a); g.channels.cache.set(b.id, b);
+    const s = snapshotGuild(g, { now: new Date("2026-11-28T10:00:00Z") });
+    const order = s.channels.filter((c) => c.position === 7).map((c) => c.name);
+    expect(order).toEqual(["a", "b"]);
+  });
+});
+
+describe("ревю на Кодаджията: сцени", () => {
+  it("сцена с лимит 1000 се създава с 1000 (до 10 000 за сцени, до 99 за гласови)", async () => {
+    const s = snapshot();
+    s.channels.push({ id: ID(41), type: 13, name: "Сцена", parentId: null, position: 4, userLimit: 1000, bitrate: 64000, overwrites: [] });
+    const g = targetGuild();
+    await runRestore({ guild: g, snapshot: s, mode: "NEW", idMap: {}, report: reporter() });
+    expect(g.channels.create.mock.calls.find(([o]) => o.name === "Сцена")[0]).toMatchObject({ type: 13, userLimit: 1000, bitrate: 64000 });
+  });
+});
+

@@ -19,7 +19,9 @@ const REQUIRE_TAG = 1 << 4;              // ChannelFlags.RequireTag
 const bits = (b) => (b?.bitfield ?? 0n).toString();
 const cut = (s, n) => String(s ?? "").slice(0, n);
 const orNull = (v) => (v === undefined ? null : v);
-const byPosition = (a, b) => (a.rawPosition ?? 0) - (b.rawPosition ?? 0) || (a.id < b.id ? -1 : 1);
+// ID-тата (снежинки) са с различна дължина — сравняват се като числа, не като низове.
+const idOrder = (a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : BigInt(a.id) > BigInt(b.id) ? 1 : 0);
+const byPosition = (a, b) => (a.rawPosition ?? 0) - (b.rawPosition ?? 0) || idOrder(a, b);
 
 function overwritesOf(channel, guildId) {
   const out = [];
@@ -84,7 +86,7 @@ export function snapshotGuild(guild, { roles, channels, now = new Date() } = {})
 
   const roleList = [...roleColl.values()]
     .filter((r) => r && r.id !== guild.id && !r.managed)
-    .sort((a, b) => (b.rawPosition ?? 0) - (a.rawPosition ?? 0) || (a.id < b.id ? -1 : 1))
+    .sort((a, b) => (b.rawPosition ?? 0) - (a.rawPosition ?? 0) || idOrder(a, b))
     .map((r) => ({
       id: r.id,
       name: cut(r.name, 100),

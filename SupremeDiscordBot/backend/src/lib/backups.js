@@ -59,28 +59,37 @@ export async function createBackup(serverId, { kind, tier, snapshot, createdBy =
   if (parsed.snapshot.guild.id !== serverId) return { ok: false, status: 502, code: "WRONG_SERVER" };
 
   const limits = backupLimits(tier);
-  if (kind === "MANUAL") {
-    const manual = await prisma.serverBackup.count({ where: { serverId, kind: "MANUAL" } });
-    if (manual >= limits.manual) return { ok: false, status: 409, code: "BACKUP_LIMIT", limit: limits.manual };
-  }
-
   const tickets = await prisma.ticket.findMany({ where: { serverId, channelId: { not: null } }, select: { channelId: true } });
   const clean = stripForStorage(parsed.snapshot, { excludeChannelIds: (tickets || []).map((t) => t.channelId) });
   const json = JSON.stringify(clean);
+  const data = {
+    serverId,
+    guildName: clean.guild.name,
+    ownerId: parsed.snapshot.guild.ownerId || null, // от проверената снимка; в копието е null
+    createdBy: kind === "MANUAL" ? createdBy : null,
+    kind,
+    data: encrypt(json),
+    ...snapshotCounts(clean),
+    sizeBytes: Buffer.byteLength(json, "utf8"),
+  };
 
-  const backup = await prisma.serverBackup.create({
-    data: {
-      serverId,
-      guildName: clean.guild.name,
-      ownerId: clean.guild.ownerId || null,
-      createdBy: kind === "MANUAL" ? createdBy : null,
-      kind,
-      data: encrypt(json),
-      ...snapshotCounts(clean),
-      sizeBytes: Buffer.byteLength(json, "utf8"),
-    },
-    select: BACKUP_PUBLIC_SELECT,
-  });
+  if (kind === "MANUAL") {
+    // Лимитът (Б4) и паузата (Б5) се броят ПОД КЛЮЧ за сървъра: иначе два едновременни POST
+    // минават и двата проверката и записват и двата (ревю, 28.11.2026). Снимката вече е
+    // направена — в транзакцията са само няколко бързи заявки.
+    return prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`server-backup:${serverId}`}))`;
+      const manual = await tx.serverBackup.count({ where: { serverId, kind: "MANUAL" } });
+      if (manual >= limits.manual) return { ok: false, status: 409, code: "BACKUP_LIMIT", limit: limits.manual };
+      const last = await tx.serverBackup.findFirst({ where: { serverId, kind: "MANUAL" }, orderBy: { createdAt: "desc" }, select: { createdAt: true } });
+      const since = last ? Date.now() - new Date(last.createdAt).getTime() : Infinity;
+      if (since < MANUAL_COOLDOWN_MS) return { ok: false, status: 429, code: "BACKUP_COOLDOWN", retryAfterSec: Math.ceil((MANUAL_COOLDOWN_MS - since) / 1000) };
+      const backup = await tx.serverBackup.create({ data, select: BACKUP_PUBLIC_SELECT });
+      return { ok: true, backup: publicBackup(backup) };
+    });
+  }
+
+  const backup = await prisma.serverBackup.create({ data, select: BACKUP_PUBLIC_SELECT });
 
   if (kind === "AUTO") {
     const autos = await prisma.serverBackup.findMany({
@@ -94,10 +103,15 @@ export async function createBackup(serverId, { kind, tier, snapshot, createdBy =
   return { ok: true, backup: publicBackup(backup) };
 }
 
-/** Копие на ТОЗИ сървър или null (Б7 — чуждото е 404, не 403). */
+/** Изтекло, но още неизтрито (нощната чистка не е минала) — за таблото вече го няма. */
+export const isExpired = (row, now = new Date()) => !!row?.expiresAt && new Date(row.expiresAt) <= now;
+/** Условие за живите копия (без изтеклите). */
+export const liveWhere = (now = new Date()) => ({ OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] });
+
+/** Копие на ТОЗИ сървър или null (Б7 — чуждото е 404, не 403; изтеклото — също). */
 export async function getServerBackup(serverId, backupId) {
   const row = await prisma.serverBackup.findUnique({ where: { id: backupId } });
-  return row && row.serverId === serverId ? row : null;
+  return row && row.serverId === serverId && !isExpired(row) ? row : null;
 }
 
 /** Разшифрова и проверява наново. Хвърля, ако копието е повредено. */
@@ -116,8 +130,9 @@ export function markServerBackupsExpiring(serverId, now = new Date()) {
 }
 
 /** Б17 — ботът е поканен пак: срокът пада. */
-export function clearServerBackupsExpiry(serverId) {
-  return prisma.serverBackup.updateMany({ where: { serverId, expiresAt: { not: null } }, data: { expiresAt: null } });
+export function clearServerBackupsExpiry(serverId, now = new Date()) {
+  // Само още живите: изтеклото не се „съживява“ — то чака нощната чистка.
+  return prisma.serverBackup.updateMany({ where: { serverId, expiresAt: { gt: now } }, data: { expiresAt: null } });
 }
 
 /** Б17 — изтеклите копия и старата история на възстановяванията. */

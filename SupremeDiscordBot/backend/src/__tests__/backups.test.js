@@ -476,3 +476,50 @@ describe("Б19 одит", () => {
     expect(audited("BACKUP_DELETED")).toHaveLength(1);
   });
 });
+
+// ─── Ревю на Кодаджията (28.11.2026) ──────────────────────────────────────────
+describe("ревю: лични данни, тавани, срок, състезания", () => {
+  it("чл. 17: Discord ID на собственика НЕ е вътре в шифрованото копие (само в колоната)", async () => {
+    await request(app()).post(`/api/backups/server/${SID}`).send({});
+    expect(JSON.parse(decrypt(storedData)).guild.ownerId).toBeNull();
+    expect(prismaMock.serverBackup.create.mock.calls[0][0].data.ownerId).toBe(ME);
+  });
+  it("сцена с лимит над 99 (до 10 000) е валидна; гласов над 99 — не", () => {
+    const stage = { id: ID(40), type: 13, name: "Сцена", parentId: null, position: 9, userLimit: 1000, overwrites: [] };
+    expect(parseSnapshot({ ...snap(), channels: [stage] }).ok).toBe(true);
+    expect(parseSnapshot({ ...snap(), channels: [{ ...stage, userLimit: 10001 }] }).ok).toBe(false);
+    expect(parseSnapshot({ ...snap(), channels: [{ ...stage, type: 2, userLimit: 100 }] }).ok).toBe(false);
+  });
+  it("изтекло (още неизтрито) копие не се показва и не се връща", async () => {
+    const { encrypt } = await import("../lib/crypto.js");
+    prismaMock.serverBackup.findUnique.mockResolvedValue(row({ expiresAt: new Date(Date.now() - 1000), data: encrypt(JSON.stringify(snap())) }));
+    expect((await request(app()).get(`/api/backups/server/${SID}/cbackup00000000000000000001`)).status).toBe(404);
+    const r = await request(app()).post(`/api/backups/server/${SID}/restore`).send({ backupId: "cbackup00000000000000000001", confirm: true });
+    expect(r.status).toBe(404);
+    await request(app()).get(`/api/backups/server/${SID}`);
+    const listWhere = prismaMock.serverBackup.findMany.mock.calls.at(-1)[0].where;
+    expect(JSON.stringify(listWhere)).toContain("expiresAt");
+  });
+  it("ръчното копие брои лимита и паузата под ключ за сървъра (два едновременни POST не минават и двата)", async () => {
+    await request(app()).post(`/api/backups/server/${SID}`).send({});
+    expect(prismaMock.$transaction).toHaveBeenCalled();
+    const raw = prismaMock.$executeRaw.mock.calls.map((c) => [].concat(c[0]).join("?")).join(" ");
+    expect(raw).toMatch(/pg_advisory_xact_lock/);
+  });
+  it("празен доклад (пулс) пише само времето — не пипа картата", async () => {
+    prismaMock.backupRestore.findUnique.mockResolvedValue({ id: "crestore000000000000000001", status: "RUNNING", idMap: { roles: { [ID(1)]: "600000000000000001" } }, warnings: [], counts: {}, updatedAt: new Date() });
+    const r = await request(app()).post("/api/bot/backup-restores/crestore000000000000000001/progress").send({});
+    expect(r.body.stop).toBe(false);
+    const q = prismaMock.backupRestore.updateMany.mock.calls.at(-1)[0];
+    expect(Object.keys(q.data)).toEqual(["heartbeatAt"]);
+  });
+  it("сливането на доклада е под ключ на реда (SELECT … FOR UPDATE в транзакция)", async () => {
+    prismaMock.backupRestore.findUnique.mockResolvedValue({ id: "crestore000000000000000001", status: "RUNNING", idMap: { roles: { [ID(1)]: "600000000000000001" } }, warnings: [], counts: {} });
+    const r = await request(app()).post("/api/bot/backup-restores/crestore000000000000000001/progress").send({ idMap: { roles: { [ID(2)]: "600000000000000002" } } });
+    expect(r.body.stop).toBe(false);
+    expect(prismaMock.$transaction).toHaveBeenCalled();
+    const raw = prismaMock.$queryRaw.mock.calls.map((c) => [].concat(c[0]).join("?")).join(" ");
+    expect(raw).toMatch(/FOR UPDATE/);
+    expect(prismaMock.backupRestore.updateMany.mock.calls.at(-1)[0].data.idMap.roles).toEqual({ [ID(1)]: "600000000000000001", [ID(2)]: "600000000000000002" });
+  });
+});

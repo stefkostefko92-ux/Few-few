@@ -68,30 +68,50 @@ router.post("/backup-restores/:id/progress", async (req, res, next) => {
   const parsed = progressBody.safeParse(req.body || {});
   if (!parsed.success) return res.status(400).json({ error: "Invalid progress report" });
   const body = parsed.data;
+  const id = req.params.id;
   try {
-    const r = await prisma.backupRestore.findUnique({ where: { id: req.params.id } });
-    if (!r) return res.status(404).json({ error: "Restore not found" });
-    if (r.status !== "RUNNING") return res.json({ ok: true, stop: true, status: r.status });
+    // Пулс (празен доклад): само времето. Да чете и пише картата би означавало да се състезава
+    // с доклада за стъпка и да върне старата карта отгоре (ревю на Кодаджията, 28.11.2026).
+    const heartbeat = !body.idMap && !(body.warnings && body.warnings.length) && !body.counts && !body.status;
+    if (heartbeat) {
+      const u = await prisma.backupRestore.updateMany({ where: { id, status: "RUNNING" }, data: { heartbeatAt: new Date() } });
+      if (u.count) return res.json({ ok: true, stop: false });
+      const cur = await prisma.backupRestore.findUnique({ where: { id }, select: { status: true } });
+      if (!cur) return res.status(404).json({ error: "Restore not found" });
+      return res.json({ ok: true, stop: true, status: cur.status });
+    }
 
-    const prev = r.idMap && typeof r.idMap === "object" ? r.idMap : {};
-    const idMap = {
-      roles: { ...(prev.roles || {}), ...(body.idMap?.roles || {}) },
-      channels: { ...(prev.channels || {}), ...(body.idMap?.channels || {}) },
-    };
-    const warnings = [...(Array.isArray(r.warnings) ? r.warnings : []), ...(body.warnings || [])].slice(0, MAX_WARNINGS);
-    const now = new Date();
-    const data = { idMap, warnings, heartbeatAt: now, ...(body.counts ? { counts: { ...(r.counts || {}), ...body.counts } } : {}) };
-    if (body.status) Object.assign(data, { status: body.status, finishedAt: now, activeServerId: null });
-
-    const u = await prisma.backupRestore.updateMany({ where: { id: r.id, status: "RUNNING" }, data });
-    if (!u.count) return res.json({ ok: true, stop: true });
+    // Сливането е под ключ на РЕДА (SELECT … FOR UPDATE в транзакция): докладите за един и същ
+    // restore минават един след друг и добавка към картата никога не се губи. Първата версия
+    // сравняваше `updatedAt` — точността е милисекунда и при натоварване два записа в една и
+    // съща милисекунда минаваха и двата (хванато от интеграционния тест срещу Postgres).
+    const out = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "backup_restores" WHERE "id" = ${id} FOR UPDATE`;
+      const r = await tx.backupRestore.findUnique({ where: { id } });
+      if (!r) return { notFound: true };
+      if (r.status !== "RUNNING") return { stop: true, status: r.status };
+      const prev = r.idMap && typeof r.idMap === "object" ? r.idMap : {};
+      const idMap = {
+        roles: { ...(prev.roles || {}), ...(body.idMap?.roles || {}) },
+        channels: { ...(prev.channels || {}), ...(body.idMap?.channels || {}) },
+      };
+      const warnings = [...(Array.isArray(r.warnings) ? r.warnings : []), ...(body.warnings || [])].slice(0, MAX_WARNINGS);
+      const now = new Date();
+      const data = { idMap, warnings, heartbeatAt: now, ...(body.counts ? { counts: { ...(r.counts || {}), ...body.counts } } : {}) };
+      if (body.status) Object.assign(data, { status: body.status, finishedAt: now, activeServerId: null });
+      const u = await tx.backupRestore.updateMany({ where: { id, status: "RUNNING" }, data });
+      return u.count ? { r, data } : { stop: true };
+    });
+    if (out.notFound) return res.status(404).json({ error: "Restore not found" });
+    if (out.stop) return res.json({ ok: true, stop: true, status: out.status });
+    const { r, data } = out;
 
     if (body.status) {
       await writeAudit({
         actorId: null, actorTag: "SYSTEM", serverId: r.targetServerId,
         action: body.status === "DONE" ? "BACKUP_RESTORE_FINISHED" : "BACKUP_RESTORE_FAILED",
         targetId: r.id,
-        metadata: { backupId: r.backupId, mode: r.mode, counts: data.counts || r.counts || {}, warnings: warnings.length },
+        metadata: { backupId: r.backupId, mode: r.mode, counts: data.counts || r.counts || {}, warnings: data.warnings.length },
       });
     }
     res.json({ ok: true, stop: false });

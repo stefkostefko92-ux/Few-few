@@ -65,7 +65,8 @@ const channel = z.object({
   nsfw: z.boolean().optional(),
   rateLimitPerUser: count(21600).nullable().optional(),
   bitrate: count(384000).nullable().optional(),
-  userLimit: count(99).nullable().optional(),
+  // Discord: до 99 за гласов, до 10 000 за сцена (channel.md, Modify Channel → user_limit).
+  userLimit: count(10000).nullable().optional(),
   rtcRegion: z.string().max(64).nullable().optional(),
   videoQualityMode: count(2).nullable().optional(),
   defaultAutoArchiveDuration: count(10080).nullable().optional(),
@@ -86,7 +87,8 @@ const snapshotSchema = z.object({
   roles: z.array(role).max(MAX_ROLES),
   categories: z.array(category).max(MAX_CHANNELS),
   channels: z.array(channel).max(MAX_CHANNELS),
-}).refine((s) => s.categories.length + s.channels.length <= MAX_CHANNELS, { message: "too many channels" });
+}).refine((s) => s.categories.length + s.channels.length <= MAX_CHANNELS, { message: "too many channels" })
+  .refine((s) => s.channels.every((c) => c.type !== 2 || (c.userLimit ?? 0) <= 99), { message: "voice userLimit > 99" });
 
 /** @returns {{ok:true, snapshot:object} | {ok:false, error:string}} */
 export function parseSnapshot(raw) {
@@ -104,6 +106,9 @@ export function stripForStorage(snapshot, { excludeChannelIds = [] } = {}) {
   const keepOw = (list) => (list || []).filter((o) => o.kind === "role" || o.kind === "everyone");
   return {
     ...snapshot,
+    // Discord ID на собственика живее САМО в колоната ownerId — там чл. 17 го маха. Вътре в
+    // шифрованото копие не му е мястото (ревю на Кодаджията, 28.11.2026).
+    guild: { ...snapshot.guild, ownerId: null },
     categories: snapshot.categories.map((c) => ({ ...c, overwrites: keepOw(c.overwrites) })),
     channels: snapshot.channels
       .filter((c) => !skip.has(c.id))

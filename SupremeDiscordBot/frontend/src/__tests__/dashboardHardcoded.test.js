@@ -81,7 +81,7 @@ const SCREENS = [
       "PageTabs.jsx", "PageHeader.jsx", "BaitCard.jsx", "PremiumBadge.jsx"].map((f) => join("components", f)),
   // Разделите и картите с настройки живеят в свои папки — всеки нов файл там
   // влиза в гейта сам, без да го дописваме на ръка.
-  ...["automation", "settings", "backups"].flatMap((dir) =>
+  ...["automation", "settings", "backups", "tickets"].flatMap((dir) =>
     readdirSync(join(SRC, "components", dir)).filter((f) => f.endsWith(".jsx")).map((f) => join("components", dir, f))),
 ];
 // Собствени имена — фирмите-обработващи в страницата за поверителност и
