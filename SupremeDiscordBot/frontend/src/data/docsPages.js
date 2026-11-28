@@ -1348,7 +1348,118 @@ export const DOCS_PAGES = [
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 12 · troubleshooting (how-to)
+  // 12 · server-backups (how-to) — v57, сверено с backend/src/lib/backups.js,
+  //      lib/backupSnapshot.js, routes/backups.js и bot/src/utils/backupRestore.js
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    slug: "server-backups",
+    kind: "how-to",
+    nav: "Server backups",
+    title: "Back Up and Restore Your Discord Server",
+    description:
+      "Back up your Discord server's roles, categories, channels and permissions, then restore them after a raid or into a new server if the old one was deleted.",
+    keywords: ["discord server backup", "discord backup bot", "restore deleted discord server", "discord anti nuke", "backup discord roles and channels", "carbon stealth"],
+    answer:
+      "Supreme Bot keeps a copy of your roles, categories, channels and their permissions. If someone deletes channels or roles, restore only what is missing. If the whole server is deleted, restore the copy into a new server.",
+    updated: "2026-11-28",
+    requires: [
+      "The bot is in your server",
+      "To restore: you own the server or have Administrator, and the bot's role has Administrator (see Why the bot needs Administrator below)",
+    ],
+    sections: [
+      {
+        id: "what-is-saved",
+        heading: "What a backup contains",
+        list: [
+          "Roles: name, color, whether they show separately and can be mentioned, permissions and order.",
+          "The permissions of @everyone.",
+          "Categories and channels: text, voice, announcement, stage, forum and media, with their topic, order, slow mode, age restriction, bitrate, user limit and forum tags.",
+          "Channel permissions for roles and for @everyone.",
+        ],
+        note: "Not saved: messages, threads, members and their roles, permissions set for one member, emojis, stickers, webhooks, invites, bans, the server name and icon, and the channels of tickets. Ticket conversations live in the ticket transcripts.",
+      },
+      {
+        id: "make-a-backup",
+        heading: "Make a backup",
+        steps: [
+          "Open Protection → Backups.",
+          "Click Back up now. The bot reads the server as it is at that moment, which takes a few seconds.",
+          "Click View on a backup to see its categories, channels and roles.",
+        ],
+        table: {
+          head: ["Plan", "Manual backups kept", "Automatic backup"],
+          rows: [
+            ["Free", "2", "Every 7 days, the last 1 kept"],
+            ["Premium", "25", "Every day, the last 7 kept"],
+          ],
+        },
+        body: [
+          "A new manual backup can be made every 10 minutes. When the manual limit is reached, delete an older backup first: manual backups are never deleted on their own. Automatic backups replace the oldest automatic one.",
+          "Restoring works on every plan, Free included.",
+        ],
+      },
+      {
+        id: "restore-same-server",
+        heading: "Bring back deleted channels and roles",
+        steps: [
+          "Open Protection → Backups and click Restore on the backup you want.",
+          "Read the check: how many roles and channels are missing and will be created.",
+          "Type the server name to confirm and click Start restore.",
+          "Follow the progress on the same page. You can stop the restore at any time; what was already created stays.",
+        ],
+        body: [
+          "Only what is missing is created. The restore does not delete anything, and roles and channels that still exist are not changed. New roles get the same order and the restored channels get the permissions from the backup.",
+        ],
+      },
+      {
+        id: "restore-deleted-server",
+        heading: "Restore a deleted server",
+        steps: [
+          "In Discord, create a new server.",
+          "In the dashboard, open My server backups (on the All servers screen) and click Invite with Administrator. Add the bot to the new server.",
+          "Next to the backup of the old server, choose the new server and click Restore.",
+          "Type the new server's name to confirm and click Start restore.",
+        ],
+        body: [
+          "Everything in the backup is created in the new server, and @everyone gets the permissions it had. The restore leaves the channels Discord created for the new server in place, so you may want to remove them.",
+        ],
+        note: "Only the person who owned the server when the backup was made can restore it into a different server. After the bot leaves a server, or the server is deleted, its backups are kept for 90 days.",
+      },
+      {
+        id: "why-administrator",
+        heading: "Why the bot needs Administrator",
+        body: [
+          "Discord lets a bot give a role only the permissions the bot has itself, and only an administrator can put Manage Roles into a channel's permissions. Without Administrator, part of the permissions would be left out without a word, so the restore does not start. Give the bot's role Administrator for the restore and take it away when the restore is done.",
+          "The bot creates the roles below its own role. Roles of other bots above it are not touched.",
+        ],
+      },
+      {
+        id: "edge-cases",
+        heading: "What happens in special cases",
+        table: {
+          head: ["Case", "What the restore does"],
+          rows: [
+            ["Announcement or stage channel, and the new server is not a Community server", "Creates a text or voice channel instead and notes it."],
+            ["The server already has 250 roles or 500 channels", "Creates what fits and lists the rest."],
+            ["Roles of bots and integrations, the booster role", "Not in the backup. Discord creates them when the bot or integration is added."],
+            ["Forum tag with a custom emoji", "Keeps the tag without the emoji. A custom emoji belongs to the old server."],
+            ["Voice channel bitrate above the new server's limit", "Lowers it to the highest the server allows."],
+            ["The bot restarts during a restore", "Continues where it stopped, without creating anything twice."],
+          ],
+        },
+      },
+    ],
+    faq: [
+      { q: "Does the backup include messages?", a: "No. Only the structure: roles, categories, channels and their permissions." },
+      { q: "Can someone else restore my server's backup into their server?", a: "No. Restoring into a different server is allowed only for the person who owned the server when the backup was made." },
+      { q: "Do I need Premium to restore?", a: "No. Any backup that exists can be restored on every plan. Premium keeps more backups and makes one every day." },
+      { q: "Will a restore delete anything?", a: "No. A restore only creates roles and channels. It does not delete or change what is already there." },
+    ],
+    related: ["/docs/permissions", "/docs/verification-and-bait", "/docs/troubleshooting"],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 13 · troubleshooting (how-to)
   // ─────────────────────────────────────────────────────────────────────────
   {
     slug: "troubleshooting",

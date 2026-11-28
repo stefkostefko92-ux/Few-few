@@ -99,6 +99,17 @@ export const logout = () => api.post("/auth/logout");
 // ─── Servers ──────────────────────────────────────────────────────────────────
 export const getServers = () => api.get("/servers").then((r) => r.data);
 export const getServer = (id) => api.get(`/servers/${id}`).then((r) => r.data);
+
+// ─── v57 Резервни копия на сървъра (docs/BACKUP_SPEC.md) ─────────────────────
+export const getBackups = (serverId) => api.get(`/backups/server/${serverId}`).then((r) => r.data);
+export const createBackup = (serverId) => api.post(`/backups/server/${serverId}`).then((r) => r.data);
+export const getBackupSummary = (serverId, backupId) => api.get(`/backups/server/${serverId}/${backupId}`).then((r) => r.data);
+export const deleteBackup = (serverId, backupId) => api.delete(`/backups/server/${serverId}/${backupId}`).then((r) => r.data);
+export const getMyBackups = () => api.get("/backups/mine").then((r) => r.data);
+export const preflightRestore = (targetId, backupId) => api.post(`/backups/server/${targetId}/restore/preflight`, { backupId }).then((r) => r.data);
+export const startRestore = (targetId, backupId) => api.post(`/backups/server/${targetId}/restore`, { backupId, confirm: true }).then((r) => r.data);
+export const getRestore = (targetId, restoreId) => api.get(`/backups/server/${targetId}/restore/${restoreId}`).then((r) => r.data);
+export const cancelRestore = (targetId, restoreId) => api.post(`/backups/server/${targetId}/restore/${restoreId}/cancel`).then((r) => r.data);
 export const updateServer = (id, data) => api.patch(`/servers/${id}`, data).then((r) => r.data);
 
 // ─── Panels ───────────────────────────────────────────────────────────────────

@@ -23,6 +23,8 @@ const CLIENT_PAGES = [
   "ApplicationsPage.jsx", "AnalyticsPage.jsx", "WebhooksPage.jsx",
   // Менюто по задачи (12.11.2026): „Автоматизация“ и дългите „Настройки“ са разделени.
   "PollsGiveawaysPage.jsx", "MessagesPage.jsx", "WelcomeRolesPage.jsx", "BaitPage.jsx", "ActivityLogPage.jsx",
+  // Резервни копия на сървъра (28.11.2026)
+  "BackupsPage.jsx", "MyBackupsPage.jsx",
 ];
 const read = (f) => readFileSync(join(PAGES, f), "utf8");
 const lineOf = (s, i) => s.slice(0, i).split("\n").length;
@@ -79,7 +81,7 @@ const SCREENS = [
       "PageTabs.jsx", "PageHeader.jsx", "BaitCard.jsx", "PremiumBadge.jsx"].map((f) => join("components", f)),
   // Разделите и картите с настройки живеят в свои папки — всеки нов файл там
   // влиза в гейта сам, без да го дописваме на ръка.
-  ...["automation", "settings"].flatMap((dir) =>
+  ...["automation", "settings", "backups"].flatMap((dir) =>
     readdirSync(join(SRC, "components", dir)).filter((f) => f.endsWith(".jsx")).map((f) => join("components", dir, f))),
 ];
 // Собствени имена — фирмите-обработващи в страницата за поверителност и
