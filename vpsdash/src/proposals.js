@@ -29,6 +29,7 @@ const PROJECT_RX = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const CATEGORY_RX = /^[a-z0-9][a-z0-9-]{0,39}$/;
 const RELEASE_RX = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/;
 const PRODUCT_RX = /^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$/;
+const AGENT_REF_RX = /^(main|v\d{1,4}(\.\d{1,4}){0,3})$/;
 
 // Каталогът. `cls` е класът от одита на необратимите действия (виж
 // scripts/destructive-audit.mjs) — показва се на човека до бутона.
@@ -67,6 +68,14 @@ export const PROPOSAL_ACTIONS = {
     title: 'Откат към предишен release',
     cls: 'A',
     params: { release: RELEASE_RX, projects: 'products' },
+  },
+  // Нов деплой по канона (fetch-deploy.sh). Агентът предлага САМО `main` или таг
+  // vX.Y.Z: клон/SHA може да е чужд код (codeload сервира и комити от форкове), а
+  // смяна на ref-а на продукт (ALLOW_REF_SWITCH) остава решение само на човека.
+  'deploy.fetch': {
+    title: 'Деплой на нова версия от GitHub',
+    cls: 'B',
+    params: { ref: AGENT_REF_RX, projects: 'products' },
   },
 };
 
@@ -243,6 +252,9 @@ export async function executeAction(action, deps) {
       return { job: jobs.start(system.aptUpgradeSpec(true), { user }) };
     case 'deploy.rollback':
       return { job: jobs.start(deploy.rollbackSpec(cfg, { release: a.params.release, projects: a.params.projects }), { user }) };
+    case 'deploy.fetch':
+      // Същата функция като бутона „Деплой от GitHub"; без разрешение за смяна на ref.
+      return { job: jobs.start(deploy.fetchDeploySpec(cfg, { ref: a.params.ref, projects: a.params.projects }), { user }) };
     default:
       throw bad('Непознато действие.');
   }

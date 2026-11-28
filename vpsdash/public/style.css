@@ -372,6 +372,12 @@ input[type="checkbox"], input[type="radio"] {
   height: 24px;
   accent-color: var(--accent, #33ff77);
 }
+/* Кутийка 24px и текстът ѝ — на ЕДНА линия. Без това текстът пада под средата
+   на кутийката (видяно в „Деплой от GitHub" на телефон) — едно правило за
+   всички етикети с чекбокс, не клас по call-site. */
+label:has(> input[type="checkbox"]), label:has(> input[type="radio"]) {
+  display: inline-flex; align-items: center; gap: 6px; vertical-align: middle;
+}
 
 input[type="text"], input[type="search"], input[type="number"], input[type="password"],
 input[type="email"], input[type="url"], input:not([type]), select, textarea {
@@ -809,3 +815,8 @@ tr.row-before td { background: rgba(255, 176, 0, 0.07); }
   }
   .sudo-dot { opacity: 1; }
 }
+
+/* Цветовете на значението в изхода на задачите (ANSI от autodeploy/fetch-deploy/apt). */
+.term-out .ansi-ok { color: var(--ok); }
+.term-out .ansi-warn { color: var(--warn); }
+.term-out .ansi-bad { color: var(--danger); }

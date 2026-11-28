@@ -45,3 +45,22 @@ test('самопроверка: продукт на чужд порт и лип�
   assert.ok(r.summary.bad >= 2);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('самопроверка: проба, която мери пренасочване, е предупреждение с поправка', async () => {
+  const http = await import('node:http');
+  const srv = http.createServer((req, res) => { res.writeHead(308, { location: 'https://medqr.example/' }); res.end(); });
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  const port = srv.address().port;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'csd-sc-redir-'));
+  try {
+    const r = await selfCheck({ paths: { stateDir: dir }, healthChecks: [{ name: 'medqr', url: `http://127.0.0.1:${port}/` }] }, {}, { headers: {} });
+    const c = r.checks.find((x) => x.title === 'Пробата мери пренасочване, не продукта');
+    assert.ok(c, 'пренасочването трябва да се каже');
+    assert.equal(c.status, 'warn');
+    assert.match(c.detail, /308 https:\/\/medqr\.example\//);
+    assert.match(c.fix, /healthz/);
+  } finally {
+    srv.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

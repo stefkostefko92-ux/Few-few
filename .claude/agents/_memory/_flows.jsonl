@@ -1103,3 +1103,6 @@
 {"t":"handoff","ts":"2026-11-28T09:26:50.853Z","id":"r3142bbd9","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"c92d57fc"}
 {"t":"start","ts":"2026-11-28T10:30:12.460Z","id":"r72bb84fa","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-28T10:30:12.460Z","id":"r72bb84fa","from":"kodadjiyata","to":"kachestveniyat","status":"наред","run":"fa312647"}
+{"t":"start","ts":"2026-11-28T10:47:26.624Z","id":"r3c7e1afd","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-28T10:47:26.624Z","id":"r3c7e1afd","from":"razbivacha","to":"vps-adjiyata","status":"блокер","run":"cf8cea02"}
+{"t":"handoff","ts":"2026-11-28T10:49:06.288Z","id":"r3c7e1afd","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"c7765735"}

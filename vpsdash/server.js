@@ -378,7 +378,13 @@ const server = http.createServer(async (req, res) => {
   // Автентикацията обаче е СЪЩАТА — иначе рамката става втора врата към
   // машината без вход.
   if (url.pathname === desktop.PREFIX || url.pathname.startsWith(`${desktop.PREFIX}/`)) {
-    if (!router.authenticate(req)) return sendError(res, 401, 'Не си вписан.');
+    const who = router.authenticate(req);
+    if (!who) return sendError(res, 401, 'Не си вписан.');
+    // Този път е ИЗВЪН рутера, значи и извън guard(): там живеят AGENT_ALLOW и
+    // peerScope. Само `authenticate` пускаше и агентския ключ (облакът), и жетона
+    // на съседа до графична root сесия — `/api/desktop` им отказваше, а
+    // `/desktop/` ги проксираше (поука на Кодаджията, доказана с жива заявка).
+    if (desktopDenied(who)) return sendError(res, 403, 'Десктопът е само за човек, влязъл в ТОЗИ панел.');
     // Заглавките на ПАНЕЛА трябва да отпаднат от отговора на десктопа, иначе
     // рамката остава черна без нито едно съобщение за грешка:
     //   • `x-frame-options: DENY` забранява рамкирането ДОРИ от същия произход
@@ -435,6 +441,16 @@ const server = http.createServer(async (req, res) => {
 //
 // Автентикацията е ЗАДЪЛЖИТЕЛНА и тук. Пропускът ѝ е класическата дупка при
 // такова прокси: обикновените заявки са зад вход, а сокетът — не.
+// Десктопът е само за ЧОВЕК с браузърна сесия на ТОЗИ панел. Агентът по
+// конструкция стига само до четене и предложения; съседът — дори при „пълен
+// контрол“ — не рамкира чужд десктоп (`/desktop/` е нашият произход). Одит,
+// защото опит оттук е сигнал: ключът или жетонът са попаднали другаде.
+function desktopDenied(who) {
+  if (!who.agent && !who.peer) return false;
+  audit.log({ action: 'desktop.denied', by: who.agent ? 'agent' : 'peer', user: who.user });
+  return true;
+}
+
 server.on('upgrade', (req, socket, head) => {
   let url;
   try {
@@ -444,8 +460,13 @@ server.on('upgrade', (req, socket, head) => {
   }
   if (!ipGateAllows(req, cfg, url.pathname, clientIp)) return socket.destroy();
   if (url.pathname !== desktop.PREFIX && !url.pathname.startsWith(`${desktop.PREFIX}/`)) return socket.destroy();
-  if (!router.authenticate(req)) {
+  const who = router.authenticate(req);
+  if (!who) {
     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    return socket.destroy();
+  }
+  if (desktopDenied(who)) {
+    socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
     return socket.destroy();
   }
   desktop.proxyUpgrade(cfg, req, socket, head);

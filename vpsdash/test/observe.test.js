@@ -113,19 +113,26 @@ test('анализът подрежда бавното по p95, не по ср�
   for (let i = 0; i < 10; i++) lines.push(mk('/опашка', 5.0));
   for (let i = 0; i < 100; i++) lines.push(mk('/равномерен', 0.6));
   for (let i = 0; i < 10; i++) lines.push(mk('/чупи', 0.1, 500));
+  // Скенерът: само 404 — „грешка" за клиента, НЕ отказ на услугата.
+  for (let i = 0; i < 30; i++) lines.push(mk('/wp-login.php', 0.01, 404));
   fs.writeFileSync(log, lines.join('\n') + '\n');
 
   const r = new AccessLogReader(dir).analyze({ files: [log] });
   assert.equal(r.available, true);
-  assert.equal(r.total, 210);
+  assert.equal(r.total, 240);
   assert.equal(r.hasTiming, true);
   assert.equal(r.byStatus['5xx'], 10);
   assert.equal(r.topBySlow[0].path, '/опашка', 'опашката е това, което потребителят усеща');
   assert.equal(r.topBySlow[0].p95, 5);
   assert.equal(r.topBySlow[0].p50, 0.05, 'медианата е спокойна — точно затова средното лъже');
   assert.equal(r.topBySlow[1].path, '/равномерен');
-  assert.equal(r.topByErrors[0].path, '/чупи');
-  assert.equal(r.topByErrors[0].errorPct, 100);
+  // 404 и 500 са в „грешки", но в 5xx — само истинският отказ.
+  assert.deepEqual(r.topByErrors.map((p) => p.path).sort(), ['/wp-login.php', '/чупи'].sort());
+  assert.deepEqual(r.topByServerErrors.map((p) => p.path), ['/чупи'], 'скенерът с 404 не е отказ на услугата');
+  assert.equal(r.topByServerErrors[0].serverErrorPct, 100);
+  const scan = r.topByErrors.find((p) => p.path === '/wp-login.php');
+  assert.equal(scan.serverErrorPct, 0);
+  assert.equal(scan.clientErrorPct, 100);
   assert.equal(r.serverErrors.length, 10);
   fs.rmSync(dir, { recursive: true, force: true });
 });

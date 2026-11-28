@@ -103,6 +103,7 @@ const CLASS = new Map(Object.entries({
   '/api/processes/kill': 'B · убива процес',
   '/api/jobs/:id/kill': 'B · прекъсва задача (може да е деплой по средата)',
   '/api/deploy/run': 'B · деплой — обратим през rollback, но пипа продукцията',
+  '/api/deploy/fetch': 'B · деплой от GitHub по канона (fetch-deploy.sh) — обратим през rollback',
   '/api/updates/upgrade': 'B · обновява пакети',
   '/api/updates/dpkg-repair': 'C · поправя прекъснат dpkg',
   '/api/webserver/reload': 'C · презарежда уеб сървъра',

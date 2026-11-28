@@ -1,7 +1,7 @@
 // Carbon Stealth VPS Dashboard — клиент (vanilla ES modules, нула зависимости).
 import {
   el, fmtBytes, fmtBps, fmtUptime, fmtWhen, pill, toast, escapeHtml, pctHtml, memPctOf, plural,
-  registerCommand, clearCommands, openPalette, liveStream, confirmDanger,
+  registerCommand, clearCommands, openPalette, liveStream, confirmDanger, ansiAppender,
 } from './ui.js';
 import { t, setLang, getLang, languages, translateDom } from './i18n.js';
 import { mountTerrain } from './terrain.js';
@@ -892,10 +892,12 @@ async function renderProducts() {
       el('div', { class: 'card' }, [
         el('div', { class: 'card-head' }, [
           el('h3', { text: p.name }),
-          pill(p.up ? 'ok' : 'bad', p.up ? `${p.status || 'UP'}` : 'DOWN'),
+          pill(p.up ? (p.redirect ? 'warn' : 'ok') : 'bad', p.up ? `${p.status || 'UP'}` : 'DOWN'),
         ]),
         el('div', { class: 'metric-sub mono', text: p.url }),
         el('div', { class: 'metric-sub', text: p.up ? `отговор за ${p.ms} ms` : p.error || `статус ${p.status || '—'}` }),
+        // Пренасочване е „жив процес", не „здрав продукт" — казва се на картата.
+        p.redirect ? el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: '⚠ пробата мери пренасочване — сложи адреса за здраве (напр. /healthz)' }) : '',
       ])
     ))
   );
@@ -3750,11 +3752,59 @@ async function renderLogs() {
 }
 
 // ── Деплой ────────────────────────────────────────────────────────────────────────
+// „Деплой от GitHub" — същият fetch-deploy.sh като по SSH, но с един бутон (и
+// от телефон). Ref по подразбиране е main; клон/таг/SHA — по избор на човека.
+function fetchDeployCard(st) {
+  const card = el('div', { class: 'card', style: 'margin-bottom:16px' });
+  card.appendChild(el('div', { class: 'card-head' }, [el('h3', { text: 'Деплой от GitHub' }), pill(st.fetchDeploy ? 'ok' : 'warn', st.fetchDeploy ? 'fetch-deploy.sh е налице' : 'няма fetch-deploy.sh')]));
+  if (!st.fetchDeploy) {
+    card.appendChild(el('div', { class: 'metric-sub', text: 'В текущия release няма deploy/fetch-deploy.sh. Пусни го веднъж по SSH (deploy/README.md) — после деплоят е оттук.' }));
+    return card;
+  }
+  const ref = el('input', { type: 'text', value: 'main', class: 'mono', 'aria-label': 'Ref за деплой (клон, таг или SHA)', style: 'width:220px' });
+  const sw = el('input', { type: 'checkbox', 'aria-label': 'Позволи смяна на ref-а' });
+  const box = el('div', { class: 'toolbar' });
+  const picks = {};
+  for (const p of st.knownProjects) {
+    const c = el('input', { type: 'checkbox', 'aria-label': p });
+    picks[p] = c;
+    box.appendChild(el('label', { class: 'muted' }, [c, document.createTextNode(' ' + p)]));
+  }
+  card.append(
+    el('div', { class: 'metric-sub', text: 'Сървърът тегли архива за ref-а, проверява, че е нашето репо, пише sha256 и деплойва. Неуспешен продукт се връща сам на предишната версия.' }),
+    el('div', { class: 'toolbar', style: 'margin-top:8px' }, [
+      el('label', { class: 'muted', text: 'Ref:' }), ref,
+      el('label', { class: 'muted' }, [sw, document.createTextNode(' ' + t('позволи смяна на ref-а (ALLOW_REF_SWITCH)'))]),
+    ]),
+    el('div', { class: 'muted', text: 'Проекти (нищо избрано = всички):', style: 'margin-top:6px' }),
+    box,
+    el('button', {
+      class: 'btn btn-primary',
+      text: '⇩ Изтегли и деплойни',
+      onclick: async (e) => {
+        const projects = Object.entries(picks).filter(([, c]) => c.checked).map(([p]) => p);
+        const r = ref.value.trim() || 'main';
+        if (!confirm(`${t('Деплой от GitHub')}: ${r}\n${projects.length ? projects.join(', ') : t('ВСИЧКИ проекти')}${sw.checked ? '\n' + t('Със смяна на ref-а.') : ''}`)) return;
+        e.target.disabled = true;
+        try {
+          const job = await api('/deploy/fetch', { method: 'POST', body: { ref: r, projects, allowRefSwitch: sw.checked } });
+          streamJob(job.id, job.title);
+        } catch (err) {
+          toast(err.message, 'bad');
+        }
+        e.target.disabled = false;
+      },
+    }),
+  );
+  return card;
+}
+
 async function renderDeploy() {
   const view = document.getElementById('view');
   const st = await api('/deploy/state');
   view.innerHTML = '';
-  view.appendChild(el('p', { class: 'section-desc', text: 'Деплой по канона на репото: качваш GitHub ZIP в /root, после autodeploy.sh (идемпотентен). Изберете проекти или всички.' }));
+  view.appendChild(el('p', { class: 'section-desc', text: 'Деплой по канона на репото: сървърът сам тегли архива за точен ref от GitHub (fetch-deploy.sh) и го предава на autodeploy.sh. Резервният път — качен ZIP — е по-долу.' }));
+  view.appendChild(fetchDeployCard(st));
 
   const projBox = el('div', { class: 'toolbar' });
   const checks = {};
@@ -5077,7 +5127,7 @@ async function renderTraffic() {
       el('h3', { class: 'muted', text: title, style: 'margin:0 0 8px' }),
       extra ? el('div', { class: 'metric-sub', style: 'margin-bottom:8px', text: extra }) : '',
       el('div', { class: 'table-wrap' }, [
-        tableEl(['Адрес', 'Брой', 'p50', 'p95', 'приложение', 'кой бави', 'макс', 'грешки', 'ботове'], rows.map((p) =>
+        tableEl(['Адрес', 'Брой', 'p50', 'p95', 'приложение', 'кой бави', 'макс', '5xx', '4xx', 'ботове'], rows.map((p) =>
           el('tr', {}, [
             el('td', { class: 'mono', text: `${p.method} ${p.path}` }),
             el('td', { text: String(p.count) }),
@@ -5089,7 +5139,9 @@ async function renderTraffic() {
             el('td', { class: 'mono', text: p.p95Upstream != null ? `${p.p95Upstream}s` : '—' }),
             el('td', {}, [p.blame ? pill(p.blame === 'приложение' ? 'warn' : p.blame === 'nginx/мрежа' ? 'dim' : 'dim', p.blame) : el('span', { class: 'muted', text: '—' })]),
             el('td', { class: 'mono', text: p.max != null ? `${p.max}s` : '—' }),
-            el('td', {}, [p.errorPct ? pill(p.errorPct > 20 ? 'bad' : 'warn', `${p.errorPct}%`) : el('span', { class: 'muted', text: '—' })]),
+            // 5xx е отказ на услугата (червено); 4xx — клиентът/скенерът (сиво).
+            el('td', {}, [p.serverErrorPct ? pill(p.serverErrorPct > 5 ? 'bad' : 'warn', `${p.serverErrorPct}%`) : el('span', { class: 'muted', text: '—' })]),
+            el('td', { class: 'muted', raw: p.clientErrorPct ? `${p.clientErrorPct}%` : '—' }),
             el('td', { class: 'muted', text: `${p.botPct}%` }),
           ])
         )),
@@ -5329,6 +5381,17 @@ function packagesCard() {
     });
     if (ok) runJob('/machine/packages/remove', { name, expect: plan.removes }, `apt remove ${name}`);
   };
+  // Инсталирането също по видян план: без точно име apt избира „по шаблон"
+  // (lib.6 → libc6 + -dev + -dbg), а сървърът сверява списъка при натискането.
+  const installPkg = async (name) => {
+    let plan;
+    try { plan = await api('/machine/packages/install-plan?name=' + encodeURIComponent(name)); } catch (e) { toast(e.message, 'bad'); return; }
+    if (!plan.installs.length && !plan.removes.length) { toast(t('Вече е инсталиран — нищо за правене.'), 'ok'); return; }
+    const what = [`${t('Ще бъдат инсталирани')} (${plan.installs.length}): ${plan.installs.join(', ') || '—'}`];
+    if (plan.removes.length) what.push(`${t('И ще бъдат МАХНАТИ')} (${plan.removes.length}): ${plan.removes.join(', ')}`);
+    const ok = await confirmDanger({ title: `apt install ${name}`, what, confirmLabel: 'Инсталирай' });
+    if (ok) runJob('/machine/packages/install', { name, expect: { installs: plan.installs, removes: plan.removes } }, `apt install ${name}`);
+  };
   const showInstalled = async () => {
     out.innerHTML = '';
     out.appendChild(el('div', { class: 'skeleton', style: 'height:80px' }));
@@ -5355,7 +5418,7 @@ function packagesCard() {
     out.appendChild(r.results.length ? el('div', { class: 'table-wrap' }, [tableEl(['Пакет', 'Описание', ''], r.results.map((p) => el('tr', {}, [
       el('td', { class: 'mono', raw: p.name }),
       el('td', { class: 'muted', raw: p.description }),
-      el('td', {}, [el('button', { class: 'btn btn-sm', text: '⇩ Инсталирай', onclick: () => runJob('/machine/packages/install', { name: p.name }, `apt install ${p.name}`) })]),
+      el('td', {}, [el('button', { class: 'btn btn-sm', text: '⇩ Инсталирай', onclick: () => installPkg(p.name) })]),
     ])))]) : el('div', { class: 'empty', text: 'Няма такъв пакет в списъците (пусни „apt update" от „Ъпдейти", ако са стари).' }));
   };
   q.addEventListener('keydown', (e) => { if (e.key === 'Enter') showInstalled(); });
@@ -6179,7 +6242,9 @@ async function fileAction(kind, e, dir) {
       const r = await api('/files/delete', { method: 'POST', body: { paths } });
       FILES.sel.clear();
       if (r.failed.length) toast(r.failed.map((f) => `${f.path}: ${f.error}`).join(' · '), 'bad');
-      if (r.trashed.length) toast(`${t('Преместени в кошчето')}: ${r.trashed.length}`, 'ok');
+      const partial = r.trashed.filter((m) => m.warning);
+      if (partial.length) toast(partial.map((m) => m.warning).join(' · '), 'warn');
+      else if (r.trashed.length) toast(`${t('Преместени в кошчето')}: ${r.trashed.length}`, 'ok');
     } else if (kind === 'forever') {
       if (!(await confirmDanger({ title: 'Окончателно изтриване', what: [full, 'Без кошче — няма връщане.'], expect: 'изтрий', confirmLabel: 'Изтрий окончателно' }))) return;
       await api('/files/delete-forever', { method: 'POST', body: { path: full } });
@@ -6827,15 +6892,17 @@ function streamJob(id, title) {
   openModal(title || 'Задача', id);
   const out = document.getElementById('modal-out');
   out.textContent = '';
+  const write = ansiAppender(out);
   const es = new EventSource(sseUrl(`/jobs/${id}/stream`));
   modalEs = es;
   es.addEventListener('data', (e) => {
-    out.textContent += JSON.parse(e.data);
+    write(JSON.parse(e.data));
     out.scrollTop = out.scrollHeight;
   });
   es.addEventListener('end', (e) => {
     try {
-      out.textContent += `\n[задачата приключи · изход ${JSON.parse(e.data).code}]\n`;
+      write(`\n[задачата приключи · изход ${JSON.parse(e.data).code}]\n`);
+      out.scrollTop = out.scrollHeight;
     } catch { /* игнор */ }
     document.getElementById('modal-kill').classList.add('hidden');
     es.close();

@@ -96,7 +96,9 @@ test('ssh: последният ключ НЕ се маха, когато пар
   await assert.rejects(m.removeKey(fpB, cfg, audit, 'u', { file, sshd: noPw }), /заключиш/);
   await assert.rejects(m.removeKey(fpB, cfg, audit, 'u', { file, sshd: unknown }), /не мога да проверя/);
   assert.ok(fs.readFileSync(file, 'utf8').includes(b.line.split(' ')[1]), 'ключът си е там');
-  const ok = await m.removeKey(fpB, cfg, audit, 'u', { file, sshd: async () => ({ known: true, passwordAuth: true }) });
+  // Паролата спасява root САМО при PermitRootLogin yes — prohibit-password го заключва навън.
+  await assert.rejects(m.removeKey(fpB, cfg, audit, 'u', { file, sshd: async () => ({ known: true, passwordAuth: true, permitRootLogin: 'prohibit-password' }) }), /PermitRootLogin prohibit-password/);
+  const ok = await m.removeKey(fpB, cfg, audit, 'u', { file, sshd: async () => ({ known: true, passwordAuth: true, permitRootLogin: 'yes' }) });
   assert.equal(ok.left, 0);
   await assert.rejects(m.removeKey('SHA256:кирилица', cfg, audit, 'u', { file }), /Невалиден/);
 });
@@ -152,4 +154,44 @@ test('swap: махане — само ако паметта поема изпр�
   execFileSync('bash', ['-n', '-c', s.shell]);
   assert.throws(() => m.removeSwapSpec({ swaps: [], swapfileExists: false, memAvailableKb: 1 }), /Няма/);
   assert.deepEqual(m.parseSwaps('Filename\tType\tSize\tUsed\tPriority\n/swapfile file 2097148 0 -2\n'), [{ file: '/swapfile', type: 'file', sizeKb: 2097148, usedKb: 0, priority: -2 }]);
+});
+
+test('ssh: ключ, добавен ДОКАТО махането чака sshd -T, не изчезва', async () => {
+  const file = path.join(ROOT, 'ssh-race', 'authorized_keys');
+  const a = ed25519('a');
+  const b = ed25519('b');
+  await m.addKey(a.line, cfg, audit, 'u', { file });
+  const slow = () => new Promise((r) => setTimeout(() => r({ known: true, passwordAuth: true, permitRootLogin: 'yes' }), 150));
+  // Махането на последния ключ чака sshd; междувременно идва ново добавяне.
+  const removing = m.removeKey(m.parseKeyLine(a.line).fingerprint, cfg, audit, 'u', { file, sshd: slow });
+  const adding = m.addKey(b.line, cfg, audit, 'u', { file });
+  await Promise.all([removing, adding]);
+  const left = fs.readFileSync(file, 'utf8');
+  assert.ok(left.includes(b.line.split(' ')[1]), 'новият ключ е там');
+  assert.ok(!left.includes(a.line.split(' ')[1]), 'махнатият го няма');
+});
+
+test('пакети: инсталиране по видян план — без „по шаблон", сверено при натискането', async () => {
+  const sim = "NOTE: This is only a simulation!\nInst htop (3.3.0 Ubuntu:24.04)\nInst libnl-3-200 (3.7)\nConf htop (3.3.0)\n";
+  assert.deepEqual(m.parseInstallPlan(sim), { installs: ['htop', 'libnl-3-200'], removes: [], fuzzy: false });
+  // apt 2.8: без точно име аргументът е регулярен израз — lib.6 слага libc6 + -dev + -dbg.
+  const regex = "Note, selecting 'libc6' for regex 'lib.6'\nNote, selecting 'libc6-dev' for regex 'lib.6'\nInst libc6-dev (2.39)\n";
+  assert.equal(m.parseInstallPlan(regex).fuzzy, true);
+  // Без терминал apt 2.8.4 НЕ печата бележката (лабораторията) — решава съставът.
+  const fake = (out, installed = false) => async (cmd) => (cmd === 'apt-get' ? { ok: true, code: 0, stdout: out, stderr: '' } : { ok: installed, code: installed ? 0 : 1, stdout: installed ? 'ii ' : '', stderr: '' });
+  await assert.rejects(m.installPlan('lib.6', { exec: fake('Inst libc6 [2.39-8.9] (2.39-8.12)\nInst libc6-dev (2.39)\n') }), /ТОЧНО името/);
+  assert.deepEqual((await m.installPlan('htop', { exec: fake(sim) })).installs, ['htop', 'libnl-3-200']);
+  assert.deepEqual((await m.installPlan('htop', { exec: fake('', true) })).installs, [], 'вече инсталиран — празен план, не отказ');
+  assert.deepEqual((await m.installPlan('libc6', { exec: fake('Inst libc6:amd64 (2.39)\n') })).installs, ['libc6:amd64']);
+  const plan = async (name) => ({ name, installs: ['htop', 'libnl-3-200'], removes: [] });
+  const spec = await m.installPlanned('htop', { installs: ['libnl-3-200', 'htop'], removes: [] }, { plan });
+  assert.deepEqual(spec.args, ['install', '-y', '--no-install-recommends', '--', 'htop']);
+  await assert.rejects(m.installPlanned('htop', { installs: ['htop'] }, { plan }), /се промени/);
+  await assert.rejects(m.installPlanned('htop', undefined, { plan }), /се промени/, 'без видян план — отказ');
+});
+
+test('swap: махането не поглъща провален swapoff', () => {
+  const s = m.removeSwapSpec({ swaps: [{ file: '/swapfile', usedKb: 0 }], swapfileExists: true, memAvailableKb: 10 ** 7 });
+  assert.doesNotMatch(s.shell, /swapoff[^\n]*\|\| true/);
+  assert.match(s.shell, /grep -q '\^\/swapfile ' \/proc\/swaps/);
 });
