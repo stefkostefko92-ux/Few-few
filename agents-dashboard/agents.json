@@ -654,14 +654,14 @@
         },
         {
           "version": "48.1.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v48.1 — учене",
           "detail": "Научи: Когато приложение преизползва записано съдържание като образци за AI промпт (отделна та… (+16 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „Когато приложение преизползва записано съдържание като образци за AI промпт (отделна та…\" (+16 още) · 6 в карантина"
         },
@@ -2130,7 +2130,7 @@
         },
         {
           "version": "76.9.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v76.9 — учене",
           "detail": "Научи: В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват, затова п… (+82 още)"
         }
@@ -2138,18 +2138,8 @@
       "activity": [
         {
           "date": "2026-11-28",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „В JavaScript toLowerCase() може да промени дължината на низа (U+0130 става 0069 0307), …\" (+1)"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „curl --proto-redir =https ограничава само схемата на пренасочването, не хоста; при -L п…\""
-        },
-        {
-          "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват, затова п…\" (+82 още) · 18 в карантина"
+          "summary": "Научи: „В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват, затова п…\" (+82 още) · 21 в карантина"
         },
         {
           "date": "2026-11-24",
@@ -3078,14 +3068,14 @@
         },
         {
           "version": "23.3.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v23.3 — учене",
           "detail": "Научи: В fakturist функциите за адрес за връщане след вход/приемане са три с различни правила,… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „В fakturist функциите за адрес за връщане след вход/приемане са три с различни правила,…\" (+1 още)"
         },
@@ -3622,7 +3612,7 @@
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "quarantine",
           "summary": "Хипотеза → карантина: „PR с папка „FiveM/“ и промени само по email/deploy е уеб приложение; проверката за *.lu…\""
         },
@@ -4496,14 +4486,14 @@
         },
         {
           "version": "26.0.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v26.0 — учене",
           "detail": "Научи: Click-to-load фасада без плейър в HTML-а е описаната от Google причина „Cannot determin… (+9 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „Click-to-load фасада без плейър в HTML-а е описаната от Google причина „Cannot determin…\" (+9 още)"
         },
@@ -5126,14 +5116,14 @@
         },
         {
           "version": "21.3.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v21.3 — учене",
           "detail": "Научи: Фактурист регистрацията е на /registraciya (не /registratsiya, което е 404) и е 404-под… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „Фактурист регистрацията е на /registraciya (не /registratsiya, което е 404) и е 404-под…\" (+1 още)"
         },
@@ -5781,14 +5771,14 @@
         },
         {
           "version": "34.0.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v34.0 — учене",
           "detail": "Научи: В panev BG сайтът казва „пластина A“ (не „плоча“), „армировка“, „блокиращ елемент“ за b… (+5 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „В panev BG сайтът казва „пластина A“ (не „плоча“), „армировка“, „блокиращ елемент“ за b…\" (+5 още) · 2 в карантина"
         },
@@ -7503,14 +7493,14 @@
         },
         {
           "version": "29.4.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v29.4 — учене",
           "detail": "Научи: Към f6ea9c639 migrate-backup.sh отказва да трие DUMP_TO/.new/.old без маркер .migrate-b… (+20 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „Към f6ea9c639 migrate-backup.sh отказва да трие DUMP_TO/.new/.old без маркер .migrate-b…\" (+20 още) · 8 в карантина"
         },
@@ -9190,14 +9180,14 @@
         },
         {
           "version": "21.4.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v21.4 — учене",
           "detail": "Научи: Тест, който изисква литерален шаблон („[ЗА ПОПЪЛВАНЕ…]“) в публична страница, пази проп…"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „Тест, който изисква литерален шаблон („[ЗА ПОПЪЛВАНЕ…]“) в публична страница, пази проп…\" · 1 в карантина"
         },
@@ -9981,14 +9971,14 @@
         },
         {
           "version": "31.6.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v31.6 — учене",
           "detail": "Научи: PR #335 (claude/security-deps-korpora) в korpora вдига zod 3 на 4 с импорти от zod/v3 и… (+4 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „PR #335 (claude/security-deps-korpora) в korpora вдига zod 3 на 4 с импорти от zod/v3 и…\" (+4 още) · 1 в карантина"
         },
@@ -12226,14 +12216,14 @@
         },
         {
           "version": "26.1.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v26.1 — учене",
           "detail": "Научи: Форма с `novalidate`, чието сървърно рендериране показва грешка само през `aria-invalid… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „Форма с `novalidate`, чието сървърно рендериране показва грешка само през `aria-invalid…\" (+1 още) · 3 в карантина"
         },
@@ -13107,14 +13097,14 @@
         },
         {
           "version": "21.5.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v21.5 — учене",
           "detail": "Научи: PR #461 (adblock 6.1.1) не променя права/CSP/host_permissions (само версията в manifest…"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „PR #461 (adblock 6.1.1) не променя права/CSP/host_permissions (само версията в manifest…\""
         },
@@ -13863,28 +13853,17 @@
           "detail": "Научи: Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn… (+7 още)"
         },
         {
-          "version": "22.0.0",
-          "date": "2026-11-27",
-          "event": "v22.0 — учене",
-          "detail": "Научи: PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименув…"
-        },
-        {
           "version": "22.1.0",
           "date": "2026-11-28",
           "event": "v22.1 — учене",
-          "detail": "Научи: Одит на покритието на таблото не бива да се чете само от frontend/src/api/index.js; час…"
+          "detail": "Научи: Одит на покритието на таблото не бива да се чете само от frontend/src/api/index.js; час… (+1 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-28",
           "type": "learning",
-          "summary": "Научи: „Одит на покритието на таблото не бива да се чете само от frontend/src/api/index.js; час…\""
-        },
-        {
-          "date": "2026-11-27",
-          "type": "learning",
-          "summary": "Научи: „PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименув…\" · 2 в карантина"
+          "summary": "Научи: „Одит на покритието на таблото не бива да се чете само от frontend/src/api/index.js; час…\" (+1 още) · 2 в карантина"
         },
         {
           "date": "2026-11-23",
@@ -14747,50 +14726,17 @@
           "detail": "Научи: Към 2026-11-24 в Latest models на Anthropic стоят Fable 5.2 (claude-fable-5-2, $8/$40, … (+3 още)"
         },
         {
-          "version": "38.8.0",
-          "date": "2026-11-27",
-          "event": "v38.8 — учене",
-          "detail": "Научи: Копието на дървото при pr-review съдържа само корена, tools/ и deploy/ без продуктовите… (+28 още)"
-        },
-        {
-          "version": "39.3.0",
-          "date": "2026-11-28",
-          "event": "v39.3 — учене",
-          "detail": "Научи: В Agent SDK без settingSources се зареждат user, project и local; с \"project\" идват .cl… (+4 още)"
-        },
-        {
-          "version": "39.4.0",
-          "date": "2026-11-28",
-          "event": "v39.4 — учене",
-          "detail": "Научи: guard-exfil пуска проверките за тайни (SECRET_ENV, SENSITIVE_READ_SUBST, ENV_DUMP) само…"
-        },
-        {
           "version": "39.6.0",
           "date": "2026-11-28",
           "event": "v39.6 — учене",
-          "detail": "Научи: В Claude Code успешен Bash резултат над около 30 000 знака не идва в контекста, а като … (+1 още)"
+          "detail": "Научи: В Claude Code успешен Bash резултат над около 30 000 знака не идва в контекста, а като … (+36 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-28",
           "type": "learning",
-          "summary": "Научи: „В Claude Code успешен Bash резултат над около 30 000 знака не идва в контекста, а като …\" (+1 още)"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „guard-exfil пуска проверките за тайни (SECRET_ENV, SENSITIVE_READ_SUBST, ENV_DUMP) само…\""
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „В Agent SDK без settingSources се зареждат user, project и local; с \"project\" идват .cl…\" (+4 още)"
-        },
-        {
-          "date": "2026-11-27",
-          "type": "learning",
-          "summary": "Научи: „Копието на дървото при pr-review съдържа само корена, tools/ и deploy/ без продуктовите…\" (+28 още) · 1 в карантина"
+          "summary": "Научи: „В Claude Code успешен Bash резултат над около 30 000 знака не идва в контекста, а като …\" (+36 още) · 1 в карантина"
         },
         {
           "date": "2026-11-24",
@@ -15589,14 +15535,14 @@
         },
         {
           "version": "22.1.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v22.1 — учене",
           "detail": "Научи: PR 509 (otgovorko.yml) е втори нов продуктов workflow с пълна хигиена — checkout и setu… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „PR 509 (otgovorko.yml) е втори нов продуктов workflow с пълна хигиена — checkout и setu…\" (+2 още)"
         },
@@ -15850,14 +15796,14 @@
         },
         {
           "version": "23.4.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v23.4 — учене",
           "detail": "Научи: zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к… (+2 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к…\" (+2 още)"
         },
@@ -16721,28 +16667,17 @@
           "detail": "Научи: Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо… (+21 още)"
         },
         {
-          "version": "35.9.0",
-          "date": "2026-11-27",
-          "event": "v35.9 — учене",
-          "detail": "Научи: Express маршрут от вида r.post('/:x', express.json({limit}), handler) парсва тялото пре… (+3 още)"
-        },
-        {
           "version": "36.1.0",
           "date": "2026-11-28",
           "event": "v36.1 — учене",
-          "detail": "Научи: Във fakturist временна интеграционна проба се пуска от scratchpad-а като .mts (ESM) с а… (+1 още)"
+          "detail": "Научи: Във fakturist временна интеграционна проба се пуска от scratchpad-а като .mts (ESM) с а… (+5 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-28",
           "type": "learning",
-          "summary": "Научи: „Във fakturist временна интеграционна проба се пуска от scratchpad-а като .mts (ESM) с а…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-27",
-          "type": "learning",
-          "summary": "Научи: „Express маршрут от вида r.post('/:x', express.json({limit}), handler) парсва тялото пре…\" (+3 още) · 2 в карантина"
+          "summary": "Научи: „Във fakturist временна интеграционна проба се пуска от scratchpad-а като .mts (ESM) с а…\" (+5 още) · 2 в карантина"
         },
         {
           "date": "2026-11-24",
@@ -17329,14 +17264,14 @@
         },
         {
           "version": "22.5.0",
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "event": "v22.5 — учене",
           "detail": "Научи: ППЗДДС чл. 78 ал. 2 — номерата на фактурите и известията на регистрираните лица са десе… (+4 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-27",
+          "date": "2026-11-28",
           "type": "learning",
           "summary": "Научи: „ППЗДДС чл. 78 ал. 2 — номерата на фактурите и известията на регистрираните лица са десе…\" (+4 още) · 1 в карантина"
         },
@@ -17556,264 +17491,17 @@
           "detail": "Научи: Когато `gh api` за чуждо репо върне 403 „add_repo“, SHA и дати на комити се четат през …"
         },
         {
-          "version": "1.4.0",
-          "date": "2026-11-28",
-          "event": "v1.4 — учене",
-          "detail": "Научи: В h264_nvenc, hevc_nvenc и av1_nvenc `-preset` е p1 (най-бърз, най-ниско качество) до p… (+11 още)"
-        },
-        {
-          "version": "2.8.0",
-          "date": "2026-11-28",
-          "event": "v2.8 — учене",
-          "detail": "Научи: Remotion CLI по подразбиране кодира h264; CRF диапазон/подразбиране са h264 1–51/18, h2… (+13 още)"
-        },
-        {
-          "version": "3.4.0",
-          "date": "2026-11-28",
-          "event": "v3.4 — учене",
-          "detail": "Научи: Според NVIDIA режимът за ниска латентност (tune ll) изключва B-кадрите, ползва постояне… (+5 още)"
-        },
-        {
-          "version": "4.2.0",
-          "date": "2026-11-28",
-          "event": "v4.2 — учене",
-          "detail": "Научи: loudnorm подразбиране I=-24 (-70..-5), LRA=7 (1..50), TP=-2 (-9..0), linear=true, dual_… (+7 още)"
-        },
-        {
-          "version": "5.0.0",
-          "date": "2026-11-28",
-          "event": "v5.0 — учене",
-          "detail": "Научи: YouTube конвертира пълния обхват (full) в ограничен (limited), не препоръчва RGB матриц… (+7 още)"
-        },
-        {
-          "version": "6.2.0",
-          "date": "2026-11-28",
-          "event": "v6.2 — учене",
-          "detail": "Научи: Аргументите на blender се изпълняват по реда на подаване, затова -o, -F, -x, -s, -e и -… (+11 още)"
-        },
-        {
-          "version": "7.2.0",
-          "date": "2026-11-28",
-          "event": "v7.2 — учене",
-          "detail": "Научи: amix по подразбиране е inputs=2, duration=longest, dropout_transition=2 (секунди), weig… (+9 още)"
-        },
-        {
-          "version": "8.0.0",
-          "date": "2026-11-28",
-          "event": "v8.0 — учене",
-          "detail": "Научи: YouTube прави качването Short, ако е качено на или след 15.10.2024 и е с квадратно или … (+7 още)"
-        },
-        {
-          "version": "8.6.0",
-          "date": "2026-11-28",
-          "event": "v8.6 — учене",
-          "detail": "Научи: С normalize=1 (подразбиране) всеки вход се умножава по теглото си, разделено на сбора н… (+5 още)"
-        },
-        {
-          "version": "8.7.0",
-          "date": "2026-11-28",
-          "event": "v8.7 — учене",
-          "detail": "Научи: Размазан фон за 9:16 се сглобява от split, boxblur и overlay - boxblur има luma_radius=…"
-        },
-        {
-          "version": "9.7.0",
-          "date": "2026-11-28",
-          "event": "v9.7 — учене",
-          "detail": "Научи: Само ProRes 4444 и 4444 XQ носят алфа канал (до 16 бита, математически без загуба в 444… (+9 още)"
-        },
-        {
-          "version": "10.8.0",
-          "date": "2026-11-28",
-          "event": "v10.8 — учене",
-          "detail": "Научи: Филтърът subtitles иска FFmpeg с --enable-libass (и libavcodec/libavformat, за да превъ… (+10 още)"
-        },
-        {
-          "version": "10.9.0",
-          "date": "2026-11-28",
-          "event": "v10.9 — учене",
-          "detail": "Научи: Мек поток в MP4 - таблицата codec_mp4_tags на MP4 муксера съдържа за надписи само mov_t…"
-        },
-        {
-          "version": "12.0.0",
-          "date": "2026-11-28",
-          "event": "v12.0 — учене",
-          "detail": "Научи: Актуалното официално ръководство е DaVinci Resolve 21 Reference Manual (4444 стр., създ… (+10 още)"
-        },
-        {
-          "version": "13.1.0",
-          "date": "2026-11-28",
-          "event": "v13.1 — учене",
-          "detail": "Научи: Data API snippet.title е най-много 100 знака и snippet.description най-много 5000 БАЙТА… (+10 още)"
-        },
-        {
-          "version": "14.2.0",
-          "date": "2026-11-28",
-          "event": "v14.2 — учене",
-          "detail": "Научи: image2 демуксерът има собствена опция `-framerate` (по подразбиране 25), която се слага… (+10 още)"
-        },
-        {
-          "version": "15.5.0",
-          "date": "2026-11-28",
-          "event": "v15.5 — учене",
-          "detail": "Научи: Audacity Noise Reduction има по подразбиране Noise reduction 6 dB, Sensitivity 6.00 (об… (+12 още)"
-        },
-        {
-          "version": "16.6.0",
-          "date": "2026-11-28",
-          "event": "v16.6 — учене",
-          "detail": "Научи: page.screenshot има scale \"css\"|\"device\" с подразбиране \"device\" (един пиксел на device… (+10 още)"
-        },
-        {
-          "version": "17.8.0",
-          "date": "2026-11-28",
-          "event": "v17.8 — учене",
-          "detail": "Научи: YouTube изисква разкриване на AI съдържание, което изглежда реалистично и е генерирано … (+11 още)"
-        },
-        {
-          "version": "17.9.0",
-          "date": "2026-11-28",
-          "event": "v17.9 — учене",
-          "detail": "Научи: page.waitForFunction има polling \"raf\" по подразбиране (число = интервал в мс) и timeou…"
-        },
-        {
-          "version": "19.0.0",
-          "date": "2026-11-28",
-          "event": "v19.0 — учене",
-          "detail": "Научи: bpy.ops.render.render(animation, write_still, ...) — write_still важи само при animatio… (+10 още)"
-        },
-        {
-          "version": "19.9.0",
-          "date": "2026-11-28",
-          "event": "v19.9 — учене",
-          "detail": "Научи: WebGLRenderer подразбиране: antialias=false, alpha=false, preserveDrawingBuffer=false, … (+8 още)"
-        },
-        {
           "version": "21.1.0",
           "date": "2026-11-28",
           "event": "v21.1 — учене",
-          "detail": "Научи: Брой NVENC блокове в матрицата на NVIDIA (колона „Total # of NVENC“) при GeForce - Blac… (+11 още)"
+          "detail": "Научи: Брой NVENC блокове в матрицата на NVIDIA (колона „Total # of NVENC“) при GeForce - Blac… (+208 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-11-28",
           "type": "learning",
-          "summary": "Научи: „Брой NVENC блокове в матрицата на NVIDIA (колона „Total # of NVENC“) при GeForce - Blac…\" (+11 още)"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „WebGLRenderer подразбиране: antialias=false, alpha=false, preserveDrawingBuffer=false, …\" (+8 още) · 3 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „bpy.ops.render.render(animation, write_still, ...) — write_still важи само при animatio…\" (+10 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „page.waitForFunction има polling \"raf\" по подразбиране (число = интервал в мс) и timeou…\""
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „YouTube изисква разкриване на AI съдържание, което изглежда реалистично и е генерирано …\" (+11 още)"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „page.screenshot има scale \"css\"|\"device\" с подразбиране \"device\" (един пиксел на device…\" (+10 още)"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Audacity Noise Reduction има по подразбиране Noise reduction 6 dB, Sensitivity 6.00 (об…\" (+12 още)"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „image2 демуксерът има собствена опция `-framerate` (по подразбиране 25), която се слага…\" (+10 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Data API snippet.title е най-много 100 знака и snippet.description най-много 5000 БАЙТА…\" (+10 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Актуалното официално ръководство е DaVinci Resolve 21 Reference Manual (4444 стр., създ…\" (+10 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Мек поток в MP4 - таблицата codec_mp4_tags на MP4 муксера съдържа за надписи само mov_t…\""
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Филтърът subtitles иска FFmpeg с --enable-libass (и libavcodec/libavformat, за да превъ…\" (+10 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Само ProRes 4444 и 4444 XQ носят алфа канал (до 16 бита, математически без загуба в 444…\" (+9 още) · 3 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Размазан фон за 9:16 се сглобява от split, boxblur и overlay - boxblur има luma_radius=…\" · 2 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „С normalize=1 (подразбиране) всеки вход се умножава по теглото си, разделено на сбора н…\" (+5 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „YouTube прави качването Short, ако е качено на или след 15.10.2024 и е с квадратно или …\" (+7 още) · 4 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „amix по подразбиране е inputs=2, duration=longest, dropout_transition=2 (секунди), weig…\" (+9 още) · 2 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Аргументите на blender се изпълняват по реда на подаване, затова -o, -F, -x, -s, -e и -…\" (+11 още)"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „YouTube конвертира пълния обхват (full) в ограничен (limited), не препоръчва RGB матриц…\" (+7 още) · 5 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „loudnorm подразбиране I=-24 (-70..-5), LRA=7 (1..50), TP=-2 (-9..0), linear=true, dual_…\" (+7 още) · 4 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Според NVIDIA режимът за ниска латентност (tune ll) изключва B-кадрите, ползва постояне…\" (+5 още) · 2 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „Remotion CLI по подразбиране кодира h264; CRF диапазон/подразбиране са h264 1–51/18, h2…\" (+13 още)"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "learning",
-          "summary": "Научи: „В h264_nvenc, hevc_nvenc и av1_nvenc `-preset` е p1 (най-бърз, най-ниско качество) до p…\" (+11 още) · 2 в карантина"
-        },
-        {
-          "date": "2026-11-28",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Аргументите на Blender се изпълняват по реда на подаването, затова -b, -E, -o, -s, -e, …\" (+9)"
+          "summary": "Научи: „Брой NVENC блокове в матрицата на NVIDIA (колона „Total # of NVENC“) при GeForce - Blac…\" (+208 още) · 43 в карантина"
         },
         {
           "date": "2026-11-24",
