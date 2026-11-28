@@ -2139,6 +2139,11 @@
         {
           "date": "2026-11-28",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „В JavaScript toLowerCase() може да промени дължината на низа (U+0130 става 0069 0307), …\""
+        },
+        {
+          "date": "2026-11-28",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „В JavaScript String.prototype.toLowerCase() може да промени дължината на низа (U+0130 „…\""
         },
         {
