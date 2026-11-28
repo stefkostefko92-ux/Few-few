@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Студио пулт</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="mark">СП</span>
+        <div>
+          <h1>Студио пулт</h1>
+          <p class="sub">само на този компютър · 127.0.0.1</p>
+        </div>
+      </div>
+      <div class="meter" id="budget" aria-live="polite">Таван: …</div>
+    </header>
+
+    <main class="grid">
+      <section class="panel chat" aria-labelledby="chat-h">
+        <div class="panel-head">
+          <h2 id="chat-h">Разговор</h2>
+          <label class="agent-pick">
+            Агент
+            <select id="agent"></select>
+          </label>
+        </div>
+        <ol id="log" class="log" aria-live="polite"></ol>
+        <div id="approvals" class="approvals"></div>
+        <form id="say" class="say">
+          <textarea
+            id="text"
+            rows="3"
+            maxlength="20000"
+            placeholder="Напиши на агента… (Ctrl+Enter праща)"
+            required
+          ></textarea>
+          <div class="say-row">
+            <label class="keep"
+              ><input type="checkbox" id="keep" checked /> продължи разговора</label
+            >
+            <button type="button" id="stop" class="ghost">Спри</button>
+            <button type="submit" id="send">Изпрати</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel tasks" aria-labelledby="tasks-h">
+        <h2 id="tasks-h">Задачи</h2>
+        <p class="hint">
+          Пътищата са спрямо папката на студиото. Без „Пусни наистина“ задачата само показва
+          командата.
+        </p>
+        <form id="task" class="task-form">
+          <label
+            >Задача
+            <select id="task-id">
+              <option value="doctor">Провери студиото (doctor)</option>
+              <option value="loudnorm">Изравни звука (−14 LUFS)</option>
+              <option value="frames">Кадри → видео</option>
+              <option value="master">Мастер за Resolve (DNxHR)</option>
+              <option value="youtube4k60">YouTube 4K60 (NVENC)</option>
+              <option value="vertical916">Вертикално 9:16</option>
+            </select>
+          </label>
+          <label class="f-in"
+            >Вход <input id="t-in" placeholder="out/master.mov" autocomplete="off"
+          /></label>
+          <label class="f-pattern" hidden
+            >Кадри <input id="t-pattern" placeholder="out/frames/%05d.png" autocomplete="off"
+          /></label>
+          <label class="f-out"
+            >Изход <input id="t-out" placeholder="out/youtube.mp4" autocomplete="off"
+          /></label>
+          <label class="check"><input type="checkbox" id="t-run" /> Пусни наистина</label>
+          <label class="check"
+            ><input type="checkbox" id="t-force" /> Презапиши, ако съществува</label
+          >
+          <div class="say-row">
+            <button type="button" id="t-stop" class="ghost">Спри задачата</button>
+            <button type="submit">Старт</button>
+          </div>
+        </form>
+        <div class="progress" id="progress" hidden>
+          <div class="bar"><span id="bar"></span></div>
+          <p id="progress-text"></p>
+        </div>
+        <pre id="task-log" class="task-log" aria-live="polite"></pre>
+
+        <h2>Преглед</h2>
+        <form id="preview-form" class="preview-form">
+          <input id="preview-path" placeholder="out/youtube.mp4" autocomplete="off" />
+          <button type="submit" class="ghost">Покажи</button>
+        </form>
+        <div id="preview" class="preview"></div>
+
+        <div class="selfcheck">
+          <button type="button" id="selfcheck" class="ghost">Самопроверка на пазачите</button>
+          <p id="selfcheck-out"></p>
+        </div>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

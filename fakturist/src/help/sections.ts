@@ -36,7 +36,7 @@ export const HELP_SECTIONS: readonly HelpSection[] = [
   { id: 'payments', audience: 'both', capability: 'documents.read', feature: null },
   { id: 'recurring', audience: 'both', capability: 'documents.issue', feature: 'recurring' },
   { id: 'inbox', audience: 'both', capability: 'documents.read', feature: 'inbox' },
-  { id: 'journals', audience: 'both', capability: 'documents.read', feature: null },
+  { id: 'journals', audience: 'both', capability: 'documents.read', feature: 'vat-ledgers' },
   { id: 'team', audience: 'both', capability: 'members.manage', feature: null },
   { id: 'mandates', audience: 'company', capability: 'mandates.manage', feature: null },
   {

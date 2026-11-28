@@ -8,7 +8,7 @@
   const keepWhole = (text) => esc(text).replace(/SAF-T/g, '<span class="nw">SAF-T</span>');
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const dayText = (iso) => { const [y, m, d] = iso.split('-'); return lang === 'bg' ? `${d}.${m}.${y}` : `${Number(d)} ${months[Number(m) - 1]} ${y}`; };
-  const related = ['freeInvoicing', 'proforma', 'vatLedgers', 'saft', 'einvoicing2028', 'accountants', 'pricing'].filter((id) => id !== page);
+  const related = ['freeInvoicing', 'proforma', 'vatLedgers', 'saft', 'einvoicing2028', 'accountants', 'pricing'].filter((id) => id !== page && urls[id]);
 -%>
 <%- include('../partials/site-head') %>
 <main id="main">

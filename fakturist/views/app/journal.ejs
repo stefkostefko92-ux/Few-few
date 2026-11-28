@@ -1,7 +1,9 @@
 <%- include('../partials/app-head', { title: t('app.journal.title') }) %>
 <h1><%= t('app.journal.title') %></h1>
 <p class="muted"><%= t('app.journal.intro') %></p>
-<% if (!result) { %>
+<% if (review) { %>
+<p class="callout" role="status"><%= t('features.reviewNotice') %></p>
+<% } else if (!result) { %>
 <p class="callout"><%= t('app.journal.noVat') %></p>
 <% } else { %>
 <form method="get" class="search-row" aria-label="<%= t('app.journal.period') %>">

@@ -4,7 +4,8 @@ import { prisma } from '../db.js';
 import { audit } from '../audit.js';
 import { requireOrg, type OrgAccess } from '../auth/guards.js';
 import { roleCan } from '../auth/roles.js';
-import { orgHasFeature } from '../billing/entitlements.js';
+import { isReviewOrg, orgHasFeature } from '../billing/entitlements.js';
+import { feature as featureOf } from '../features.js';
 import { HOUR, sofiaToday } from '../time.js';
 import { ZipWriter } from '../export/zip.js';
 import { saftBundle } from '../export/saft/bundle.js';
@@ -69,6 +70,8 @@ export function appSaftRouter(): Router {
       org,
       period,
       feature,
+      // „Проверява се“ (SPEC 99) — не „купете план“: функцията още не е пусната за никого.
+      review: featureOf('saf-t').status === 'review' && !(await isReviewOrg(org.id)),
       bundle,
       maxPeriod: sofiaToday().slice(0, 7),
       canEdit: roleCan(access.role, 'accounting.manage'),

@@ -15,6 +15,8 @@ export interface HelpEntry {
   tips: string[];
   /** Функцията не е в плана на нито една от организациите на човека — показва се с бележка. */
   notInPlan: boolean;
+  /** Функцията „проверява се с инструментите на НАП“ (SPEC 99) — за никого не е налична; своя бележка. */
+  review: boolean;
 }
 
 /** Поредните ключове `<префикс>.1`, `.2`… до първия липсващ. */
@@ -28,13 +30,15 @@ function numbered(locale: Locale, prefix: string): string[] {
 function entry(locale: Locale, section: HelpSection, notInPlan: boolean): HelpEntry {
   const t = translator(locale);
   const key = `help.sections.${section.id}`;
+  const review = section.feature !== null && featureOf(section.feature).status === 'review';
   return {
     id: section.id,
     title: t(`${key}.title`),
     intro: t(`${key}.intro`),
     steps: numbered(locale, `${key}.steps`),
     tips: numbered(locale, `${key}.tips`),
-    notInPlan,
+    notInPlan: notInPlan && !review,
+    review,
   };
 }
 

@@ -20,6 +20,7 @@ const CORE_RE = /(fiscal|payment|stripe|checkout|billing|webhook|\bauth|session|
 const LEAF_RE = /(\/views\/|\/public\/|\/components\/|\/vendor\/|page\.tsx$|layout\.tsx$|\.ejs$|\.css$|\.html$|\.md$|\.svg$|\.png$|\.jpe?g$|\.webp$)/i;
 // Продуктови изключения (път → причина), когато ключовите думи не стигат.
 export const CORE_EXTRA = [
+  [/^studiopult\/src\//i, "вход и изпълнение на команди на компютъра на собственика: ключът, одобренията, резолверът, опциите на SDK"],
   [/^treydar\/src\/(exchange|executor|position|sizing)/i, "трейдинг: поръчки и размер на позицията"],
   [/^CSPos\/(src\/lib\/(money|vat|euro|db)|desktop\/main)/i, "каса: пари, ДДС, евро, офлайн база"],
   [/^medqr\/src\/(db|crypto|share)/i, "медицински профил (чл. 9 GDPR)"],

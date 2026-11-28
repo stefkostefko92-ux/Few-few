@@ -8,6 +8,8 @@
     "support": "Support"
   },
   "planned": "Coming · {target}",
+  "review": "Being checked with the NRA’s tools",
+  "reviewNotice": "Being checked with the NRA’s tools: the files will be available once they pass the NRA’s official validator and software with real data. Until then, keep them as you do now.",
   "invoices": {
     "name": "Invoices under Art. 114 of the VAT Act, checked on issue",
     "description": "Art. 114 of the VAT Act is checked on issue: number, exemption basis, tax point."
@@ -83,6 +85,10 @@
   "nra-reporting": {
     "name": "Reporting to the National Revenue Agency",
     "description": "Data for every document sent to the NRA system once the ordinance is out."
+  },
+  "vat-ledgers": {
+    "name": "VAT ledgers",
+    "description": "The month’s sales ledger (PRODAGBI.TXT) and purchase ledger (POKUPKI.TXT) under the NRA’s description — the company files them."
   },
   "saf-t": {
     "name": "Data for SAF-T",

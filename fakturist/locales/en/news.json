@@ -7,6 +7,11 @@
     "ok": "Got it"
   },
   "entries": {
+    "2026-11-28-versiya-2-3": {
+      "area": "App",
+      "title": "SAF-T data and the VAT ledgers are being checked with the NRA’s tools (version 2.3)",
+      "text": "The files for SAF-T and for the VAT ledgers (PRODAGBI.TXT and POKUPKI.TXT) cannot be downloaded for now: we are running them with real data through the NRA’s official validator and software and will turn them back on once they pass. Your documents stay, and the files will be made from them. Invoices, notes, pro formas, PDF and EN 16931 XML work as before."
+    },
     "2026-11-25-versiya-2-2": {
       "area": "App",
       "title": "The document form on phones and clearer errors (version 2.2)",

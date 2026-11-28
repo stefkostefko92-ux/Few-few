@@ -5,6 +5,10 @@
  *
  * `status: 'planned'` — още не е налична; витрината я показва с датата, никога като готова
  * (заблуждаваща реклама — Директива 2005/29/ЕО).
+ * `status: 'review'` — направена, но „проверява се с инструментите на НАП“ (SPEC 99; собственикът, 28.11.2026):
+ * клиентите не я ползват, витрината я показва с този статус, рекламната ѝ страница не е публикувана; ползват я
+ * само фирмите за проверката от панела (`features.reviewOrgIds`). Пуска се, като статусът стане `live` — след
+ * проверката по `docs/review/README.md`.
  */
 export const FEATURES = [
   { code: 'invoices', group: 'documents', status: 'live' },
@@ -28,12 +32,13 @@ export const FEATURES = [
   { code: 'mandates', group: 'accountants', status: 'live' },
   { code: 'peppol', group: 'einvoicing', status: 'planned', target: '2027-Q3' },
   { code: 'nra-reporting', group: 'einvoicing', status: 'planned', target: '2028-Q1' },
-  { code: 'saf-t', group: 'einvoicing', status: 'live' },
+  { code: 'vat-ledgers', group: 'einvoicing', status: 'review' },
+  { code: 'saf-t', group: 'einvoicing', status: 'review' },
   { code: 'priority-support', group: 'support', status: 'live' },
 ] as const satisfies ReadonlyArray<{
   code: string;
   group: string;
-  status: 'live' | 'planned';
+  status: 'live' | 'planned' | 'review';
   target?: string;
 }>;
 
