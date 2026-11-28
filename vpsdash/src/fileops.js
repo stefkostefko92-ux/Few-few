@@ -75,6 +75,17 @@ function realForms(full, follow) {
   return [...new Set(out)];
 }
 
+// Дял само за четене за процеса на панела — казва се ПРЕДИ опита. Грешката на fs
+// не стига: `mkdirSync(…, {recursive: true})` на Node връща ENOENT вместо EROFS
+// (видяно в лабораторията под новия unit), т.е. „Няма такъв път" за папка, която
+// е пред очите ти. /home е такава по замисъл (unit-ът я връзва само за четене).
+function assertWritableMount(full) {
+  const mp = readOnlyMount(full);
+  if (!mp) return;
+  const why = mp === '/home' ? 'пясъчникът на unit-а — пазачът на SSH ключовете чете, не пипа' : 'дялът е монтиран „ro“';
+  throw err(`${mp} е само за четене за панела (${why}) — промени по SSH.`, 409);
+}
+
 // Може ли това да се ТРИЕ/МЕСТИ/да му се сменят правата.
 export function assertMutable(p, cfg, { follow = false } = {}) {
   const full = resolvePath(p);
@@ -92,6 +103,7 @@ export function assertMutable(p, cfg, { follow = false } = {}) {
     if ([...HARD_DENY, ...CRITICAL, ...ownDirs(cfg)].some((r) => r !== f && under(r, f))) {
       throw err(`Вътре в ${f} има защитен път — папката не се трие, мести и не ѝ се сменят правата оттук.`, 403);
     }
+    assertWritableMount(f);
   }
   return full;
 }
@@ -109,6 +121,7 @@ export function assertCreatable(p, cfg) {
     if (HARD_DENY.some((r) => under(f, r))) throw err(`Системен път (${f}) — не се пише от панела.`, 403);
     if (CRITICAL_DIRS.some((r) => under(f, r))) throw err(`Тук (${f}) нов файл променя достъпа до машината — не оттук.`, 403);
     if (ownDirs(cfg).some((r) => under(f, r))) throw err(`Това са файловете на самия панел (${f}).`, 403);
+    assertWritableMount(f);
   }
   return full;
 }
@@ -121,10 +134,35 @@ export function assertName(name) {
 }
 
 // ── Пясъчникът на unit-а ────────────────────────────────────────────────────
-// `ProtectHome=tmpfs` слага ПРАЗЕН tmpfs върху /home и /run/user за процеса на
-// панела. Файловият мениджър там вижда празна папка — а празна папка изглежда
-// точно като „нищо няма", т.е. успокояващата нула. Казва се изрично.
+// Unit-ът слага ПРАЗЕН tmpfs върху /run/user (а по-старите версии — и върху
+// /home, с ProtectHome=tmpfs). Файловият мениджър там вижда празна папка — а
+// празна папка изглежда точно като „нищо няма", т.е. успокояващата нула. Казва се.
 const SANDBOX_HIDDEN = ['/home', '/run/user'];
+
+// Точката на монтиране, под която е пътят, ако е монтирана САМО ЗА ЧЕТЕНЕ за
+// процеса на панела (/home — по замисъл на unit-а; дял, паднал в ro след грешки
+// на диска). Иначе човекът разбира чак от провала на първото действие.
+const unescapeMount = (s) => s.replace(/\\([0-7]{3})/g, (_m, o) => String.fromCharCode(parseInt(o, 8)));
+export function readOnlyMount(p, mountinfo = null) {
+  const full = path.resolve(String(p || '/'));
+  let text = mountinfo;
+  if (text == null) {
+    try {
+      text = fs.readFileSync('/proc/self/mountinfo', 'utf8');
+    } catch {
+      return null;
+    }
+  }
+  let best = null;
+  for (const line of text.split('\n')) {
+    const f = line.split(' ');
+    if (f.length < 6) continue;
+    const mp = unescapeMount(f[4]);
+    // Последното съвпадение печели при еднаква дължина: по-късният mount е отгоре.
+    if (under(full, mp) && (!best || mp.length >= best.mp.length)) best = { mp, ro: f[5].split(',').includes('ro') };
+  }
+  return best?.ro ? best.mp : null;
+}
 export function sandboxNote(p, mountinfo = null) {
   const full = path.resolve(String(p || '/'));
   const root = SANDBOX_HIDDEN.find((r) => under(full, r));

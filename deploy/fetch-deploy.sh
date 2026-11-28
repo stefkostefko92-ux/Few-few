@@ -114,6 +114,30 @@ ref_guard_check
 command -v curl >/dev/null || die "Липсва curl."
 command -v tar  >/dev/null || die "Липсва tar."
 
+# ── Място за архива — ПРЕДИ свалянето ───────────────────────────────────────
+# Урок 2026-11-28: „Деплой от GitHub" от панела падаше с `curl: (23) client
+# returned ERROR on write`, а съобщението пращаше да се проверява ref-ът, мрежата
+# и репото. Истината: /root беше само за четене за процеса (пясъчникът на unit-а
+# под systemd 257). Код 23 = curl не може да ЗАПИШЕ — най-често дял „ro", свършени
+# inode-и или пълен диск. Затова проверката е ТУК, с причината, преди 400 MB трафик.
+# Тест: tools/vps/fetch-deploy.test.mjs.
+MIN_FREE_MB="${MIN_FREE_MB:-768}"   # архивът е ~430 MB; под това свалянето не се побира
+
+archive_dir_check() {
+  local dir="$1" probe free_kb
+  [ -d "$dir" ] || die "Няма папка за архива: $dir (ARCHIVE_DIR)."
+  probe="$dir/.fetch-deploy-probe-$$"
+  if ! { : > "$probe"; } 2>/dev/null; then
+    die "Не мога да пиша в $dir — за този процес дялът е само за четене (пясъчник на systemd unit, монтиран „ro“ след грешки на диска) или свършиха inode-ите ($(df -Pi "$dir" 2>/dev/null | awk 'NR==2{print $5}') заети). Провери: findmnt -T $dir; df -i $dir."
+  fi
+  rm -f -- "$probe"
+  free_kb="$(df -Pk "$dir" 2>/dev/null | awk 'NR==2{print $4}')"
+  if [ -n "$free_kb" ] && [ "$free_kb" -lt $((MIN_FREE_MB * 1024)) ]; then
+    die "Място в $dir: $((free_kb / 1024)) MB свободни, а свалянето иска поне ${MIN_FREE_MB} MB (архивът е ~430 MB). Освободи място — панелът: „Диск“ → „Какво може да се освободи“ — и пусни пак."
+  fi
+}
+archive_dir_check "$ARCHIVE_DIR"
+
 TS="$(date +%Y%m%d-%H%M%S)"
 # „/" в името на клон не бива да става път: чистим до безопасен етикет за файла.
 SAFE_REF="$(printf '%s' "$REF" | tr -c 'A-Za-z0-9._-' '-')"
@@ -124,9 +148,21 @@ ARCHIVE_PATH="$ARCHIVE_DIR/few-few-${SAFE_REF}-${TS}.tar.gz"
 URL="https://codeload.github.com/${REPO}/tar.gz/${REF}"
 
 log "Свалям ${REPO}@${REF}…"
+rc=0
 curl -fsSL --retry 4 --retry-delay 2 --retry-connrefused --max-time 900 \
-     "$URL" -o "$ARCHIVE_PATH" \
-  || die "Свалянето на ${REPO}@${REF} падна. Провери името на ref-а, мрежата и че репото е публично."
+     "$URL" -o "$ARCHIVE_PATH" || rc=$?
+if [ "$rc" -ne 0 ]; then
+  # Половин архив не остава: autodeploy.sh, пуснат на ръка, взима „най-новия в /root".
+  rm -f -- "$ARCHIVE_PATH"
+  # Причината по КОДА на curl, не едно общо изречение за всичко — общото пращаше
+  # човека да гони ref и мрежа при пълен/ro диск.
+  case "$rc" in
+    22) die "GitHub няма ${REPO}@${REF} (HTTP грешка) — провери името на клона/тага/SHA и че репото е публично." ;;
+    23) die "Свалянето не можа да ЗАПИШЕ в $ARCHIVE_DIR (curl код 23): пълен диск, свършени inode-и или дял само за четене. $(df -Ph "$ARCHIVE_DIR" 2>/dev/null | awk 'NR==2{print "Свободни: "$4" от "$2"."}')" ;;
+    6|7|28|35|52|56) die "Връзката до codeload.github.com падна (curl код $rc) — DNS, изходяща защитна стена, прокси или GitHub не отговаря." ;;
+    *) die "Свалянето на ${REPO}@${REF} падна (curl код $rc)." ;;
+  esac
+fi
 chmod 600 "$ARCHIVE_PATH"
 
 WORK="$(mktemp -d)"
