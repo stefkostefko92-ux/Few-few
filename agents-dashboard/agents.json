@@ -15480,7 +15480,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 226
+        "lessons": 227
       },
       "evolution": [
         {
@@ -15560,9 +15560,20 @@
           "date": "2026-11-28",
           "event": "v22.2 — учене",
           "detail": "Научи: PR 515 (studiopult.yml) е нов продуктов workflow със SHA пинове на checkout и setup-nod… (+3 още)"
+        },
+        {
+          "version": "22.3.0",
+          "date": "2026-11-28",
+          "event": "v22.3 — учене",
+          "detail": "Научи: PR 515 (studiopult.yml) вече покрива агентския слой в paths (.claude/agents/**, .claude…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „PR 515 (studiopult.yml) вече покрива агентския слой в paths (.claude/agents/**, .claude…\""
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
