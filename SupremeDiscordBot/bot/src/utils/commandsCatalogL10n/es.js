@@ -35,7 +35,7 @@ export default {
     "/tag list": "Lista todas las respuestas predefinidas y cuántas veces se ha usado cada una.",
     "Reply with tag": "Elige entre las 25 respuestas más usadas y publícala en este canal.",
     "/panel spawn": "Publica en el canal actual un panel creado en el panel de control.",
-    "/setup wizard": "Asistente interactivo de inicio rápido: elige roles de soporte, una categoría de tickets y, opcionalmente, un canal de registro; después crea tu primer panel desde el panel de control.",
+    "/setup wizard": "Asistente interactivo de inicio rápido: elige los roles de soporte, una categoría de tickets y, opcionalmente, un canal de registro, y crea con ellos tu primer panel de tickets. El panel se guarda, pero no se publica; publícalo desde el panel de control o con /panel spawn.",
     "/setup sync": "Fuerza la sincronización de todos los paneles publicados con su configuración actual del panel de control.",
     "/form spawn": "Publica en este canal un botón de formulario de solicitud.",
     "/form review": "Aprueba o rechaza manualmente una solicitud por ID. Igual que los botones Approve/Deny del mensaje de revisión.",

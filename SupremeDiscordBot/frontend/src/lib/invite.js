@@ -12,8 +12,16 @@
 // View Audit Log и Pin Messages (от 2026 закачането е отделно право).
 export const INVITE_PERMISSIONS = "2252160859499664";
 
-/** Адресът за добавяне на бота; с `guildId` Discord предлага направо този сървър. */
-export function botInviteUrl(guildId = null) {
-  const base = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=${INVITE_PERMISSIONS}&scope=bot+applications.commands`;
+/** Administrator — само за възстановяване от резервно копие (docs/BACKUP_SPEC.md, Б11). */
+export const RESTORE_PERMISSIONS = "8";
+
+/**
+ * Адресът за добавяне на бота; с `guildId` Discord предлага направо този сървър.
+ * `{ restore: true }` иска Administrator: без него Discord не позволява на бота да върне
+ * ролите и правата по каналите точно. Човекът може да махне правото след края.
+ */
+export function botInviteUrl(guildId = null, { restore = false } = {}) {
+  const perms = restore ? RESTORE_PERMISSIONS : INVITE_PERMISSIONS;
+  const base = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=${perms}&scope=bot+applications.commands`;
   return guildId ? `${base}&guild_id=${guildId}` : base;
 }

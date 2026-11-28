@@ -35,7 +35,7 @@ export default {
     "/tag list": "Wyświetla wszystkie gotowe odpowiedzi i liczbę użyć każdej z nich.",
     "Reply with tag": "Wybierz spośród 25 najczęściej używanych odpowiedzi i opublikuj ją w tym kanale.",
     "/panel spawn": "Publikuje w bieżącym kanale panel utworzony w panelu sterowania.",
-    "/setup wizard": "Interaktywny kreator szybkiego startu — wybierz role wsparcia, kategorię zgłoszeń i opcjonalnie kanał logów, a potem utwórz pierwszy panel w panelu sterowania.",
+    "/setup wizard": "Interaktywny kreator szybkiego startu — wybierz role wsparcia, kategorię ticketów i opcjonalnie kanał logów, a potem utwórz z nimi swój pierwszy panel ticketów. Panel zostaje zapisany, ale nie jest publikowany; opublikuj go w panelu zarządzania albo poleceniem /panel spawn.",
     "/setup sync": "Wymusza synchronizację wszystkich opublikowanych paneli z ich bieżącą konfiguracją z panelu sterowania.",
     "/form spawn": "Publikuje w tym kanale przycisk formularza aplikacyjnego.",
     "/form review": "Ręcznie akceptuje lub odrzuca aplikację po ID. Działa tak samo jak przyciski Approve/Deny w wiadomości do oceny.",

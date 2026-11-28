@@ -26,7 +26,13 @@ import { join, dirname, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const ADD_ROLE = (await import(`../src/i18n/dashboard/${process.env.MP_LANG || "en"}.js`)).default["picker.addRole"];
+const DICT = (await import(`../src/i18n/dashboard/${process.env.MP_LANG || "en"}.js`)).default;
+const ADD_ROLE = DICT["picker.addRole"];
+// Бутоните и разделите — от речника на езика на акаунта, за да работи проверката на всеки език
+// (MP_LANG=bg падаше на разделите на играта, защото имената им бяха зашити на английски).
+const BACKUP_VIEW = DICT["backups.view"];
+const TICKET_MANAGE = DICT["tickets.manage.open"];
+const GAME_TAB = (key) => DICT[`game.tab.${key}`];
 const DIST = join(ROOT, "dist");
 const SHOTS = join(ROOT, "scripts", "mobile-proof-shots");
 
@@ -154,7 +160,11 @@ const FIX = {
     { id: "f1", name: "Staff Application", isApplication: true, questions: [], acceptRoleIds: [], denyRoleIds: [],
       removeRoleIds: [], managerRoleIds: [], pingRoleIds: [], published: true },
   ],
-  [`GET /api/tickets/${SID}`]: { tickets: [], total: 0 },
+  // Два тикета (отворен и поет) — за да има бутон „Управлявай“ и дълги имена за прелива.
+  [`GET /api/tickets/${SID}`]: { total: 2, tickets: [
+    { id: "tk000000000000000000000001", number: 41, status: "OPEN", priority: "HIGH", createdAt: new Date().toISOString(), panelId: "p1", panel: { name: "Общи въпроси и поддръжка на играчи" }, creator: { username: "a-very-long-username-that-should-wrap", avatar: null }, assignee: null, archiveUrl: null },
+    { id: "tk000000000000000000000002", number: 42, status: "CLAIMED", priority: "URGENT", createdAt: new Date().toISOString(), panelId: "p1", panel: { name: "Плащания" }, creator: { username: "ivan", avatar: null }, assignee: { username: "maria" }, archiveUrl: null },
+  ] },
   // v52 — канал-стръв (секцията на страница Verification); вътрешният път е /honeypot.
   [`GET /api/honeypot/${SID}`]: { enabled: true, channelId: "223", action: "softban", logChannelId: "224", dmUser: true, warningMessageId: "1", caughtCount: 17, lastCaughtAt: new Date().toISOString() },
   [`GET /api/reactionroles/${SID}`]: [],
@@ -188,6 +198,27 @@ const FIX = {
   ] },
   "GET /api/admin/support/panels": { total: 1, page: 1, limit: 25, panels: [{ id: "p1", serverId: SID, name: "Support", channelId: "1", messageId: "2", createdAt: new Date().toISOString(), server: { name: "T19C" }, _count: { tickets: 12 } }] },
   "GET /api/admin/support/forms": { total: 1, page: 1, limit: 25, forms: [{ id: "f1", serverId: SID, name: "Staff Application", createdAt: new Date().toISOString(), server: { name: "T19C" }, _count: { questions: 6, applications: 3 } }] },
+  // v57 Резервни копия — дълги имена нарочно: прелив на телефон се хваща точно с тях.
+  [`GET /api/backups/server/${SID}/cbk000000000000000000000001`]: { backup: { id: "cbk000000000000000000000001" }, summary: {
+    tree: [{ id: "500000000000000010", name: "Общи разговори и обявления на общността", channels: [{ id: "500000000000000020", name: "общ-чат-за-всички-членове-на-сървъра", type: 0 }, { id: "500000000000000021", name: "Гласов", type: 2 }] }],
+    uncategorized: [{ id: "500000000000000022", name: "правила", type: 0 }],
+    roles: [{ id: "500000000000000001", name: "Администратор на сървъра", color: 16711680 }, { id: "500000000000000002", name: "Член", color: 0 }] } },
+  [`GET /api/backups/server/${SID}`]: {
+    backups: [
+      { id: "cbk000000000000000000000001", serverId: SID, guildName: "T19C", kind: "MANUAL", createdBy: "u1", roleCount: 24, categoryCount: 6, channelCount: 41, sizeBytes: 18000, expiresAt: null, createdAt: new Date().toISOString() },
+      { id: "cbk000000000000000000000002", serverId: SID, guildName: "T19C", kind: "AUTO", createdBy: null, roleCount: 24, categoryCount: 6, channelCount: 40, sizeBytes: 17800, expiresAt: null, createdAt: new Date(Date.now() - 86400000).toISOString() },
+    ],
+    limits: { manual: 25, autoKeep: 7, autoEveryDays: 1 }, usage: { manual: 1, auto: 1 },
+    lastRestore: { id: "crs000000000000000000000001", status: "DONE", mode: "SAME", counts: { planned: { roles: 3, channels: 9 }, rolesCreated: 3, channelsCreated: 8, failed: 1 }, warnings: [{ kind: "channel", name: "новини-и-съобщения-от-екипа", code: "TYPE_FALLBACK" }], createdAt: new Date().toISOString(), startedAt: new Date().toISOString(), finishedAt: new Date().toISOString() },
+  },
+  "GET /api/backups/mine": { servers: [
+    { serverId: "999999999999999999", name: "Стар сървър, който беше изтрит миналата седмица", botPresent: false, backups: [
+      { id: "cbk000000000000000000000009", serverId: "999999999999999999", guildName: "Стар сървър", kind: "AUTO", roleCount: 30, categoryCount: 8, channelCount: 52, sizeBytes: 20000, expiresAt: new Date(Date.now() + 80 * 86400000).toISOString(), createdAt: new Date(Date.now() - 7 * 86400000).toISOString() },
+    ] },
+    { serverId: SID, name: "T19C", botPresent: true, backups: [
+      { id: "cbk000000000000000000000001", serverId: SID, guildName: "T19C", kind: "MANUAL", roleCount: 24, categoryCount: 6, channelCount: 41, sizeBytes: 18000, expiresAt: null, createdAt: new Date().toISOString() },
+    ] },
+  ] },
   [`GET /api/billing/config`]: { provider: "discord", discord: { enabled: true, configured: true, applicationId: "app", storeUrl: "https://discord.com/application-directory/app/store", plans: { premium: { label: "Premium", monthlyEur: "4.99", skuId: "s1", url: "https://discord.com/application-directory/app/store/s1" }, whitelabel: { label: "White-label", monthlyEur: "9.99", skuId: "s2", url: "https://discord.com/application-directory/app/store/s2" } } }, stripe: { purchasesEnabled: false, legacyManagement: false } },
   [`GET /api/billing/${SID}`]: { provider: "discord", isPremium: true, plan: "agency10", source: "agency", agencyCovered: true, agencyOwnedByMe: true, discord: {}, stripe: { legacy: false, portalAvailable: false } },
 };
@@ -234,18 +265,22 @@ const PAGES = [
   { path: `/dashboard/${SID}/welcome?tab=reaction-roles`, name: "welcome-reaction-roles" },
   { path: `/dashboard/${SID}/bait`, name: "bait" },
   { path: `/dashboard/${SID}/activity-log`, name: "activity-log" },
+  { path: `/dashboard/${SID}/backups`, name: "backups" },
+  { path: `/dashboard/${SID}/backups`, name: "backups-open", click: BACKUP_VIEW },
+  { path: "/dashboard/backups", name: "my-backups" },
   { path: `/dashboard/${SID}/kb?tab=ai`, name: "kb-ai" },
   // Старият адрес трябва да отвори новата страница, не „404“.
   { path: `/dashboard/${SID}/automation`, name: "automation-moved" },
   { path: `/dashboard/${SID}/game`, name: "game" },
   // Останалите пет раздела на играта — дотогава проверката виждаше само „Обзор“
   // (одит 25.09.2026). `tab` = видимото име; кликът е като на потребител.
-  { path: `/dashboard/${SID}/game`, name: "game-levels", tab: "Level roles" },
-  { path: `/dashboard/${SID}/game`, name: "game-shop", tab: "Shop" },
-  { path: `/dashboard/${SID}/game`, name: "game-leaderboard", tab: "Leaderboard" },
-  { path: `/dashboard/${SID}/game`, name: "game-companions", tab: "Companions" },
-  { path: `/dashboard/${SID}/game`, name: "game-quests", tab: "Quests & mini-games" },
+  { path: `/dashboard/${SID}/game`, name: "game-levels", tab: GAME_TAB("levels") },
+  { path: `/dashboard/${SID}/game`, name: "game-shop", tab: GAME_TAB("shop") },
+  { path: `/dashboard/${SID}/game`, name: "game-leaderboard", tab: GAME_TAB("leaderboard") },
+  { path: `/dashboard/${SID}/game`, name: "game-companions", tab: GAME_TAB("companions") },
+  { path: `/dashboard/${SID}/game`, name: "game-quests", tab: GAME_TAB("quests") },
   { path: `/dashboard/${SID}/tickets`, name: "tickets" },
+  { path: `/dashboard/${SID}/tickets`, name: "tickets-manage", click: TICKET_MANAGE },
   { path: `/dashboard/${SID}/premium`, name: "premium" },
   { path: `/dashboard/${SID}/verification`, name: "verification" },
   { path: `/dashboard/${SID}/webhooks`, name: "webhooks" },

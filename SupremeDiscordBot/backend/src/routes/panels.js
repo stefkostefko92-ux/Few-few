@@ -24,7 +24,7 @@ async function assertFormsOwned(buttons, serverId) {
 router.use(requireAuth, loadUser);
 
 export const PREMIUM_PANEL_LIMIT = 50;
-const BASE_PANEL_LIMIT = 1;
+export const BASE_PANEL_LIMIT = 1;
 
 // Map of panel fields → premium feature keys, for bulk validation on POST/PUT
 const PANEL_PREMIUM_FIELDS = {

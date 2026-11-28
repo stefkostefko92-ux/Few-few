@@ -1063,6 +1063,12 @@
 {"t":"handoff","ts":"2026-11-27T21:06:52.082Z","id":"r45c03919","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"4dddc851"}
 {"t":"start","ts":"2026-11-27T21:54:51.659Z","id":"r402f418b","flow":"авто","lead":"diskordjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-27T21:54:51.659Z","id":"r402f418b","from":"diskordjiyata","to":"kodadjiyata","status":"има бележки","run":"508da2c0"}
+{"t":"start","ts":"2026-11-28T09:03:26.126Z","id":"rec3948bf","flow":"авто","lead":"diskordjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-28T09:03:26.127Z","id":"rec3948bf","from":"diskordjiyata","to":"kodadjiyata","status":"има бележки","run":"7ea95156"}
+{"t":"handoff","ts":"2026-11-28T09:46:34.787Z","id":"rec3948bf","from":"diskordjiyata","to":"kodadjiyata","status":"има бележки","run":"82bfffda"}
+{"t":"handoff","ts":"2026-11-28T09:47:15.794Z","id":"rec3948bf","from":"kodadjiyata","to":"друг","status":"има бележки","run":"6b519380","toRaw":"Изпитателя"}
+{"t":"start","ts":"2026-11-28T10:00:36.932Z","id":"r41a5d5ca","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-28T10:00:36.933Z","id":"r41a5d5ca","from":"kodadjiyata","to":"друг","status":"има бележки","run":"d8f693ce","toRaw":"Изпитателя"}
 {"t":"start","ts":"2026-11-28T08:47:38.520Z","id":"raf3db5fd","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-28T08:47:38.521Z","id":"raf3db5fd","from":"razbivacha","to":"kodadjiyata","status":"наред","run":"cbd54cf0"}
 {"t":"start","ts":"2026-11-28T08:14:56.415Z","id":"r727e5b9b","flow":"авто","lead":"ai-studio","auto":true}
@@ -1095,3 +1101,5 @@
 {"t":"handoff","ts":"2026-11-28T09:14:25.627Z","id":"r50087700","from":"ai-studio","to":"човек","status":"наред","run":"66be00fa"}
 {"t":"start","ts":"2026-11-28T09:26:50.852Z","id":"r3142bbd9","flow":"авто","lead":"razbivacha","auto":true}
 {"t":"handoff","ts":"2026-11-28T09:26:50.853Z","id":"r3142bbd9","from":"razbivacha","to":"kodadjiyata","status":"блокер","run":"c92d57fc"}
+{"t":"start","ts":"2026-11-28T10:30:12.460Z","id":"r72bb84fa","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-11-28T10:30:12.460Z","id":"r72bb84fa","from":"kodadjiyata","to":"kachestveniyat","status":"наред","run":"fa312647"}

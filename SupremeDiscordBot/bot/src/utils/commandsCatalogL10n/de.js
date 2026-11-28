@@ -35,7 +35,7 @@ export default {
     "/tag list": "Listet alle vorgefertigten Antworten und wie oft jede verwendet wurde.",
     "Reply with tag": "Wählen Sie aus den 25 meistgenutzten Antworten und posten Sie sie in diesem Kanal.",
     "/panel spawn": "Postet ein im Dashboard angelegtes Panel in den aktuellen Kanal.",
-    "/setup wizard": "Interaktiver Schnellstart-Assistent — Support-Rollen, eine Ticket-Kategorie und optional einen Log-Kanal wählen, dann im Dashboard das erste Panel anlegen.",
+    "/setup wizard": "Interaktiver Schnellstart-Assistent — wähle Support-Rollen, eine Ticket-Kategorie und optional einen Log-Kanal und erstelle damit dein erstes Ticket-Panel. Das Panel wird gespeichert, aber nicht veröffentlicht; veröffentliche es im Dashboard oder mit /panel spawn.",
     "/setup sync": "Gleicht alle geposteten Panel-Nachrichten mit ihrer aktuellen Dashboard-Konfiguration ab.",
     "/form spawn": "Postet einen Button für ein Bewerbungsformular in diesem Kanal.",
     "/form review": "Nimmt eine Bewerbung per ID manuell an oder lehnt sie ab. Gleiche Wirkung wie die Buttons Approve/Deny in der Prüfnachricht.",

@@ -27,7 +27,10 @@ import { handlePanelSpawn, handlePanelUpdate, handleMultiPanelSpawn } from "./in
 import { invalidatePanel } from "./utils/panelCache.js";
 import { handleTicketClose, handleTicketClaim, handleTicketAutoClose } from "./internal/ticketHandler.js";
 import { handleApplicationReviewed } from "./internal/applicationHandler.js";
-import { bootAllCustomClients, shutdownCustomClient, customClients } from "./services/clientManager.js";
+import { bootAllCustomClients, shutdownCustomClient, customClients, getClientForGuild } from "./services/clientManager.js";
+import { captureGuild } from "./utils/backupCapture.js";
+import { runRestoreJob, preflightGuild } from "./utils/backupRestoreJob.js";
+import { manageTicket, searchMembers } from "./utils/ticketManage.js";
 import { roleAssignabilityReason } from "./utils/reactionRoles.js";
 import { presentMembers } from "./utils/giveawayMembers.js";
 import { memberCacheWarmer } from "./utils/memberCacheWarm.js";
@@ -1303,6 +1306,22 @@ app.post("/internal/game-quest", async (req, res) => {
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 // Етап 3: trivia (POST публикува кръг от scheduler-а, CLOSE показва отговора при изтичане).
+// Паритет с /spawn: пусни спътник сега от таблото. Backend-ът вече е записал появата;
+// тук само се публикува — в канал, търсен САМО в този сървър (guildChannel).
+app.post("/internal/game-spawn", async (req, res) => {
+  const { serverId, channelId, data } = req.body || {};
+  if (!data?.spawn?.id) return res.status(400).json({ ok: false, error: "spawn data required" });
+  try {
+    const channel = await guildChannel(serverId, channelId);
+    if (!channel?.isTextBased?.()) return res.status(404).json({ ok: false, error: "Channel not found" });
+    const { postSpawn } = await import("./utils/game.js");
+    await postSpawn(channel, data, client);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[game-spawn]", err?.code || err?.message);
+    res.status(502).json({ ok: false, error: err?.message || "post failed" });
+  }
+});
 app.post("/internal/game-trivia", async (req, res) => {
   const { event, serverId, round } = req.body || {};
   if (!event || !serverId || !round) return res.status(400).json({ error: "event, serverId и round са задължителни" });
@@ -1380,6 +1399,85 @@ app.post("/internal/admin-broadcast", async (req, res) => {
 // messages to this user"), когато получателят е спрял DM от сървъри или е
 // блокирал бота. Отговаряме 200 с { ok:false, reason } — иначе backend-ът би
 // го отчел като провал и би ретрайвал известие, което никога няма да мине.
+// ─── Действия с тикет от таблото (паритет с командите, 28.11.2026) ─────────────
+// Backend-ът вече е проверил правата, Premium и че тикетът е на този сървър; тук каналът се
+// търси САМО в този сървър (guildChannel), така че чужд channelId не може да се пипне.
+const TICKET_ACTIONS = new Set(["priority", "rename", "add", "remove", "move"]);
+app.post("/internal/ticket-manage", async (req, res) => {
+  const b = req.body || {};
+  if (!TICKET_ACTIONS.has(b.action)) return res.status(400).json({ ok: false, error: "unknown action" });
+  if (["add", "remove"].includes(b.action) && !/^\d{15,22}$/.test(String(b.userId || ""))) return res.status(400).json({ ok: false, error: "invalid userId" });
+  try {
+    const channel = await guildChannel(b.serverId, b.channelId);
+    if (!channel) return res.status(404).json({ ok: false, error: "Channel not found" });
+    const out = await manageTicket({ ...b, guild: channel.guild, channel });
+    res.json(out);
+  } catch (err) {
+    console.error("[ticket-manage]", b.action, err?.code || err?.message);
+    res.status(502).json({ ok: false, error: err?.message || "Discord refused", code: err?.code ?? null });
+  }
+});
+
+// Търсене на член по име (за „добави човек“ в таблото). Само ID и имена излизат.
+app.post("/internal/member-search", async (req, res) => {
+  const q = String(req.body?.q || "").trim().slice(0, 32);
+  if (q.length < 2) return res.status(400).json({ ok: false, error: "query too short" });
+  try {
+    const guild = client.guilds.cache.get(req.body?.guildId) || await client.guilds.fetch(req.body?.guildId).catch(() => null);
+    if (!guild) return res.status(404).json({ ok: false, error: "Guild not found" });
+    res.json({ ok: true, members: await searchMembers(guild, q) });
+  } catch (err) {
+    console.error("[member-search]", err?.message);
+    res.status(500).json({ ok: false, error: "search failed" });
+  }
+});
+
+// ─── Резервни копия на сървъра (docs/BACKUP_SPEC.md) ─────────────────────────
+// Сървърът може да се обслужва от white-label клиент — първо него, после главния.
+async function backupGuild(guildId) {
+  if (!/^\d{15,22}$/.test(String(guildId || ""))) return null;
+  const clients = [getClientForGuild(guildId, client), client].filter((c, i, a) => c && a.indexOf(c) === i);
+  for (const c of clients) {
+    const g = c.guilds.cache.get(guildId) || await c.guilds.fetch(guildId).catch(() => null);
+    if (g) return g;
+  }
+  return null;
+}
+const snowflakes = (v) => (Array.isArray(v) ? v.filter((x) => /^\d{15,22}$/.test(String(x))).slice(0, 1000).map(String) : []);
+
+// Снимка на сървъра в момента. Само за backend-а (тайната е над всички /internal маршрути).
+app.post("/internal/backup-capture", async (req, res) => {
+  try {
+    const guild = await backupGuild(req.body?.guildId);
+    if (!guild) return res.status(404).json({ ok: false, error: "Guild not found" });
+    res.json({ ok: true, snapshot: await captureGuild(guild) });
+  } catch (err) {
+    console.error("[backup-capture]", err?.message);
+    res.status(500).json({ ok: false, error: "capture failed" });
+  }
+});
+
+// Проверка преди възстановяване: само кои от подадените ID-та ги има + правата на бота.
+app.post("/internal/backup-preflight", async (req, res) => {
+  try {
+    const guild = await backupGuild(req.body?.guildId);
+    if (!guild) return res.json({ ok: true, inGuild: false });
+    if (!guild.members.me) await guild.members.fetchMe().catch(() => null);
+    res.json(preflightGuild(guild, { roleIds: snowflakes(req.body?.roleIds), channelIds: snowflakes(req.body?.channelIds) }));
+  } catch (err) {
+    console.error("[backup-preflight]", err?.message);
+    res.status(500).json({ ok: false, error: "preflight failed" });
+  }
+});
+
+// Буди задачата. Отговаря веднага; самото възстановяване тече във фона и докладва на backend-а.
+app.post("/internal/backup-restore", (req, res) => {
+  const restoreId = String(req.body?.restoreId || "");
+  if (!/^c[a-z0-9]{20,40}$/.test(restoreId)) return res.status(400).json({ ok: false, error: "invalid restoreId" });
+  runRestoreJob(restoreId, { api, resolveGuild: backupGuild }).catch((err) => console.error("[backup-restore]", err?.message));
+  res.status(202).json({ ok: true });
+});
+
 app.post("/internal/dm-user", requireBotSecret, async (req, res) => {
   const { userId, embed } = req.body || {};
   if (!userId || typeof userId !== "string" || !embed || typeof embed !== "object") {

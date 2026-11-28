@@ -40,7 +40,8 @@ export default {
     }
 
     const rawName = interaction.options.getString("name");
-    const cleanName = rawName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").slice(0, 100);
+    // Същото чистене като в таблото (backend/src/routes/tickets.js → cleanTicketName).
+    const cleanName = rawName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "").slice(0, 100);
     if (!cleanName) {
       return interaction.editReply(t("tkt.renameInvalid", lang));
     }

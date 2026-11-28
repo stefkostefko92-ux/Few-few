@@ -65,7 +65,7 @@ export default function GiveawaysTab() {
         </label>
         <label className="block">
           <span className="cs-label">{t("ui.description")}</span>
-          <textarea className="cs-textarea" rows={2} maxLength={1000} value={form.description}
+          <textarea className="cs-textarea" rows={2} maxLength={2000} value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             placeholder={t("ui.ph.giveawayDetails")} />
         </label>
