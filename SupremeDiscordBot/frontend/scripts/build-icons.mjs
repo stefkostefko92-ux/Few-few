@@ -63,6 +63,12 @@ export function collectIconNames(files = walk(SRC)) {
       }
     }
   }
+  // Запълнени варианти: иконата се ползва с fill пропс или с клас fill-* (fill-current,
+  // fill-cs-gold…) — SVG-то се запълваше, растерът трябва да има отделна клетка.
+  const fillRe = /<([A-Z][A-Za-z0-9]*)\b[^>]*?(?:\sfill=(?!["']none["'])|className="[^"]*\bfill-(?!none\b))/g;
+  for (const f of files) {
+    for (const m of readFileSync(f, "utf8").matchAll(fillRe)) if (names.has(m[1])) names.add(`${m[1]}:fill`);
+  }
   for (const e of EXTRA) names.add(e);
   return [...names].sort();
 }

@@ -24,4 +24,9 @@ describe("BannerPicker", () => {
     expect(bannerChoice("https://supremebot.carbonstealth.eu/banners/gold.jpg")).toBe("gold");
     expect(bannerChoice("https://cdn.example.com/my.png")).toBe("custom");
   });
+  it("ревю: само каноничният адрес е наш банер — чужд хост със същия път е собствена картинка", () => {
+    expect(bannerUrl("gold")).toBe("https://supremebot.carbonstealth.eu/banners/gold.jpg");
+    expect(bannerChoice("https://evil.example/banners/gold.jpg")).toBe("custom");
+    expect(bannerChoice("http://localhost:5173/banners/gold.jpg")).toBe("custom");
+  });
 });

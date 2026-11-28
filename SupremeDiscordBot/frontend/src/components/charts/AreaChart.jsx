@@ -53,7 +53,8 @@ export default function AreaChart({ data = [], height = 220, className = "" }) {
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [asTable]);
+    // data.length > 0: празното състояние няма кутия — когато данните дойдат, мерим пак.
+  }, [asTable, data.length > 0]);
 
   const geo = useMemo(() => layoutPoints(data, width || 720, H), [data, width, H]);
 

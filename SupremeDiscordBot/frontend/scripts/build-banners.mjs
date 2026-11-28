@@ -52,10 +52,10 @@ const SCENES = {
   // Броня: хоризонтални канали, лента „опасност“ долу, светеща нишка.
   armor: `<style>
       .groove{position:absolute;left:60px;right:60px;height:3px;background:#000;box-shadow:0 1px 0 rgba(255,255,255,.07)}
-      .hazard{position:absolute;left:0;right:0;bottom:0;height:54px;
+      .hazard{position:absolute;left:0;right:0;bottom:34px;height:40px;
         background:repeating-linear-gradient(-45deg,#8fe600 0 26px,#030807 26px 52px);opacity:.92;box-shadow:inset 0 2px 6px rgba(0,0,0,.7)}
       .strip{position:absolute;left:60px;right:60px;top:150px;height:6px;border-radius:3px;background:#8fe600;box-shadow:0 0 24px 6px rgba(143,230,0,.55)}
-      .plate{position:absolute;left:420px;top:190px;width:360px;height:110px;border-radius:8px;border:2px solid #36503f;
+      .plate{position:absolute;left:420px;top:176px;width:360px;height:100px;border-radius:8px;border:2px solid #36503f;
         background:linear-gradient(180deg,#1a2c27,#0b1a17);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 -3px 0 rgba(0,0,0,.6),0 0 0 2px #000}
       .plate::after{content:"";position:absolute;inset:34px 40px;border-radius:4px;background:#020605;box-shadow:inset 0 2px 8px #000,0 0 0 1px rgba(143,230,0,.35)}
     </style>
@@ -70,7 +70,7 @@ const SCENES = {
       .glow{position:absolute;left:50%;top:50%;width:360px;height:360px;margin:-180px 0 0 -180px;border-radius:50%;
         background:radial-gradient(circle,rgba(143,230,0,.35),transparent 65%)}
       .tick{position:absolute;left:50%;top:50%;width:84px;height:44px;margin:-36px 0 0 -42px;border-left:16px solid #8fe600;border-bottom:16px solid #8fe600;
-        transform:rotate(-45deg);box-shadow:-6px 6px 22px rgba(143,230,0,.6)}
+        transform:rotate(-45deg);filter:drop-shadow(-4px 4px 10px rgba(143,230,0,.7))}
       .scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0 1px,transparent 1px 4px)}
       .beam{position:absolute;top:50%;height:2px;width:330px;background:linear-gradient(90deg,transparent,#8fe600);box-shadow:0 0 12px #8fe600}
     </style>

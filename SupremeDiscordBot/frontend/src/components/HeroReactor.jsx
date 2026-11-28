@@ -6,7 +6,9 @@
 // пести данни. Без 3D героят изглежда както досега — картинката и лаймовото сияние.
 import { lazy, Suspense, useEffect, useState } from "react";
 
-const ReactorScene = lazy(() => import("./ReactorScene.jsx"));
+// Провален чънк (стар хеш след деплой, офлайн) НЕ бива да сваля началната страница през
+// ErrorBoundary — реакторът е украса, затова провалът е тихо „без 3D“ (ревю на Кодаджията).
+const ReactorScene = lazy(() => import("./ReactorScene.jsx").catch(() => ({ default: () => null })));
 
 export function wants3D(win = typeof window !== "undefined" ? window : undefined) {
   if (!win) return false;
@@ -17,6 +19,14 @@ export function wants3D(win = typeof window !== "undefined" ? window : undefined
 
 export default function HeroReactor({ className = "" }) {
   const [on, setOn] = useState(false);
+  // „Намалено движение“, включено ПОСЛЕ зареждането, също маха сцената (ревю на Дизайнера).
+  useEffect(() => {
+    const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (!mq?.addEventListener) return undefined;
+    const onChange = () => { if (mq.matches) setOn(false); };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
   useEffect(() => {
     if (!wants3D()) return undefined;
     const go = () => setOn(true);

@@ -87,6 +87,12 @@ describe("И4 — поведението на иконата", () => {
     expect(SPRITE["Star:fill"]).toBeDefined();
     expect(filled).not.toEqual(plain);
   });
+  it("клас fill-* също дава запълнената клетка (звездите на Premium, Play)", () => {
+    const byClass = html(React.createElement(makeIcon("Star"), { className: "w-3 h-3 fill-current" }));
+    const plain = html(React.createElement(makeIcon("Star"), { className: "w-3 h-3" }));
+    expect(byClass).not.toEqual(plain.replace("w-3 h-3", "w-3 h-3 fill-current"));
+    expect(SPRITE["Play:fill"]).toBeDefined();
+  });
   it("пропсовете на lucide не стигат до DOM", () => {
     const out = html(React.createElement(makeIcon("Zap"), { strokeWidth: 2.5, absoluteStrokeWidth: true, fill: "none" }));
     expect(out).not.toMatch(/strokewidth|stroke-width|absolute|fill=/i);

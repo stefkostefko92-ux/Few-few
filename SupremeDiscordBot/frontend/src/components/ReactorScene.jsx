@@ -5,9 +5,11 @@
 // не плащат нищо. Цветовете са от палитрата (lime, gold, cream, нитовете), нищо ново.
 //
 // Сцената: светещо ядро (жичен икосаедър + горещо вътрешно ядро + ореол), три пръстена от
-// метал и злато, два роя частици, които кръжат бавно. Движението е бавно и непрекъснато —
-// пулсът на ореола е ~0.2 Hz (WCAG 2.3.1: далеч под 3 проблясвания/с), без мигане.
-// Спира се, когато не се вижда (IntersectionObserver) или подразделът е скрит.
+// метал и злато, два роя частици, които кръжат бавно. Пулсът на ореола е ~0.2 Hz
+// (WCAG 2.3.1: далеч под 3 проблясвания/с), без мигане.
+// WCAG 2.2.2 (ревю на Дизайнера): автоматичното движение спира след 5 s на последния кадър;
+// после сцената оживява само докато човекът мърда мишката над героя (движение по негово
+// действие). Спира се и когато не се вижда (IntersectionObserver) или подразделът е скрит.
 import { useEffect, useRef } from "react";
 import {
   WebGLRenderer, Scene, PerspectiveCamera, Group, Mesh, Points, Sprite,
@@ -128,14 +130,27 @@ export default function ReactorScene({ className = "" }) {
     const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(resize) : null;
     ro?.observe(host);
 
-    // Лек паралакс по мишката (само там, където има мишка).
+    // Автоматично — само първите 5 s (WCAG 2.2.2). После — 1.5 s след всяко движение на
+    // мишката над героя, с лек паралакс.
+    const AUTO_MS = 5000;
+    const AFTER_MOVE_MS = 1500;
+    let runUntil = performance.now() + AUTO_MS;
+    let lost = false;
     let mx = 0, my = 0;
     const onMove = (e) => {
       const r = host.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
       mx = ((e.clientX - r.left) / r.width - 0.5) * 2;
       my = ((e.clientY - r.top) / r.height - 0.5) * 2;
+      const now = performance.now();
+      const stopped = now > runUntil;
+      runUntil = Math.max(runUntil, now + AFTER_MOVE_MS);
+      if (stopped) { last = now; loop(); }
     };
     window.addEventListener("pointermove", onMove, { passive: true });
+    // Загубен WebGL контекст (драйвер, твърде много платна) — спираме тихо, картинката остава.
+    const onLost = (e) => { e.preventDefault(); lost = true; cancelAnimationFrame(raf); };
+    canvas.addEventListener("webglcontextlost", onLost);
 
     // Рисува само докато се вижда.
     let visible = true;
@@ -150,7 +165,8 @@ export default function ReactorScene({ className = "" }) {
     function loop() {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame((now) => {
-        if (!visible || document.hidden) return; // спира; IntersectionObserver/visibilitychange го пускат пак
+        // Спира; IntersectionObserver / visibilitychange / мишката над героя го пускат пак.
+        if (lost || !visible || document.hidden || now > runUntil) return;
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now;
         t += dt;
@@ -177,7 +193,11 @@ export default function ReactorScene({ className = "" }) {
       io?.disconnect();
       window.removeEventListener("pointermove", onMove);
       document.removeEventListener("visibilitychange", onVis);
+      canvas.removeEventListener("webglcontextlost", onLost);
       for (const d of disposables) d.dispose?.();
+      // dispose() в three 0.187 не губи контекста — без това всяко връщане на началната
+      // страница оставя стар WebGL контекст до GC (ревю на Кодаджията).
+      renderer.forceContextLoss();
       renderer.dispose();
       canvas.remove();
     };

@@ -25,7 +25,9 @@ export function makeIcon(name) {
     { size, className = "", style, color, fill, strokeWidth: _sw, absoluteStrokeWidth: _asw, ...rest },
     ref,
   ) {
-    const filled = fill && fill !== "none" && SPRITE[`${name}:fill`] !== undefined;
+    // Запълнена клетка: fill пропс или клас fill-* (fill-current, fill-cs-gold) — както при SVG.
+    const wantsFill = (fill && fill !== "none") || /(^|\s)fill-(?!none(\s|$))/.test(className);
+    const filled = wantsFill && SPRITE[`${name}:fill`] !== undefined;
     const index = filled ? SPRITE[`${name}:fill`] : SPRITE[name];
     const labelled = rest["aria-label"] || rest["aria-labelledby"] || rest.title;
     const cls = className.replace(/(^|\s)inline(?=\s|$)/, "$1inline-block");

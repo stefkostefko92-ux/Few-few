@@ -4,29 +4,38 @@
 // Пише в imageUrl на панела пълен публичен адрес — Discord тегли картинката оттам. Без
 // текст и лого, за да пасват и на white-label сървъри. Собствена картинка, зададена по-рано,
 // се пази и показва като отделен избор — нищо не се губи, ако човекът не я пипне.
+import { useState } from "react";
 import { useT } from "../contexts/I18nContext.jsx";
+import { SITE } from "./Seo.jsx";
 
 export const BANNER_IDS = ["reactor", "armor", "shield", "gold"];
 
-export function bannerUrl(id, origin = typeof window !== "undefined" ? window.location.origin : "") {
+/** Каноничният публичен адрес — Discord тегли картинката оттам. Не текущият origin:
+ *  от localhost/IP/друг хост би записал адрес, който Discord не може да изтегли (ревю). */
+export function bannerUrl(id, origin = SITE) {
   return `${origin}/banners/${id}.jpg`;
 }
 
-/** Кой готов банер е избран (или "none" / "custom"). */
+/** Кой готов банер е избран (или "none" / "custom"). Точно сравнение — чужд адрес,
+ *  завършващ на /banners/gold.jpg, е собствена картинка, не нашият банер. */
 export function bannerChoice(value) {
   if (!value) return "none";
-  const hit = BANNER_IDS.find((id) => value.endsWith(`/banners/${id}.jpg`));
+  const hit = BANNER_IDS.find((id) => value === bannerUrl(id));
   return hit || "custom";
 }
 
 export default function BannerPicker({ value, onChange, idPrefix = "banner" }) {
   const { t } = useT();
   const current = bannerChoice(value);
+  // Собствената картинка, с която редакторът е отворен, остава избор дори след клик на
+  // готов банер — иначе един клик я губеше без начин да се върне (ревю на Кодаджията).
+  const [original] = useState(value);
+  const customUrl = current === "custom" ? value : bannerChoice(original) === "custom" ? original : null;
   const name = `${idPrefix}-choice`;
   const options = [
     { id: "none", label: t("banner.none") },
     ...BANNER_IDS.map((id) => ({ id, label: t(`banner.${id}`), img: `/banners/${id}.jpg` })),
-    ...(current === "custom" ? [{ id: "custom", label: t("banner.custom") }] : []),
+    ...(customUrl ? [{ id: "custom", label: t("banner.custom") }] : []),
   ];
   return (
     <fieldset>
@@ -50,14 +59,15 @@ export default function BannerPicker({ value, onChange, idPrefix = "banner" }) {
                 checked={checked}
                 onChange={() => {
                   if (o.id === "none") onChange("");
-                  else if (o.id !== "custom") onChange(bannerUrl(o.id));
+                  else if (o.id === "custom") onChange(customUrl);
+                  else onChange(bannerUrl(o.id));
                 }}
               />
               <span className="block aspect-[3/1] rounded-sm overflow-hidden bg-cs-bg cs-panel">
                 {o.img ? (
                   <img src={o.img} alt="" width="240" height="80" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 ) : o.id === "custom" ? (
-                  <span className="flex w-full h-full items-center justify-center px-2 text-[11px] text-cs-muted break-all">{value}</span>
+                  <span className="flex w-full h-full items-center justify-center px-2 text-[11px] text-cs-muted break-all">{customUrl}</span>
                 ) : null}
               </span>
               <span className={`mt-1 block text-xs font-semibold ${checked ? "text-cs-cyan" : "text-cs-muted"}`}>{o.label}</span>

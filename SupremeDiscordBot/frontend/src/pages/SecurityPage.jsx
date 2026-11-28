@@ -123,9 +123,9 @@ export default function SecurityPage() {
 
       {/* Състояние */}
       <div className="cs-card mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           {enabled ? <ShieldCheck className="w-6 h-6 text-success" /> : <ShieldAlert className="w-6 h-6 text-cs-dim" />}
-          <div>
+          <div className="min-w-0">
             <p className="font-semibold text-cs-text">{enabled ? t("security.statusEnabled") : t("security.statusDisabled")}</p>
             <p className="text-xs text-cs-dim">
               {enabled

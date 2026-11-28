@@ -32,10 +32,10 @@
     --brush: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 3px);
     --rivet-dot: #5b6f55 0 1.6px, rgba(0, 0, 0, 0.65) 2.1px, transparent 2.8px;
     --rivets:
-      radial-gradient(circle at 9px 9px, var(--rivet-dot)),
-      radial-gradient(circle at calc(100% - 9px) 9px, var(--rivet-dot)),
-      radial-gradient(circle at 9px calc(100% - 9px), var(--rivet-dot)),
-      radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), var(--rivet-dot));
+      radial-gradient(circle at 7px 7px, var(--rivet-dot)),
+      radial-gradient(circle at calc(100% - 7px) 7px, var(--rivet-dot)),
+      radial-gradient(circle at 7px calc(100% - 7px), var(--rivet-dot)),
+      radial-gradient(circle at calc(100% - 7px) calc(100% - 7px), var(--rivet-dot));
     --plate: linear-gradient(180deg, var(--plate-hi), var(--plate-lo));
     --plate-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -2px 0 rgba(0, 0, 0, 0.55),
                     0 0 0 1px #000, 0 10px 24px rgba(0, 0, 0, 0.5);
@@ -101,6 +101,8 @@
     text-shadow: -1px 0 rgba(240, 194, 76, 0.45), 1px 0 rgba(143, 230, 0, 0.55);
   }
   @media (min-width: 640px) { #main-content h1 { font-size: 1.75rem; } }
+  /* На телефон ±1 px отпечатък на 24 px размазва ръба — там е половин пиксел. */
+  @media (max-width: 639px) { #main-content h1 { text-shadow: -0.5px 0 rgba(240, 194, 76, 0.4), 0.5px 0 rgba(143, 230, 0, 0.5); } }
   /* Дашбордът стои на собствен непрозрачен фон — той носи зърното и сиянието. */
   #main-content {
     background-image:
@@ -223,7 +225,7 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -2px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px #000;
   }
   .cs-knob:hover { border-color: rgba(143, 230, 0, 0.55); }
-  /* Активният пункт в лентата: лаймово гнездо + ядро вдясно, което дишa бавно
+  /* Активният пункт в лентата: лаймово гнездо + ядро вдясно, което издишва веднъж
      (2.6 s, без мигане; при „намалено движение“ е неподвижно). */
   .cs-nav-on {
     background: linear-gradient(180deg, rgba(143, 230, 0, 0.16), rgba(143, 230, 0, 0.05));
@@ -234,7 +236,8 @@
     border-radius: 50%; background: #8fe600; box-shadow: 0 0 8px #8fe600;
   }
   @media (prefers-reduced-motion: no-preference) {
-    .cs-nav-on::after { animation: cs-core 2.6s ease-in-out infinite; }
+    /* Веднъж при отваряне на страницата — безкрайно движение искаше бутон „пауза“ (WCAG 2.2.2). */
+    .cs-nav-on::after { animation: cs-core 2.6s ease-in-out 1; }
   }
 
   /* Растерните икони (components/icons) — клетка от атласа като маска с currentColor.
@@ -283,6 +286,11 @@
   }
   .cs-btn-primary:hover { background: linear-gradient(180deg, #bdf75a, #a6f52b 45%, #7cc400); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 0 26px rgba(143, 230, 0, 0.5); }
   .cs-btn-primary:active { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35), 0 0 12px rgba(143, 230, 0, 0.3); }
+  /* Изключеният лаймов ключ е угаснал метал, не избледнял лайм (избледнялото четеше като друга палитра). */
+  .cs-btn-primary:disabled, .cs-btn-primary[aria-disabled="true"] {
+    opacity: 0.75; color: #9a9a9a; border-color: #36503f;
+    background: var(--brush), linear-gradient(180deg, #1a2c27, #0b1a17);
+  }
 
   .cs-btn-secondary {
     @apply cs-btn text-cs-text hover:text-cs-cyan;
@@ -323,6 +331,46 @@
   .cs-input:focus { box-shadow: var(--recess), 0 0 0 1px rgba(143, 230, 0, 0.35), 0 0 14px rgba(143, 230, 0, 0.2); }
   .cs-select { @apply cs-input appearance-none cursor-pointer pr-10; }
   .cs-textarea { @apply cs-input font-mono text-xs leading-relaxed resize-y; }
+
+  /* Родните контроли в бронята: отметка и радио — вдлъбнат слот, лаймово ядро при избор. */
+  input[type="checkbox"]:not(.sr-only),
+  input[type="radio"]:not(.sr-only) {
+    appearance: none; -webkit-appearance: none; flex: none;
+    width: 18px; height: 18px; margin: 0; display: inline-grid; place-content: center; vertical-align: middle;
+    border: 1px solid #5b6f55; background: #020605; box-shadow: var(--recess); cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  input[type="checkbox"]:not(.sr-only) { border-radius: 3px; }
+  input[type="radio"]:not(.sr-only) { border-radius: 50%; }
+  input[type="checkbox"]:not(.sr-only)::before {
+    content: ""; width: 10px; height: 10px; transform: scale(0); background: #030807;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0, 43% 62%);
+  }
+  input[type="radio"]:not(.sr-only)::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%; transform: scale(0); background: #8fe600; box-shadow: 0 0 8px #8fe600;
+  }
+  input[type="checkbox"]:not(.sr-only):checked {
+    border-color: #4e8000; background: linear-gradient(180deg, #a8f033, #6cb000);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 10px rgba(143, 230, 0, 0.35);
+  }
+  input[type="radio"]:not(.sr-only):checked { border-color: #8fe600; }
+  input[type="checkbox"]:not(.sr-only):checked::before,
+  input[type="radio"]:not(.sr-only):checked::before { transform: scale(1); }
+  input[type="checkbox"]:not(.sr-only):focus-visible,
+  input[type="radio"]:not(.sr-only):focus-visible { outline: 2px solid #8fe600; outline-offset: 2px; }
+  input[type="checkbox"]:not(.sr-only):disabled,
+  input[type="radio"]:not(.sr-only):disabled { opacity: 0.45; cursor: not-allowed; }
+  /* Избор на цвят — мострата е плочка в слота, без родната рамка. */
+  input[type="color"].cs-input { padding: 5px; cursor: pointer; }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6); }
+  input[type="color"]::-moz-color-swatch { border: 0; border-radius: 2px; }
+  /* Иконата на календара — светла и лаймова при посочване, не родното сиво. */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.85); opacity: 0.75; cursor: pointer; }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 
   /* ─── Значки — малки щамповани плочки ─── */
   .cs-badge {
@@ -557,6 +605,11 @@
     padding-left: 0.875rem !important;
     padding-right: 0.875rem !important;
     min-height: 44px;
+    /* Главните букви на бронята са широки: дълъг надпис („Включи двуфакторна
+       автентикация“) на телефон се пренася на втори ред, вместо да излиза от картата. */
+    white-space: normal;
+    text-align: center;
+    line-height: 1.2;
   }
 
   /* Полетата са 100% широки И 16px високи по шрифт.
@@ -661,11 +714,8 @@ html, body {
   .hero-art-card { left: 46%; top: 68%; bottom: auto; transform: none; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .hero-aurora {
-    animation: hero-aurora-drift 26s ease-in-out infinite alternate;
-  }
-}
+/* Безкрайното плаване на сиянието е махнато (28.11.2026): автоматично движение над 5 s
+   иска бутон „пауза“ (WCAG 2.2.2); движението на героя вече е 3D реакторът, който спира сам. */
 
 @keyframes hero-aurora-drift {
   0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
