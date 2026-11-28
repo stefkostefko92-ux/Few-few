@@ -22,6 +22,9 @@
     <div class="prose">
 <% for (const s of helpSections) { -%>
       <h2 id="<%= s.id %>"><%= s.title %></h2>
+<% if (s.review) { -%>
+      <p class="notice" role="status"><%= t('features.reviewNotice') %></p>
+<% } -%>
       <p><%= s.intro %></p>
       <ol>
 <% for (const step of s.steps) { -%>

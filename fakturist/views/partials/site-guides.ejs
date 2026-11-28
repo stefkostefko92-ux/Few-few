@@ -3,7 +3,8 @@
   <div class="wrap">
     <h2 id="guides-h" class="guides-title"><%= t('site.guides.title') %></h2>
     <ul class="guides">
-<% for (const id of ['freeInvoicing', 'proforma', 'vatLedgers', 'saft'].filter((g) => g !== page)) { -%>
+<%# Само публикуваните (функция „проверява се“ няма страница — SPEC 99). -%>
+<% for (const id of ['freeInvoicing', 'proforma', 'vatLedgers', 'saft'].filter((g) => g !== page && urls[g])) { -%>
       <li><a class="link" href="<%= urls[id] %>"><%= t('site.nav.' + id) %></a></li>
 <% } -%>
     </ul>

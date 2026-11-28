@@ -20,7 +20,7 @@
     </div>
     <nav class="foot-nav" aria-label="<%= t('site.foot.nav') %>">
       <ul>
-<% for (const id of navIdsF) { -%>
+<% for (const id of navIdsF.filter((n) => urls[n])) { -%>
         <li><a href="<%= urls[id] %>"><%= t('site.nav.' + id) %></a></li>
 <% } -%>
 <% if (locals.registrationOpen !== false) { -%>

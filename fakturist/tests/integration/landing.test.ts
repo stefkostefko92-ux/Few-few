@@ -31,9 +31,10 @@ after(async () => {
 });
 
 test('всяка страница за рекламите — 200 на двата езика, един H1, JSON-LD, без незаместени стойности', async () => {
+  // Само публикуваните: страница за функция „проверява се“ няма адрес (SPEC 99, integration/feature-review).
   for (const id of LANDING_IDS) {
     const page = SITE_PAGES.find((p) => p.id === id);
-    assert.ok(page, id);
+    if (!page) continue;
     for (const locale of ['bg', 'en'] as const) {
       const res = await fetch(`${http.origin}${page.paths[locale]}`);
       assert.equal(res.status, 200, `${id} ${locale}`);
@@ -59,12 +60,9 @@ test('всяка страница за рекламите — 200 на дват�
   }
 });
 
-test('лимитът на безплатния план и плановете със SAF-T идват от базата', async () => {
+test('лимитът на безплатния план идва от базата', async () => {
   await prisma.plan.update({ where: { code: 'free' }, data: { monthlyDocumentSoftLimit: 35 } });
   invalidatePublicPlans();
   const free = await (await fetch(`${http.origin}/bezplatna-programa-za-fakturi`)).text();
   assert.match(free, /до 35 документа на месец/);
-  const saft = await (await fetch(`${http.origin}/saf-t`)).text();
-  assert.match(saft, /в плановете [^<]*Бизнес/);
-  assert.doesNotMatch(saft, /в плановете [^<]*Безплатен/);
 });

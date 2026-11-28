@@ -2,6 +2,8 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { BrowserContext, Page } from 'playwright';
 import { companyData, PASSWORD, startApp, type E2eApp } from '../tests/e2e/support/app.js';
+import { SITE_PAGES } from '../src/seo/pages.js';
+import { isLanding } from '../src/seo/landing.js';
 
 /**
  * Визуален одит на всяка страница (собственикът, 15.11.2026: „преди да слееш в мейн провери визуално всяка
@@ -327,6 +329,8 @@ async function seed(app: E2eApp) {
 
 type Seeded = Awaited<ReturnType<typeof seed>>;
 
+const LANDING_PAGES = SITE_PAGES.filter((page) => isLanding(page.id));
+
 function urls(s: Seeded): Record<'public' | 'owner' | 'firm' | 'master', string[]> {
   const o = `/app/o/${s.a.organizationId}`;
   const fo = `/app/o/${s.f.organizationId}`;
@@ -336,10 +340,8 @@ function urls(s: Seeded): Record<'public' | 'owner' | 'firm' | 'master', string[
       '/ceni',
       '/za-schetovoditeli',
       '/e-fakturi-2028',
-      '/bezplatna-programa-za-fakturi',
-      '/proforma-faktura',
-      '/dnevnitsi-po-dds',
-      '/saf-t',
+      // Страниците за рекламите — само публикуваните (функция „проверява се“ няма страница, SPEC 99).
+      ...LANDING_PAGES.map((page) => page.paths.bg),
       '/kakvo-novo',
       '/obshti-usloviya',
       '/poveritelnost',
@@ -347,10 +349,7 @@ function urls(s: Seeded): Record<'public' | 'owner' | 'firm' | 'master', string[
       '/en/',
       '/en/pricing',
       '/en/accountants',
-      '/en/free-invoicing-software',
-      '/en/pro-forma-invoice',
-      '/en/vat-ledgers',
-      '/en/saf-t',
+      ...LANDING_PAGES.map((page) => page.paths.en),
       '/en/e-invoicing-2028',
       '/en/whats-new',
       '/en/terms',

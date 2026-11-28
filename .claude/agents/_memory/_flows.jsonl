@@ -1063,6 +1063,8 @@
 {"t":"handoff","ts":"2026-11-27T21:06:52.082Z","id":"r45c03919","from":"pravniyat-razbirach","to":"kodadjiyata","status":"има бележки","run":"4dddc851"}
 {"t":"start","ts":"2026-11-27T21:54:51.659Z","id":"r402f418b","flow":"авто","lead":"diskordjiyata","auto":true}
 {"t":"handoff","ts":"2026-11-27T21:54:51.659Z","id":"r402f418b","from":"diskordjiyata","to":"kodadjiyata","status":"има бележки","run":"508da2c0"}
+{"t":"start","ts":"2026-11-28T08:47:38.520Z","id":"raf3db5fd","flow":"авто","lead":"razbivacha","auto":true}
+{"t":"handoff","ts":"2026-11-28T08:47:38.521Z","id":"raf3db5fd","from":"razbivacha","to":"kodadjiyata","status":"наред","run":"cbd54cf0"}
 {"t":"start","ts":"2026-11-28T08:14:56.415Z","id":"r727e5b9b","flow":"авто","lead":"ai-studio","auto":true}
 {"t":"handoff","ts":"2026-11-28T08:14:56.415Z","id":"r727e5b9b","from":"ai-studio","to":"kodadjiyata","status":"блокер","run":"86d5e2c3"}
 {"t":"start","ts":"2026-11-28T08:15:43.495Z","id":"r1df7db8e","flow":"авто","lead":"ai-studio","auto":true}

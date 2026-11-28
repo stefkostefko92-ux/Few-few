@@ -102,6 +102,8 @@
         <span class="f-name"><%= t('features.' + f.code + '.name') %></span>
 <% if (f.status === 'planned') { -%>
         <span class="tag-planned"><%= t('features.planned', { target: f.target }) %></span>
+<% } else if (f.status === 'review') { -%>
+        <span class="tag-planned"><%= t('features.review') %></span>
 <% } -%>
         <span class="f-desc"><%= t('features.' + f.code + '.description') %></span>
       </li>
