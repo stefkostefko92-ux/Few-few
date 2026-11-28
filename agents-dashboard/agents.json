@@ -17475,7 +17475,7 @@
           "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
           "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
         ],
-        "lessons": 88
+        "lessons": 89
       },
       "evolution": [
         {
@@ -17543,9 +17543,20 @@
           "date": "2026-11-28",
           "event": "v8.6 — учене",
           "detail": "Научи: С normalize=1 (подразбиране) всеки вход се умножава по теглото си, разделено на сбора н… (+5 още)"
+        },
+        {
+          "version": "8.7.0",
+          "date": "2026-11-28",
+          "event": "v8.7 — учене",
+          "detail": "Научи: Размазан фон за 9:16 се сглобява от split, boxblur и overlay - boxblur има luma_radius=…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Размазан фон за 9:16 се сглобява от split, boxblur и overlay - boxblur има luma_radius=…\" · 2 в карантина"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
