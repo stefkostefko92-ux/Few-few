@@ -26,10 +26,13 @@ import { join, dirname, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const ADD_ROLE = (await import(`../src/i18n/dashboard/${process.env.MP_LANG || "en"}.js`)).default["picker.addRole"];
-// Бутонът „Виж“ на резервно копие — също от речника, за да работи проверката на всеки език.
-const BACKUP_VIEW = (await import(`../src/i18n/dashboard/${process.env.MP_LANG || "en"}.js`)).default["backups.view"];
-const TICKET_MANAGE = (await import(`../src/i18n/dashboard/${process.env.MP_LANG || "en"}.js`)).default["tickets.manage.open"];
+const DICT = (await import(`../src/i18n/dashboard/${process.env.MP_LANG || "en"}.js`)).default;
+const ADD_ROLE = DICT["picker.addRole"];
+// Бутоните и разделите — от речника на езика на акаунта, за да работи проверката на всеки език
+// (MP_LANG=bg падаше на разделите на играта, защото имената им бяха зашити на английски).
+const BACKUP_VIEW = DICT["backups.view"];
+const TICKET_MANAGE = DICT["tickets.manage.open"];
+const GAME_TAB = (key) => DICT[`game.tab.${key}`];
 const DIST = join(ROOT, "dist");
 const SHOTS = join(ROOT, "scripts", "mobile-proof-shots");
 
@@ -271,11 +274,11 @@ const PAGES = [
   { path: `/dashboard/${SID}/game`, name: "game" },
   // Останалите пет раздела на играта — дотогава проверката виждаше само „Обзор“
   // (одит 25.09.2026). `tab` = видимото име; кликът е като на потребител.
-  { path: `/dashboard/${SID}/game`, name: "game-levels", tab: "Level roles" },
-  { path: `/dashboard/${SID}/game`, name: "game-shop", tab: "Shop" },
-  { path: `/dashboard/${SID}/game`, name: "game-leaderboard", tab: "Leaderboard" },
-  { path: `/dashboard/${SID}/game`, name: "game-companions", tab: "Companions" },
-  { path: `/dashboard/${SID}/game`, name: "game-quests", tab: "Quests & mini-games" },
+  { path: `/dashboard/${SID}/game`, name: "game-levels", tab: GAME_TAB("levels") },
+  { path: `/dashboard/${SID}/game`, name: "game-shop", tab: GAME_TAB("shop") },
+  { path: `/dashboard/${SID}/game`, name: "game-leaderboard", tab: GAME_TAB("leaderboard") },
+  { path: `/dashboard/${SID}/game`, name: "game-companions", tab: GAME_TAB("companions") },
+  { path: `/dashboard/${SID}/game`, name: "game-quests", tab: GAME_TAB("quests") },
   { path: `/dashboard/${SID}/tickets`, name: "tickets" },
   { path: `/dashboard/${SID}/tickets`, name: "tickets-manage", click: TICKET_MANAGE },
   { path: `/dashboard/${SID}/premium`, name: "premium" },
