@@ -17475,7 +17475,7 @@
           "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
           "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
         ],
-        "lessons": 110
+        "lessons": 111
       },
       "evolution": [
         {
@@ -17561,9 +17561,20 @@
           "date": "2026-11-28",
           "event": "v10.8 — учене",
           "detail": "Научи: Филтърът subtitles иска FFmpeg с --enable-libass (и libavcodec/libavformat, за да превъ… (+10 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-11-28",
+          "event": "v10.9 — учене",
+          "detail": "Научи: Мек поток в MP4 - таблицата codec_mp4_tags на MP4 муксера съдържа за надписи само mov_t…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Мек поток в MP4 - таблицата codec_mp4_tags на MP4 муксера съдържа за надписи само mov_t…\""
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
