@@ -26,14 +26,23 @@ const objOf = (v: unknown): Record<string, unknown> =>
  * - Живата проба (28.11.2026): по подразбиране субагентът тръгва ФОНОВО и диспечерът отговаря „още работи“,
  *   преди да има резултат → run_in_background: false.
  * - Червеният екип на #515: защита в дълбочина отгоре на `Agent(<id>)` — друг subagent_type → отказ; модел,
- *   усилие и изолация (вкл. „remote“) не се сменят от модела.
+ *   усилие, изолация (вкл. „remote“), режим на разрешенията (`mode`, напр. bypassPermissions) и екип не се
+ *   сменят от модела.
  * Нашите файлови PreToolUse куки (agent-cap → месечният таван) тичат отделно — отказ от тях печели над „allow“.
  */
 export function agentGuard(agentId: string): HookCallback {
   return async (input) => {
     const i = input as { hook_event_name?: string; tool_name?: string; tool_input?: unknown };
     if (i.hook_event_name !== 'PreToolUse' || i.tool_name !== 'Agent') return {};
-    const { model: _m, effort: _e, isolation: _i, ...ti } = objOf(i.tool_input);
+    const {
+      model: _m,
+      effort: _e,
+      isolation: _i,
+      mode: _mode,
+      name: _n,
+      team_name: _t,
+      ...ti
+    } = objOf(i.tool_input);
     if (ti.subagent_type !== agentId) {
       return {
         hookSpecificOutput: {
@@ -176,13 +185,31 @@ export function listAgents(repoRoot: string): string[] {
     .sort();
 }
 
+/**
+ * Абсолютен път → път в правило за разрешения: `//` + POSIX форма; на Windows `C:\\x` → `//c/x`
+ * (code.claude.com/docs/en/permissions, „How path patterns match“).
+ */
+export function ruleFor(p: string, platform: NodeJS.Platform = process.platform): string {
+  if (platform === 'win32') {
+    const r = win32.resolve(p).replace(/\\/g, '/');
+    const m = /^([a-z]):\/(.*)$/i.exec(r);
+    return m ? `//${m[1]!.toLowerCase()}/${m[2]}` : `//${r.replace(/^\/+/, '')}`;
+  }
+  return `//${posix.resolve(p).replace(/^\/+/, '')}`;
+}
+
+/**
+ * Всяко извикване на тези инструменти отива при canUseTool (ask правило, стъпка 3 в agent-sdk/permissions) —
+ * иначе вградените команди само за четене (cat, head…) и одобрените домейни на WebFetch минават без клик.
+ */
+export const ASK_TOOLS = ['Bash', 'PowerShell', 'WebFetch', 'WebSearch'];
+
 export function buildOptions(o: {
   agentId: string;
   agents: string[];
   repoRoot: string;
   key: string;
   canUseTool: CanUseTool;
-  resume?: string;
   abortController?: AbortController;
   /** Папката на пулта (ключът) — забранена за четене. */
   dataDir?: string;
@@ -212,6 +239,14 @@ export function buildOptions(o: {
     },
     // Празен: голо име тук одобрява целия инструмент без canUseTool. Четенето се решава в readScope.
     allowedTools: [],
+    settings: { permissions: { ask: [...ASK_TOOLS] } },
+    // Read deny важи и за cat/head/tail/sed/tee в Bash и печели дори над „allow“ от кука (втори преглед на #515).
+    disallowedTools: [
+      ...(o.dataDir ? [`Read(${ruleFor(o.dataDir)}/**)`] : []),
+      'Read(//**/studiopult/key.txt)',
+      'Read(//**/studiopult/spend.json)',
+      ...(process.platform === 'win32' ? [] : ['Read(//proc/**)']),
+    ],
     canUseTool: o.canUseTool,
     maxBudgetUsd: MAX_BUDGET_USD,
     maxTurns: MAX_TURNS,
@@ -242,7 +277,6 @@ export function buildOptions(o: {
       STUDIOPULT: '1',
     },
   };
-  if (o.resume) opts.resume = o.resume;
   if (o.abortController) opts.abortController = o.abortController;
   return opts;
 }

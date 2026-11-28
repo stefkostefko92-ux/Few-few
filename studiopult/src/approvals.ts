@@ -66,8 +66,11 @@ const HIDDEN =
 export const visible = (t: string): string =>
   t.replace(HIDDEN, (c) => `⟨U+${c.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')}⟩`);
 
-const clip = (t: string, max = 4000) =>
-  t.length > max ? `${t.slice(0, max)}\n… още ${t.length - max} знака` : t;
+/**
+ * Над този брой знаци картата не се показва и стъпката се отказва: кликът одобрява ВСИЧКО, затова
+ * съдържанието не се реже (втори преглед на #515 — безобидно начало и зловредна опашка минаваха с един клик).
+ */
+export const MAX_DETAIL = 200_000;
 
 /** Какво точно ще се изпълни — дословно, за да решава собственикът по истинската команда. */
 export function describe(tool: string, input: Record<string, unknown>): string {
@@ -79,13 +82,13 @@ export function describe(tool: string, input: Record<string, unknown>): string {
   }
   // Прегледът на #515: само пътят не стига — съдържанието е това, което собственикът одобрява.
   if (tool === 'Write')
-    return visible(`${s(input.file_path)}\n— нов файл:\n${clip(String(s(input.content ?? '')))}`);
+    return visible(`${s(input.file_path)}\n— нов файл:\n${String(s(input.content ?? ''))}`);
   if (tool === 'Edit')
     return visible(
-      `${s(input.file_path)}\n— заменя:\n${clip(String(s(input.old_string ?? '')), 2000)}` +
-        `\n— с:\n${clip(String(s(input.new_string ?? '')), 2000)}`,
+      `${s(input.file_path)}${input.replace_all === true ? '\n— всички срещания (replace_all)' : ''}` +
+        `\n— заменя:\n${String(s(input.old_string ?? ''))}\n— с:\n${String(s(input.new_string ?? ''))}`,
     );
-  return visible(clip(JSON.stringify(input)));
+  return visible(JSON.stringify(input));
 }
 
 export type ApprovalEvent = {
@@ -102,9 +105,21 @@ export function makeCanUseTool(opts: {
   /** Избраният наш агент — картата показва името му, не вътрешното id на субагента (живата проба). */
   agentName?: string;
   emit: (e: ApprovalEvent) => void;
+  /** Има ли отворена страница; няма → отказ веднага (иначе агентът висеше 5 минути на всяка стъпка). */
+  viewer?: () => boolean;
 }): CanUseTool {
   return async (toolName, input, ctx): Promise<PermissionResult> => {
+    if (opts.viewer && !opts.viewer())
+      return {
+        behavior: 'deny',
+        message: 'Страницата на Студио пулта е затворена — няма кой да одобри тази стъпка.',
+      };
     const detail = describe(toolName, input);
+    if (detail.length > MAX_DETAIL)
+      return {
+        behavior: 'deny',
+        message: `Стъпката е твърде голяма за преглед в пулта (над ${MAX_DETAIL} знака) — раздели я.`,
+      };
     const { requestId, decision } = opts.approvals.request(opts.session, {
       tool: toolName,
       detail,

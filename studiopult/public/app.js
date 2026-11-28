@@ -31,7 +31,6 @@ const TOKEN = (() => {
 })();
 const AUTH = TOKEN ? { authorization: `Bearer ${TOKEN}` } : {};
 
-let sessionId = null;
 let current = null; // текущото съобщение на агента
 let currentSub = null; // от агента (true) или от диспечера (false)
 let duration = 0;
@@ -156,7 +155,6 @@ function onEvent(e) {
       approvalCard(e);
       break;
     case 'result':
-      if (e.sessionId) sessionId = e.sessionId;
       say(
         e.ok ? 'sys' : 'err',
         '',
@@ -241,15 +239,12 @@ $('say').addEventListener('submit', async (ev) => {
   say('me', 'ти', text);
   $('text').value = '';
   const body = { agent: $('agent').value, text };
-  if ($('keep').checked && sessionId) body.resume = sessionId;
+  if ($('keep').checked) body.keep = true; // сървърът добавя предишния ход като контекст
   const r = await api('/api/chat', body);
   if (!r.ok) say('err', '', r.data.error || `Грешка ${r.status}`);
 });
 $('text').addEventListener('keydown', (ev) => {
   if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) $('say').requestSubmit();
-});
-$('agent').addEventListener('change', () => {
-  sessionId = null;
 });
 $('stop').addEventListener('click', () => api('/api/chat/stop', {}));
 

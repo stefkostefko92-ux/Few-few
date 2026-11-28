@@ -531,6 +531,11 @@
       "ai-djiyata",
       "kodadjiyata",
       "konveyera"
+    ],
+    "c300c02f96169bff8521053c699c0eaaab7e5bc3": [
+      "ai-djiyata",
+      "kodadjiyata",
+      "konveyera"
     ]
   },
   "runs": [
@@ -2612,6 +2617,30 @@
       "agent": "konveyera",
       "verdict": "чисто",
       "costUsd": 0.54,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 515,
+      "sha": "c300c02f96169bff8521053c699c0eaaab7e5bc3",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.34,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 515,
+      "sha": "c300c02f96169bff8521053c699c0eaaab7e5bc3",
+      "agent": "ai-djiyata",
+      "verdict": "поправки",
+      "costUsd": 2.4,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 515,
+      "sha": "c300c02f96169bff8521053c699c0eaaab7e5bc3",
+      "agent": "konveyera",
+      "verdict": "чисто",
+      "costUsd": 0.52,
       "date": "2026-11-28"
     }
   ]

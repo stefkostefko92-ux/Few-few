@@ -2,7 +2,7 @@
 // „винаги разрешено“ (suggestions) НЕ се прилага — всяка команда минава с клик.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { Approvals, makeCanUseTool, describe } from '../src/approvals.js';
+import { Approvals, makeCanUseTool, describe, MAX_DETAIL } from '../src/approvals.js';
 import { startTestServer, post } from './helpers.js';
 
 test('решение на правилната сесия освобождава заявката', async () => {
@@ -110,9 +110,39 @@ test('#515: за Write и Edit картата показва съдържани�
   const e = describe('Edit', { file_path: 'b.ts', old_string: 'стар', new_string: 'нов' });
   assert.match(e, /стар/);
   assert.match(e, /нов/);
-  const big = describe('Write', { file_path: 'c.txt', content: 'x'.repeat(10000) });
-  assert.ok(big.length < 7000);
-  assert.match(big, /още \d+ знака/);
+  // Втори преглед (Кодаджията): отрязаното не е видяно, а кликът пуска целия файл → показва се всичко.
+  const big = describe('Write', { file_path: 'c.txt', content: 'x'.repeat(10000) + 'ОПАШКА' });
+  assert.match(big, /ОПАШКА$/);
+  assert.doesNotMatch(big, /още \d+ знака/);
+  const all = describe('Edit', {
+    file_path: 'b.ts',
+    old_string: 'a',
+    new_string: 'b',
+    replace_all: true,
+  });
+  assert.match(all, /всички срещания/, 'replace_all се вижда');
+  assert.doesNotMatch(
+    describe('Edit', { file_path: 'b.ts', old_string: 'a', new_string: 'b' }),
+    /всички срещания/,
+  );
+});
+
+test('#515: над тавана за преглед и без отворена страница — отказ без карта', async () => {
+  const a = new Approvals({ timeoutMs: 5000 });
+  const shown: unknown[] = [];
+  const ctx = { signal: new AbortController().signal, toolUseID: 't', suggestions: [] } as never;
+  const huge = makeCanUseTool({ approvals: a, session: 's', emit: (e) => shown.push(e) });
+  const r1 = (await huge('Write', { file_path: 'x', content: 'y'.repeat(MAX_DETAIL + 1) }, ctx))!;
+  assert.equal(r1.behavior, 'deny');
+  const blind = makeCanUseTool({
+    approvals: a,
+    session: 's',
+    emit: (e) => shown.push(e),
+    viewer: () => false,
+  });
+  const r2 = (await blind('Bash', { command: 'node -v' }, ctx))!;
+  assert.equal(r2.behavior, 'deny');
+  assert.equal(shown.length, 0, 'нито една карта');
 });
 
 // Червеният екип на #515 (F4): U+202E стигаше до textContent и браузърът обръщаше видимия ред (Trojan Source).
@@ -130,4 +160,45 @@ test('#515: bidi, невидими и управляващи знаци в ка�
     'node -v',
     'един ред — дословно, без бележка',
   );
+});
+
+// Втори преглед на #515 (Кодаджията): „затворена страница → отказ“ не беше реализирано — агентът висеше до 5
+// минути на всяка рискова стъпка, а разговорът харчеше.
+test('#515 HTTP: затворена страница (последният SSE) отказва чакащото одобрение', async () => {
+  let decided: boolean | undefined;
+  const s = await startTestServer({
+    runner: {
+      async *run(
+        _p: string,
+        o: {
+          canUseTool: (...a: unknown[]) => Promise<{ behavior: string }>;
+          abortController: AbortController;
+        },
+      ) {
+        const r = await o.canUseTool(
+          'Bash',
+          { command: 'node -v' },
+          { signal: o.abortController.signal, toolUseID: 't', suggestions: [] },
+        );
+        decided = r.behavior === 'allow';
+      },
+    } as never,
+  });
+  try {
+    const ac = new AbortController();
+    const sse = await fetch(`${s.base}/api/events`, {
+      headers: { authorization: s.auth },
+      signal: ac.signal,
+    });
+    assert.equal(sse.status, 200);
+    assert.equal((await post(s, '/api/chat', { agent: 'ai-studio', text: 'x' })).status, 202);
+    await new Promise((r) => setTimeout(r, 50));
+    assert.equal(decided, undefined, 'чака клик');
+    ac.abort();
+    for (let i = 0; i < 100 && decided === undefined; i++)
+      await new Promise((r) => setTimeout(r, 10));
+    assert.equal(decided, false);
+  } finally {
+    s.close();
+  }
 });

@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { DailyBudget, SpendMeter, PRICES } from '../src/budget.js';
+import { DailyBudget, SpendMeter, PRICES, FALLBACK } from '../src/budget.js';
 import { startTestServer, post } from './helpers.js';
 
 const dir = mkdtempSync(join(tmpdir(), 'pult-budget-'));
@@ -77,7 +77,7 @@ test('#515: SpendMeter брои делтата на сесията, не цел�
   assert.equal(usd(m.onResult('s1', 0.7)), 0, 'по-малка сума не връща пари');
 });
 
-test('#515: без резултат — оценка от стъпките; оценката влиза в базата, за да не се брои пак', () => {
+test('#515: без резултат — оценка от стъпките; оценката НЕ влиза в базата (по-добре отгоре, отколкото отдолу)', () => {
   const m = new SpendMeter();
   const run = m.startRun();
   run.onAssistant({ id: 'msg1', model: 'claude-sonnet-5-5', usage: u(1000, 100) });
@@ -86,15 +86,9 @@ test('#515: без резултат — оценка от стъпките; оц
   // sonnet: 1000×$2/M + 300×$10/M = 0.005 (дубълът на msg1 — веднъж, с най-големия изход); opus: 1000×$20/M = 0.02
   assert.equal(usd(run.estimate()), 0.025);
   assert.equal(usd(m.onEstimate('s1', run.estimate())), 0.025);
-  // Продължението отчита целия разход на сесията (0.025 от спрения + 0.1 нов) → влиза само 0.1.
-  assert.equal(usd(m.onResult('s1', 0.125)), 0.1);
-  const unknown = m.startRun();
-  unknown.onAssistant({ id: 'm', model: 'нов-модел', usage: u(0, 1000) });
-  assert.equal(
-    usd(unknown.estimate()),
-    0.04,
-    'непознат модел → най-високата цена в таблицата (fable-5-2: $40/M)',
-  );
+  // Втори преглед на #515 (AI-джията): сумите се пазят в транскрипта само при нормален изход — оценката не
+  // намалява следващата делта; при съмнение броим два пъти, не нула.
+  assert.equal(usd(m.onResult('s1', 0.125)), 0.125);
   const cached = m.startRun();
   cached.onAssistant({
     id: 'c',
@@ -109,6 +103,53 @@ test('#515: без резултат — оценка от стъпките; оц
   // четене 1M × $0.1 (sonnet-5-5 има собствена цена за кеш-четене в prices.json); запис 1M × $2 × 2
   // (1-часовият — по-скъпият, fail closed) = 4
   assert.equal(usd(cached.estimate()), 4.1);
+});
+
+// Втори преглед на #515 (AI-джията): output_tokens в assistant съобщенията е заместител от message_start
+// (code.claude.com/docs/en/agent-sdk/cost-tracking); истинският брой идва в message_delta на потока.
+test('#515: изходът — от message_delta на потока; без него — по знаците на съдържанието, не по заместителя', () => {
+  const m = new SpendMeter();
+  const run = m.startRun();
+  run.onStream(null, {
+    type: 'message_start',
+    message: { id: 'd1', model: 'claude-sonnet-5-5', usage: u(0, 1) },
+  });
+  run.onStream(null, { type: 'message_delta', usage: { output_tokens: 500 } });
+  run.onAssistant({ id: 'd1', model: 'claude-sonnet-5-5', usage: u(0, 1) });
+  assert.equal(usd(run.estimate()), 0.005, '500 изходни × $10/M');
+  const sub = m.startRun();
+  sub.onAssistant({ id: 's1', model: 'claude-opus-5-5', usage: u(0, 1) }, [
+    { type: 'text', text: 'я'.repeat(2000) },
+    { type: 'tool_use', input: { command: 'x'.repeat(986) } },
+  ]);
+  // (2000 + 1000 знака JSON) / 2 = 1500 токена × $20/M = 0.03
+  assert.equal(usd(sub.estimate()), 0.03);
+});
+
+test('#515: моделът се познава точно; непознат → най-скъпият ред в prices.json', () => {
+  const m = new SpendMeter();
+  const near = m.startRun();
+  near.onAssistant({ id: 'n', model: 'claude-opus-5-50', usage: u(0, 1000) });
+  assert.equal(usd(near.estimate()), usd(FALLBACK.out / 1000), 'opus-5-50 не е opus-5-5');
+  const dated = m.startRun();
+  dated.onAssistant({ id: 'd', model: 'claude-opus-5-5-20261101', usage: u(0, 1000) });
+  assert.equal(usd(dated.estimate()), 0.02, 'датирана версия на същия модел');
+  const pj = JSON.parse(
+    readFileSync(join(import.meta.dirname, '..', '..', 'tools', 'agents', 'prices.json'), 'utf8'),
+  ) as { models: { in: number; out: number }[] };
+  assert.equal(FALLBACK.out, Math.max(...pj.models.map((x) => x.out)));
+  assert.equal(FALLBACK.in, Math.max(...pj.models.map((x) => x.in)));
+});
+
+test('#515: повреден spend.json остава блокиран и след add (не се презаписва с малка сума)', () => {
+  const own = mkdtempSync(join(tmpdir(), 'pult-corrupt-'));
+  after(() => rmSync(own, { recursive: true, force: true }));
+  const f = join(own, 'corrupt-add.json');
+  writeFileSync(f, '{не е json');
+  const b = new DailyBudget({ file: f, dailyUsd: 20, now: day('2026-11-28') });
+  b.add(0.5);
+  assert.equal(b.status().blocked, true);
+  assert.equal(readFileSync(f, 'utf8'), '{не е json', 'файлът е непокътнат — за човешки поглед');
 });
 
 test('#515: таблицата с цени е същата като tools/agents/prices.json (един източник)', () => {
@@ -130,9 +171,8 @@ test('#515: таблицата с цени е същата като tools/agents
 
 const p2 = await startTestServer({
   runner: {
-    async *run(_prompt: string, options: { resume?: string; abortController?: AbortController }) {
-      const sid = 'aaaaaaaa-1111';
-      if (options.resume === 'bbbbbbbb-2222') {
+    async *run(prompt: string, options: { abortController?: AbortController }) {
+      if (prompt.includes('спри ме')) {
         yield {
           type: 'assistant',
           parent_tool_use_id: 'x',
@@ -148,8 +188,8 @@ const p2 = await startTestServer({
       yield {
         type: 'result',
         subtype: 'success',
-        total_cost_usd: options.resume ? 0.8 : 0.5,
-        session_id: sid,
+        total_cost_usd: 0.5,
+        session_id: 'aaaaaaaa-1111',
         is_error: false,
         result: '',
       } as never;
@@ -158,34 +198,11 @@ const p2 = await startTestServer({
 });
 after(() => p2.close());
 
-test('#515 HTTP: продължен разговор не брои разхода два пъти', async () => {
-  assert.equal((await post(p2, '/api/chat', { agent: 'ai-studio', text: 'първо' })).status, 202);
-  for (let i = 0; i < 50 && p2.deps.budget.status().spent === 0; i++)
-    await new Promise((r) => setTimeout(r, 10));
-  for (let i = 0; i < 50; i++) {
-    const r = await post(p2, '/api/chat', {
-      agent: 'ai-studio',
-      text: 'второ',
-      resume: 'aaaaaaaa-1111',
-    });
-    if (r.status === 202) break;
-    await new Promise((res) => setTimeout(res, 10));
-  }
-  for (let i = 0; i < 50 && p2.deps.budget.status().spent < 0.8; i++)
-    await new Promise((r) => setTimeout(r, 10));
-  await new Promise((r) => setTimeout(r, 30));
-  assert.equal(usd(p2.deps.budget.status().spent), 0.8);
-});
-
 test('#515 HTTP: спрян разговор без резултат влиза в тавана по оценка', async () => {
   const before = p2.deps.budget.status().spent;
   let r: Response | undefined;
   for (let i = 0; i < 50; i++) {
-    r = await post(p2, '/api/chat', {
-      agent: 'ai-studio',
-      text: 'спри ме',
-      resume: 'bbbbbbbb-2222',
-    });
+    r = await post(p2, '/api/chat', { agent: 'ai-studio', text: 'спри ме' });
     if (r.status === 202) break;
     await new Promise((res) => setTimeout(res, 10));
   }

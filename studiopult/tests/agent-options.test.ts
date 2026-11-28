@@ -321,6 +321,9 @@ test('#515: диспечерът вика само избрания агент �
     model: 'opus',
     effort: 'max',
     isolation: 'remote',
+    mode: 'bypassPermissions',
+    name: 'x',
+    team_name: 't',
     run_in_background: true,
   });
   assert.equal(out?.permissionDecision, 'allow');
@@ -383,4 +386,91 @@ test('#515: диспечерът не повтаря отговора (двой�
     [],
     'текстът на диспечера идва от потока',
   );
+});
+
+// Втори преглед на #515 (AI-джията): вградените команди само за четене (cat, head…) минават без canUseTool
+// (code.claude.com/docs/en/permissions: „Bash … Yes, except a built-in set of read-only commands“). Ask правило
+// от настройките праща всяко извикване към canUseTool (agent-sdk/permissions, стъпка 3); Read deny правилата
+// важат и за cat/head/tail/sed/tee в Bash и печелят дори над „allow“ от кука.
+test('#515: всеки Bash/PowerShell/WebFetch/WebSearch — през клик; Read deny за папката на пулта и /proc', () => {
+  const o = buildOptions({
+    agentId: 'ai-studio',
+    agents: ['ai-studio'],
+    repoRoot: repo,
+    key: FAKE_KEY,
+    canUseTool: can,
+    dataDir: '/home/u/.config/studiopult',
+  });
+  const st = o.settings as { permissions?: { ask?: string[] } };
+  for (const t of ['Bash', 'PowerShell', 'WebFetch', 'WebSearch'])
+    assert.ok(st.permissions?.ask?.includes(t), t);
+  assert.ok(o.disallowedTools?.includes('Read(//home/u/.config/studiopult/**)'));
+  assert.ok(
+    o.disallowedTools?.includes('Read(//**/studiopult/key.txt)'),
+    'по име — независимо от пътя',
+  );
+  if (process.platform !== 'win32') assert.ok(o.disallowedTools?.includes('Read(//proc/**)'));
+});
+
+test('#515: правилото за път на Windows е в POSIX форма (C:\\… → //c/…)', async () => {
+  const { ruleFor } = await import('../src/agent.js');
+  assert.equal(
+    ruleFor('C:\\Users\\Owner\\AppData\\Local\\studiopult', 'win32'),
+    '//c/Users/Owner/AppData/Local/studiopult',
+  );
+  assert.equal(ruleFor('/home/u/.config/studiopult', 'linux'), '//home/u/.config/studiopult');
+});
+
+// Втори преглед на #515 (AI-джията): субагентът тръгва на чисто (agent-sdk/subagents) — resume на диспечера не
+// даваше контекст на агента. Продължението носи предишния ход в подканата; на SDK не се подава resume.
+test('#515 HTTP: „продължи разговора“ — предишният ход е в подканата, без resume', async () => {
+  const runner = fakeRunner([
+    {
+      type: 'assistant',
+      parent_tool_use_id: 't',
+      session_id: 's',
+      uuid: 'a',
+      message: { id: 'm', content: [{ type: 'text', text: 'Мастерът е готов: out/master.mov' }] },
+    },
+    {
+      type: 'result',
+      subtype: 'success',
+      total_cost_usd: 0.1,
+      session_id: 's',
+      is_error: false,
+      result: '',
+    },
+  ]);
+  const s = await startTestServer({ runner });
+  try {
+    assert.equal(
+      (await post(s, '/api/chat', { agent: 'ai-studio', text: 'Направи мастер' })).status,
+      202,
+    );
+    let r: Response | undefined;
+    for (let i = 0; i < 50; i++) {
+      r = await post(s, '/api/chat', {
+        agent: 'ai-studio',
+        text: 'Съкрати го',
+        keep: true,
+        resume: 'aaaaaaaa-1111',
+      });
+      if (r.status === 202) break;
+      await new Promise((res) => setTimeout(res, 10));
+    }
+    assert.equal(r?.status, 202);
+    const second = runner.calls[1]!;
+    assert.match(second.prompt, /Направи мастер/);
+    assert.match(second.prompt, /Мастерът е готов: out\/master\.mov/);
+    assert.match(second.prompt, /Съкрати го$/);
+    assert.equal((second.options as { resume?: string }).resume, undefined);
+    for (let i = 0; i < 50; i++) {
+      r = await post(s, '/api/chat', { agent: 'seo', text: 'Друго', keep: true });
+      if (r.status === 202) break;
+      await new Promise((res) => setTimeout(res, 10));
+    }
+    assert.equal(runner.calls[2]!.prompt, 'Друго', 'друг агент — без чужд контекст');
+  } finally {
+    s.close();
+  }
 });
