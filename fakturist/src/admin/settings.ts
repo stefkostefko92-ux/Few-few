@@ -97,6 +97,21 @@ export const SETTINGS = {
       en: 'Comma-separated ids (up to 10). Until Peppol is launched, only these companies use it and only in the access point’s test environment (acceptance) — with test data, not real customers.',
     },
   },
+  'features.reviewOrgIds': {
+    schema: z.union([
+      z.literal(''),
+      z.string().regex(new RegExp(`^${ID_PATTERN}(,${ID_PATTERN}){0,9}$`)),
+    ]),
+    default: '',
+    label: {
+      bg: 'Фирми за проверката на функциите преди пускане',
+      en: 'Companies that check features before launch',
+    },
+    help: {
+      bg: 'Id-та през запетая (до 10). Функциите „проверява се“ (данните за SAF-T, дневниците по ДДС) ползват само тези фирми — за да прекарат реални файлове през инструментите на НАП. Останалите клиенти ги виждат като „проверява се“.',
+      en: 'Comma-separated ids (up to 10). Only these companies use the features marked “being checked” (SAF-T data, VAT ledgers) — to run real files through the NRA’s tools. Other customers see them as “being checked”.',
+    },
+  },
   'site.notice': {
     schema: z.string().max(300),
     default: '',
