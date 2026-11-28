@@ -27,12 +27,6 @@ async function pub(c, stage) {
  */
 export async function createSpawn(serverId, channelId, { now = new Date(), rand, manual = false, companionId = null } = {}) {
   const tier = await getServerTier(serverId);
-  const last = await prisma.companionSpawn.findFirst({ where: { serverId }, orderBy: { createdAt: "desc" } });
-  if (last) {
-    const alive = !last.caughtById && new Date(last.expiresAt) > now;
-    if (alive) return { ok: false, code: "SPAWN_ACTIVE" };
-    if (!manual && now.getTime() - new Date(last.createdAt).getTime() < SPAWN_MIN_INTERVAL_MS) return { ok: false, code: "SPAWN_TOO_SOON" };
-  }
   const season = await getCurrentSeason({ now });
   let c;
   if (companionId) {
@@ -41,10 +35,24 @@ export async function createSpawn(serverId, channelId, { now = new Date(), rand,
   } else {
     c = pickSpawn({ isPremium: !!tier.isPremium, now, rand, season });
   }
-  const spawn = await prisma.companionSpawn.create({
-    data: { serverId, channelId, companionId: c.id, expiresAt: new Date(now.getTime() + SPAWN_TTL_MS) },
+  // И8: проверката „има ли жива поява“ и записът са ЕДНА транзакция под advisory
+  // lock по сървър. Без това таймерът `tickAutoSpawn` и `maybeSpawn`/`/spawn`
+  // четяха и двамата „няма жива“ и създаваха две появи (няма уникален индекс).
+  const out = await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"spawn:" + serverId}))`;
+    const last = await tx.companionSpawn.findFirst({ where: { serverId }, orderBy: { createdAt: "desc" } });
+    if (last) {
+      const alive = !last.caughtById && new Date(last.expiresAt) > now;
+      if (alive) return { ok: false, code: "SPAWN_ACTIVE" };
+      if (!manual && now.getTime() - new Date(last.createdAt).getTime() < SPAWN_MIN_INTERVAL_MS) return { ok: false, code: "SPAWN_TOO_SOON" };
+    }
+    const spawn = await tx.companionSpawn.create({
+      data: { serverId, channelId, companionId: c.id, expiresAt: new Date(now.getTime() + SPAWN_TTL_MS) },
+    });
+    return { ok: true, spawn };
   });
-  return { ok: true, spawn, companion: publicCompanion(c, 1, season) };
+  if (!out.ok) return out;
+  return { ok: true, spawn: out.spawn, companion: publicCompanion(c, 1, season) };
 }
 
 /**
@@ -123,12 +131,20 @@ export async function feedCompanion(serverId, userId, ownedId, sparks) {
     // fed се ВДИГА атомарно, не се пише като абсолютна стойност: при две
     // едновременни хранения и двете четяха един и същ `owned.fed`, второто
     // презаписваше първото и платените искри изгаряха (одит на Кодаджията 25.09.2026).
-    const bumped = await tx.memberCompanion.update({ where: { id: owned.id }, data: { fed: { increment: charge } } });
+    // И5: `charge` е смятан от прочетеното `owned.fed`. Две едновременни хранения
+    // четяха едно и също и двете горяха искри над прага. Затова fed се вдига
+    // само ако още е каквото сме видели; иначе BUSY и откат (искрите се връщат).
+    const up = await tx.memberCompanion.updateMany({
+      where: { id: owned.id, serverId, userId, fed: owned.fed, stage: owned.stage },
+      data: { fed: { increment: charge } },
+    });
+    if (up.count !== 1) throw Object.assign(new Error("FEED_RACE"), { code: "FEED_RACE" });
+    const bumped = await tx.memberCompanion.findUnique({ where: { id: owned.id } });
     const stage = Math.max(bumped.stage, stageForFed(bumped.fed));
     const updated = stage === bumped.stage ? bumped : await tx.memberCompanion.update({ where: { id: owned.id }, data: { stage } });
     const p = await tx.memberProgress.findUnique({ where: { serverId_userId: { serverId, userId } }, select: { sparks: true } });
     return { ok: true, owned: updated, evolved: stage > owned.stage, stage, charged: charge, sparksLeft: p?.sparks || 0, companion: await pub(companionById(owned.companionId), stage) };
-  });
+  }).catch((err) => (err?.code === "FEED_RACE" ? { ok: false, code: "BUSY" } : Promise.reject(err)));
 }
 
 export async function activateCompanion(serverId, userId, ownedId) {

@@ -107,9 +107,12 @@ async function status(interaction, lang) {
   const c = await getBait(interaction.guildId);
   if (!c?.channelId) return interaction.editReply({ content: t("bait.cmd.notConfigured", lang) });
   const none = t("bait.none", lang);
+  // Изтрит канал с още „включена“ настройка (изтрит докато ботът е бил офлайн)
+  // не е включена стръв (З1).
+  const gone = !!c.enabled && !!interaction.guild?.channels?.cache && !interaction.guild.channels.cache.has(c.channelId);
   return interaction.editReply({
     content: t("bait.cmd.status", lang, {
-      state: t(c.enabled ? "bait.state.on" : "bait.state.off", lang),
+      state: t(gone ? "bait.state.missing" : c.enabled ? "bait.state.on" : "bait.state.off", lang),
       channel: `<#${c.channelId}>`,
       action: actionLabel(c.action, lang),
       log: c.logChannelId ? `<#${c.logChannelId}>` : none,

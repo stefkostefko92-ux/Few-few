@@ -1,0 +1,101 @@
+/* „Дашборд“, сгъваемата прогноза: графиката на Canvas (client/chart.ts), легендата и подсказката. */
+
+details.fold > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+details.fold > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.fold > summary h2 {
+  margin: 0;
+}
+
+details.fold > summary::before {
+  content: '▸';
+  color: var(--ash);
+}
+
+details.fold[open] > summary::before {
+  content: '▾';
+}
+
+details.fold[open] > summary {
+  margin-bottom: 0.75rem;
+}
+
+.legend {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
+  font-size: 0.875rem;
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.chart-wrap {
+  position: relative;
+  margin: 0;
+  overflow-x: auto;
+}
+
+/* Височината идва от съотношението на логическите единици (960 × 360 в src/domain/chart.ts). */
+.chart-canvas {
+  display: block;
+  width: 100%;
+  min-width: 720px;
+  aspect-ratio: 960 / 360;
+}
+
+.chart-canvas:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 2px;
+}
+
+.chart-tip {
+  position: absolute;
+  top: 0.5rem;
+  z-index: 2;
+  min-width: 12rem;
+  max-width: 18rem;
+  background: var(--night);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8rem;
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.tip-time {
+  color: var(--ash);
+  margin-bottom: 0.25rem;
+}
+
+.tip-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.tip-key {
+  display: inline-block;
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+  flex: none;
+}

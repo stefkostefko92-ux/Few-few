@@ -5,13 +5,15 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Pencil, Lightbulb, CheckCircle2, XCircle, X as XIcon } from "lucide-react";
+import { Plus, Trash2, Pencil, Lightbulb, CheckCircle2, XCircle, X as XIcon, Zap } from "lucide-react";
 import {
   getKbArticles, createKbArticle, updateKbArticle, toggleKbArticle, deleteKbArticle,
 } from "../api";
 import { useToast } from "../contexts/ToastContext";
 import { useT } from "../contexts/I18nContext";
 import PageHeader from "../components/PageHeader";
+import PageTabs, { TabPanel, useTab } from "../components/PageTabs";
+import { AiRepliesForm } from "../components/settings/AiRepliesCard";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
@@ -21,12 +23,15 @@ const CONTENT_MAX = 4000;
 const KEYWORDS_MAX = 10;
 
 const defaultForm = () => ({ title: "", content: "", keywords: [], enabled: true });
+// Двата автоматични първи отговора в нов тикет: предложена статия и отговор от AI.
+const TAB_IDS = ["articles", "ai"];
 
 export default function KnowledgeBasePage() {
   const { t } = useT();
   const { serverId } = useParams();
   const qc = useQueryClient();
   const toast = useToast();
+  const [tab, setTab] = useTab(TAB_IDS);
 
   const [editing, setEditing] = useState(null); // null | "new" | id
   const [form, setForm] = useState(defaultForm());
@@ -110,13 +115,25 @@ export default function KnowledgeBasePage() {
       <PageHeader
         title={t("nav.knowledgeBase")}
         subtitle={t("kb.intro")}
-        actions={(
+        actions={tab === "articles" ? (
           <button onClick={openNew} className="cs-btn-primary cs-btn-sm flex items-center gap-2">
             <Plus className="w-4 h-4" aria-hidden="true" /> {t("kb.new")}
           </button>
-        )}
+        ) : null}
+      />
+      <PageTabs
+        tabs={[
+          { id: "articles", label: t("kb.tab.articles"), icon: Lightbulb },
+          { id: "ai", label: t("settings.ai.title"), icon: Zap },
+        ]}
+        value={tab}
+        onChange={setTab}
+        label={t("nav.knowledgeBase")}
       />
 
+      {tab === "ai" && <TabPanel id="ai"><div className="max-w-3xl"><AiRepliesForm /></div></TabPanel>}
+
+      {tab === "articles" && <TabPanel id="articles">
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
 
       {!isLoading && isError && (
@@ -180,6 +197,7 @@ export default function KnowledgeBasePage() {
           </div>
         ))}
       </div>
+      </TabPanel>}
 
       <Modal
         open={!!editing}

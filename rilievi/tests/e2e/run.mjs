@@ -23,7 +23,6 @@ import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
-import sharp from 'sharp';
 import {
   aligned,
   audit,
@@ -38,11 +37,10 @@ import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
 import { checkCompanyData, checkEveryLink } from './collegati-tutti.mjs';
 import { checkInstallableApp, checkInstallPhone } from './installa.mjs';
-import { checkCartelli } from './cartelli.mjs';
 import { checkArgano } from './argano.mjs';
+import { checkDocumenti } from './documenti.mjs';
+import { logoE2E } from './logo.mjs';
 import { checkLimitatore } from './limitatore.mjs';
-import { checkInterventi } from './interventi.mjs';
-import { checkVerbali } from './verbali.mjs';
 import { checkPhone } from './telefono.mjs';
 import { checkMovilift } from './movilift.mjs';
 import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
@@ -71,18 +69,7 @@ const browser = await chromium.launch(
 let sheetUrl = '';
 let aziendaPath = '';
 const aziendaName = `Ascensori E2E ${Date.now()}`;
-// A logo with transparency, as a company would upload it.
-const logoFile = join(shots, 'logo-e2e.png');
-await sharp({
-  create: {
-    width: 900,
-    height: 260,
-    channels: 4,
-    background: { r: 15, g: 50, b: 120, alpha: 0.85 },
-  },
-})
-  .png()
-  .toFile(logoFile);
+const logoFile = await logoE2E(shots);
 
 try {
   // The public side first: the landing page and the policy, in Italian only, and an access request,
@@ -220,6 +207,17 @@ try {
       if (pdf.status() !== 200 || body.subarray(0, 5).toString() !== '%PDF-') fail('PDF download');
       if (!body.toString('latin1').includes('/Subtype /Image'))
         fail('PDF without the company logo');
+      // The saved scheda by email (the owner, 13 November 2026): the button leads to the form, the form sends
+      // and comes back with an answer — on a test portal the mail is off, and the page says so.
+      await page.goto(sheetUrl);
+      await page.click('a[href="#invia"]');
+      await page.fill('#f-invia-email', 'condominio-e2e@example.it');
+      await page.fill('#f-invia-messaggio', 'Prova E2E.');
+      await Promise.all([page.waitForEvent('load'), page.click('#invia button[type=submit]')]);
+      if (page.url() !== sheetUrl) fail(`scheda by email: landed on ${page.url()}`);
+      const esitoInvio = ((await page.locator('.flash').textContent()) ?? '').trim();
+      if (!/Scheda inviata a|invio delle email non è attivo/.test(esitoInvio))
+        fail(`scheda by email: no answer (${esitoInvio.slice(0, 80)})`);
       await page.goto(`${sheetUrl}/stampa`);
       if (!(await page.locator('.paper__logo').count())) fail('print without the company logo');
       if (!(await page.textContent('.paper__by')).trim()) fail('print without the author');
@@ -252,7 +250,7 @@ try {
       // The app on the home screen: installable for Chrome, offline notice, the steps of each device.
       await checkInstallableApp(browser, { base, shots, scheme, email, password });
       await checkInstallPhone(browser, { base, shots, scheme });
-      await checkAttachments(page, { sheetUrl, shots });
+      await checkAttachments(page, { sheetUrl, shots, scheme });
       await checkPhotoOrder(page, { sheetUrl, shots });
       await checkSketches(page, { base, aziendaPath, sheetUrl, shots, scheme });
     }
@@ -269,6 +267,18 @@ try {
       ['new-company', '/aziende/nuova'],
       ['log', '/registro'],
       ['settings', `/impostazioni?azienda=${aziendaPath.split('/').pop()}`],
+      ['settings-roles', `/impostazioni/ruoli?azienda=${aziendaPath.split('/').pop()}`],
+      ['settings-terms', `/impostazioni/condizioni?azienda=${aziendaPath.split('/').pop()}`],
+      ['search', '/cerca?q=E2E'],
+      ['new-anything', '/nuovo'],
+      ['console', '/master'],
+      ['contracts', '/master/contratti'],
+      ['verify', '/master/verifica'],
+      ['notices', '/master/comunicazioni'],
+      // The visual check of 21 November 2026: the registers' wide tables scroll inside their box and take
+      // the keyboard focus (axe scrollable-region-focusable); the QR label page has the portal's fields.
+      ['registers', '/master/registri'],
+      ['label', `${new URL(sheetUrl).pathname}/etichetta`],
       ['requests', '/richieste?stato=ALL'],
       ['account', '/account'],
     ]) {
@@ -280,9 +290,7 @@ try {
     await page.goto(`${sheetUrl}/stampa`);
     await audit(page, `${scheme} print`);
     await page.screenshot({ path: join(shots, `${scheme}-print.png`), fullPage: true });
-    await checkInterventi(page, { base, shots, scheme, aziendaName });
-    await checkCartelli(page, { base, shots, scheme, aziendaPath, sheetUrl });
-    await checkVerbali(page, { base, shots, scheme, sheetUrl });
+    await checkDocumenti(page, { base, shots, scheme, aziendaName, aziendaPath, sheetUrl });
     if (scheme === 'light') await checkCompanyData(context, { base, aziendaName, scheme });
     await checkArgano(page, { shots, scheme, sheetUrl, aziendaId: aziendaPath.split('/').pop() });
     await checkLimitatore(page, { shots, scheme, sheetUrl });

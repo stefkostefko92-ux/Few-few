@@ -1,14 +1,14 @@
 // frontend/src/pages/PrivacyPage.jsx
 import Seo from "../components/Seo";
+import { SUPPORT_URL } from "../lib/support";
 
 export default function PrivacyPage() {
-  const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/support";
   const COMPANY    = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
   const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="Privacy Policy" updated="9 October 2026">
+    <LegalPage title="Privacy Policy" updated="25 November 2026">
       <Seo
         title="Privacy Policy — Supreme Bot"
         description="Privacy Policy for Supreme Bot: what data we process, EU data residency, GDPR rights, subprocessors, and retention periods."
@@ -201,7 +201,7 @@ export default function PrivacyPage() {
             </thead>
             <tbody className="text-cs-muted">
               <Tr>
-                <Td>Hetzner Online GmbH</Td>
+                <Td>netcup GmbH</Td>
                 <Td>Infrastructure hosting; database; backups</Td>
                 <Td>All platform data (at rest)</Td>
                 <Td>Germany (EU)</Td>

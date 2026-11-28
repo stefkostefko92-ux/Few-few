@@ -9,7 +9,7 @@
 // Валидациите повтарят ботските (kebab-case ≤32, съдържание ≤1500) — правилото
 // е едно, повърхностите са две, и двете го налагат server-side.
 import { Router } from "express";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { getServerTier } from "../lib/premium.js";

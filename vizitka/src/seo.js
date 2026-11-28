@@ -2,10 +2,13 @@
 import db from './db.js';
 import { GUIDES } from './guides.js';
 
-// Данни на доставчика (импресум) — както в medqr.
+// Данни на доставчика (импресум). Фирмата е вписана в Търговския регистър и на кирилица, и на
+// латиница: „Карбон Стелт ЕДПК“ / „Carbon Stealth VCC“ — еднолично дружество с променлив капитал
+// (чл. 260а и сл. ТЗ).
 export const COMPANY = {
   name: 'Carbon Stealth VCC',
-  legalForm: 'дружество с променлив капитал (VCC)',
+  nameBg: 'Карбон Стелт ЕДПК',
+  legalForm: 'еднолично дружество с променлив капитал',
   url: 'https://carbonstealth.eu',
   uic: '208725180', // ЕИК
   vat: 'BG208725180', // ДДС №
@@ -37,7 +40,7 @@ const postalAddress = {
 // Дата на последна РЕАЛНА промяна на всяка статична страница (sitemap lastmod).
 // По страница, не една обща: обща дата „мести“ всички адреси при всяка промяна и Google
 // спира да ѝ вярва. Сменяй датата само когато съдържанието на страницата се промени.
-export const PAGE_UPDATED = { home: '2026-09-25', privacy: '2026-09-25', terms: '2026-08-02' };
+export const PAGE_UPDATED = { home: '2026-11-25', privacy: '2026-11-25', terms: '2026-11-25' };
 
 export function robotsTxt(base) {
   // Не-страници (крайни точки, файлове, редиректи) — RFC 9309: специфична група НЕ
@@ -81,7 +84,7 @@ export function llmsTxt(base) {
 
 > Vizitka е безплатна дигитална визитка с постоянен QR код: създаваш професионален
 > профил (личен или фирмен) със снимка и контакти, а сканиращият винаги вижда
-> актуалните данни. Услуга на ${COMPANY.name} (${COMPANY.url}), хоствана в ЕС,
+> актуалните данни. Услуга на ${COMPANY.nameBg} (${COMPANY.name}, ${COMPANY.url}), хоствана в ЕС,
 > на български език.
 
 ## Страници
@@ -209,6 +212,8 @@ export function organizationNode(base) {
     '@type': ['Organization', 'LocalBusiness'],
     '@id': `${base}/#organization`,
     name: COMPANY.name,
+    legalName: COMPANY.name,
+    alternateName: COMPANY.nameBg,
     url: COMPANY.url,
     logo: `${base}/logo.png`,
     image: `${base}/logo.png`,

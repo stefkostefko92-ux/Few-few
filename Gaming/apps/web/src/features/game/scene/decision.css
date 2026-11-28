@@ -1,0 +1,121 @@
+/* Изскачащ прозорец за решение (DecisionPrompt). Не е модален: обвивката не
+   поема кликове, само картата — масата отдолу остава видима и жива. */
+.aso-decision-wrap {
+  position: fixed;
+  inset-inline: 0;
+  z-index: 64; /* над масата и чата (40), под Modal (66) */
+  display: flex;
+  justify-content: center;
+  padding-inline: 12px;
+  pointer-events: none;
+}
+.aso-decision-wrap--center {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.aso-decision-wrap--top {
+  top: max(4.5rem, 12vh);
+}
+
+.aso-decision {
+  pointer-events: auto;
+  width: min(100%, 30rem);
+  max-height: calc(100dvh - 6rem);
+  overflow-y: auto;
+  border-radius: var(--r-panel);
+  border: 1px solid rgba(231, 200, 123, 0.55);
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(231, 200, 123, 0.12), transparent 60%),
+    rgba(18, 13, 9, 0.94);
+  box-shadow:
+    var(--shadow-lift),
+    0 0 0 1px rgba(0, 0, 0, 0.4),
+    0 0 36px -8px var(--brass-glow);
+  backdrop-filter: blur(6px);
+  padding: 14px 16px 10px;
+  color: var(--ink-100);
+  animation: aso-decision-in 260ms var(--ease-snap) both;
+}
+@keyframes aso-decision-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+.aso-decision__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.aso-decision__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: var(--brass-300);
+}
+.aso-decision__clock {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: var(--ink-300);
+}
+.aso-decision__clock.is-low {
+  color: #ff8a80;
+  font-weight: 700;
+}
+.aso-decision__hint {
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: var(--ink-300);
+}
+.aso-decision__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.aso-decision__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 8px;
+}
+.aso-decision__link {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 4px 2px;
+}
+.aso-decision__link:hover,
+.aso-decision__link:focus-visible {
+  color: var(--brass-300);
+}
+
+/* Свит прозорец: хапче горе по средата — връща решението. */
+.aso-decision-pill-wrap {
+  position: fixed;
+  inset-inline: 0;
+  top: max(4.5rem, 10vh);
+  z-index: 64;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.aso-decision-pill {
+  pointer-events: auto;
+  border-radius: 999px;
+  border: 1px solid var(--brass-300);
+  background: rgba(18, 13, 9, 0.94);
+  padding: 6px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--brass-100);
+  box-shadow: var(--shadow-lift), 0 0 24px -6px var(--brass-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aso-decision { animation: none; }
+}
+.aso-decision.is-still { animation: none; }

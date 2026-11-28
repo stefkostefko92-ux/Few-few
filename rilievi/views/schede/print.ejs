@@ -48,6 +48,15 @@
     </div>
   </header>
   <%- include('../partials/plate', { byKey, withAddress: false }) %>
+  <%# Разделът Impianto не се печата отделно: под табелата — останалото от табелата в кабината (D.P.R. 162/1999,
+      чл. 16, ал. 3), годината, CE и „Note impianto“, само попълненото (`SOTTO_TARGA`, fields.ts). %>
+  <% const sotto = (typeof sottoTarga !== 'undefined' ? sottoTarga : ['noteImpianto']).map((key) => byKey[key]).filter((f) => f && f.value); %>
+  <% if (sotto.length) { %><section class="paper__section paper__nota-impianto">
+    <dl class="paper__grid">
+      <% for (const f of sotto) { %><div class="paper__cell<%= f.wide ? ' paper__cell--wide' : '' %>"><dt><%= f.label %></dt><dd><%= f.value %></dd></div>
+      <% } %>
+    </dl>
+  </section><% } %>
   <% for (const section of printed) { %>
   <section class="paper__section">
     <h2><%= section.title %></h2>
@@ -97,7 +106,9 @@
     <h2><%= t('allegati.stampa.titolo') %></h2>
     <div class="paper__foto-grid paper__foto-grid--<%= String(scheda.fotoDimensione || 'MEDIE').toLowerCase() %>">
       <% for (const gruppo of foto) { for (const f of gruppo.foto) { %><figure class="paper__figura paper__figura--<%= forma(f) %>">
-        <img src="/schede/<%= scheda.id %>/allegati/<%= f.id %>?mini=1" alt="<%= gruppo.section.title %>: <%= f.didascalia || t('allegati.foto', { nome: f.nomeOriginale }) %>"<% if (f.larghezza && f.altezza) { %> width="<%= f.larghezza %>" height="<%= f.altezza %>"<% } %>>
+        <% const note = annotazioniDi(f.annotazioni); const altFoto = gruppo.section.title + ': ' + (f.didascalia || t('allegati.foto', { nome: f.nomeOriginale })); %>
+        <% if (note && f.larghezza && f.altezza) { const vb = viewBoxAnnotazioni(f, false).split(' '); %><svg class="paper__foto-annotata" viewBox="<%= vb.join(' ') %>" width="<%= f.larghezza %>" height="<%= f.altezza %>" role="img" aria-label="<%= altFoto %>"><image href="/schede/<%= scheda.id %>/allegati/<%= f.id %>?mini=1" x="<%= vb[0] %>" y="<%= vb[1] %>" width="<%= vb[2] %>" height="<%= vb[3] %>" preserveAspectRatio="none"/><%- include('_schizzo-primitivi', { foglio: note }) %></svg>
+        <% } else { %><img src="/schede/<%= scheda.id %>/allegati/<%= f.id %>?mini=1" alt="<%= altFoto %>"<% if (f.larghezza && f.altezza) { %> width="<%= f.larghezza %>" height="<%= f.altezza %>"<% } %>><% } %>
         <figcaption><strong class="paper__foto-sezione"><%= gruppo.section.title %></strong><% if (f.didascalia) { %> — <%= f.didascalia %><% } %></figcaption>
       </figure>
       <% } } %>

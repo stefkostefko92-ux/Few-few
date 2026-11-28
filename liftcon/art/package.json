@@ -1,0 +1,9 @@
+{
+  "name": "liftcon-art",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pipeline за 3D рендери на LiftCon (three.js, headless Chromium през Playwright)",
+  "scripts": { "render": "node render.mjs" },
+  "devDependencies": { "three": "0.187.0" }
+}

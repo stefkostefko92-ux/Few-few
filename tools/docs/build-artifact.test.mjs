@@ -35,6 +35,17 @@ test("ЗЪБИ: `</script>` във вграждано съдържание се 
     /затвори блока по-рано/);
 });
 
+// Реален случай (2026-11-13): `</script>` в docs.js затваря вградения блок по-рано и оголва остатъка
+// от низа като разметка. Ако в него има „<html“, старият ред на проверките казваше „остана обвиващ
+// таг: <html“ и пращаше търсенето към обвивката, а причината беше във вграденото съдържание.
+test("ЗЪБИ: при `</script>` във вграденото се назовава ТО, не оголеният след него обвиващ таг", () => {
+  const docs = 'var d = {"t": "име със </script> затваря блока, а знакът <html> е проза"};';
+  assert.throws(
+    () => assertPublishable(`<p>ок</p>\n<script>\n${docs}\n</script>`, { "docs.js": docs }),
+    /docs\.js съдържа "<\/script>"/,
+  );
+});
+
 test("ЗЪБИ: останал обвиващ таг в РАЗМЕТКАТА се хваща", () => {
   assert.throws(() => assertPublishable("<p>a</p>\n</body>"), /остана обвиващ таг/);
 });
@@ -188,4 +199,67 @@ test("вграждането не разгъва $` / $' / $& от съдърж�
   assert.ok(html.includes("// (`$`) · $' · $& · $$"), "текстът е вграден дословно");
   const reg = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8"));
   assert.equal(agents, (Array.isArray(reg) ? reg : reg.agents).length);
+});
+
+// ── Връхът на паметта (27.11.2026): застоял локален agents/memory (b70dc760 от 04.11) печелеше пред
+// отдалечения (caf797a4), билдът показваше флота три седмици назад, а куката искаше стара памет завинаги.
+import { spawnSync } from "node:child_process";
+import { rmSync } from "node:fs";
+import { memoryTip, fastForwardLocalMemory } from "./build-artifact.mjs";
+
+const GENV = { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" };
+const g = (cwd, ...a) => spawnSync("git", a, { cwd, encoding: "utf8", env: GENV }).stdout.trim();
+function memRepo() {
+  const dir = mkdtempSync(join(tmpdir(), "memtip-"));
+  g(dir, "init", "-q", "-b", "main");
+  const commit = (msg) => { g(dir, "commit", "-q", "--allow-empty", "-m", msg); return g(dir, "rev-parse", "HEAD"); };
+  const c1 = commit("1"), c2 = commit("2");
+  return { dir, c1, c2, commit };
+}
+
+test("memoryTip: локалният изцяло зад отдалечения → отдалеченият; само единият → той", () => {
+  const r = memRepo();
+  try {
+    assert.equal(memoryTip(r.dir), null, "няма клон на паметта");
+    g(r.dir, "update-ref", "refs/remotes/origin/agents/memory", r.c2);
+    assert.equal(memoryTip(r.dir), r.c2, "само отдалечен");
+    g(r.dir, "update-ref", "refs/heads/agents/memory", r.c1);
+    assert.equal(memoryTip(r.dir), r.c2, "локалният е предшественик → по-пресният отдалечен");
+    g(r.dir, "update-ref", "refs/heads/agents/memory", r.c2);
+    assert.equal(memoryTip(r.dir), r.c2, "еднакви");
+  } finally { rmSync(r.dir, { recursive: true, force: true }); }
+});
+
+test("memoryTip: разклонени → локалният (там може да има непуснато учене)", () => {
+  const r = memRepo();
+  try {
+    g(r.dir, "checkout", "-q", "-b", "side", r.c1);
+    const side = r.commit("локално учене");
+    g(r.dir, "update-ref", "refs/heads/agents/memory", side);
+    g(r.dir, "update-ref", "refs/remotes/origin/agents/memory", r.c2);
+    assert.equal(memoryTip(r.dir), side);
+  } finally { rmSync(r.dir, { recursive: true, force: true }); }
+});
+
+test("fastForwardLocalMemory: мести само изцяло изостанал клон, който не е изваден в работно дърво", () => {
+  const r = memRepo();
+  try {
+    assert.equal(fastForwardLocalMemory(r.c2, r.dir), "skip:няма локален клон");
+    g(r.dir, "update-ref", "refs/heads/agents/memory", r.c1);
+    assert.equal(fastForwardLocalMemory(r.c2, r.dir), "moved");
+    assert.equal(g(r.dir, "rev-parse", "refs/heads/agents/memory"), r.c2);
+    assert.equal(fastForwardLocalMemory(r.c2, r.dir), "same");
+    // разклонен: локалното учене не се губи
+    g(r.dir, "checkout", "-q", "-b", "side", r.c1);
+    const side = r.commit("локално учене");
+    g(r.dir, "update-ref", "refs/heads/agents/memory", side);
+    assert.match(fastForwardLocalMemory(r.c2, r.dir), /^skip:/);
+    assert.equal(g(r.dir, "rev-parse", "refs/heads/agents/memory"), side);
+    // изваден в работно дърво: не се пипа (иначе дървото и клонът се разминават)
+    g(r.dir, "update-ref", "refs/heads/agents/memory", r.c1);
+    g(r.dir, "checkout", "-q", "main");
+    g(r.dir, "worktree", "add", "-q", join(r.dir, "wt"), "agents/memory");
+    assert.equal(fastForwardLocalMemory(r.c2, r.dir), "skip:клонът е изваден в работно дърво");
+    assert.equal(g(r.dir, "rev-parse", "refs/heads/agents/memory"), r.c1);
+  } finally { rmSync(r.dir, { recursive: true, force: true }); }
 });

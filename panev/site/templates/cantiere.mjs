@@ -13,6 +13,7 @@ export const PHOTOS = {
   famDoors: ['porta-pulita', 'porta-regolazione', 'porta-staffe', 'porta-soglia'],
   famGuides: ['guida-supporto', 'guida-giunzione', 'vano-finito', 'guida-vano'],
   famSg: ['guida-giunzione', 'vano-finito'],
+  walls: ['porta-staffe', 'porta-soglia', 'porta-regolazione'],
 };
 
 function photo(t, name, sizes) {
@@ -29,7 +30,7 @@ function photo(t, name, sizes) {
   </figure>`;
 }
 
-// key: home или ключът на страницата по семейство (само тези в PHOTOS имат снимки).
+// key: home или ключът на страницата (по семейство или „неравни зидарии“; само тези в PHOTOS имат снимки).
 export function cantiereSection(t, key) {
   const names = PHOTOS[key];
   if (!names) return '';

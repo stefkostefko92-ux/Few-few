@@ -24,10 +24,11 @@ const BaitShowcase = lazy(() => import("../components/BaitShowcase"));
 import { LandingFooter } from "../components/LandingParts";
 import { LANDING_TRANSLATIONS } from "../i18n/landing";
 import { useScrollReveal } from "../hooks/useScrollReveal";
+import { botInviteUrl } from "../lib/invite";
+import { SUPPORT_URL } from "../lib/support";
 
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
-const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCRpy8B";
-const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
+const BOT_INVITE_URL = botInviteUrl();
 
 // Същата разметка като английския (одобрената концепция, 10.10.2026):
 // текстовете на концепцията — LANDING_CONCEPT[locale]; функциите, тарифите,

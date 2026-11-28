@@ -17,17 +17,21 @@ import {
 } from "discord.js";
 import api, { getServer } from "./utils/api.js";
 import { BRAND, SUCCESS, DANGER, WARNING, INFO, MUTED } from "./utils/colors.js";
-import { getTranslator, SUPPORTED_LANGUAGES } from "./i18n/index.js";
+import { getTranslator, SUPPORTED_LANGUAGES, t, resolveLangForGuild } from "./i18n/index.js";
 import { readdirSync } from "fs";
 import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, join } from "path";
 import express from "express";
 import { requireBotSecret } from "./middleware/secret.js";
 import { handlePanelSpawn, handlePanelUpdate, handleMultiPanelSpawn } from "./internal/panelHandler.js";
-import { handleTicketClose, handleTicketClaim } from "./internal/ticketHandler.js";
+import { invalidatePanel } from "./utils/panelCache.js";
+import { handleTicketClose, handleTicketClaim, handleTicketAutoClose } from "./internal/ticketHandler.js";
 import { handleApplicationReviewed } from "./internal/applicationHandler.js";
 import { bootAllCustomClients, shutdownCustomClient, customClients } from "./services/clientManager.js";
 import { roleAssignabilityReason } from "./utils/reactionRoles.js";
+import { presentMembers } from "./utils/giveawayMembers.js";
+import { memberCacheWarmer } from "./utils/memberCacheWarm.js";
+import { invalidateVerificationPanel } from "./utils/verificationPanelCache.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -77,7 +81,7 @@ export const client = new Client({
   // messageReactionRemove НЕ се емитва за потребител извън кеша (discord.js
   // MessageReactionRemove.handle излиза с false) → ролята остава при махната
   // реакция след рестарт (находка на Кодаджията). Reaction Roles v33.
-  partials: [Partials.Channel, Partials.Message, Partials.Reaction, Partials.User],
+  partials: [Partials.Channel, Partials.Message, Partials.Reaction, Partials.User, Partials.GuildMember],
 });
 
 // ─── Commands Collection ──────────────────────────────────────────────────────
@@ -196,6 +200,8 @@ app.post("/internal/multi-panel-spawn", async (req, res) => {
 
 app.post("/internal/panel-update", async (req, res) => {
   try {
+    // Т13: кешираният панел (30 s) се чисти при редакция от таблото.
+    invalidatePanel(req.body?.panelId);
     await handlePanelUpdate(client, req.body);
     res.json({ ok: true });
   } catch (err) {
@@ -448,6 +454,7 @@ app.post("/internal/verification-spawn", async (req, res) => {
 app.post("/internal/verification-update", async (req, res) => {
   const { panelId } = req.body;
   if (!panelId) return res.status(400).json({ error: "panelId required" });
+  invalidateVerificationPanel(String(panelId)); // В3: кешът за модала не държи остарял панел
   try {
     const { buildVerificationMessage } = await import("./utils/verificationEmbed.js");
     const { data: panel } = await api.get(`/verification/bot/${panelId}`);
@@ -470,8 +477,22 @@ app.post("/internal/verification-update", async (req, res) => {
 
 app.post("/internal/ticket-close", async (req, res) => {
   try {
-    await handleTicketClose(client, req.body);
-    res.json({ ok: true });
+    const r = await handleTicketClose(client, req.body);
+    // `ok:false` (непознат тикет/сървър) е ЧЕСТЕН провал, не „всичко е наред“.
+    if (r?.ok === false) return res.status(404).json({ error: r.code || "NOT_FOUND" });
+    res.json({ ok: true, warnings: r?.warnings || [] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Автозатваряне по неактивност (планировчикът). Заменя стария
+// `/internal/ticket-auto-closed`, който само пускаше известие, а каналът
+// оставаше отворен и пишем (Т2).
+app.post("/internal/ticket-auto-close", async (req, res) => {
+  try {
+    const r = await handleTicketAutoClose(client, req.body || {});
+    res.json(r);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -902,41 +923,6 @@ app.post("/internal/ticket-assigned", async (req, res) => {
 });
 
 // Appy.bot-style: apply roles and send DM to applicant after review
-// Inactivity auto-close notice — posted by scheduler
-app.post("/internal/ticket-auto-closed", async (req, res) => {
-  const { channelId, serverId, hours, logChannelId, number, padding } = req.body;
-  try {
-    const channel = await guildChannel(serverId, channelId);
-    if (channel) {
-      await channel.send({
-        embeds: [{
-          title: "🔒 Ticket Auto-Closed",
-          description: `This ticket has been automatically closed after **${hours}h** of inactivity.\n\nStaff can use the buttons above to reopen or delete.`,
-          color: DANGER,
-          timestamp: new Date().toISOString(),
-        }],
-      }).catch(() => {});
-    }
-    if (logChannelId) {
-      const logCh = await guildChannel(serverId, logChannelId);
-      if (logCh) {
-        const pad = String(number ?? "").padStart(padding ?? 4, "0");
-        await logCh.send({
-          embeds: [{
-            title: `🕛 Ticket Auto-Closed · #${pad}`,
-            description: `**Channel**: <#${channelId}>\n**Reason**: ${hours}h inactivity`,
-            color: WARNING,
-            timestamp: new Date().toISOString(),
-          }],
-        }).catch(() => {});
-      }
-    }
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 app.post("/internal/application-apply-outcome", async (req, res) => {
   const { serverId, userId, rolesToAdd = [], rolesToRemove = [], dmMessage, action } = req.body;
   if (!serverId || !userId) return res.status(400).json({ error: "serverId and userId required" });
@@ -1112,6 +1098,77 @@ app.post("/internal/giveaway-ended", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// ── А4: кои от участниците в раздаване още са в сървъра (backend: lib/giveawayDraw.js).
+// Само конкретните id-та (≤100), не списък с членове — виж utils/giveawayMembers.js.
+app.post("/internal/giveaway-members-check", async (req, res) => {
+  const { serverId, userIds } = req.body || {};
+  if (typeof serverId !== "string" || !/^\d{17,20}$/.test(serverId) || !Array.isArray(userIds)) {
+    return res.status(400).json({ ok: false, error: "serverId and userIds required" });
+  }
+  try {
+    const guild = client.guilds.cache.get(serverId) || await client.guilds.fetch(serverId).catch(() => null);
+    if (!guild) return res.status(404).json({ ok: false, error: "Guild not found" });
+    const present = await presentMembers(guild, userIds);
+    if (present === null) return res.status(502).json({ ok: false, error: "members lookup failed" });
+    res.json({ ok: true, present });
+  } catch (err) {
+    console.error("[giveaway-members-check]", err.message);
+    res.status(500).json({ ok: false, error: "internal error" });
+  }
+});
+
+// ── Т11: ролите на член (за да реши бекендът дали е „мениджър на кандидатури“). Само ЕДИН член по id.
+app.post("/internal/guild-member-roles", async (req, res) => {
+  const { serverId, userId } = req.body || {};
+  if (![serverId, userId].every((x) => typeof x === "string" && /^\d{17,20}$/.test(x))) {
+    return res.status(400).json({ ok: false, error: "serverId and userId required" });
+  }
+  try {
+    const guild = client.guilds.cache.get(serverId) || await client.guilds.fetch(serverId).catch(() => null);
+    if (!guild) return res.status(404).json({ ok: false, error: "Guild not found" });
+    const m = guild.members.cache.get(userId) || await guild.members.fetch(userId).catch(() => null);
+    if (!m) return res.json({ ok: true, roleIds: [], member: false });
+    res.json({ ok: true, member: true, roleIds: [...m.roles.cache.keys()].filter((id) => id !== guild.id) });
+  } catch (err) {
+    console.error("[guild-member-roles]", err.message);
+    res.status(500).json({ ok: false, error: "internal error" });
+  }
+});
+
+// ── Т6: след решението каналът за обсъждане на кандидатурата се затваря (заключва за кандидата).
+app.post("/internal/application-discussion-close", async (req, res) => {
+  const { serverId, channelId, outcome } = req.body || {};
+  try {
+    const channel = await guildChannel(serverId, channelId);
+    if (!channel) return res.json({ ok: false, reason: "channel not found" });
+    const lang = await resolveLangForGuild(serverId);
+    // Заключваме (не трием): разговорът остава за екипа; кандидатът вече не може да пише.
+    // Само „user“ записите — ролите на мениджърите и @everyone не се пипат.
+    const { PermissionFlagsBits } = await import("discord.js");
+    for (const [id, ow] of channel.permissionOverwrites?.cache ?? []) {
+      if (ow.type === 1 && ow.allow?.has?.(PermissionFlagsBits.SendMessages) && id !== client.user?.id) {
+        await channel.permissionOverwrites.edit(id, { SendMessages: false }).catch(() => {});
+      }
+    }
+    await channel.send({ content: t(outcome === "approve" ? "app.review.discussionClosedApproved" : "app.review.discussionClosedDenied", lang), allowedMentions: { parse: [] } });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[application-discussion-close]", err.message);
+    res.status(500).json({ ok: false, error: "internal error" });
+  }
+});
+
+// ── В5: „запазване на роли“ е включено за сървър → затопли кеша му (виж utils/memberCacheWarm.js).
+// Викан от настройките на сървъра; иначе периодичният обход го хваща до 10 мин по-късно.
+app.post("/internal/member-cache-warm", async (req, res) => {
+  const { serverId } = req.body || {};
+  if (typeof serverId !== "string" || !/^\d{17,20}$/.test(serverId)) return res.status(400).json({ ok: false, error: "serverId required" });
+  const guild = client.guilds.cache.get(serverId);
+  if (!guild) return res.json({ ok: false, reason: "guild not found" });
+  memberCacheWarmer.warmGuild(guild).catch(() => {});
+  res.json({ ok: true });
 });
 
 // ── v1.8 Scheduled message sending
@@ -1396,6 +1453,10 @@ client.once(Events.ClientReady, async () => {
     );
   }, WL_RECONCILE_MS).unref?.();
   console.log(`✅ White-label реконсилиация на всеки ${Math.round(WL_RECONCILE_MS / 3600000)}ч`);
+
+  // В5: кешът на членовете се затопля САМО за сървъри със запазване на роли (виж
+  // utils/memberCacheWarm.js — защо е нужно и защо е допустимо изключение от GDPR гейта).
+  memberCacheWarmer.start(client);
 });
 
 // Graceful shutdown — destroy white-label sessions and the main client so

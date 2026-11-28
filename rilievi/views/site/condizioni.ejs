@@ -2,7 +2,7 @@
   // Условията за услугата с приложенията и правилата за ползване (src/legale/): текстът — дума по дума от
   // файловете на версията в legale/, с отпечатъка, който се пази при приемането. Всеки член — с котва.
   const ancora = (prefisso, numero) => `${prefisso}-${numero.replace(/\./g, '-').toLowerCase()}`;
-%><%- include('top', { pageTitle: t('legale.pagina.title') + ' — Rilievi Impianti', description: t('legale.pagina.metaDescription'), keywords: t('legale.pagina.keywords'), extraSheets: ['site-percorso', 'site-legale'] }) %>
+%><%- include('top', { pageTitle: t('legale.pagina.title') + ' — Rilievi Impianti', description: t('legale.pagina.metaDescription'), keywords: t('legale.pagina.keywords'), extraSheets: ['site-percorso', 'site-legale'], noindex: Boolean(locals.prossima) }) %>
 <div class="prose legale-pagina">
   <nav class="percorso" aria-label="<%= t('novita.percorso') %>">
     <ol>
@@ -12,7 +12,16 @@
   </nav>
   <h1><%= t('legale.pagina.title') %></h1>
   <p class="legale-pagina__lead"><%= t('legale.pagina.lead') %></p>
-  <p class="prose__updated"><%= t('legale.pagina.inVigore', { data: fmt.dayLong(new Date(condizioni.versione + 'T00:00:00Z')) }) %></p>
+  <% if (locals.prossima) { %><div class="notice" role="status">
+    <h2><%= t('legale.prossima.title') %></h2>
+    <p><%= prossima.dal ? t('legale.prossima.lead', { data: fmt.dayLongRoma(prossima.dal) }) : t('legale.prossima.nonAnnunciata') %> <a href="<%= condizioniPath %>"><%= t('legale.prossima.vigente') %></a></p>
+    <h3><%= t('legale.prossima.cambia') %></h3>
+    <ul>
+      <% for (const m of prossima.modifiche) { %><li><a href="#<%= ancora('art', /^\d/.test(m.numero) ? m.numero.split('.')[0] : m.numero) %>"><%= m.numero %></a> <%= m.titolo %> (<%= t('legale.prossima.tipi.' + m.tipo) %>)</li>
+      <% } %>
+    </ul>
+  </div>
+  <% } else { %><p class="prose__updated"><%= t('legale.pagina.inVigore', { data: fmt.dayLong(new Date(condizioni.versione + 'T00:00:00Z')) }) %></p><% } %>
   <p><%= t('legale.pagina.salva') %> <a href="<%= pdfPath %>"><%= t('legale.pagina.pdf') %></a></p>
 
   <nav class="legale-indice" aria-labelledby="h-indice">
@@ -37,7 +46,7 @@
   <% for (const allegato of condizioni.allegati) { %><section aria-labelledby="allegato-<%= allegato.id %>">
     <h2 id="allegato-<%= allegato.id %>"><%= allegato.titolo %></h2>
     <% for (const a of allegato.articoli) { %><h3 id="<%= ancora('art', a.numero) %>"><%= a.numero %> – <%= a.titolo %></h3>
-    <% if (allegato.id === 'dpa') { %><% for (const p of a.paragrafi) { %><p><%= p %></p>
+    <% if (allegato.id === 'dpa' || allegato.id === 'cambio') { %><% for (const p of a.paragrafi) { %><p><%= p %></p>
     <% } %><% } else { %><ul>
       <% for (const p of a.paragrafi) { %><li><%= p %></li>
       <% } %></ul>

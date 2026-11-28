@@ -39,6 +39,8 @@ export interface FormView {
   conferma?: boolean;
   /** Редът на разделите на фирмата за нова карта (при редакция — този на картата, `scheda.azienda`). */
   ordineSezioni?: readonly string[];
+  /** „Duplica“: името на картата, от която идват полетата (бележка над формата). */
+  duplicataDa?: string;
 }
 
 export async function renderForm(

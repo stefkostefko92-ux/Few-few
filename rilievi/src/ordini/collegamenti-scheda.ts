@@ -22,6 +22,7 @@ export const SCHEDA_NUOVI: readonly Collegamento[] = [
       { luogo: 'eg', campo: 'motoreHp' },
       { luogo: 'eo', campo: 'motoreHp' },
       { luogo: 'pa', campo: 'potenzaCv' },
+      { luogo: 'gt', campo: 'motoreHp' },
     ],
   },
   {
@@ -57,6 +58,11 @@ export const SCHEDA_NUOVI: readonly Collegamento[] = [
           softStarter: 'SOFT',
         },
       },
+      {
+        luogo: 'gt',
+        campo: 'avviamento',
+        voci: { diretto: 'DIRETTO', stellaTriangolo: 'STELLA', softStart: 'SOFT' },
+      },
     ],
   },
   {
@@ -68,6 +74,7 @@ export const SCHEDA_NUOVI: readonly Collegamento[] = [
       { luogo: 'oq', campo: 'elettrovalvoleVcc' },
       { luogo: 'dp', campo: 'valvoleTensione' },
       { luogo: 'eo', campo: 'elettrovalvoleV' },
+      { luogo: 'gt', campo: 'tensioneValvole' },
     ],
   },
   {
@@ -82,6 +89,7 @@ export const SCHEDA_NUOVI: readonly Collegamento[] = [
       { luogo: 'eg', voci: { emendamentoA3: 'A3' } },
       { luogo: 'el', voci: { a3: 'A3' } },
       { luogo: 'eo', voci: { emendamentoA3: 'A3' } },
+      { luogo: 'gt', voci: { emA3: 'A3' } },
     ],
   },
   {
@@ -129,6 +137,7 @@ export const SCHEDA_NUOVI: readonly Collegamento[] = [
       { luogo: 'eg', voci: { pianoAutomatiche: 'AUTO', pianoManuali: 'MANUALI' } },
       { luogo: 'el', voci: { pianoAutomatiche: 'AUTO', pianoManuali: 'MANUALI' } },
       { luogo: 'eo', voci: { pianoAutomatiche: 'AUTO', pianoManuali: 'MANUALI' } },
+      { luogo: 'gt', campo: 'portePiano', voci: { auto: 'AUTO', manuale: 'MANUALI' } },
     ],
   },
   {
@@ -146,6 +155,7 @@ export const SCHEDA_NUOVI: readonly Collegamento[] = [
       { luogo: 'eg', voci: { cabinaAutomatiche: 'AUTO', cabinaManuali: 'MANUALI' } },
       { luogo: 'el', voci: { cabinaAutomatiche: 'AUTO' } },
       { luogo: 'eo', voci: { cabinaAutomatiche: 'AUTO', cabinaManuali: 'MANUALI' } },
+      { luogo: 'gt', campo: 'porteCabina', voci: { auto: 'AUTO', manuale: 'MANUALI' } },
     ],
   },
   {
@@ -177,6 +187,7 @@ export const SCHEDA_NUOVI: readonly Collegamento[] = [
       { luogo: 'oq', campo: 'opVcaValore' },
       { luogo: 'sg', campo: 'motoreVca' },
       { luogo: 'so', campo: 'motoreVca' },
+      { luogo: 'gt', campo: 'operatoreTensione' },
     ],
   },
 ];

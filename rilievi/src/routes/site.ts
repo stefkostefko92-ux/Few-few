@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Router, type Request, type Response } from 'express';
-import { COMPANY, PRIVACY_UPDATED } from '../company.js';
+import { COMPANY, PRIVACY_UPDATED, CONTENT_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { issuePreCsrf, PRE_CSRF_MAX_AGE_MS, requirePreAuthCsrf } from '../auth/guards.js';
 import { LOCK_MINUTES, MAX_FAILED_LOGINS } from '../auth/lockout.js';
@@ -21,7 +21,17 @@ import {
 } from '../requests/form.js';
 import { REQUEST_RETENTION_DAYS, submitAccessRequest } from '../requests/service.js';
 import { llmsTxt, robotsTxt, sitemapXml } from '../seo/files.js';
-import { HOME_PATH, NOVITA_PATH, CONDIZIONI_PATH, PRIVACY_PATH, SENT_PATH } from '../seo/paths.js';
+import {
+  CONDIZIONI_PATH,
+  ESPORTAZIONE_PATH,
+  HOME_PATH,
+  NOVITA_PATH,
+  PREZZI_PATH,
+  PRIVACY_PATH,
+  SEGNALAZIONI_PATH,
+  SENT_PATH,
+  STATO_PATH,
+} from '../seo/paths.js';
 import { landingStructuredData, privacyStructuredData } from '../seo/structured-data.js';
 import { INVITE_DAYS, INVITI_SCADUTI_GIORNI } from '../services/invites.js';
 import { GIORNI_PRIMA_DELL_ELIMINAZIONE } from '../aziende/eliminazione.js';
@@ -84,10 +94,16 @@ export function siteLocals(req: Request, path: string | null) {
     privacyPath: PRIVACY_PATH,
     novitaPath: NOVITA_PATH,
     condizioniPath: CONDIZIONI_PATH,
+    esportazionePath: ESPORTAZIONE_PATH,
+    prezziPath: PREZZI_PATH,
+    segnalazioniPath: SEGNALAZIONI_PATH,
+    statoPath: STATO_PATH,
     loginUrl: '/accesso',
     signedIn: Boolean(req.principal),
     company: COMPANY,
     contactEmail: config().CONTACT_EMAIL,
+    // Видимата дата на последната промяна на витрината (същата като `dateModified` в JSON-LD).
+    contentUpdated: CONTENT_UPDATED,
   };
 }
 

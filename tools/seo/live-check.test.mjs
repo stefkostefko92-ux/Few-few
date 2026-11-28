@@ -182,3 +182,16 @@ test("sites.mjs: каноничен https произход, без дубли, �
     }
   }
 });
+
+test("sites.mjs: сайт на пауза (skip) не влиза в проверката по подразбиране, но остава в списъка", async () => {
+  const { activeSites } = await import("./sites.mjs");
+  const skipped = SITES.filter((s) => s.skip);
+  for (const p of ["medqr", "Minyor", "kebab"]) {
+    const s = SITES.find((x) => x.product === p);
+    assert.ok(s && typeof s.skip === "string" && s.skip.length > 0, `${p}: skip с причина`);
+  }
+  const active = activeSites();
+  assert.equal(active.length, SITES.length - skipped.length);
+  assert.ok(!active.some((s) => s.skip), "нито един сайт на пауза в активния списък");
+  assert.ok(active.some((s) => s.product === "zabobovdol"), "активните остават");
+});

@@ -48,6 +48,8 @@ body() { curl -s --max-time "$TIMEOUT" "$1" 2>/dev/null || echo ""; }
 # СЪДЪРЖАНИЕТО: пререндираната страница носи собствения си canonical, файлът —
 # своя Content-Type / подпис.
 ctype() { curl -s -o /dev/null -w '%{content_type}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
+# Накъде пренасочва адресът (без да го следва); относителен Location излиза абсолютен.
+redirect() { curl -s -o /dev/null -w '%{redirect_url}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
 # Търсене в ВЕЧЕ изтеглен текст (here-string, без pipe). `curl … | grep -q` под
 # `pipefail` лъжеше: grep -q излиза при първото съвпадение, curl/echo пише
 # остатъка в затворения pipe → SIGPIPE → цялата проверка „пада“, макар
@@ -181,6 +183,23 @@ case "$t" in
 esac
 if prerendered /features/discord-leveling-game; then ok "страницата на играта е пререндирана"
 else bad "/features/discord-leveling-game не е пререндирана (SPA fallback)"; fi
+
+# ─── 10. /support пренасочва (v56) ──────────────────────────────────────────
+# Бутонът „Поддръжка“ на бота, таблото и сайтът сочат към /support; backend-ът го
+# пренасочва към поканата, зададена от главния акаунт в конзолата. 200 тук значи,
+# че nginx не е стигнал до backend-а и човекът вижда SPA-то с „страницата не е
+# намерена“ — точно дефектът, заради който адресът беше 404 на живо.
+c=$(code "$BASE/support")
+loc=$(redirect "$BASE/support")
+if [ "$c" = "302" ]; then
+  case "$loc" in
+    https://discord.gg/*) ok "/support води към поканата за поддръжка" ;;
+    */docs) ok "/support пренасочва"; note "покана за поддръжка още НЕ е зададена — /support води към ръководствата (конзола → System → Support server invite)" ;;
+    *) bad "/support пренасочва към неочакван адрес: ${loc:-празно}" ;;
+  esac
+else
+  bad "/support върна $c, не 302 — бутонът „Поддръжка“ на бота води в нищото (липсва location = /support в nginx?)"
+fi
 
 echo
 if [ "$fail" -eq 0 ]; then

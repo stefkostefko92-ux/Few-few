@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parseDocsIndex, parseChangelog, parseEngineering, diffSnapshot, nextState, newer, clean, renderReport, STATE } from "./anthropic-watch.mjs";
+import { parseDocsIndex, parseChangelog, parseEngineering, parseSkillsMarketplace, diffSnapshot, nextState, newer, clean, renderReport, STATE, touchedContracts } from "./anthropic-watch.mjs";
 
 const DOCS = `# Claude Code Docs
 - [Overview](https://code.claude.com/docs/en/overview.md): Claude Code is…
@@ -97,6 +97,46 @@ test("записаната снимка в репото е валидна и н�
   assert.match(s.checkedAt, /^\d{4}-\d{2}-\d{2}$/);
   assert.match(s.changelogVersion, /^\d+\.\d+\.\d+$/);
   assert.ok(s.docs.length > 50 && s.engineering.length > 5, "снимката не е празна");
+  assert.ok(Array.isArray(s.skills) && s.skills.length >= 10, "снимката на anthropics/skills е записана");
+  for (const x of s.skills) assert.match(x.id, /^[a-z0-9-]+\/[a-z0-9-]+$/, `умение ${x.id}`);
+});
+
+const MARKETPLACE = JSON.stringify({
+  name: "anthropic-agent-skills",
+  plugins: [
+    { name: "document-skills", skills: ["./skills/xlsx", "./skills/docx"] },
+    { name: "example-skills", skills: ["./skills/frontend-design", "./skills/frontend-design"] },
+    { name: "discernment-nudge", skills: ["./skills/discernment-nudge"] },
+    { name: "bad", skills: ["../../etc/passwd", "./skills/../x", 42, "./skills/Bad Name", "./skills/ok"] },
+    { name: "лош плъгин", skills: ["./skills/fine"] },
+  ],
+});
+
+test("parseSkillsMarketplace: плъгин/умение от marketplace.json, без дубли и без чужди пътища", () => {
+  const s = parseSkillsMarketplace(MARKETPLACE);
+  assert.deepEqual(s.map((x) => x.id), ["document-skills/xlsx", "document-skills/docx", "example-skills/frontend-design", "discernment-nudge/discernment-nudge", "bad/ok"]);
+  assert.equal(s[0].skill, "xlsx");
+  assert.deepEqual(parseSkillsMarketplace("не е JSON"), [], "счупен файл → празно, не изключение");
+});
+
+test("diffSnapshot: нови и махнати умения в anthropics/skills; снимка без умения е начална точка", () => {
+  const cur = { skills: parseSkillsMarketplace(MARKETPLACE) };
+  const prev = { skills: [{ id: "document-skills/xlsx", plugin: "document-skills", skill: "xlsx" }, { id: "example-skills/webapp-testing", plugin: "example-skills", skill: "webapp-testing" }] };
+  const d = diffSnapshot(prev, cur);
+  assert.deepEqual(d.newSkills.map((x) => x.id), ["document-skills/docx", "example-skills/frontend-design", "discernment-nudge/discernment-nudge", "bad/ok"]);
+  assert.deepEqual(d.removedSkills.map((x) => x.id), ["example-skills/webapp-testing"]);
+  const r = renderReport(d, []);
+  assert.match(r, /Нови умения в anthropics\/skills \(4\)/);
+  assert.match(r, /https:\/\/github\.com\/anthropics\/skills\/tree\/main\/skills\/discernment-nudge/);
+  assert.match(r, /Махнати умения/);
+  assert.doesNotMatch(r, /Няма новости/, "само нови умения пак са новост");
+  // Стара снимка от преди източника: не вдига всичките 20 умения като „нови“.
+  const base = diffSnapshot({ checkedAt: "2026-10-31", docs: [] }, cur);
+  assert.equal(base.newSkills.length, 0);
+  assert.deepEqual(nextState({ checkedAt: "2026-10-31" }, cur, "2026-11-08").skills.map((x) => x.id), cur.skills.map((x) => x.id));
+  // Неуспешно сваляне на умения пренася старата снимка.
+  assert.deepEqual(nextState(prev, {}, "2026-11-08").skills, prev.skills);
+  assert.equal(diffSnapshot(prev, {}).removedSkills.length, 0);
 });
 
 test("договорите с харнеса: ред от changelog-а, който ги засяга, излиза първи", async () => {
@@ -109,8 +149,87 @@ test("договорите с харнеса: ред от changelog-а, койт
   }
   assert.ok(touchedContracts("Changed hook additionalContext limit to 20,000 characters", contracts).includes("additional-context-10k"));
   assert.ok(touchedContracts("Fixed skills not preloading into subagents", contracts).includes("skills-preload-subagent"));
+  // Boris Cherny, 30.03.2026: -p и SDK ще минат на --bare по подразбиране → live-run губи куките.
+  assert.ok(touchedContracts("Changed `claude -p` to default to --bare mode", contracts).includes("print-mode-loads-hooks"));
   assert.deepEqual(touchedContracts("[VSCode] Added syntax coloring to code blocks", contracts), []);
+  // Шум от 2.1.317–2.1.319 (08.11.2026): 41 от 53 удара бяха поднизове („ws“ в shows/AWS, „timeout“, „compaction“ …).
+  for (const noise of [
+    "Added an optional `login_notice` setting to the Claude apps gateway that shows an operator-defined message",
+    "Added `assume_role` on `mantle` upstreams of the Claude apps gateway, for a role in another AWS account",
+    "Improved config saves on Windows: Claude Code waits longer for a file another program has open",
+    "Fixed needless permission prompts for read-only commands wrapped in a plain `timeout DURATION`, such as `timeout 30 rg foo`",
+    "Improved auto-update reliability: a brief network failure while verifying a release is now retried right away",
+    "Fixed idle compaction replacing a conversation with a reply that was not a summary",
+    "Changed exit to skip the \"Background work is running\" prompt for plugin monitors",
+    "Fixed workflows re-running finished agents when resumed after a usage limit",
+    "[VSCode] Fixed `ultrathink` not raising effort for its turn or showing its rainbow when telemetry is off",
+    "Fixed agent team teammates in tmux or iTerm2 panes starting in auto mode when the lead session was in manual mode",
+  ]) assert.deepEqual(touchedContracts(noise, contracts), [], noise);
+  // Истинските удари остават.
+  assert.ok(touchedContracts("Changed Monitor's WebSocket watch to follow a rule on every Bash command", contracts).includes("monitor-bash-hooks"));
+  assert.ok(touchedContracts("Hooks with a Bash matcher now also run for the Monitor tool's shell commands", contracts).includes("monitor-bash-hooks"));
+  assert.ok(touchedContracts("Changed subagents and teammates on a different model to use that model's saved effort level", contracts).includes("subagent-effort-env"));
+  assert.ok(touchedContracts("Changed skills to keep the first 10,000 tokens after compaction", contracts).includes("skill-compaction-5k"));
+  assert.ok(touchedContracts("Fixed hook timeout not honoring onFailure", contracts).includes("hook-onfailure-default"));
+  assert.ok(touchedContracts("Raised the workflow concurrency limit to 32", contracts).includes("workflow-concurrency-cap"));
+  // Ключ-масив изисква всички части; празен масив не удря.
+  assert.deepEqual(touchedContracts("a skill", [{ id: "x", keywords: [["skill", "compact"]] }]), []);
+  assert.deepEqual(touchedContracts("anything", [{ id: "x", keywords: [[]] }]), []);
   const d = diffSnapshot({ changelogVersion: "2.1.310" }, { changelog: [{ version: "2.1.311", date: "", bullets: ["Changed hook additionalContext limit to 20,000 characters"] }] }, contracts);
   assert.equal(d.contractHits.length, 1);
   assert.match(renderReport(d, []), /ЗАСЯГАТ ДОГОВОР С ХАРНЕСА/);
+});
+
+test("ключовите думи се търсят по граница на дума отпред — „sed“ не хваща „refused“/„used“ (19.11.2026: 14 от 19 удара бяха шум)", async () => {
+  const { touchedContracts, keywordRe } = await import("./anthropic-watch.mjs");
+  const c = [{ id: "x", keywords: [["sed", "permission"]] }, { id: "y", keywords: ["subagent"] }];
+  assert.deepEqual(touchedContracts("Fixed a crash when a permission prompt was refused", c), []);
+  assert.deepEqual(touchedContracts("Commands used with a permission rule", c), []);
+  assert.deepEqual(touchedContracts("`sed` edits now require permission", c), ["x"]);
+  assert.deepEqual(touchedContracts("Fixed subagents losing context", c), ["y"], "наставките остават");
+  assert.equal(keywordRe("CLAUDE.md").test("CLAUDExmd"), false, "специалните знаци са буквални");
+});
+
+test("платформата: бележките по дата и страниците (без справочника /api/*) — нова дата и нова страница се отчитат", async () => {
+  const { parsePlatformNotes, parsePlatformDocs, diffSnapshot, nextState, renderReport, isoDate } = await import("./anthropic-watch.mjs");
+  assert.equal(isoDate("November 7, 2026"), "2026-11-07");
+  assert.equal(isoDate("нещо друго"), "");
+  const notes = parsePlatformNotes("intro\n\n### November 17, 2026\n\n* We launched [Linked billing](https://x) in beta.\n\n### November 16, 2026\n\n* Opus 5.5 is now on Vertex AI `eu` with new pricing.\n* Console theme.\n");
+  assert.deepEqual(notes.map((n) => n.date), ["2026-11-17", "2026-11-16"]);
+  assert.equal(notes[0].bullets[0], "We launched Linked billing in beta.", "линковете стават текст");
+  const docs = parsePlatformDocs("- [Overview](https://platform.claude.com/docs/en/build-with-claude/overview.md) - Build\n- [Create](https://platform.claude.com/docs/en/api/beta/x.md)\n- [P](https://platform.claude.com/docs/en/release-notes/system-prompts/a.md)\n");
+  assert.deepEqual(docs.map((d) => d.url), ["https://platform.claude.com/docs/en/build-with-claude/overview.md"]);
+  // Първа снимка с платформата = начална точка, не „всичко е ново“.
+  const first = diffSnapshot({}, { platformNotes: notes, platformDocs: docs }, []);
+  assert.equal(first.newPlatformNotes.length, 0);
+  assert.equal(first.newPlatformDocs.length, 0);
+  const st = nextState({}, { platformNotes: notes, platformDocs: docs }, "2026-11-19");
+  assert.equal(st.platformNotesDate, "2026-11-17");
+  const later = [{ date: "2026-11-20", bullets: ["Claude Opus 5 will be retired on Vertex AI.", "New Console colors."] }, ...notes];
+  const d = diffSnapshot(st, { platformNotes: later, platformDocs: [...docs, { url: "https://platform.claude.com/docs/en/new.md", title: "New" }] }, []);
+  assert.deepEqual(d.newPlatformNotes.map((n) => n.date), ["2026-11-20"]);
+  assert.deepEqual(d.newPlatformNotes[0].relevant, ["Claude Opus 5 will be retired on Vertex AI."], "само редовете за Vertex/модели/цени");
+  assert.equal(d.newPlatformDocs.length, 1);
+  assert.match(renderReport({ newDocs: [], removedDocs: [], newVersions: [], newPosts: [], ...d }, []), /Платформата[\s\S]*2026-11-20[\s\S]*retired/);
+});
+
+// 26.11.2026 (AI-джията): голото „Code Mode“ хващаше 43 от 62 удара (2.1.329–2.1.332) — всеки бъгфикс на
+// експерименталния режим. Договорът е за ДВЕ неща: Code Mode тръгва някъде ново и как се разбира с куките
+// и deny правилата. Редовете са дословно от changelog-а.
+test("code-mode-repl-deny: хваща пускане и куки, не всеки бъгфикс на Code Mode", () => {
+  const id = "code-mode-repl-deny";
+  const hits = (l) => touchedContracts(l).includes(id);
+  for (const l of [
+    "Added Code Mode support in terminal sessions on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry and Claude Platform on AWS",
+    "Changed Code Mode so a PreToolUse hook that errors no longer refuses a script's tool call, as outside Code Mode; set `\"onFailure\": \"block\"` on a command, HTTP or MCP tool hook that must refuse",
+    "Changed Code Mode to also start when telemetry, nonessential traffic or feature flags are turned off; an administrator can keep it off in managed settings",
+    "Added support for turning on Code Mode while OpenTelemetry events and metrics are enabled; each tool call the code makes sends its events; tracing still keeps it off",
+    "Fixed mods that list only some tools silently turning Code Mode off; such a mod no longer keeps it off, so use managed settings for that",
+  ]) assert.ok(hits(l), l);
+  for (const l of [
+    "Fixed Code Mode sometimes waiting for minutes on a command that had already been stopped",
+    "Improved Code Mode: Claude is now told how to look at images and PDFs",
+    "Fixed a Code Mode script's `let x;` keeping the value that an earlier script gave `x`",
+    "Fixed the built-in chart tool failing when Claude called it in Code Mode",
+  ]) assert.ok(!hits(l), l);
 });

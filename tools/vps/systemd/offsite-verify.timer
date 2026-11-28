@@ -1,0 +1,15 @@
+[Unit]
+# Всяка неделя в 07:40 UTC — далеч след нощния бекъп (двата държат едно заключване и не вървят
+# заедно). Бекъп без пробно възстановяване е обещание, не бекъп.
+Description=Проба на бекъпа извън машината — седмично (неделя 07:40 UTC)
+Documentation=file:///opt/few-few/current/tools/vps/README.md
+
+[Timer]
+OnCalendar=Sun *-*-* 07:40:00 UTC
+Persistent=true
+RandomizedDelaySec=10min
+AccuracySec=1min
+Unit=offsite-verify.service
+
+[Install]
+WantedBy=timers.target

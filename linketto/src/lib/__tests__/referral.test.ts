@@ -47,3 +47,29 @@ test('payoutProgressPercent: отрицателен баланс → 0, над �
   assert.equal(payoutProgressPercent(REFERRAL_MIN_PAYOUT_CENTS), 100);
   assert.equal(payoutProgressPercent(25000), 100);
 });
+
+test('бонусът се освобождава само след задържането и само по чиста поръчка (abuse-money-spec А2)', async () => {
+  const { referralReleaseDue, REFERRAL_HOLD_DAYS } = await import('../referral');
+  const day = 24 * 60 * 60 * 1000;
+  const completedAt = new Date('2026-03-01T00:00:00Z');
+  const ok = {
+    completedAt,
+    orderState: 'completed',
+    withdrawalRequestedAt: null,
+    disputed: false,
+    releasedAt: null,
+    reversedAt: null,
+  };
+  assert.equal(REFERRAL_HOLD_DAYS, 30);
+  assert.equal(referralReleaseDue({ ...ok, now: new Date(completedAt.getTime() + 29 * day) }), false);
+  const after = new Date(completedAt.getTime() + 30 * day + 1);
+  assert.equal(referralReleaseDue({ ...ok, now: after }), true);
+  // Отказ, връщане, спор, вече освободен или сторниран → никога.
+  assert.equal(referralReleaseDue({ ...ok, withdrawalRequestedAt: new Date(), now: after }), false);
+  assert.equal(referralReleaseDue({ ...ok, orderState: 'refund_pending', now: after }), false);
+  assert.equal(referralReleaseDue({ ...ok, orderState: 'refunded', now: after }), false);
+  assert.equal(referralReleaseDue({ ...ok, disputed: true, now: after }), false);
+  assert.equal(referralReleaseDue({ ...ok, releasedAt: new Date(), now: after }), false);
+  assert.equal(referralReleaseDue({ ...ok, reversedAt: new Date(), now: after }), false);
+  assert.equal(referralReleaseDue({ ...ok, completedAt: null, now: after }), false);
+});

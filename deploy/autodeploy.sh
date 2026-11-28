@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fivem}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora gaming rilievi fakturist fivem linketto semki}"
 
 # fivem (Thraex PVP — Docker Compose модел) — web слуша само на
 # 127.0.0.1:3010, зад Nginx с TLS. Отделен `cron` контейнер върти пингването,
@@ -36,10 +36,25 @@ FIVEM_DOMAIN="${FIVEM_DOMAIN:-thraex.carbonstealth.eu}"
 # прекъснат пробег ги губи, а следващият генерира нова парола за база върху вече
 # инициализиран том — Postgres я игнорира и деплоят пада чак на миграцията.
 FIVEM_STATE_DIR="${FIVEM_STATE_DIR:-/opt/few-few/shared/fivem}"
+
+# linketto (Linketto — „link in bio“; Docker Compose: db + app, моделът на fivem). app слуша
+# само на 127.0.0.1:<HTTP_PORT от .env, по подразбиране 4350> зад Nginx с TLS (НЕ 4340 — на живия
+# сървър е на rilievi). Стъпките са в linketto/scripts/deploy.sh (същият
+# скрипт и за ръчния деплой): бекъп → билд → миграции с НОВИЯ образ → смяна → сонда с маркер.
+# Тайните (.env), дъмповете и качените снимки живеят ИЗВЪН releases — в LINKETTO_STATE_DIR.
+# Откатът сочи последния release, който е отговорил (LINKETTO_LAST_GOOD; prune_releases го пази).
+# Празно = от HTTP_PORT в $LINKETTO_STATE_DIR/.env (по подразбиране 4350) — смята се в deploy_linketto.
+LINKETTO_HEALTH_URL="${LINKETTO_HEALTH_URL:-}"
+LINKETTO_DOMAIN="${LINKETTO_DOMAIN:-piuma.carbonstealth.eu}"
+LINKETTO_STATE_DIR="${LINKETTO_STATE_DIR:-/opt/few-few/shared/linketto}"
+LINKETTO_LAST_GOOD="${LINKETTO_LAST_GOOD:-$LINKETTO_STATE_DIR/last-good}"
+LINKETTO_INDEXNOW="${LINKETTO_INDEXNOW:-1}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
 KEEP_RELEASES="${KEEP_RELEASES:-5}"
+# Стабилен дом на тайните (извън releases/) — виж rescue_release_env.
+SHARED_DIR="${SHARED_DIR:-/opt/few-few/shared}"
 
 # medqr (systemd модел)
 MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
@@ -82,6 +97,10 @@ PANEV_DIR="${PANEV_DIR:-/opt/panev}"
 PANEV_SERVICE="${PANEV_SERVICE:-panev}"
 PANEV_ENV="${PANEV_ENV:-/etc/panev/panev.env}"
 PANEV_HEALTH_URL="${PANEV_HEALTH_URL:-http://127.0.0.1:4102/api/health}"
+# IndexNow след здрав релийз (PANEV_INDEXNOW=0 го спира — напр. на тестова машина). Ключът НЕ се
+# задава тук: той е името на файла `panev/<key>.txt` в архива.
+PANEV_SITE="${PANEV_SITE:-https://panevascensori.it}"
+PANEV_INDEXNOW="${PANEV_INDEXNOW:-1}"
 
 # ospedali (Ospedali Trasparenti — systemd модел, като medqr/vizitka, НО без npm
 # ci/build: лек Node сервиз с нула зависимости обслужва предбилднатия статичен сайт
@@ -90,6 +109,8 @@ PANEV_HEALTH_URL="${PANEV_HEALTH_URL:-http://127.0.0.1:4102/api/health}"
 # (server/.state/) живеят на сървъра и се пренасят при всеки деплой.
 OSPEDALI_DIR="${OSPEDALI_DIR:-/opt/ospedali}"
 OSPEDALI_SERVICE="${OSPEDALI_SERVICE:-ospedali}"
+# Собствен системен потребител (не www-data на nginx) — съвпада с User= в ospedali.service.
+OSPEDALI_USER="${OSPEDALI_USER:-ospedali}"
 OSPEDALI_HEALTH_URL="${OSPEDALI_HEALTH_URL:-http://127.0.0.1:8788/healthz}"
 
 # Nexus Dominion — Docker Compose; expose the server on 127.0.0.1:4000
@@ -181,6 +202,20 @@ KORPORA_LAST_GOOD="${KORPORA_LAST_GOOD:-$KORPORA_SHARED/last-good}"
 RILIEVI_SHARED="${RILIEVI_SHARED:-/opt/few-few/shared/rilievi}"
 RILIEVI_LAST_GOOD="${RILIEVI_LAST_GOOD:-$RILIEVI_SHARED/last-good}"
 
+# semki (Semki Bot — Discord бот за семките във FiveM + дашборд; Docker Compose: db + app на
+# 127.0.0.1:4340 зад nginx на хоста, vps2.carbonstealth.eu). Моделът на rilievi: стъпките са в
+# semki/deploy/deploy.sh — тайните от /opt/few-few/shared/semki/.env, бекъп преди миграция, сонда с
+# маркер "app":"semki", vhost-ът от репото. Тук остават откатът и паметта за последния работещ release.
+SEMKI_SHARED="${SEMKI_SHARED:-/opt/few-few/shared/semki}"
+SEMKI_LAST_GOOD="${SEMKI_LAST_GOOD:-$SEMKI_SHARED/last-good}"
+# fakturist (Фактурист — Docker Compose: db + app на 127.0.0.1:4340 зад nginx на хоста). Моделът на
+# rilievi: стъпките са в fakturist/deploy/deploy.sh (същият скрипт и за ръчния деплой) — тайните от
+# /opt/few-few/shared/fakturist/.env, бекъп преди миграция, сонда на /health с проверка, че портът е
+# на контейнера app на проекта (маркер в отговора няма), пазач на LEDGER_SEAL_KEY, vhost-ът от репото.
+# Тук остават откатът и паметта за последния release, който е отговорил.
+FAKTURIST_SHARED="${FAKTURIST_SHARED:-/opt/few-few/shared/fakturist}"
+FAKTURIST_LAST_GOOD="${FAKTURIST_LAST_GOOD:-$FAKTURIST_SHARED/last-good}"
+
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
 # слуша само на 127.0.0.1:7700 зад Nginx+TLS. Конфигът с тайните/паролата живее в
@@ -241,17 +276,27 @@ if [ -z "${RELEASE_DIR:-}" ]; then
   ARCHIVE_PATH="$(find_archive)"
   log "Архив: $ARCHIVE_PATH"
 
-  # ── 1б) Проверка на целостта (по избор) ─────────────────────────────────────
-  # Ако до архива има <архив>.sha256, верифицирай преди да разопаковаш. Така
-  # случайно повреден или подменен архив не стига до сървъра.
-  if [ -f "${ARCHIVE_PATH}.sha256" ]; then
+  # ── 1б) Проверка на целостта (ЗАДЪЛЖИТЕЛНА — fail-closed) ───────────────────
+  # До архива трябва да има <архив>.sha256 (fetch-deploy.sh го пише сам; при ръчно
+  # качване: `sha256sum архив > архив.sha256` на СВОЯТА машина и качи двата файла).
+  # Липсващ, невалиден или несъвпадащ хеш = спиране ПРЕДИ разопаковане. Хешът се чете
+  # от файла и се сравнява с архива — не `sha256sum -c`, който проверява името,
+  # записано във файла (друго име там = проверка на друг файл).
+  # Единственият изход без хеш е изричен: ALLOW_UNVERIFIED_ARCHIVE=1 (на твоя отговорност).
+  sum_file="${ARCHIVE_PATH}.sha256"
+  if [ -f "$sum_file" ]; then
     log "Проверявам sha256…"
-    ( cd "$(dirname "$ARCHIVE_PATH")" \
-      && sha256sum -c "$(basename "$ARCHIVE_PATH").sha256" ) \
-      || die "sha256 не съвпада — спирам (повреден или подменен архив)."
+    expected="$(awk 'NR==1 { print tolower($1) }' "$sum_file")"
+    [[ "$expected" =~ ^[0-9a-f]{64}$ ]] \
+      || die "${sum_file##*/} не съдържа валиден sha256 (64 шестнадесетични знака) — спирам."
+    actual="$(sha256sum "$ARCHIVE_PATH" | awk '{ print $1 }')"
+    [ "$actual" = "$expected" ] \
+      || die "sha256 НЕ съвпада — спирам (повреден или подменен архив). Очакван ${expected:0:12}…, получен ${actual:0:12}…"
     ok "sha256 е валиден."
+  elif [ "${ALLOW_UNVERIFIED_ARCHIVE:-0}" = "1" ]; then
+    warn "Няма ${sum_file##*/} — продължавам БЕЗ проверка на целостта, защото ALLOW_UNVERIFIED_ARCHIVE=1."
   else
-    warn "Няма ${ARCHIVE_PATH##*/}.sha256 — пропускам проверка на целостта (препоръчително я добави)."
+    die "Няма ${sum_file##*/} — спирам (целостта на архива е непроверима). Направи го на своята машина: sha256sum ${ARCHIVE_PATH##*/} > ${ARCHIVE_PATH##*/}.sha256 и го качи до архива. Изрично без проверка: ALLOW_UNVERIFIED_ARCHIVE=1."
   fi
 
   # ── 2) Разопаковай в нов release и нормализирай корена ─────────────────────
@@ -277,6 +322,16 @@ fi
 ok "Източник за деплой: $SRC"
 
 deploy_failed=0
+# Продукти, пропуснати нарочно (условие за обновяване не е изпълнено — работи предишният код). Не
+# провалят пробега: иначе `current` и чистенето спират за ВСИЧКИ продукти (преглед на PR #492).
+SKIPPED=()
+skip_project() {
+  local p=$1; shift
+  SKIPPED+=("$p — $*")
+  # fetch-deploy.sh не записва пропуснатия в пазача на ref-а — той върви на предишния си код.
+  if [ -n "${SKIPPED_FILE:-}" ]; then printf '%s\n' "$p" >> "$SKIPPED_FILE" || true; fi
+  warn "$p НЕ е обновен: $*"
+}
 
 # Пренася .env (тайните) на Compose продукт в новия release и го пази на стабилен
 # път. Преди се четеше САМО от `current` — а деплой само на друг продукт (напр.
@@ -356,11 +411,29 @@ zbd_health_url() {
   printf '%s\n' "$ZBD_HEALTH_URL"
 }
 
+# Папката, от която РЕАЛНО върви zabobovdol (етикетът на compose върху app), ако още я има.
+# `current` не е надежден: деплой само на друг продукт мести current към release без zabobovdol.
+zbd_running_dir() {
+  command -v docker >/dev/null 2>&1 || return 1
+  local wd
+  wd="$(timeout 20 docker ps -a --filter label=com.docker.compose.project=zabobovdol --filter label=com.docker.compose.service=app \
+    --format '{{.Label "com.docker.compose.project.working_dir"}}' 2>/dev/null | head -1)" || return 1
+  [ -n "$wd" ] && [ -f "$wd/docker-compose.yml" ] || return 1
+  printf '%s\n' "$wd"
+}
+
 # Откат САМО на кода: вдига предишния release на zabobovdol със същото compose име. Базата не се
 # пипа — миграциите са адитивни по правило (prisma-migrate skill), значи старият код работи с нея.
 zbd_rollback() {
   local prev="$1"
   [ -n "$prev" ] && [ -d "$prev" ] || { warn "zabobovdol: няма предишен release за откат — оставям както е."; return 1; }
+  # Release, в който zabobovdol не е разгръщан (current след деплой само на друг продукт), няма .env:
+  # compose спира още на интерполацията и откатът не вдига нищо (живо, 23.10.2026). Тайните — от дома.
+  if [ ! -f "$prev/.env" ]; then
+    [ -f "$ZBD_ENV" ] || { warn "zabobovdol: предишният код няма .env, а $ZBD_ENV липсва — откатът не може да тръгне."; return 1; }
+    cp -a "$ZBD_ENV" "$prev/.env"; chmod 600 "$prev/.env"
+  fi
+  [ -e "$prev/backups" ] || ln -sfnT "$ZBD_BACKUPS" "$prev/backups"
   warn "zabobovdol: връщам предишния код ($prev)…"
   ( cd "$prev" && if docker compose version >/dev/null 2>&1; then docker compose up -d --build; else docker-compose up -d --build; fi ) \
     || { warn "zabobovdol: откатът не вдигна предишния код — нужен е човек."; return 1; }
@@ -377,9 +450,10 @@ deploy_zabobovdol() {
   local d="$SRC/zabobovdol"
   [ -d "$d" ] || { warn "Няма zabobovdol/ в архива — пропускам."; return; }
   log "Разгръщам zabobovdol (Docker Compose)…"
-  # Предишният работещ код (за откат) — current още сочи стария release, мести се само при успех.
+  # Предишният работещ код (за откат): където реално върви app; current е само резерва.
   local prev=""
-  [ -d "$CURRENT_LINK/zabobovdol" ] && prev="$(readlink -f "$CURRENT_LINK/zabobovdol" || true)"
+  prev="$(zbd_running_dir || true)"
+  [ -z "$prev" ] && [ -d "$CURRENT_LINK/zabobovdol" ] && prev="$(readlink -f "$CURRENT_LINK/zabobovdol" || true)"
   [ "$prev" = "$(readlink -f "$d")" ] && prev=""
   # Тайните живеят на сървъра, не в архива: стабилен дом → current → най-нов release.
   if [ ! -f "$d/.env" ]; then
@@ -664,6 +738,7 @@ EOF
       && warn "panev: SMTP_PASS все още е CHANGE_ME — формата пише в базата, но НЕ праща имейл."
     [ -e /etc/nginx/sites-enabled/panev.conf ] \
       || warn "panev: няма /etc/nginx/sites-enabled/panev.conf — сайтът върви само на 127.0.0.1:4102 (виж panev/DEPLOY.md)."
+    panev_ping_indexnow   # търсачките — само към release, минал здравната проба
   else
     deploy_failed=1
     warn "panev health провал — спирам услугата и връщам базата (кодът само при наличен предишен деплой)."
@@ -689,11 +764,49 @@ EOF
   fi
 }
 
+# IndexNow след зелена здравна проба. До 13.11.2026 беше ръчна стъпка и се провали на живо:
+# командата беше пусната от /root („Cannot find module '/root/tools/seo/indexnow.mjs'“). А късата
+# форма — само с адреса на сайта — спира и от правилната директория с „Липсва валиден IndexNow
+# ключ“: ключът на Panev е на `<key>.txt` в корена на сайта (схемата на Supreme), не на
+# `/indexnow-key.txt`. Затова се пуска от корена на release-а и ключът се подава явно — и файлът,
+# и публичният му адрес. Името на файла Е ключът → не се повтаря в скрипта и смяната му не иска
+# промяна тук (в panev/ стои точно един такъв файл — пази го panev/test/indexnow-key.test.js).
+# Провалът е предупреждение, не провал на деплоя (минава при следващия).
+panev_ping_indexnow() {
+  [ "$PANEV_INDEXNOW" = "1" ] || return 0
+  local site="${PANEV_SITE%/}" key_file key
+  key_file="$(ls "$SRC"/panev/*.txt 2>/dev/null | grep -E '/[0-9a-f]{32}\.txt$' | head -1 || true)"
+  [ -n "$key_file" ] || { warn "panev: няма IndexNow ключ (<key>.txt) в panev/ — пропускам подаването."; return 0; }
+  key="$(basename "$key_file" .txt)"
+  local args=("$site" --key-file "panev/${key}.txt" --key-location "$site/${key}.txt")
+  # Адресите идват от sitemap-а на САМИЯ release (той току-що мина пробата), не от живия сайт:
+  # подаването не зависи от това дали сървърът стига собствения си публичен адрес. Липсва ли
+  # файлът, остава подразбирането на инструмента — живият sitemap; не се ли прочете, той спира с
+  # грешка и не подава нищо (тук: предупреждение).
+  if [ -f "$SRC/panev/sitemap.xml" ]; then args+=(--sitemap panev/sitemap.xml); fi
+  ( cd "$SRC" && node tools/seo/indexnow.mjs "${args[@]}" ) \
+    || warn "panev: IndexNow подаването пропадна — не е фатално, минава при следващия деплой (ръчно: panev/DEPLOY.md → „IndexNow“)."
+}
+
 # ── 3b'') ospedali — systemd, БЕЗ npm ci/build (нула зависимости) ─────────────
 # За разлика от medqr/vizitka: сервизът няма зависимости и обслужва предбилднатия
 # статичен сайт от site/ (вече в git) → само rsync на файловете + рестарт. Тайните
 # (server/.env) и рънтайм състоянието (server/.state/ — брояч + видимост + хеш на
 # админ паролата) се ИЗКЛЮЧВАТ от rsync → оцеляват между версиите. Health + rollback.
+# Права (кодът е на root, сервизът пише само в server/.state/): кодът root:root, само за
+# четене от сервиза; server/.state/ на ospedali (700); server/.env root:ospedali 640 —
+# systemd го чете като root (EnvironmentFile), приложението — best-effort през групата.
+# Идемпотентно; поправя и стари инсталации, където chown -R даваше всичко на сервиза.
+ospedali_perms() {
+  # .state/ се прескача (prune): иначе за миг е на root и живият сервиз получава EACCES.
+  find "$OSPEDALI_DIR" -path "$OSPEDALI_DIR/server/.state" -prune -o -exec chown -h root:root {} +
+  install -d -o "$OSPEDALI_USER" -g "$OSPEDALI_USER" -m 700 "$OSPEDALI_DIR/server/.state"
+  chown -R "$OSPEDALI_USER:$OSPEDALI_USER" "$OSPEDALI_DIR/server/.state"
+  if [ -f "$OSPEDALI_DIR/server/.env" ]; then
+    chown "root:$OSPEDALI_USER" "$OSPEDALI_DIR/server/.env"
+    chmod 640 "$OSPEDALI_DIR/server/.env"
+  fi
+}
 deploy_ospedali() {
   # Папката в репото е ospedalitrasparenti/ (преименувана); старото име ospedali/
   # се приема като fallback, за да работят и по-стари архиви. Деплой ключът,
@@ -704,8 +817,12 @@ deploy_ospedali() {
   log "Разгръщам ospedali (systemd, нула зависимости, без билд)…"
   command -v node >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
   command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
-  # Сервизът върви като www-data (споделен уеб потребител, виж ospedali.service).
-  id www-data >/dev/null 2>&1 || die "Липсва системен потребител www-data."
+  # Сервизът върви като собствен системен потребител (виж ospedali.service), не като
+  # www-data на nginx. Самосъздаващ се, идемпотентно; --user-group изрично създава група
+  # ospedali (Group= в unit-а и групата на .env). Преходът от www-data е без ръчна
+  # стъпка: ospedali_perms долу минава и през изключените от rsync server/.env и server/.state/.
+  id "$OSPEDALI_USER" >/dev/null 2>&1 || useradd --system --user-group --home-dir "$OSPEDALI_DIR" \
+    --shell /usr/sbin/nologin "$OSPEDALI_USER"
   # Бекъп на текущия код (server/.env и server/.state/ се пазят — excludes долу).
   [ -d "$OSPEDALI_DIR" ] && cp -a "$OSPEDALI_DIR" "${OSPEDALI_DIR}.bak-$TS"
   mkdir -p "$OSPEDALI_DIR"
@@ -714,11 +831,10 @@ deploy_ospedali() {
     --exclude server/.env --exclude server/.state/ \
     --exclude node_modules/ --exclude data/raw/ --exclude data/contratti/ \
     "$d"/ "$OSPEDALI_DIR"/
-  chown -R www-data:www-data "$OSPEDALI_DIR"
   # .state/ трябва да съществува ПРЕДИ старт: ProtectSystem=strict прави всичко
   # извън ReadWritePaths само за четене, а config.js прави mkdir на .state само ако
-  # родителят е записваем. Създаваме го тук (идемпотентно).
-  install -d -o www-data -g www-data -m 700 "$OSPEDALI_DIR/server/.state"
+  # родителят е записваем. ospedali_perms го създава (идемпотентно).
+  ospedali_perms
   # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
   install -m 644 "$OSPEDALI_DIR/deploy/systemd/ospedali.service" /etc/systemd/system/ospedali.service
   systemctl daemon-reload
@@ -744,7 +860,7 @@ deploy_ospedali() {
     if [ -d "${OSPEDALI_DIR}.bak-$TS" ]; then
       rsync -a --delete --exclude server/.env --exclude server/.state/ \
         "${OSPEDALI_DIR}.bak-$TS"/ "$OSPEDALI_DIR"/
-      chown -R www-data:www-data "$OSPEDALI_DIR"
+      ospedali_perms
       systemctl restart "$OSPEDALI_SERVICE" || warn "ospedali: и откатът не тръгна — иска ръчна намеса."
     fi
   fi
@@ -1230,6 +1346,17 @@ supreme_install_backup_timer() {
 
 # ── Health check ──────────────────────────────────────────────────────────────
 # ── 3g) eternaltouch — Docker Compose ─────────────────────────────────────────
+# Имейлите на всички продукти минават през Brevo (собственикът, 25.11.2026). Продукт със SMTP се
+# обновява едва когато .env сочи smtp-relay.brevo.com: новият код назовава Brevo в политиката за
+# поверителност, а обновен без сменен .env би пращал през стария доставчик — неверен текст.
+smtp_is_brevo() {
+  [ -r "$1" ] || return 1
+  # Последният ред печели (както при env_file на compose).
+  grep -E '^SMTP_HOST=' "$1" 2>/dev/null | tail -n 1 | grep -qiE "^SMTP_HOST=[\"']?smtp-relay\.brevo\.com[\"']?[[:space:]]*$" || return 1
+  # Остатък от Register.it: SMTP_TLS_SERVERNAME чупи TLS към Brevo тихо (преглед на PR #492).
+  ! grep -E '^SMTP_TLS_SERVERNAME=' "$1" 2>/dev/null | tail -n 1 | grep -qE "^SMTP_TLS_SERVERNAME=[\"']?[^\"'[:space:]]"
+}
+
 deploy_eternaltouch() {
   local d="$SRC/eternaltouch"
   [ -d "$d" ] || { warn "Няма eternaltouch/ в архива — пропускам."; return; }
@@ -1237,9 +1364,9 @@ deploy_eternaltouch() {
   # Пренеси съществуващия .env (тайните живеят на сървъра, не в архива).
   carry_env eternaltouch "$d"
   # Пръв деплой без .env: генерирай random secrets (app-ът иначе отказва да стартира).
-  # SMTP_PASS остава CHANGE_ME — имейлите тръгват след като го попълниш веднъж ръчно.
+  # SMTP_USER/SMTP_PASS (Brevo) остават CHANGE_ME — имейлите тръгват след като ги попълниш веднъж ръчно.
   if [ ! -f "$d/.env" ]; then
-    warn "Няма eternaltouch/.env — генерирам с random secrets (SMTP_PASS=CHANGE_ME)."
+    warn "Няма eternaltouch/.env — генерирам с random secrets (SMTP през Brevo: CHANGE_ME)."
     local dbp jwt cks sks adp
     dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
     jwt="$(openssl rand -base64 48 | tr -d '\n')"
@@ -1256,25 +1383,25 @@ ADMIN_PASSWORD=${adp}
 SITE_URL=https://eternaltouch.it
 NODE_ENV=production
 PORT=4300
-SMTP_HOST=authsmtp.register.it
+SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=info@eternaltouch.it
+# Brevo → SMTP & API → SMTP: логинът (не пощенската кутия) и SMTP ключът.
+SMTP_USER=CHANGE_ME
 SMTP_PASS=CHANGE_ME
 SMTP_FROM=Eternal Touch <info@eternaltouch.it>
 NOTIFY_TO=info@eternaltouch.it
-# Register.it представя *.securemail.pro / smtp.webnode.com cert на
-# authsmtp.register.it (не за connect хоста) — задай servername, за да остане
-# TLS валидацията вкл. (rejectUnauthorized). Без този ред първото пращане след
-# попълване на SMTP_PASS гърми с cert-mismatch. Стойността е от .env.example.
-SMTP_TLS_SERVERNAME=smtp.webnode.com
 EOF
     chmod 600 "$d/.env"
     warn "Записах eternaltouch/.env. Админ парола: ${adp} — запиши я в password manager СЕГА."
-    warn "Попълни SMTP_PASS в eternaltouch/.env, за да тръгнат имейлите."
+    warn "Попълни SMTP_USER и SMTP_PASS (Brevo) в eternaltouch/.env, за да тръгнат имейлите."
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
   carry_env eternaltouch "$d"   # новогенерираният .env → стабилния път
+  if ! smtp_is_brevo "$d/.env"; then
+    # carry_env копира от споделения .env при всеки деплой — смяна в current/…/.env се губи.
+    skip_project eternaltouch "SMTP не е Brevo в /opt/few-few/shared/eternaltouch/.env (каноничният — current/eternaltouch/.env се презаписва от него). Там: SMTP_HOST=smtp-relay.brevo.com, SMTP_USER и SMTP_PASS от Brevo (SMTP & API → SMTP), махни SMTP_TLS_SERVERNAME, потвърди eternaltouch.it в Brevo и пусни пак."; return
+  fi
   ( cd "$d" && bash deploy.sh ) \
     || { warn "eternaltouch: deploy.sh се провали — продължавам с останалите."; deploy_failed=1; return; }
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
@@ -1525,6 +1652,125 @@ rilievi_rollback() {
     ok "rilievi: предишният код отговаря."
   else
     warn "rilievi: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    return 1
+  fi
+}
+
+# ── 3й-тер) fakturist — Docker Compose (db + app); стъпките са в fakturist/deploy/deploy.sh ──
+# Кодовете са като на rilievi: 0 — жив; 3 — няма .env (машината не е настроена: пропуск, не провал);
+# 4 — контейнерите са сменени, но Фактурист не отговаря → откат на кода; друго — спрян преди смяната.
+deploy_fakturist() {
+  local d="$SRC/fakturist" rc=0
+  [ -d "$d" ] || { warn "Няма fakturist/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "fakturist: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам fakturist (Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  bash "$d/deploy/deploy.sh" || rc=$?
+  case "$rc" in
+    0)
+      install -d -m 700 "$(dirname "$FAKTURIST_LAST_GOOD")"
+      printf '%s\n' "$(readlink -f "$d")" > "$FAKTURIST_LAST_GOOD.tmp" && mv -f "$FAKTURIST_LAST_GOOD.tmp" "$FAKTURIST_LAST_GOOD"
+      fakturist_indexnow   # търсачките — само към работещ release
+      ;;
+    3) warn "fakturist: тази машина още не е настроена (няма .env) — пропускам, не е провал (fakturist/deploy/setup-env.sh)." ;;
+    4)
+      deploy_failed=1
+      if docker compose -f "$d/docker-compose.yml" logs --no-color --tail 300 app 2>/dev/null | grep -qE 'P3009|P3018'; then
+        warn "fakturist: миграцията на базата се провали — откат само на кода не помага (старият код спира на P3009). Бекъпът отпреди нея е в $FAKTURIST_SHARED/backups; нужен е човек: migrate resolve --rolled-back <миграцията> или възстановяване от дъмпа, после deploy.sh с FAKTURIST_SKIP_BACKUP=1."
+      else
+        fakturist_rollback "$d" || true
+      fi
+      ;;
+    *) deploy_failed=1; warn "fakturist: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
+  esac
+}
+
+# IndexNow след зелен деплой (правилото на репото; собственикът, 25.11.2026: „да праща към търсачките“) —
+# Bing, Yandex, Seznam, Naver, Yep с едно подаване; Google не участва (там — sitemap и Search Console).
+# Ключът е fakturist/public/indexnow-key.txt; приложението го сервира на /indexnow-key.txt и /<ключ>.txt,
+# адресите идват от sitemap.xml на живия сайт. Не е фатално: при провал минава при следващия деплой.
+# FAKTURIST_INDEXNOW=0 го спира (напр. деплой на тестов домейн, който не бива да се индексира).
+fakturist_indexnow() {
+  [ "${FAKTURIST_INDEXNOW:-1}" = "1" ] || return 0
+  local keyfile="$SRC/fakturist/public/indexnow-key.txt" key site
+  site="https://${FAKTURIST_DOMAIN:-fakturist.carbonstealth.eu}"
+  [ -f "$keyfile" ] || { warn "fakturist: няма public/indexnow-key.txt — пропускам IndexNow."; return 0; }
+  command -v node >/dev/null 2>&1 || { warn "fakturist: няма node на хоста — пропускам IndexNow."; return 0; }
+  key="$(tr -d '[:space:]' < "$keyfile")"
+  if ( cd "$SRC" && node tools/seo/indexnow.mjs "$site" --key-file "$keyfile" --key-location "$site/${key}.txt" ); then
+    ok "fakturist: IndexNow уведоми Bing/Yandex/Seznam/Naver/Yep."
+  else
+    warn "fakturist: IndexNow подаването пропадна — не е фатално, минава при следващия деплой."
+  fi
+}
+
+# Откат САМО на кода към последния release, който е отговорил (никога провалилият се). Без нов дъмп:
+# иначе всеки провал гори слот от ротацията и изтласква дъмпа отпреди деплоя.
+fakturist_rollback() {
+  local failed prev="" cand
+  failed="$(readlink -f "$1" || true)"
+  cand="$(cat "$FAKTURIST_LAST_GOOD" 2>/dev/null || true)"
+  if [ -n "$cand" ] && [ -f "$cand/deploy/deploy.sh" ] && [ "$(readlink -f "$cand" || true)" != "$failed" ]; then
+    prev="$cand"
+  fi
+  if [ -z "$prev" ]; then
+    warn "fakturist: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
+    return 1
+  fi
+  warn "fakturist: връщам предишния код ($prev)…"
+  if FAKTURIST_SKIP_BACKUP=1 bash "$prev/deploy/deploy.sh"; then
+    ok "fakturist: предишният код отговаря."
+  else
+    warn "fakturist: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    return 1
+  fi
+}
+
+# ── 3й-кватер) semki — Docker Compose (db + app); стъпките са в semki/deploy/deploy.sh ──
+# Кодовете са като на rilievi: 0 — жив; 3 — няма .env (машината не е настроена: пропуск, не провал);
+# 4 — контейнерите са сменени, но Semki не отговаря → откат на кода; друго — спрян преди смяната.
+deploy_semki() {
+  local d="$SRC/semki" rc=0
+  [ -d "$d" ] || { warn "Няма semki/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "semki: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам semki (Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  bash "$d/deploy/deploy.sh" || rc=$?
+  case "$rc" in
+    0)
+      install -d -m 700 "$(dirname "$SEMKI_LAST_GOOD")"
+      printf '%s\n' "$(readlink -f "$d")" > "$SEMKI_LAST_GOOD.tmp" && mv -f "$SEMKI_LAST_GOOD.tmp" "$SEMKI_LAST_GOOD"
+      ;;
+    3) warn "semki: тази машина още не е настроена (няма .env) — пропускам, не е провал (semki/DEPLOY.md, т. 2)." ;;
+    4)
+      deploy_failed=1
+      if docker compose -f "$d/docker-compose.yml" logs --no-color --tail 300 app 2>/dev/null | grep -qE 'P3009|P3018'; then
+        warn "semki: миграцията на базата се провали — откат само на кода не помага. Бекъпът отпреди нея е в $SEMKI_SHARED/backups; процедурата — semki/DEPLOY.md, „Провалена миграция“."
+      else
+        semki_rollback "$d" || true
+      fi
+      ;;
+    *) deploy_failed=1; warn "semki: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
+  esac
+}
+
+# Откат САМО на кода към последния release, който е отговорил (никога провалилият се). Без нов дъмп.
+semki_rollback() {
+  local failed prev="" cand
+  failed="$(readlink -f "$1" || true)"
+  cand="$(cat "$SEMKI_LAST_GOOD" 2>/dev/null || true)"
+  if [ -n "$cand" ] && [ -f "$cand/deploy/deploy.sh" ] && [ "$(readlink -f "$cand" || true)" != "$failed" ]; then
+    prev="$cand"
+  fi
+  if [ -z "$prev" ]; then
+    warn "semki: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
+    return 1
+  fi
+  warn "semki: връщам предишния код ($prev)…"
+  if SEMKI_SKIP_BACKUP=1 bash "$prev/deploy/deploy.sh"; then
+    ok "semki: предишният код отговаря."
+  else
+    warn "semki: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
     return 1
   fi
 }
@@ -1906,6 +2152,12 @@ fivem_indexnow() {
   fi
 }
 
+# Непразен BREVO_API_KEY в .env (без празните кавички, които readEnv брои за празни).
+fivem_has_brevo_key() {
+  [ -r "$1" ] || return 1
+  grep -qE "^BREVO_API_KEY=[\"']?[^\"'[:space:]]" "$1" 2>/dev/null
+}
+
 deploy_fivem() {
   local d="$SRC/FiveM"
   [ -d "$d" ] || { warn "Няма FiveM/ в архива — пропускам."; return; }
@@ -1964,9 +2216,9 @@ DATABASE_URL=postgresql://fivem:${dbp}@db:5432/fivem
 PUBLIC_BASE_URL=https://${FIVEM_DOMAIN}
 ADMIN_PASSWORD_HASH=${hash}
 TRUST_PROXY_IP_HEADER=x-real-ip
-# Без RESEND_API_KEY уведомленията по чл. 16 и чл. 17 DSA НЕ тръгват —
-# липсата се логва, но обещанието остава неизпълнено. Попълни го.
-RESEND_API_KEY=
+# Без BREVO_API_KEY уведомленията по чл. 16 и чл. 17 DSA НЕ тръгват —
+# липсата се логва, но обещанието остава неизпълнено. Попълни го (Brevo → SMTP & API → API keys).
+BREVO_API_KEY=
 EMAIL_FROM=Thraex PVP <no-reply@${FIVEM_DOMAIN}>
 # По избор — без тях съответната платформа просто се пропуска.
 TWITCH_CLIENT_ID=
@@ -1979,9 +2231,16 @@ FIVEM_PING_TIMEOUT_MS=4000
 FIVEM_PING_CONCURRENCY=6
 EOF
     [ -n "$hash" ] && warn "Админ парола за FiveM: ${adp} — запиши я в password manager СЕГА, не се показва пак."
-    warn "Попълни RESEND_API_KEY в $FIVEM_STATE_DIR/.env, иначе решенията по DSA не се изпращат."
+    warn "Попълни BREVO_API_KEY в $FIVEM_STATE_DIR/.env, иначе решенията по DSA не се изпращат."
   fi
   chmod 600 "$FIVEM_STATE_DIR/.env" 2>/dev/null || true
+  # Имейлите минават през Brevo (собственикът, 25.11.2026). Новият код праща САМО през Brevo: без ключ
+  # уведомленията по чл. 16/17 DSA спират ТИХО, а health остава зелен (преглед на PR #489). Затова без
+  # BREVO_API_KEY FiveM НЕ се обновява — върви предишният release, който още праща писма, а политиката
+  # му още назовава стария доставчик. Пръв деплой: .env току-що е създаден — попълни ключа и пусни пак.
+  if ! fivem_has_brevo_key "$FIVEM_STATE_DIR/.env"; then
+    skip_project fivem "няма BREVO_API_KEY в $FIVEM_STATE_DIR/.env. Добави ключа (Brevo → SMTP & API → API keys), потвърди подателя в Brevo и пусни пак. RESEND_API_KEY махни едва след като новият release праща писма."; return
+  fi
   # `-T`: без него, ако `$d/.env` вече е ДИРЕКТОРИЯ, връзката се създава ВЪТРЕ
   # в нея (`.env/.env`) и приложението тръгва без тайни, без грешка.
   ln -sfnT "$FIVEM_STATE_DIR/.env" "$d/.env"
@@ -2040,6 +2299,283 @@ EOF
   fi
 }
 
+# ── 3g'') linketto — Docker Compose ───────────────────────────────────────────
+# Продуктовата логика е в linketto/scripts/deploy.sh (кодове: 0 жив · 2 спрян преди смяната ·
+# 4 миграцията падна, работи старият код · 5 новият не отговаря). Тук: тайните на стабилен път,
+# бекъпите и снимките извън releases, дневниците на nginx, таймерите, откатът и IndexNow.
+linketto_indexnow() {
+  [ "$LINKETTO_INDEXNOW" = "1" ] || return 0
+  local keyfile="$SRC/linketto/public/indexnow-key.txt"
+  [ -f "$keyfile" ] || { warn "linketto: няма public/indexnow-key.txt — пропускам IndexNow."; return 0; }
+  command -v node >/dev/null 2>&1 || { warn "linketto: няма node на хоста — пропускам IndexNow."; return 0; }
+  if node "$SRC/tools/seo/indexnow.mjs" "https://$LINKETTO_DOMAIN" --key-file "$keyfile" >/dev/null 2>&1; then
+    ok "linketto: IndexNow уведоми Bing/Yandex/Seznam/Naver/Yep."
+  else
+    warn "linketto: IndexNow ping не мина (нормално преди DNS/TLS — сайтът трябва да е публичен с /indexnow-key.txt)."
+  fi
+}
+
+# Таймерите от DEPLOY.md §9 (планове на всеки час, отчет дневно, сроковете дневно). Идемпотентно:
+# всеки деплой презаписва скрипта и unit-ите от release-а. CRON_SECRET остава във файла с тайните.
+linketto_install_cron() {
+  local d="$1" t
+  command -v systemctl >/dev/null 2>&1 || { warn "linketto: няма systemd — таймерите НЕ са инсталирани (cron §9 не върви)."; return 0; }
+  [ -f "$d/deploy/linketto-cron.sh" ] || { warn "linketto: липсва deploy/linketto-cron.sh — таймерите НЕ са инсталирани."; return 0; }
+  install -m 700 "$d/deploy/linketto-cron.sh" /usr/local/sbin/linketto-cron
+  install -m 644 "$d/deploy/systemd/linketto-cron@.service" /etc/systemd/system/linketto-cron@.service
+  # Пътят до тайните следва LINKETTO_STATE_DIR, ако е сменен.
+  install -d -m 755 /etc/systemd/system/linketto-cron@.service.d
+  # ReadWritePaths: единственото място, където cron пише — базата IP → държава
+  # (отделна папка на root, монтирана :ro в контейнера; не data/, която е на app).
+  install -d -m 755 -o root -g root "$LINKETTO_STATE_DIR/geoip"
+  # И шифрованите дневни бекъпи (linketto-cron backup) — 700, само root.
+  install -d -m 700 -o root -g root "$LINKETTO_STATE_DIR/backups/daily"
+  printf '[Service]\nEnvironment=LINKETTO_ENV=%s/.env\nReadWritePaths=-%s/geoip\nReadWritePaths=-%s/backups/daily\n' \
+    "$LINKETTO_STATE_DIR" "$LINKETTO_STATE_DIR" "$LINKETTO_STATE_DIR" \
+    > /etc/systemd/system/linketto-cron@.service.d/env.conf
+  for t in plans digest retention geoip backup; do
+    install -m 644 "$d/deploy/systemd/linketto-cron-$t.timer" "/etc/systemd/system/linketto-cron-$t.timer"
+  done
+  systemctl daemon-reload >/dev/null 2>&1 \
+    || { warn "linketto: systemctl daemon-reload не мина — таймерите НЕ са активни (cron §9 не върви)."; return 0; }
+  local bad=0
+  for t in plans digest retention geoip backup; do
+    systemctl enable --now "linketto-cron-$t.timer" >/dev/null 2>&1 \
+      || { bad=1; warn "linketto: linketto-cron-$t.timer не се активира — виж systemctl status linketto-cron-$t.timer"; }
+  done
+  [ "$bad" = "0" ] && ok "linketto: таймери активни (планове :17 всеки час · отчет 08:10 · срокове 03:40 · бекъп 02:50 · IP база месечно)."
+  # Бекъпът е fail-closed: без age или без публичен ключ unit-ът пада всяка нощ (видимо в
+  # `systemctl --failed`), вместо да пише нешифровани дъмпове.
+  command -v age >/dev/null 2>&1 \
+    || warn "linketto: няма age (apt-get install -y age) — дневният шифрован бекъп ще пада (DEPLOY.md §7, „Бекъпи“)."
+  grep -qE '^BACKUP_AGE_RECIPIENTS=age1' "$LINKETTO_STATE_DIR/.env" \
+    || warn "linketto: BACKUP_AGE_RECIPIENTS е празен — дневният бекъп ще пада, докато не сложиш ПУБЛИЧНИЯ age ключ (DEPLOY.md §7)."
+  # Езикът по държава иска базата IP → държава — при първи деплой я сваляме веднага
+  # (иначе чака таймера до 3-то число). Без нея сайтът работи, езикът пада към браузъра.
+  if [ ! -s "$LINKETTO_STATE_DIR/geoip/dbip-country-lite.mmdb" ]; then
+    if systemctl start linketto-cron@geoip.service >/dev/null 2>&1; then
+      ok "linketto: базата IP → държава е свалена (езикът по държава работи)."
+    else
+      warn "linketto: базата IP → държава не се свали — виж journalctl -u linketto-cron@geoip (езикът засега е по браузъра)."
+    fi
+  fi
+  return 0
+}
+
+# Откат САМО на кода към последния release, който е отговорил. Базата не се пипа — миграциите са
+# адитивни, старият код работи с новата схема. Без нов дъмп (не гори слот от ротацията).
+linketto_rollback() {
+  local failed prev
+  failed="$(readlink -f "$1" || true)"
+  prev="$(cat "$LINKETTO_LAST_GOOD" 2>/dev/null || true)"
+  if [ -z "$prev" ] || [ ! -f "$prev/docker-compose.yml" ] || [ "$(readlink -f "$prev" || true)" = "$failed" ]; then
+    warn "linketto: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
+    return 1
+  fi
+  warn "linketto: връщам предишния код ($prev)…"
+  if ( cd "$prev" && LINKETTO_DATA_HOST="$LINKETTO_STATE_DIR/data" docker compose up -d --build app ) \
+     && health "$LINKETTO_HEALTH_URL" "linketto (откат)" '"app":"linketto"'; then
+    ok "linketto: предишният код отговаря."
+  else
+    warn "linketto: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    return 1
+  fi
+}
+
+deploy_linketto() {
+  local d="$SRC/linketto" rc=0 k
+  [ -d "$d" ] || { warn "Няма linketto/ в архива — пропускам."; return; }
+  [ -f "$d/scripts/deploy.sh" ] || { warn "linketto: няма scripts/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам linketto (Docker Compose)…"
+
+  install -d -m 700 "$LINKETTO_STATE_DIR"
+
+  # Пръв деплой: генерирай САМО генерируемите тайни. Ключовете на Revolut/Brevo/Gemini и
+  # админ имейлите не се измислят — остават празни и се попълват ръчно (DEPLOY.md §7).
+  if [ ! -f "$LINKETTO_STATE_DIR/.env" ]; then
+    # Том без .env = загубени тайни, не пръв деплой: нова парола върху инициализиран PGDATA
+    # Postgres я игнорира и всичко пада чак на миграцията. Спираме, вместо да генерираме.
+    if command -v docker >/dev/null 2>&1 && docker volume ls -q 2>/dev/null | grep -qx 'linketto_db'; then
+      warn "linketto: томът linketto_db съществува, а $LINKETTO_STATE_DIR/.env липсва — НЕ генерирам нови тайни."
+      warn "  Върни .env от бекъп/предишен release (mode 600) и пусни деплоя пак."
+      deploy_failed=1
+      return
+    fi
+    warn "Няма $LINKETTO_STATE_DIR/.env — генерирам генерируемите тайни (пръв деплой)."
+    local dbp cron
+    # `|| true`: под `set -e` провал в командната замяна убива скрипта преди проверката.
+    # hex — без / ? # %, които чупят DATABASE_URL.
+    dbp="$(openssl rand -hex 24 || true)"
+    cron="$(openssl rand -hex 32 || true)"
+    [ "${#dbp}" -ge 32 ] && [ "${#cron}" -ge 24 ] \
+      || { warn "linketto: openssl не даде случайни стойности — спирам, вместо да пиша слаби тайни."; deploy_failed=1; return; }
+    # Празен файл с 600 ПРЕДИ съдържанието — иначе стои 644 в прозореца до chmod.
+    install -m 600 /dev/null "$LINKETTO_STATE_DIR/.env"
+    cat > "$LINKETTO_STATE_DIR/.env" <<EOF
+# Linketto — тайни (mode 600). Генериран от deploy/autodeploy.sh. Пълен списък: linketto/DEPLOY.md §2.
+# Собственикът на базата (миграции, бекъп). app НЕ я получава — той е с ролята linketto_app и
+# APP_DB_PASSWORD (scripts/deploy.sh я генерира; DATABASE_URL на app се сглобява в docker-compose.yml).
+POSTGRES_PASSWORD=${dbp}
+# Само за откат към release отпреди ролите (неговият compose чете DATABASE_URL оттук); текущият
+# docker-compose.yml го подменя с ролята на приложението.
+DATABASE_URL=postgresql://linketto:${dbp}@db:5432/linketto
+PUBLIC_BASE_URL=https://${LINKETTO_DOMAIN}
+# Път В КОНТЕЙНЕРА; на хоста е ${LINKETTO_STATE_DIR}/data (извън releases).
+DATA_DIR=/data
+CRON_SECRET=${cron}
+# Портът на хоста (127.0.0.1). 4340–4342 са заети на живия сървър (rilievi/semki/fakturist).
+HTTP_PORT=4350
+PROFILE_HOST=
+# sandbox НАРОЧНО: production едва след зеления приемен тест (DEPLOY.md §8).
+REVOLUT_ENV=sandbox
+REVOLUT_SECRET_KEY=
+REVOLUT_WEBHOOK_SECRET=
+BREVO_API_KEY=
+EMAIL_FROM=
+ADMIN_EMAILS=
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.5-flash
+# 1 само за ПЛАТЕН акаунт с DPA; празно = AI функциите са изключени (fail-closed).
+GEMINI_PAID_TIER=
+# ПУБЛИЧНИЯТ age ключ на собственика (age1…; няколко — със запетая) за дневния бекъп. Частният
+# ключ НИКОГА не е на сървъра. Празно = бекъпът пада (fail-closed), DEPLOY.md §7 „Бекъпи“.
+BACKUP_AGE_RECIPIENTS=
+EOF
+    ok "linketto: $LINKETTO_STATE_DIR/.env създаден (600)."
+  fi
+  chmod 600 "$LINKETTO_STATE_DIR/.env" 2>/dev/null || true
+  # Главният ключ за шифрованите тайни (2FA секрети, ключове на доставчици) —
+  # генерира се веднъж, ако липсва; НЕ се сменя после (загубен ключ = 2FA и
+  # шифрованите настройки стават нечетими). Бекъпни .env извън сървъра.
+  # Пазач (VPS-аджията/Стражата): празен ред SETTINGS_KEY="" е „липсващ“; ако
+  # преди е имало ключ (отпечатък sha256 — не самият ключ), нов НЕ се генерира;
+  # смяна е позволена само със стария в SETTINGS_KEY_OLD (ротация).
+  local sk sk_old fp_file fp_cur fp_prev
+  sk="$(sed -n 's/^SETTINGS_KEY=//p' "$LINKETTO_STATE_DIR/.env" | tail -1 | tr -d "\"' \r")"
+  sk_old="$(sed -n 's/^SETTINGS_KEY_OLD=//p' "$LINKETTO_STATE_DIR/.env" | tail -1 | tr -d "\"' \r")"
+  fp_file="$LINKETTO_STATE_DIR/settings-key.sha256"
+  fp_prev="$(cat "$fp_file" 2>/dev/null || true)"
+  if [ -z "$sk" ]; then
+    if [ -n "$fp_prev" ]; then
+      warn "linketto: SETTINGS_KEY липсва, а преди е имало ключ ($fp_file) — НЕ генерирам нов."
+      warn "  Върни SETTINGS_KEY от копието на .env (иначе 2FA и шифрованите ключове стават нечетими)."
+      deploy_failed=1
+      return
+    fi
+    sk="$(openssl rand -base64 32 || true)"
+    if [ "${#sk}" -ge 40 ]; then
+      sed -i '/^SETTINGS_KEY=/d' "$LINKETTO_STATE_DIR/.env"
+      printf '\n# Главен ключ за шифрованите тайни (2FA, ключове на доставчици). НЕ го сменяй; пази копие офлайн.\nSETTINGS_KEY=%s\n' "$sk" >> "$LINKETTO_STATE_DIR/.env"
+      ok "linketto: SETTINGS_KEY е генериран (пази копие на .env офлайн)."
+    else
+      sk=""
+      warn "linketto: openssl не даде SETTINGS_KEY — 2FA и шифрованите настройки остават изключени."
+    fi
+  fi
+  if [ -n "$sk" ]; then
+    fp_cur="$(printf '%s' "$sk" | sha256sum | cut -c1-64)"
+    if [ -n "$fp_prev" ] && [ "$fp_prev" != "$fp_cur" ]; then
+      if [ -n "$sk_old" ] && [ "$(printf '%s' "$sk_old" | sha256sum | cut -c1-64)" = "$fp_prev" ]; then
+        ok "linketto: ротация на SETTINGS_KEY (старият е в SETTINGS_KEY_OLD — дръж го, докато всичко се прешифрова)."
+      else
+        warn "linketto: SETTINGS_KEY е сменен без стария в SETTINGS_KEY_OLD — шифрованите данни биха станали нечетими."
+        warn "  Върни стария SETTINGS_KEY или го сложи в SETTINGS_KEY_OLD и пусни деплоя пак."
+        deploy_failed=1
+        return
+      fi
+    fi
+    ( umask 077; printf '%s\n' "$fp_cur" > "$fp_file" )
+  fi
+  # Портът — от .env (същото чете docker-compose.yml); изричният LINKETTO_HEALTH_URL побеждава.
+  local port
+  port="$(sed -n 's/^HTTP_PORT=//p' "$LINKETTO_STATE_DIR/.env" 2>/dev/null | tail -1 | tr -dc '0-9' || true)"
+  port="${port:-4350}"
+  [ -n "$LINKETTO_HEALTH_URL" ] || LINKETTO_HEALTH_URL="http://127.0.0.1:${port}/api/health"
+  # Празните ръчни ключове — напомняне при всеки деплой, докато не се попълнят (стойности не се печатат).
+  for k in ADMIN_EMAILS BREVO_API_KEY EMAIL_FROM REVOLUT_SECRET_KEY REVOLUT_WEBHOOK_SECRET; do
+    grep -qE "^${k}=.+" "$LINKETTO_STATE_DIR/.env" \
+      || warn "linketto: $k е празен в $LINKETTO_STATE_DIR/.env — попълни го (DEPLOY.md §2)."
+  done
+  grep -qE '^GEMINI_PAID_TIER=1' "$LINKETTO_STATE_DIR/.env" \
+    || warn "linketto: GEMINI_PAID_TIER не е 1 — AI функциите са изключени (само платен Gemini акаунт с DPA)."
+  grep -qE '^REVOLUT_ENV=production' "$LINKETTO_STATE_DIR/.env" \
+    || warn "linketto: REVOLUT_ENV не е production — плащанията са в Sandbox (нарочно до приемния тест, DEPLOY.md §8)."
+
+  # `-T`: ако `$d/.env` е директория, без него връзката се създава ВЪТРЕ в нея.
+  ln -sfnT "$LINKETTO_STATE_DIR/.env" "$d/.env"
+  install -d -m 700 "$LINKETTO_STATE_DIR/backups"
+  rm -rf "$d/backups"
+  ln -sfnT "$LINKETTO_STATE_DIR/backups" "$d/backups"
+  ok "linketto/.env и backups → $LINKETTO_STATE_DIR"
+
+  # Дневниците на nginx: подпапка (без сблъсък с /etc/logrotate.d/nginx) + 7-дневна ротация.
+  # Симлинк не се следва като root (CWE-59) — отказ и човек.
+  if [ -L /var/log/nginx/linketto ]; then
+    warn "/var/log/nginx/linketto е СИМЛИНК — отказвам да пипам правата му; провери ръчно."
+  else
+    install -d -o www-data -g adm -m 0755 /var/log/nginx/linketto 2>/dev/null \
+      || warn "не мога да създам /var/log/nginx/linketto — nginx няма да тръгне с vhost-а на linketto."
+  fi
+  # Кешът на vhost-а (proxy_cache_path в linketto/deploy/nginx.conf): nginx прави само ПОСЛЕДНАТА
+  # папка, не родителите — без /var/cache/nginx `nginx -t` пада. Същият пазач срещу симлинк.
+  if [ -L /var/cache/nginx/linketto ]; then
+    warn "/var/cache/nginx/linketto е СИМЛИНК — отказвам да пипам правата му; провери ръчно."
+  else
+    install -d -m 0755 /var/cache/nginx 2>/dev/null \
+      && install -d -o www-data -g www-data -m 0700 /var/cache/nginx/linketto 2>/dev/null \
+      || warn "не мога да създам /var/cache/nginx/linketto — nginx -t ще падне с vhost-а на linketto."
+  fi
+  if [ -f "$d/deploy/logrotate.conf" ]; then
+    install -m 0644 "$d/deploy/logrotate.conf" /etc/logrotate.d/linketto \
+      || warn "не мога да инсталирам /etc/logrotate.d/linketto — 7-те дни НЕ са гарантирани."
+  fi
+
+  # `|| rc=$?`: голо извикване под `set -e` би убило ЦЕЛИЯ autodeploy и продуктите след linketto.
+  LINKETTO_DATA_HOST="$LINKETTO_STATE_DIR/data" LINKETTO_HEALTH_URL="$LINKETTO_HEALTH_URL" \
+    bash "$d/scripts/deploy.sh" || rc=$?
+  case "$rc" in
+    0)
+      if health "$LINKETTO_HEALTH_URL" "linketto" '"app":"linketto"'; then
+        printf '%s\n' "$(readlink -f "$d")" > "$LINKETTO_LAST_GOOD.tmp" && mv -f "$LINKETTO_LAST_GOOD.tmp" "$LINKETTO_LAST_GOOD"
+        linketto_install_cron "$d" || warn "linketto: таймерите не се инсталираха — виж по-горе."
+        [ -e /etc/nginx/sites-enabled/linketto ] \
+          || warn "linketto: няма /etc/nginx/sites-enabled/linketto — сайтът върви само на 127.0.0.1:${port} (linketto/DEPLOY.md §7)."
+        linketto_indexnow
+      else
+        deploy_failed=1
+        linketto_rollback "$d" || true
+      fi
+      ;;
+    2) deploy_failed=1; warn "linketto: деплоят спря преди смяната на app — работи предишният код." ;;
+    4)
+      deploy_failed=1
+      warn "linketto: миграцията падна — работи предишният код. Бекъпът отпреди нея е в $LINKETTO_STATE_DIR/backups;"
+      warn "  процедурата — linketto/DEPLOY.md §7, „Провалена миграция“."
+      ;;
+    *) deploy_failed=1; warn "linketto: новият app не отговаря (код $rc)."; linketto_rollback "$d" || true ;;
+  esac
+}
+
+# ── liftcon — сайт (статичен, Nginx) + приложение (Docker Compose: db + api); стъпките: liftcon/deploy/deploy.sh ──
+# deploy.sh е идемпотентен и сам връща предишното състояние при провал (връзката current на сайта, Nginx
+# конфига, образа на приложението); бекъп на базата и на снимките преди смяната. Първият път генерира
+# тайните (.env, права 600) и пита в терминала за имейл и парола на администратора — пуска се от човек в SSH.
+# Още не е в PROJECTS по подразбиране: първото пускане е изрично (PROJECTS="liftcon"), след DNS на liftcon.it.
+deploy_liftcon() {
+  local d="$SRC/liftcon" rc=0
+  [ -d "$d" ] || { warn "Няма liftcon/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "liftcon: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам liftcon (сайт + Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  DOMAIN="${LIFTCON_DOMAIN:-liftcon.it}" INDEXNOW="${LIFTCON_INDEXNOW:-1}" bash "$d/deploy/deploy.sh" || rc=$?
+  if [ "$rc" -eq 0 ]; then
+    ok "liftcon: жив — https://${LIFTCON_DOMAIN:-liftcon.it} (health 200: /, /health, /admin/login)."
+  else
+    deploy_failed=1
+    warn "liftcon: деплоят спря (код $rc); deploy.sh е върнал предишното състояние. Логове: docker logs --tail 200 liftcon-api"
+  fi
+}
+
 for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
@@ -2055,9 +2591,13 @@ for p in $PROJECTS; do
     korpora)   deploy_korpora ;;
     gaming|Gaming|aso) deploy_gaming ;;
     rilievi)    deploy_rilievi ;;
+    fakturist)  deploy_fakturist ;;
+    semki)      deploy_semki ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     fivem|FiveM)          deploy_fivem ;;
+    linketto)   deploy_linketto ;;
+    liftcon)    deploy_liftcon ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done
@@ -2086,32 +2626,137 @@ fi
 # Третото: release-ът, към който сочи паметта на Korpora за последния работещ (KORPORA_LAST_GOOD).
 # Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
 # код, който никога не е разгръщан за Korpora. Същото за Rilievi (RILIEVI_LAST_GOOD): там е и
-# docker-compose.yml, от който тече дневният бекъп.
+# docker-compose.yml, от който тече дневният бекъп. И за Фактурист (FAKTURIST_LAST_GOOD) и Semki (SEMKI_LAST_GOOD).
+# Още една защита (инцидент 11.10.2026, zabobovdol 502): release-ите, от които контейнер МОНТИРА файлове.
+# Compose стекът помни абсолютния път на release-а, от който е вдигнат последно (./nginx/*.conf,
+# ./scripts). zabobovdol беше вдигнат от release на 18.09, следващите деплои пускаха само други
+# продукти и prune изтри папката. При рестарт на контейнерите nginx (код 127, „not a directory“)
+# и backup (код 2) не намериха файловете си → 502 за целия сайт. Затова всеки Mounts.Source под
+# $RELEASES_DIR пази своя release. Docker недостъпен → изход 1 и prune не трие НИЩО (fail closed):
+# по-добре малко повече диск, отколкото код, изтрит изпод жив контейнер.
+release_mount_sources() {
+  command -v docker >/dev/null 2>&1 || return 0
+  local ids
+  # timeout: увиснал демон не бива да задържа деплоя завинаги (провал → fail closed, нищо не се трие).
+  ids="$(timeout 20 docker ps -aq 2>/dev/null)" || return 1
+  [ -n "$ids" ] || return 0
+  # shellcheck disable=SC2086
+  timeout 30 docker inspect --format '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}' $ids 2>/dev/null || return 1
+}
+
+# Още една защита (23.10.2026): release, от който върви compose проект (етикетът working_dir — и на
+# спрелите контейнери), дори без монтирани файлове оттам. Деплои без zabobovdol триеха папката
+# изпод работещия стек; откатът и `docker compose` командите от DEPLOY.md сочат натам.
+compose_workdirs() {
+  command -v docker >/dev/null 2>&1 || return 0
+  local ids
+  ids="$(timeout 20 docker ps -aq 2>/dev/null)" || return 1
+  [ -n "$ids" ] || return 0
+  # shellcheck disable=SC2086 # ID-тата са едно-словни; разделянето е нарочно
+  timeout 30 docker inspect --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' $ids 2>/dev/null || return 1
+}
+
+# Преди триене: .env, който живее САМО в този release (няма го в shared и в никой друг release), се
+# спасява в $SHARED_DIR/<продукт>/.env (600). На 11.10.2026 единственото копие на zabobovdol/.env
+# беше в изтрития release — спаси ни само това, че стойностите още живееха в контейнерите.
+# Никога не презаписва съществуващ shared файл. prune обхожда от най-стария към най-новия, затова
+# спасеното е най-новото копие, а не някое застаряло. Обхват: <release>/<обвивка>/<продукт>/.env —
+# плосък release (без обвивка) и вложени .env (напр. SupremeDiscordBot/backend) не се виждат;
+# Supreme има свой стабилен дом (SUPREME_ENV_DIR).
+rescue_release_env() {
+  # rc трупа провалите: статусът на while е само този на последната итерация, а провал в средна
+  # итерация (ENOSPC при пълен диск) иначе се губеше и release-ът се триеше с единственото копие.
+  local old="${1%/}" envf proj shared other rc=0
+  while IFS= read -r envf; do
+    proj="$(basename "$(dirname "$envf")")"
+    shared="$SHARED_DIR/$proj/.env"
+    [ -f "$shared" ] && continue
+    other="$(find "$RELEASES_DIR" -mindepth 4 -maxdepth 4 -path "*/$proj/.env" -type f ! -path "$old/*" -print -quit 2>/dev/null || true)"
+    [ -n "$other" ] && continue
+    if install -D -m 600 "$envf" "$shared"; then
+      warn "Спасих $proj/.env от изтриван release → $shared"
+    else
+      warn "НЕ успях да спася $proj/.env от $old"; rc=1
+    fi
+  done < <(find "$old" -mindepth 3 -maxdepth 3 -path '*/*/.env' -type f 2>/dev/null)
+  return "$rc"
+}
+
 prune_releases() {
-  local keep_rel live_rel lg_rel lg_ril old old_real keep protected
+  local keep_rel live_rel lg_rel lg_ril lg_fak lg_lnk lg_semki old old_real keep protected mounts m lg lg_any="" workdirs wd
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
   lg_ril="$(readlink -f "$(cat "$RILIEVI_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  lg_fak="$(readlink -f "$(cat "$FAKTURIST_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  # Целта на отката на linketto: без нея деплоите на други продукти я изтриваха изпод отката.
+  lg_lnk="$(readlink -f "$(cat "$LINKETTO_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  lg_semki="$(readlink -f "$(cat "$SEMKI_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  # Целта на отката на ВСЕКИ продукт със $SHARED_DIR/<продукт>/last-good — и на такъв, когото този
+  # autodeploy.sh не познава (ChatChat, 11.10.2026: разгърнат от свой клон, после деплой на друг
+  # продукт от main изтри папката, към която сочеха и откатът, и командите от DEPLOY.md).
+  for lg in "${SHARED_DIR:-/opt/few-few/shared}"/*/last-good; do
+    [ -f "$lg" ] || continue
+    lg_any="$lg_any$(readlink -f "$(head -n 1 "$lg" 2>/dev/null || true)" 2>/dev/null || true)"$'\n'
+  done
+  if ! mounts="$(release_mount_sources)"; then
+    warn "Docker не отговаря — не трия стари releases (не мога да видя кои монтират контейнерите)."
+    return 0
+  fi
+  mounts="$(printf '%s\n' "$mounts" | grep -F "$RELEASES_DIR/" || true)"
+  if ! workdirs="$(compose_workdirs)"; then
+    warn "Docker не отговаря — не трия стари releases (не мога да видя кои compose проекти вървят оттам)."
+    return 0
+  fi
+  # От най-стария към най-новия (tac) — виж rescue_release_env.
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
     [ -n "$old_real" ] || continue
     keep=0
-    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lg_ril"; do
+    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lg_ril" "$lg_fak" "$lg_lnk" "$lg_semki"; do
       [ -n "$protected" ] || continue
       case "$protected" in
         "$old_real"|"$old_real"/*) keep=1 ;;
       esac
     done
-    [ "$keep" = "1" ] && continue
+    while IFS= read -r protected; do
+      [ -n "$protected" ] || continue
+      case "$protected" in
+        "$old_real"|"$old_real"/*) keep=1 ;;
+      esac
+    done <<< "$lg_any"
+    while IFS= read -r wd; do
+      [ -n "$wd" ] || continue
+      case "$wd" in
+        "${old%/}"|"${old%/}"/*|"$old_real"|"$old_real"/*) keep=1 ;;
+      esac
+    done <<< "$workdirs"
+    while IFS= read -r m; do
+      [ -n "$m" ] || continue
+      case "$m" in
+        "${old%/}"/*|"$old_real"/*) keep=1 ;;
+      esac
+    done <<< "$mounts"
+    if [ "$keep" = "1" ]; then
+      [ -n "$mounts" ] && printf '%s\n' "$mounts" | grep -qF "${old%/}/" \
+        && log "Пазя $(basename "${old%/}") — контейнер монтира файлове от него."
+      continue
+    fi
+    rescue_release_env "$old" || { warn "Пазя $(basename "${old%/}") — .env не е спасен"; continue; }
     rm -rf "$old"
-  done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)))
+  done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)) | tac)
 }
 prune_releases
 
+if [ "${#SKIPPED[@]}" -gt 0 ]; then
+  warn "Пропуснати (не са обновени — работи предишният им код):"
+  for x in "${SKIPPED[@]}"; do warn "  · $x"; done
+fi
+SKIPPED_NOTE=""
+if [ "${#SKIPPED[@]}" -gt 0 ]; then SKIPPED_NOTE=" · пропуснати: ${#SKIPPED[@]} (виж по-горе)"; fi
 if [ "$deploy_failed" = "0" ]; then
-  ok "Деплой готов ($TS). Проекти: $PROJECTS"
+  ok "Деплой готов ($TS). Проекти: $PROJECTS${SKIPPED_NOTE}"
 else
   die "Деплой завърши с грешки — виж изхода по-горе (направен е опит за rollback)."
 fi

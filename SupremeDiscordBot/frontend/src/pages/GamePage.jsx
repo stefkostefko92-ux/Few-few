@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil, Sparkles, Target } from "lucide-react";
 import { useT } from "../contexts/I18nContext";
 import PageHeader from "../components/PageHeader";
+import PageTabs, { TabPanel, useTab } from "../components/PageTabs";
 import { useToast } from "../contexts/ToastContext";
 import { PremiumBadge } from "../components/PremiumBadge";
 import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../components/DiscordPicker";
@@ -38,20 +39,20 @@ const TABS = [
 export default function GamePage() {
   const { t } = useT();
   const { serverId } = useParams();
-  const [tab, setTab] = useState("overview");
+  const [tab, setTab] = useTab(TABS.map((x) => x.id));
   const { data, isLoading, isError } = useQuery({ queryKey: ["game", serverId], queryFn: () => getGame(serverId) });
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
       <PageHeader title={t("game.title")} subtitle={t("game.subtitle")} />
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label={t("game.title")}>
-        {TABS.map((x) => (
-          <button key={x.id} role="tab" aria-selected={tab === x.id} onClick={() => setTab(x.id)}
-            className={`px-3 py-2 text-sm rounded border transition-colors flex items-center gap-2 ${tab === x.id ? "border-cs-cyan text-cs-cyan" : "border-cs-border text-cs-muted hover:text-cs-text"}`}>
-            <x.icon className="w-4 h-4" aria-hidden="true" /> {t(x.tKey)}
-          </button>
-        ))}
-      </div>
+      <PageTabs
+        tabs={TABS.map((x) => ({ id: x.id, label: t(x.tKey), icon: x.icon }))}
+        value={tab}
+        onChange={setTab}
+        label={t("game.title")}
+      />
+      <TabPanel id={tab}>
+      <div className="space-y-6">
       {isLoading && <p className="text-cs-muted">{t("game.loading")}</p>}
       {isError && <p className="text-danger">{t("game.loadFailed")}</p>}
       {data && tab === "overview" && <OverviewTab data={data} />}
@@ -60,6 +61,8 @@ export default function GamePage() {
       {data && tab === "leaderboard" && <LeaderboardTab />}
       {data && tab === "companions" && <CompanionsTab data={data} />}
       {data && tab === "quests" && <QuestsTab data={data} />}
+      </div>
+      </TabPanel>
     </div>
   );
 }

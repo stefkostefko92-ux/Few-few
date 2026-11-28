@@ -1,5 +1,5 @@
 import { Role } from '@prisma/client';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { audited } from '../audit.js';
 import { prisma } from '../db.js';
 import { outranks } from '../auth/rbac.js';

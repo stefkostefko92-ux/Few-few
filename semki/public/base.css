@@ -1,0 +1,278 @@
+/* Semki Bot — основата: токени, шрифтът, горната лента и (на телефон) лентата с бутони долу.
+   Оформление: нощната стая — тъмно, тихо, костен текст; цветът е само за данните (вида на семката и
+   здравето ѝ). Шрифтът е Sofia Sans (Ботьо Николчев), сбитият му вариант — за големите числа. */
+
+:root {
+  color-scheme: dark;
+  --night: #0b0f0d; /* фонът */
+  --panel: #121815; /* повърхност */
+  --panel-2: #19211d; /* вдигната повърхност и полета */
+  --rule: #27312b; /* линии */
+  --bone: #ebe5d3; /* текстът и основният бутон */
+  --ash: #9aa49c; /* второстепенен текст */
+  --rust: #e2774a; /* опасно и спешно */
+  --font-ui: 'Sofia Sans Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-num:
+    'Sofia Sans Extra Condensed Variable', 'Sofia Sans Variable', 'Arial Narrow', system-ui,
+    sans-serif;
+  /* здравето — от свежо към изтекло (src/domain/health.ts) */
+  --h-fresh: #93d98a;
+  --h-healthy: #c9d86c;
+  --h-aging: #ebb54d;
+  --h-spoiling: #e2774a;
+  --h-rotting: #cf5b4d;
+  --h-dead: #6d756f;
+  --radius: 14px;
+  --gutter: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  --bar-h: 0px; /* лентата долу на телефон */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--night);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--night);
+  color: var(--bone);
+  font: 400 15px/1.5 var(--font-ui);
+  font-optical-sizing: auto;
+  padding-bottom: calc(var(--bar-h) + env(safe-area-inset-bottom, 0px));
+}
+
+a {
+  color: var(--bone);
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--bone) 45%, transparent);
+}
+
+a:hover {
+  text-decoration-color: var(--bone);
+}
+
+:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+code {
+  font:
+    0.88em ui-monospace,
+    'SF Mono',
+    Menlo,
+    Consolas,
+    monospace;
+  background: var(--panel-2);
+  padding: 0.1em 0.35em;
+  border-radius: 5px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+h1 {
+  font: 700 clamp(2rem, 6vw, 2.6rem) / 1 var(--font-num);
+  letter-spacing: 0.005em;
+}
+
+h2 {
+  font-size: 1.15rem;
+  font-weight: 650;
+}
+
+h3 {
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.muted {
+  color: var(--ash);
+}
+
+.small {
+  font-size: 0.85rem;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── горната лента ── */
+.top {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+  background: color-mix(in srgb, var(--night) 86%, transparent);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border-bottom: 1px solid var(--rule);
+}
+
+.top-in {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.6rem var(--gutter-r) 0.6rem var(--gutter);
+  min-height: 58px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  font: 700 1.45rem/1 var(--font-num);
+  letter-spacing: 0.01em;
+}
+
+.brand img {
+  border-radius: 50%;
+}
+
+.nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.nav a {
+  text-decoration: none;
+  color: var(--ash);
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-weight: 550;
+}
+
+.nav a:hover {
+  color: var(--bone);
+}
+
+.nav a[aria-current='page'] {
+  color: var(--bone);
+  background: var(--panel-2);
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+
+.me {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--ash);
+  min-width: 0;
+}
+
+.me img {
+  border-radius: 50%;
+  flex: none;
+}
+
+.me .who {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── съдържанието ── */
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem var(--gutter-r) 3rem var(--gutter);
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.page-head h1 small {
+  font: 500 1.1rem var(--font-ui);
+  color: var(--ash);
+  margin-left: 0.35rem;
+  vertical-align: 0.35rem;
+}
+
+.foot {
+  border-top: 1px solid var(--rule);
+  padding: 1.25rem var(--gutter-r) 1.5rem var(--gutter);
+  text-align: center;
+  color: var(--ash);
+  font-size: 0.85rem;
+}
+
+/* ── телефон: навигацията е долу, под палеца ── */
+@media (max-width: 720px) {
+  :root {
+    --bar-h: 62px;
+  }
+
+  /* backdrop-filter прави горната лента контейнер за fixed наследниците — долната лента би останала горе */
+  .top {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--night);
+  }
+
+  .nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 30;
+    gap: 0;
+    background: color-mix(in srgb, var(--panel) 94%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--rule);
+    padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
+      env(safe-area-inset-left, 0px);
+  }
+
+  .nav a {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    height: var(--bar-h);
+    border-radius: 0;
+    font-size: 0.82rem;
+    padding: 0 0.25rem;
+  }
+
+  .nav a[aria-current='page'] {
+    background: none;
+    box-shadow: inset 0 2px 0 var(--bone);
+  }
+
+  .me .who {
+    display: none;
+  }
+}

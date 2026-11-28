@@ -155,7 +155,7 @@ const hosts = ["www.sa-test.com", "sub.sa-test.com", "www.example.co.uk", "www.n
 const profile = mkdtempSync(join(tmpdir(), "sa-scr-p-"));
 const ctx = await chromium.launchPersistentContext(profile, {
   channel: "chromium", headless: true,
-  args: ["--no-sandbox", `--host-resolver-rules=${hosts.map((h) => `MAP ${h} 127.0.0.1:${port}`).join(", ")}, MAP adserver.example ~NOTFOUND, MAP popunder.example ~NOTFOUND`],
+  args: ["--no-sandbox", `--host-resolver-rules=${hosts.map((h) => `MAP ${h} 127.0.0.1:${port}`).join(", ")}, MAP adserver.example ~NOTFOUND, MAP popunder.example ~NOTFOUND`, "--no-proxy-server"],
 });
 try {
   const p = await ctx.newPage();
@@ -233,7 +233,7 @@ try {
   const ectx = await chromium.launchPersistentContext(prof2, {
     channel: "chromium", headless: true,
     args: ["--no-sandbox", `--disable-extensions-except=${ROOT}`, `--load-extension=${ROOT}`,
-      `--host-resolver-rules=MAP www.123link.co 127.0.0.1:${ep}, MAP www.not123link-site.org 127.0.0.1:${ep}`],
+      `--host-resolver-rules=MAP www.123link.co 127.0.0.1:${ep}, MAP www.not123link-site.org 127.0.0.1:${ep}`, "--no-proxy-server"],
   });
   try {
     const sw = ectx.serviceWorkers()[0] || await ectx.waitForEvent("serviceworker");

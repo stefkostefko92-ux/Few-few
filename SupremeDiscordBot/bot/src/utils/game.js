@@ -344,6 +344,16 @@ export async function revokeShopRole(client, { serverId, userId, roleId }) {
     .catch((err) => PERMANENT_ROLE_ERRORS.has(err?.code));
 }
 
+/**
+ * И1: може ли ботът да даде ролята ПРЕДИ покупката? null = да; иначе причината
+ * ("missing" | "managed" | "dangerous" | "above_bot"). Една дефиниция с grantShopRole.
+ */
+export async function shopRoleBlocker(guild, roleId) {
+  const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() => null);
+  if (!role) return "missing";
+  return roleAssignabilityReason(role, guild.members.me);
+}
+
 /** Дава купена роля; връща причината, ако не може. */
 export async function grantShopRole(guild, member, roleId) {
   const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() => null);
@@ -351,7 +361,16 @@ export async function grantShopRole(guild, member, roleId) {
   const reason = roleAssignabilityReason(role, guild.members.me);
   if (reason) return reason;
   if (member.roles.cache.has(roleId)) return null;
-  return member.roles.add(role, "Server Season: shop purchase").then(() => null).catch(() => "failed");
+  try {
+    await member.roles.add(role, "Server Season: shop purchase");
+    return null;
+  } catch {
+    // Неясен провал (таймаут, прекъсната връзка): Discord може вече да е дал ролята.
+    // Питаме наново — иначе искрите се връщат за роля, която човекът има.
+    let fresh = null;
+    try { fresh = await guild.members.fetch({ user: member.id, force: true }); } catch { /* не знаем → неуспех */ }
+    return fresh?.roles?.cache?.has(roleId) ? null : "failed";
+  }
 }
 
 /** Само за тестове. */

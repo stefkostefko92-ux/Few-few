@@ -7,6 +7,7 @@
 import { Home, AlertCircle, Compass } from "lucide-react";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";
+import { SUPPORT_URL } from "../lib/support";
 
 export default function NotFoundPage() {
   return (
@@ -56,7 +57,7 @@ export default function NotFoundPage() {
           <div className="text-xs text-cs-dim">
             If you believe this is an error, please{" "}
             <a
-              href="https://discord.gg/wpCRpy8B"
+              href={SUPPORT_URL}
               target="_blank"
               rel="noopener"
               className="text-cs-cyan underline"

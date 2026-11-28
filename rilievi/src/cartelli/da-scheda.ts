@@ -81,6 +81,28 @@ export function lavoriDi(scheda: ValoriScheda): {
   };
 }
 
+/**
+ * Смяната на табло, аргано или централа е modifica costruttiva — D.P.R. 162/1999, чл. 2, ал. 1, б. i), т. 5
+ * („sostituzione di macchinario, … quadro elettrico, gruppo cilindro-pistone“): ново съобщение до общината и
+ * проверяващия (чл. 12, ал. 4) и извънредна проверка (чл. 14, ал. 3) —
+ * research/norme-ascensori/leggi/dpr-162-1999.md:67-71, :240-242, :278. Централата е машината на хидравличния
+ * асансьор. Само видимите „Sì“ — скритият въпрос не казва нищо.
+ */
+export type ModificaCostruttiva = 'quadro' | 'argano' | 'centralina';
+
+const MODIFICHE: ReadonlyArray<{ campo: string; parte: ModificaCostruttiva }> = [
+  { campo: 'quadroSostituire', parte: 'quadro' },
+  { campo: 'arganoPreventivo', parte: 'argano' },
+  { campo: 'centralinaDaFare', parte: 'centralina' },
+];
+
+export function modificheCostruttive(scheda: ValoriScheda): ModificaCostruttiva[] {
+  const attivi = activeFields((key) => scheda[key]);
+  return MODIFICHE.filter((m) => attivi.has(m.campo) && scheda[m.campo] === true).map(
+    (m) => m.parte,
+  );
+}
+
 /** „2026-11-03“ → „3/11“, както в примера на собственика („Dal 3/11 l'impianto è fermo…“). */
 function giornoMese(day: string): string | null {
   const match = /^\d{4}-(\d{2})-(\d{2})$/.exec(day);

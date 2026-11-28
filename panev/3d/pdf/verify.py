@@ -15,7 +15,8 @@
   (indice.check);
 - each section cover's row: every tile's code and page on it and its link (sezioni.check);
 - the retouched pages say what their sheets say, nothing left under the footer (ritocchi.check);
-- the page labels are PDFDocEncoded."""
+- the page labels are PDFDocEncoded;
+- the document language is it-IT and every printed "panevascensori.it" (site or e-mail) is a link."""
 import json
 import os
 import sys
@@ -85,6 +86,8 @@ for sec in data["sezioni"]["pages"]:
     changed[sec["page"]] = [pymupdf.Rect(sec["rect"])]
 for rt in data["ritocchi"]["pages"]:  # the legend, the comparison table, the side tabs (old place and new pill)
     zones_rt = ([R.LEG_AREA] if "legend" in rt else []) + ([R.TAB_AREA] if "table" in rt else []) + ([pymupdf.Rect(rt["tab"]["old"]) | pymupdf.Rect(rt["tab"]["area"])] if "tab" in rt else [])
+    zones_rt += [R.SHIP_AREA] if "shipping" in rt else []
+    zones_rt += [R.A.zone(rt["year"])] if "year" in rt else []
     changed.setdefault(rt["page"], []).extend(zones_rt)
 changed[5] = [pymupdf.Rect(r) for _, _, r, _, _ in L.P5] + [pymupdf.Rect(r) for r in L.P5_OLD]
 renders[5] = [pymupdf.Rect(r) for _, _, r, _, _ in L.P5]
@@ -174,6 +177,15 @@ for la, lb in zip(*([lk for lk in d[1].get_links() if not I.in_column(lk)] for d
         problems.append(f"index link {la.get('nameddest')}: {la['page']} -> {lb['page']}")
 if "\\302" in new.xref_get_key(new.pdf_catalog(), "PageLabels")[1]:
     problems.append("page labels are UTF-8, not PDFDocEncoding")
+if new.xref_get_key(new.pdf_catalog(), "Lang")[1] != "it-IT":
+    problems.append(f"document language: {new.xref_get_key(new.pdf_catalog(), 'Lang')}")
+for page in new:  # the site's address and the e-mail are links wherever they are printed, each to its own target
+    linked = [(pymupdf.Rect(lk["from"]), lk["uri"]) for lk in page.get_links() if lk.get("uri")]
+    mails = page.search_for("info@panevascensori.it")
+    for hit in page.search_for("panevascensori.it"):
+        want = "mailto:info@panevascensori.it" if any(hit.intersects(m) for m in mails) else "https://panevascensori.it/"
+        if not any(hit.intersects(r) and uri == want for r, uri in linked):
+            problems.append(f"page {page.number + 1}: the address at {hit} does not link to {want}")
 
 print(f"{new.page_count} pages: {sum(is3d)} 3D pages, {sum(issum)} summary pages, {base.page_count} base pages compared")
 if problems:

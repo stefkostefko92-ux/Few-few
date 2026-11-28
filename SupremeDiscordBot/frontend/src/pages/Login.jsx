@@ -26,11 +26,12 @@ const ProductTour = lazy(() => import("../components/ProductTour"));
 // Под сгъвката и със собствен текст на 8 езика → собствен чънк, извън LCP пътя.
 const BaitShowcase = lazy(() => import("../components/BaitShowcase"));
 import { useScrollReveal } from "../hooks/useScrollReveal";
+import { botInviteUrl } from "../lib/invite";
+import { SUPPORT_URL } from "../lib/support";
 
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
-const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCRpy8B";
 // Same permission set as Dashboard.jsx's "Add to a Server" invite link.
-const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
+const BOT_INVITE_URL = botInviteUrl();
 
 const UI = LANDING_UI.en;
 const C = LANDING_CONCEPT.en;
@@ -63,7 +64,7 @@ const EN_FEATURES = [
 const EN_FAQ = [
   { q: "How do I pay for Premium?", a: "Through Discord only. Open the Discord store for Supreme Bot, pick Premium or White-label for your server and complete Discord's checkout. Discord is the seller of record: it shows the final price with VAT, charges you and sends the receipt — we never see your card. Subscriptions are monthly; cancel anytime from Discord's User Settings → Subscriptions and keep access until the end of the paid period." },
   { q: "How is pricing calculated?", a: "Premium is billed per server — €4.99/server/month — not per seat, per agent or per ticket. Every server also has the Free tier forever at €0. Put a server on Premium when it needs it, drop it back to Free when it doesn't; you only ever pay for the servers you actively upgrade." },
-  { q: "Where is my data stored?", a: "All data is stored in the EU (Germany, Hetzner); Carbon Stealth VCC operates from Bulgaria. Some sub-processors — Discord, Google (optional, for AI replies) and Sentry — are located in the US; those transfers are governed by Standard Contractual Clauses (see Privacy Policy §5-6). Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data." },
+  { q: "Where is my data stored?", a: "All data is stored in the EU (Germany, netcup); Carbon Stealth VCC operates from Bulgaria. Some sub-processors — Discord, Google (optional, for AI replies) and Sentry — are located in the US; those transfers are governed by Standard Contractual Clauses (see Privacy Policy §5-6). Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data." },
   { q: "Can I use my own Discord bot?", a: "Yes — on the White-label tier (€9.99 per server per month, bought in the Discord store) you connect your own Discord bot application (its bot token from the Discord Developer Portal) and it runs under your brand: your bot's name, avatar and server presence. The token is encrypted at rest with AES-256-GCM." },
   { q: "What happens if I cancel — can I take my data?", a: "No lock-in. Cancel anytime in Discord (User Settings → Subscriptions) — access continues until the end of the period you paid for, then the server reverts to the Free tier. Panels, forms, applications and settings are kept; transcripts of tickets closed more than 30 days ago are deleted on the Free tier. Export what you need to CSV or PDF before the period ends." },
   { q: "Do you support multiple servers?", a: "Yes — connect unlimited Discord servers from one Supreme Bot account. Each server has independent settings, panels, forms, and billing." },
@@ -260,7 +261,7 @@ export default function Login() {
             <p data-reveal className="cs-section-sub">A registered EU company, encrypted secrets and a public status page — not promises.</p>
             <ul data-reveal className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-9">
               <TrustItem icon={Lock} title="EU data residency">
-                Hosted and stored in the EU (Germany, Hetzner). GDPR-native. Discord, Google and Sentry are recipients in the US under Standard Contractual Clauses.
+                Hosted and stored in the EU (Germany, netcup). GDPR-native. Discord, Google and Sentry are recipients in the US under Standard Contractual Clauses.
               </TrustItem>
               <TrustItem icon={Zap} title="99.9% uptime target">
                 Monitored with auto-recovery — a target, not a contractual SLA. See live status at /status.
@@ -282,7 +283,7 @@ export default function Login() {
               {/* Статичната значка „всичко работи“ беше твърдение без измерване —
                   сега води към живия статус (одит 24.09.2026). */}
               <a href="/status" className="flex items-center gap-2 no-underline hover:text-cs-cyan transition-colors"><Activity className="w-3.5 h-3.5" aria-hidden="true" /> Live system status</a>
-              <span>GDPR compliant</span>
+              <span>Data export and deletion built in</span>
               <span>Ad-free, no advertising trackers</span>
               <span>Cancel anytime, no lock-in</span>
             </div>

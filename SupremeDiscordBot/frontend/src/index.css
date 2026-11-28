@@ -151,6 +151,16 @@
            focus-visible:ring-2 focus-visible:ring-cs-cyan
            focus-visible:ring-offset-2 focus-visible:ring-offset-cs-black;
   }
+  /* Изключен бутон ИЗГЛЕЖДА изключен (12.11.2026): досега `disabled` не променяше
+     нищо на вид — „Запазване…“ и бутон без какво да запази изглеждаха активни и
+     човекът натискаше втори път. Без сянка, без „натискане“, с друг курсор. */
+  .cs-btn:disabled,
+  .cs-btn[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
 
   .cs-btn-primary {
     @apply cs-btn bg-cs-cyan text-black border-cs-cyan

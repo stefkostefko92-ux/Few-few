@@ -1,0 +1,23 @@
+<%
+  // Информацията по чл. 13 GDPR на страницата на подписа (routes/impostazioni-firme.ts, legale/informativa.ts):
+  // текстът на фирмата или моделът с данните ѝ; „Torna al modello“ трие написаното.
+  const inf = informativa;
+%><section aria-labelledby="h-firme">
+  <h2 class="section__title" id="h-firme"><%= t('impostazioni.pagine.firme.titolo') %></h2>
+  <p><%= t('impostazioni.firme.intro') %></p>
+  <p class="muted"><%= t(inf.propria ? 'impostazioni.firme.propria' : 'impostazioni.firme.modello') %></p>
+  <form class="form" method="post" action="/impostazioni/informativa" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="azienda" value="<%= azienda.id %>">
+    <div class="field field--wide">
+      <label class="field__label" for="f-informativa"><%= t('impostazioni.firme.etichetta') %></label>
+      <textarea class="input" id="f-informativa" name="testo" rows="16" maxlength="4000" aria-describedby="hint-informativa<% if (inf.errore) { %> err-informativa<% } %>"<% if (inf.errore) { %> aria-invalid="true"<% } %>><%= inf.valore %></textarea>
+      <p class="field__hint" id="hint-informativa"><%= t('impostazioni.firme.hint', { max: 4000 }) %></p>
+      <% if (inf.errore) { %><p class="field__error" id="err-informativa"><%= t('impostazioni.firme.errore', { max: 4000 }) %></p><% } %>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn--primary" type="submit" name="azione" value="salva"><%= t('impostazioni.firme.salva') %></button>
+      <% if (inf.propria) { %><button class="btn" type="submit" name="azione" value="ripristina"><%= t('impostazioni.firme.ripristina') %></button><% } %>
+    </div>
+  </form>
+</section>

@@ -8,11 +8,12 @@
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import sharp from 'sharp';
+import { annotatePhoto } from './annotazioni.mjs';
 import { fail } from './helpers.mjs';
 
 const READY_WAIT = 60_000;
 
-export async function checkAttachments(page, { sheetUrl, shots }) {
+export async function checkAttachments(page, { sheetUrl, shots, scheme = 'light' }) {
   // A 12 Mpx phone photo held upright (landscape pixels, EXIF orientation 6) and a small one.
   const phone = join(shots, 'quadro-e2e.jpg');
   await sharp({
@@ -94,6 +95,7 @@ export async function checkAttachments(page, { sheetUrl, shots }) {
   if ((await page.inputValue(`#d-${id}`)) !== 'Targa del quadro') fail('caption not kept');
   if ((await page.locator('[data-dirty-hint]').isHidden()) !== hintBefore)
     fail('a caption marked the sheet as changed');
+  await annotatePhoto(page, second, { scheme });
 
   // Deleting asks first (the browser's dialog) and takes the tile away.
   page.once('dialog', (dialog) => dialog.accept());
@@ -131,8 +133,10 @@ export async function checkAttachments(page, { sheetUrl, shots }) {
   await page.click('.actions button[type=submit]');
   await page.waitForURL(/\/schede\/[a-z0-9]+$/);
   await page.goto(`${sheetUrl}/stampa`);
-  if (!(await page.locator('.paper__foto .paper__figura img').count()))
+  if (!(await page.locator('.paper__foto .paper__figura :is(img, .paper__foto-annotata)').count()))
     fail('print without the photos of the sections');
+  if (!(await page.locator('.paper__foto .paper__foto-annotata path').count()))
+    fail('print without the annotations over the photo');
   if (!(await page.textContent('.paper__foto')).includes('Targa del quadro'))
     fail('print without the caption');
 }

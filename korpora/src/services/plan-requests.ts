@@ -1,5 +1,5 @@
 import type { User } from '@prisma/client';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { audit } from '../audit.js';
 import { LEGAL_UPDATED } from '../company.js';
 import { prisma } from '../db.js';

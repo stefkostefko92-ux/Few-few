@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { isPartial, principalOf, requireCsrf, requireUser, safeNext } from '../auth/guards.js';
 import { config } from '../config.js';
 import { segnaLette } from '../novita/registro.js';
-import { inizioGiorno, perGiorno, ULTIMO_AGGIORNAMENTO, VOCI } from '../novita/voci.js';
+import { vociAttive } from '../novita/attive.js';
+import { inizioGiorno, perGiorno, ULTIMO_AGGIORNAMENTO } from '../novita/voci.js';
 import { novitaRss } from '../seo/feed.js';
 import { FEED_NOVITA_PATH, NOVITA_PATH } from '../seo/paths.js';
 import { novitaStructuredData } from '../seo/structured-data.js';
@@ -20,7 +21,10 @@ novitaRouter.get(NOVITA_PATH, (req, res) => {
   res.render('site/novita', {
     ...locals,
     jsonLd: novitaStructuredData(res.locals.t, locals.canonical ?? ''),
-    giorni: perGiorno(VOCI).map((giorno) => ({ ...giorno, quando: inizioGiorno(giorno.data) })),
+    giorni: perGiorno(vociAttive()).map((giorno) => ({
+      ...giorno,
+      quando: inizioGiorno(giorno.data),
+    })),
     aggiornato: inizioGiorno(ULTIMO_AGGIORNAMENTO),
     feed: FEED_NOVITA_PATH,
   });

@@ -1,0 +1,50 @@
+/* Риба (§4.5) — 4 места на тесен екран.
+   На телефон лявото и дясното място (центрирани по височина, с ветрило от до
+   8 карти) влизаха едно в друго и под купчината „Море“: имената и броят
+   комплекти на съперниците не се виждаха. Тук страничните места се качват под
+   горното, ветрилото им се свива (до 5 гърба), а морето слиза в свободната
+   ивица над моята ръка. Масата е поне толкова висока, колкото да побере това. */
+@media (max-width: 560px) {
+  .gofish-table .aso-table__felt {
+    min-height: 600px;
+  }
+  .gofish-table .aso-seat[data-pos="left"],
+  .gofish-table .aso-seat[data-pos="right"] {
+    top: 150px;
+    transform: none;
+    max-width: calc(50% - 16px);
+  }
+  .gofish-table .aso-seat[data-pos="left"] {
+    left: 10px;
+    align-items: flex-start;
+  }
+  .gofish-table .aso-seat[data-pos="right"] {
+    right: 10px;
+    align-items: flex-end;
+  }
+  /* Тясна табела: без аватара и с по-малко въздух, за да се вижда целият
+     „АСО Бот 2“ — номерът е това, което различава съперниците. */
+  .gofish-table .aso-seat[data-pos="left"] .aso-seat__plate,
+  .gofish-table .aso-seat[data-pos="right"] .aso-seat__plate {
+    max-width: 100%;
+    gap: 6px;
+    padding: 4px 10px;
+  }
+  .gofish-table .aso-seat[data-pos="left"] .aso-seat__avatar,
+  .gofish-table .aso-seat[data-pos="right"] .aso-seat__avatar {
+    display: none;
+  }
+  .gofish-table .aso-seat[data-pos="left"] .aso-card + .aso-card,
+  .gofish-table .aso-seat[data-pos="right"] .aso-card + .aso-card {
+    margin-left: -44px !important;
+  }
+  .gofish-table .aso-seat[data-pos="left"] .aso-card:nth-child(n + 6),
+  .gofish-table .aso-seat[data-pos="right"] .aso-card:nth-child(n + 6) {
+    display: none;
+  }
+  /* Морето: под страничните места (те свършват на ~272 px), над ръката ми. */
+  .gofish-table .aso-table__center {
+    top: calc(286px + (100% - 286px - 190px) / 2);
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}

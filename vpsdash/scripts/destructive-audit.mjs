@@ -129,6 +129,7 @@ const CLASS = new Map(Object.entries({
   '/api/alerts/maintenance': 'C · пауза на известията, с таван 8 часа',
   '/api/alerts/maintenance/end': 'C · край на паузата',
   '/api/alerts/digest/send': 'C · праща отчета сега',
+  '/api/alerts/business/send': 'C · праща петъчните числа сега',
   '/api/webserver/coverage/watch': 'C · добавя проверка за домейн',
   '/api/traffic/quota': 'C · записва квотата на хостера',
   '/api/ports/accept': 'C · приема текущата карта за базова',

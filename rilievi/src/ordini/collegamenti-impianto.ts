@@ -22,6 +22,7 @@ export const IMPIANTO: readonly Collegamento[] = [
       { luogo: 'scheda', campo: 'matricola' },
       { luogo: 'pa', campo: 'matricola' },
       { luogo: 'db', campo: 'matricola' },
+      { luogo: 'gt', campo: 'matricola' },
     ],
   },
   {
@@ -47,6 +48,11 @@ export const IMPIANTO: readonly Collegamento[] = [
       { luogo: 'om', campo: 'armadio', voci: { mrl: 'GEARLESS' } },
       // Gearless на Elettroquadri се отваря при MRL: „MRL gearless“ (не „Con Locale macchina“).
       { luogo: 'el', voci: { mrlGearless: 'GEARLESS' } },
+      {
+        luogo: 'gt',
+        campo: 'tipoImpianto',
+        voci: { idraulico: 'IDRAULICO', gearless: 'GEARLESS' },
+      },
     ],
   },
   {
@@ -63,6 +69,7 @@ export const IMPIANTO: readonly Collegamento[] = [
       { luogo: 'eg', campo: 'operatoreMarca' },
       { luogo: 'el', campo: 'operatoreTipo' },
       { luogo: 'eo', campo: 'operatoreMarca' },
+      { luogo: 'gt', campo: 'operatoreMarca' },
     ],
   },
   {
@@ -80,6 +87,7 @@ export const IMPIANTO: readonly Collegamento[] = [
       { luogo: 'el', campo: 'motoreAmp' },
       { luogo: 'eo', campo: 'motoreAmp' },
       { luogo: 'pa', campo: 'ampere' },
+      { luogo: 'gt', campo: 'correnteNominale' },
     ],
   },
   {

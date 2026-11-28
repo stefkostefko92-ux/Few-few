@@ -1,0 +1,130 @@
+/* Известия и настройки: правилата, новото правило, скоростта на видовете. */
+
+/* ── правилата ── */
+.rules {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.rule {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.95rem 1.1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.rule.off {
+  opacity: 0.7;
+}
+
+.rule-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.85rem;
+}
+
+.rule-threshold {
+  font: 750 1.6rem/1 var(--font-num);
+}
+
+.rule-what {
+  font-weight: 600;
+}
+
+.tag.on {
+  color: var(--h-fresh);
+  border-color: color-mix(in srgb, var(--h-fresh) 40%, var(--rule));
+}
+
+.rule-line,
+.rule-msg {
+  margin: 0;
+}
+
+.rule-msg {
+  color: var(--ash);
+  font-style: italic;
+}
+
+.rule-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.rule-edit {
+  display: contents;
+}
+
+.rule-edit[open] > .edit-body {
+  order: 10;
+  flex-basis: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--panel-2);
+}
+
+.new-rule {
+  margin-top: 1.5rem;
+  scroll-margin-top: 80px;
+}
+
+/* ── настройки ── */
+.settings-form {
+  margin-bottom: 1rem;
+}
+
+.types-card,
+#window {
+  scroll-margin-top: 80px;
+}
+
+.type-rows {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+}
+
+.type-rows li + li {
+  border-top: 1px solid var(--rule);
+}
+
+.type-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 0.6rem 1rem;
+  align-items: end;
+  padding: 0.85rem 0;
+}
+
+.type-name {
+  display: grid;
+  gap: 0.2rem;
+  align-self: center;
+}
+
+.type-name strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: 700 1.3rem/1 var(--font-num);
+}
+
+@media (max-width: 640px) {
+  .type-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .type-name,
+  .type-row .btn {
+    grid-column: 1 / -1;
+  }
+}

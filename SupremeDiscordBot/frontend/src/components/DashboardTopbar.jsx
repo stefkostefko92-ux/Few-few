@@ -140,7 +140,7 @@ function PageSearch({ items }) {
               const Icon = r.icon;
               return (
                 <li
-                  key={r.to || r.href}
+                  key={`${r.to || r.href}|${r.label}`}
                   id={`page-search-${i}`}
                   role="option"
                   aria-selected={i === active}

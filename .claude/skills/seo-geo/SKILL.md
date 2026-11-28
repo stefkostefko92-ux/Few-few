@@ -24,6 +24,18 @@ license: MIT — пълният текст е в LICENSE.txt
 7. Справочниците в `references/` не се редактират от агента: ако първоизточникът се е сменил, кажи на собственика.
 6. Фактите с дата за Google и AI търсачките остаряват бързо — сверявай с първоизточника преди препоръка.
 
+## Измерване 2026 (наше, сверено 22.11.2026 — `tools/seo/research-2026-11.md`)
+
+- **Google:** отчетът *Generative AI performance* в Search Console — за всички сайтове от 31.08.2026; импресии,
+  страници, държави, устройства; **без кликове и CTR**. Настройката *Search generative AI* трябва да е „включена“,
+  иначе сайтът не участва в AI Overviews и AI Mode. Google праща само origin в Referer — AI трафикът от Google не
+  се отличава в аналитиката; пътят е Search Console.
+- **Bing / Copilot:** *AI Performance* в Bing Webmaster Tools (бета от 10.02.2026) — цитирания и цитирани страници.
+- **ChatGPT, Perplexity, Claude:** посетители по Referer (`chatgpt.com`, `perplexity.ai`, `claude.ai`,
+  `copilot.microsoft.com`) или `utm_source=chatgpt.com`; обхождането — `node tools/seo/ai-bots.mjs <access.log>`.
+- Спад по време на core update не е находка за сайта: първо Search Status Dashboard, после сравнение след края.
+- Числата за цитиране са шумни — докладвай тренд, не абсолют.
+
 ---
 
 # AI Search / GEO Optimization (May 2026)

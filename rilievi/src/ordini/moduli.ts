@@ -118,6 +118,16 @@ export const DMG_FIXTURES: ModuloAcro = load(
   moduloSchema(acroField, 'acroform'),
 );
 
+/**
+ * GEAT — формулярът им (Acrobat, две страници, радио групи с имена на състоянията — `stato`); бутонът
+ * „Ripulisci i campi“ не излиза на листа (`pulizia`). Картата — от scripts/moduli/geat.mjs (собственикът,
+ * 12 ноември 2026).
+ */
+export const GEAT: ModuloAcro = load(
+  'geat-modulo-quadro.json',
+  moduloSchema(acroField, 'acroform'),
+);
+
 const bytes = new Map<string, Uint8Array>();
 
 /** Празният официален PDF — проверен по SHA-256 (при старт, после от паметта). */
@@ -149,6 +159,7 @@ export function assertModuli(): void {
     AMI_RTBS,
     DMG_PITAGORA,
     DMG_FIXTURES,
+    GEAT,
   ])
     moduloPdf(modulo);
 }

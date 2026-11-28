@@ -195,7 +195,7 @@ const mineList = () => ({ data: { sparks: 100, activeId: "own_0", companions: [{
 const ix = (sub, opts = {}) => ({
   guildId: GID, user: { id: ME }, locale: "en",
   deferReply: vi.fn(), editReply: vi.fn(), reply: vi.fn(), deleteReply: vi.fn(async () => {}), followUp: vi.fn(),
-  options: { getSubcommand: () => sub, getInteger: (k) => opts[k] ?? null, getString: (k) => opts[k] ?? null, getUser: () => opts.user ?? null },
+  options: { getSubcommand: () => sub, getInteger: (k) => opts[k] ?? null, getString: (k) => opts[k] ?? null, getUser: () => opts.user ?? null, getMember: () => (opts.user && !opts.left ? { id: opts.user.id } : null) },
 });
 
 const battle = () => ({

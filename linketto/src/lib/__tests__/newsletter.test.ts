@@ -73,3 +73,22 @@ test('buildSubscribersCsv: неутрализира формула-водещи 
   assert.ok(lines[1].startsWith(`"'=HYPERLINK(`));
   assert.ok(lines[2].startsWith(`'+summon@x.co`));
 });
+
+test('писмото за потвърждение: темата е без името на профила (текст от нападателя)', async () => {
+  // Разбивача т. 5: „Акаунтът ви е блокиран — посетете …“ като име на профил не бива да е в темата.
+  const { subscribeConfirmSubject } = await import('../email');
+  for (const locale of ['bg', 'en', 'it', 'es', 'de', 'fr', 'fi']) {
+    const subject = subscribeConfirmSubject('Акаунтът ви е блокиран — посетете evil.example', locale);
+    assert.ok(!subject.includes('evil.example'), `${locale}: ${subject}`);
+    assert.ok(subject.includes('Linketto'), `${locale}: ${subject}`);
+  }
+});
+
+test('рассылка: най-много 1 на 24 часа на профил', async () => {
+  const { broadcastAllowed, BROADCAST_COOLDOWN_MS } = await import('../newsletter');
+  const now = Date.UTC(2026, 10, 21, 12);
+  assert.equal(broadcastAllowed(null, now), true);
+  assert.equal(broadcastAllowed(new Date(now - BROADCAST_COOLDOWN_MS + 60_000), now), false);
+  assert.equal(broadcastAllowed(new Date(now - BROADCAST_COOLDOWN_MS - 1), now), true);
+  assert.equal(BROADCAST_COOLDOWN_MS, 24 * 60 * 60_000);
+});

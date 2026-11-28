@@ -55,8 +55,11 @@ export async function listSchede(options: {
   query?: string;
   page?: unknown;
   trash?: boolean;
+  /** Колко на страница — списъкът 25, износът в CSV и API-то повече (до 5000). */
+  pageSize?: number;
 }): Promise<SchedaPage> {
   const page = pageOf(options.page);
+  const size = Math.min(5000, Math.max(1, options.pageSize ?? PAGE_SIZE));
   const tokens = queryTokens(options.query ?? '');
   const scoped = schedaScope(options.scope, options.azienda);
 
@@ -73,11 +76,11 @@ export async function listSchede(options: {
         orderBy: options.trash
           ? [{ deletedAt: 'desc' }]
           : [{ data: 'desc' }, { createdAt: 'desc' }],
-        skip: (page - 1) * PAGE_SIZE,
-        take: PAGE_SIZE,
+        skip: (page - 1) * size,
+        take: size,
       }),
     ]);
-    return { rows, total, page, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)), tokens };
+    return { rows, total, page, pages: Math.max(1, Math.ceil(total / size)), tokens };
   }
 
   const exact = (options.query ?? '').trim().slice(0, 100);
@@ -101,7 +104,7 @@ export async function listSchede(options: {
           ELSE 2
         END,
         "data" DESC, "createdAt" DESC
-      LIMIT ${PAGE_SIZE} OFFSET ${(page - 1) * PAGE_SIZE}`,
+      LIMIT ${size} OFFSET ${(page - 1) * size}`,
   ]);
   const total = counted[0]?.n ?? 0;
   const ids = found.map((row) => row.id);
@@ -112,5 +115,5 @@ export async function listSchede(options: {
   });
   const order = new Map(ids.map((id, i) => [id, i]));
   rows.sort((a, b) => order.get(a.id)! - order.get(b.id)!);
-  return { rows, total, page, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)), tokens };
+  return { rows, total, page, pages: Math.max(1, Math.ceil(total / size)), tokens };
 }

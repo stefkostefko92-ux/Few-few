@@ -44,7 +44,10 @@ describe("чл. 15 и чл. 17 от таблото покриват всеки �
   it("експортът и изтриването от таблото минават през общия модул на играта", () => {
     expect(gdpr).toMatch(/gameDataFor\(userId\)/);
     expect(gdpr).toMatch(/server_season_game:\s*game/);
-    expect(gdpr).toMatch(/gameEraseSteps\(tx, userId\)/);
+    // А7: изтриването от таблото е eraseDiscordUser (lib/dsr.js), което ползва
+    // същите стъпки на играта.
+    expect(gdpr).toMatch(/eraseDiscordUser\(userId/);
+    expect(readFileSync(join(SRC, "lib", "dsr.js"), "utf8")).toMatch(/gameEraseSteps\(tx, uid\)/);
   });
 
   it("всеки модел на играта с субект има стъпка за изтриване", () => {

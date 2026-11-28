@@ -20,7 +20,7 @@ export default {
     frameTitle: 'Vista 3D delle staffe Panev',
     posterAlt: 'Render 3D del supporto SU 220 160 montato con la staffa guida SG 80 150 e la guida',
     points: [
-      '48 articoli del catalogo 2026',
+      '48 articoli del catalogo 2027',
       'Versioni DX e SX',
       'Montaggio con bulloni M10 e regolazione',
       'Foto HD da scaricare',
@@ -117,7 +117,7 @@ export default {
       },
       {
         title: 'Ricevi la conferma',
-        body: 'Ti rispondiamo con disponibilità, totale e tempi di consegna: standard 2 – 5 giorni lavorativi, express 24 – 48 ore su richiesta.',
+        body: 'Ti rispondiamo con disponibilità, totale e tempi di consegna: standard circa 2 – 3 settimane lavorative, express 1 settimana su richiesta.',
       },
     ],
     freeShipping: 'Spedizione gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa).',
@@ -134,11 +134,11 @@ export default {
       },
       {
         q: 'I prezzi includono l’IVA?',
-        a: 'No: tutti i prezzi a listino sono in euro, IVA esclusa, riferiti a unità singole (listino 2026). La vendita è riservata a operatori professionali (B2B) con partita IVA; fattura elettronica via SdI.',
+        a: 'No: tutti i prezzi a listino sono in euro, IVA esclusa, riferiti a unità singole (listino 2027). La vendita è riservata a operatori professionali (B2B) con partita IVA; fattura elettronica via SdI.',
       },
       {
         q: 'Quanto costa la spedizione e in quanto tempo arriva?',
-        a: 'La spedizione è gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese sono indicate nella conferma d’ordine. Consegna standard 2 – 5 giorni lavorativi, express 24 – 48 ore su richiesta.',
+        a: 'La spedizione è gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese sono indicate nella conferma d’ordine. Consegna standard in circa 2 – 3 settimane lavorative, express in 1 settimana su richiesta.',
       },
       {
         q: 'Che cosa significano DX e SX?',

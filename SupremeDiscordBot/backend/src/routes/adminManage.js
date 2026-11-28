@@ -13,7 +13,7 @@
 // това, което го няма никъде другаде.
 import { Router } from "express";
 import axios from "axios";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { writeAudit } from "../lib/auditLog.js";
 import { requireAuth, loadUser, requireSuperUser, requireMainOwner } from "../middleware/auth.js";

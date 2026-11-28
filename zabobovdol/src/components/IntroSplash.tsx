@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { SITE } from "@/lib/site";
+import { visitNumber, formatVisitNumber } from "@/lib/visit-client";
 
-// Начален екран при влизане в сайта: герб + силен надпис, стои няколко
+// Начален екран при влизане в сайта: знакът „БД“ + силен надпис, стои няколко
 // секунди и изчезва плавно. Показва се при всяко зареждане на сайта (не и в
 // административната част). Има бутон „Прескочи“ за удобство.
 export function IntroSplash() {
@@ -23,37 +24,17 @@ export function IntroSplash() {
   // лента — за хора с вестибуларна чувствителност и за да не бави достъпа.
   const seconds = reduce ? 1.5 : SITE.intro.seconds;
 
-  // Истински брояч на посетителите: всеки браузър получава пореден номер
-  // веднъж и го запомня, за да не надува брояча при всяко зареждане.
+  // Брояч на посетителите: увеличава се при ВСЯКО зареждане на сайта. Самата
+  // заявка е една на пълно зареждане (виж visit-client.ts) — същият номер
+  // показва и футърът, а вътрешните навигации не броят пак.
   useEffect(() => {
     if (isAdmin) return;
-    const KEY = "zbd_visitor_no";
-    let stored: string | null = null;
-    try {
-      stored = localStorage.getItem(KEY);
-    } catch {
-      /* localStorage недостъпен */
-    }
-    if (stored && Number(stored) > 0) {
-      setVisitorNo(Number(stored));
-      return;
-    }
-    let cancelled = false;
-    fetch("/api/visit", { method: "POST" })
-      .then((r) => r.json())
-      .then((d) => {
-        if (cancelled || !d?.ok || typeof d.n !== "number") return;
-        setVisitorNo(d.n);
-        try {
-          localStorage.setItem(KEY, String(d.n));
-        } catch {
-          /* пренебрегваме */
-        }
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+    // Флаг „отказано“ при cleanup тук НЕ бива да има: в разработка StrictMode
+    // вика cleanup веднага след първото изпълнение и номерът никога не би се
+    // показал. setState след демонтиране е безвреден в React 18+.
+    visitNumber().then((n) => {
+      if (n !== null) setVisitorNo(n);
+    });
   }, [isAdmin]);
 
   useEffect(() => {
@@ -120,33 +101,36 @@ export function IntroSplash() {
       aria-modal="true"
       aria-label="Добре дошли"
       className={
-        "no-print fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-b from-brand-800 to-brand-900 px-6 text-center text-white transition-opacity duration-500 " +
+        "on-dark no-print fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-b from-brand-800 to-brand-900 px-6 text-center text-white transition-opacity duration-500 " +
         (leaving ? "pointer-events-none opacity-0" : "opacity-100")
       }
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/brand/bobov-dol-grb.png"
-        alt="Герб на Бобов дол"
-        width={150}
-        height={216}
-        className="splash-crest h-36 w-auto rounded-2xl bg-white p-3 shadow-2xl sm:h-44"
+        src="/brand/za-bobov-dol-mark.png"
+        alt="За Бобов дол"
+        width={160}
+        height={160}
+        className="splash-crest h-32 w-auto drop-shadow-xl sm:h-40"
       />
       {/* Не е <h1> нарочно: това е временен надпис, а истинският <h1> е на
           страницата отдолу — иначе на началната страница биха станали два. */}
-      <p className="splash-text mt-7 max-w-2xl text-4xl font-extrabold leading-tight sm:text-5xl">
+      <p className="splash-text mt-7 max-w-2xl text-balance font-display text-4xl font-bold leading-tight sm:text-5xl">
         {SITE.intro.headline}
       </p>
-      <p className="splash-text mt-3 text-base text-brand-100">
-        {SITE.name} · {SITE.geo.city}
+      <div aria-hidden className="splash-text mt-4 h-1 w-14 rounded-full bg-gold-400" />
+      <p className="splash-text mt-4 text-lg text-brand-100">
+        {SITE.tagline} · {SITE.geo.city}
       </p>
 
-      {/* Истински брояч на посетителите */}
+      {/* Брояч на посещенията. Брои ВСЯКО зареждане (и презарежданията),
+          затова надписът е „посещение“, не „посетител“ — иначе числото
+          изглежда като брой хора, какъвто не е. */}
       {visitorNo !== null && (
         <p className="splash-text mt-6 text-lg text-brand-50">
-          Вие сте посетител номер{" "}
+          Посещение номер{" "}
           <span className="font-extrabold text-gold-300">
-            {new Intl.NumberFormat("bg-BG").format(visitorNo)}
+            {formatVisitNumber(visitorNo)}
           </span>
         </p>
       )}
@@ -168,9 +152,10 @@ export function IntroSplash() {
         ref={skipRef}
         type="button"
         onClick={skip}
-        className="mt-6 inline-flex min-h-[44px] items-center rounded-full border-2 border-white/60 px-6 py-2.5 text-base font-semibold text-white transition hover:bg-white/15"
+        className="mt-6 inline-flex min-h-tap items-center gap-2 rounded-xl border-2 border-white/60 px-6 py-2.5 text-base font-semibold text-white transition-colors hover:bg-white/15"
       >
-        Прескочи →
+        Продължете към сайта
+        <span aria-hidden="true">→</span>
       </button>
     </div>
   );

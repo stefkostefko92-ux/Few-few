@@ -49,7 +49,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 444
+        "lessons": 528
       },
       "evolution": [
         {
@@ -617,17 +617,83 @@
           "detail": "Научи: TDM изключението не спасява достъп в нарушение на условията на платформа — Дир. 2019/79… (+57 още)"
         },
         {
-          "version": "39.7.0",
-          "date": "2026-11-12",
-          "event": "v39.7 — учене",
-          "detail": "Научи: При смяна на платежния канал (Stripe→Discord MoR) провери дали НОВИЯТ revoke път записв… (+12 още)"
+          "version": "43.7.0",
+          "date": "2026-11-23",
+          "event": "v43.7 — учене",
+          "detail": "Научи: Неперсонализираните реклами на AdSense (requestNonPersonalizedAds=1) пак ползват бискви… (+52 още)"
+        },
+        {
+          "version": "43.9.0",
+          "date": "2026-11-23",
+          "event": "v43.9 — учене",
+          "detail": "Научи: Зелен CI тест за съответствие със схема не доказва рекламно твърдение „проверяваме срещ… (+1 още)"
+        },
+        {
+          "version": "44.2.0",
+          "date": "2026-11-23",
+          "event": "v44.2 — учене",
+          "detail": "Научи: openai/plugins няма LICENSE в корена и README без лиценз; game-studio обявява MIT само … (+2 още)"
+        },
+        {
+          "version": "44.5.0",
+          "date": "2026-11-23",
+          "event": "v44.5 — учене",
+          "detail": "Научи: Remotion License FAQ брои за прага на безплатния лиценз общия брой хора — фрийлансърите… (+2 още)"
+        },
+        {
+          "version": "44.6.0",
+          "date": "2026-11-23",
+          "event": "v44.6 — учене",
+          "detail": "Научи: Чл. 27(1) ОРЗД задължава администратора или обработващия да определи писмено представит…"
+        },
+        {
+          "version": "46.4.0",
+          "date": "2026-11-24",
+          "event": "v46.4 — учене",
+          "detail": "Научи: AI Act чл. 50(4) задължава внедрителя да разкрие само deep fake (чл. 3(60) — наподобява… (+17 още)"
+        },
+        {
+          "version": "48.1.0",
+          "date": "2026-11-27",
+          "event": "v48.1 — учене",
+          "detail": "Научи: Когато приложение преизползва записано съдържание като образци за AI промпт (отделна та… (+16 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „При смяна на платежния канал (Stripe→Discord MoR) провери дали НОВИЯТ revoke път записв…\" (+12 още) · 1 в карантина"
+          "summary": "Научи: „Когато приложение преизползва записано съдържание като образци за AI промпт (отделна та…\" (+16 още) · 6 в карантина"
+        },
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „AI Act чл. 50(4) задължава внедрителя да разкрие само deep fake (чл. 3(60) — наподобява…\" (+17 още) · 4 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Чл. 27(1) ОРЗД задължава администратора или обработващия да определи писмено представит…\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Remotion License FAQ брои за прага на безплатния лиценз общия брой хора — фрийлансърите…\" (+2 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „openai/plugins няма LICENSE в корена и README без лиценз; game-studio обявява MIT само …\" (+2 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Зелен CI тест за съответствие със схема не доказва рекламно твърдение „проверяваме срещ…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Неперсонализираните реклами на AdSense (requestNonPersonalizedAds=1) пак ползват бискви…\" (+52 още) · 17 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -1201,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 640
+        "lessons": 815
       },
       "evolution": [
         {
@@ -2033,61 +2099,87 @@
           "detail": "Научи: sharp 0.35 с limitInputPixels не пази паметта при прогресивен JPEG (208 Mpx, 4:4:4, фай… (+1 още)"
         },
         {
-          "version": "57.4.0",
-          "date": "2026-11-12",
-          "event": "v57.4 — учене",
-          "detail": "Научи: В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport… (+13 още)"
+          "version": "67.5.0",
+          "date": "2026-11-23",
+          "event": "v67.5 — учене",
+          "detail": "Научи: PyMuPDF doc.xref_set_key(cat, \"Lang\", \"(it-IT)\") се чете обратно с xref_get_key като ('… (+114 още)"
         },
         {
-          "version": "57.5.0",
-          "date": "2026-11-12",
-          "event": "v57.5 — учене",
-          "detail": "Научи: AES-GCM шифрован \"draft\" за TOTP тайна, върнат от клиента без AAD с userId, е преносим …"
+          "version": "67.6.0",
+          "date": "2026-11-23",
+          "event": "v67.6 — учене",
+          "detail": "Научи: .pr-review/458.diff е отрязан на 350000 знака при agents-dashboard/docs.js (37 от 49 фа…"
         },
         {
-          "version": "57.7.0",
-          "date": "2026-11-13",
-          "event": "v57.7 — учене",
-          "detail": "Научи: discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член … (+1 още)"
+          "version": "67.7.0",
+          "date": "2026-11-23",
+          "event": "v67.7 — учене",
+          "detail": "Научи: spawnSync със stdio pipe и maxBuffer по подразбиране (1 MiB) при препълване връща error…"
         },
         {
-          "version": "57.9.0",
-          "date": "2026-11-13",
-          "event": "v57.9 — учене",
-          "detail": "Научи: nodemailer 10.x без requireTLS пуска STARTTLS само ако сървърът го обяви в EHLO; ако на… (+1 още)"
+          "version": "67.8.0",
+          "date": "2026-11-23",
+          "event": "v67.8 — учене",
+          "detail": "Научи: spawnSync със stdio pipe и maxBuffer по подразбиране 1 MiB при препълване връща error.c…"
         },
         {
-          "version": "58.0.0",
-          "date": "2026-11-13",
-          "event": "v58.0 — учене",
-          "detail": "Научи: Кеш в паметта, който записва резултата от await-нато четене от базата без брояч на верс…"
+          "version": "68.6.0",
+          "date": "2026-11-24",
+          "event": "v68.6 — учене",
+          "detail": "Научи: guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет… (+7 още)"
+        },
+        {
+          "version": "76.9.0",
+          "date": "2026-11-27",
+          "event": "v76.9 — учене",
+          "detail": "Научи: В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват, затова п… (+82 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-13",
-          "type": "learning",
-          "summary": "Научи: „Кеш в паметта, който записва резултата от await-нато четене от базата без брояч на верс…\""
+          "date": "2026-11-28",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „В JavaScript toLowerCase() може да промени дължината на низа (U+0130 става 0069 0307), …\" (+1)"
         },
         {
-          "date": "2026-11-13",
-          "type": "learning",
-          "summary": "Научи: „nodemailer 10.x без requireTLS пуска STARTTLS само ако сървърът го обяви в EHLO; ако на…\" (+1 още)"
+          "date": "2026-11-28",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „curl --proto-redir =https ограничава само схемата на пренасочването, не хоста; при -L п…\""
         },
         {
-          "date": "2026-11-13",
+          "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „discord.js 14.26.4 с Partials.GuildMember емитва guildMemberUpdate и за некеширан член …\" (+1 още)"
+          "summary": "Научи: „В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват, затова п…\" (+82 още) · 18 в карантина"
         },
         {
-          "date": "2026-11-12",
+          "date": "2026-11-24",
           "type": "learning",
-          "summary": "Научи: „AES-GCM шифрован \"draft\" за TOTP тайна, върнат от клиента без AAD с userId, е преносим …\""
+          "summary": "Научи: „guard-self блокира Bash `node -e`, чийто код внася модул под .claude/ (дори само за чет…\" (+7 още) · 2 в карантина"
         },
         {
-          "date": "2026-11-12",
+          "date": "2026-11-23",
           "type": "learning",
-          "summary": "Научи: „В SupremeDiscordBot revokeServer за Discord entitlement не пише accessUntil, а inExport…\" (+13 още) · 1 в карантина"
+          "summary": "Научи: „spawnSync със stdio pipe и maxBuffer по подразбиране 1 MiB при препълване връща error.c…\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „spawnSync със stdio pipe и maxBuffer по подразбиране (1 MiB) при препълване връща error…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „.pr-review/458.diff е отрязан на 350000 знака при agents-dashboard/docs.js (37 от 49 фа…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Pillow Image.open разпознава формата по съдържание, не по разширение, а EpsImagePlugin …\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „PyMuPDF doc.xref_set_key(cat, \"Lang\", \"(it-IT)\") се чете обратно с xref_get_key като ('…\" (+114 още) · 16 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -2883,7 +2975,8 @@
         "Read",
         "Grep",
         "Glob",
-        "Bash"
+        "Bash",
+        "Skill"
       ],
       "mission": "Вдига качеството на кода (поддръжаемост, четимост, простота) без да сменя поведението: дублиране/DRY-граници, цикломатична и когнитивна сложност, единствена отговорност и размер, connascence/coupling, мъртъв код, форма на грешките, качество на тестовете (поведение, не coverage театър) и техническия дълг.",
       "capabilities": [
@@ -2908,7 +3001,7 @@
           "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
           "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
         ],
-        "lessons": 128
+        "lessons": 147
       },
       "evolution": [
         {
@@ -2970,9 +3063,42 @@
           "date": "2026-11-04",
           "event": "v21.4 — учене",
           "detail": "Научи: В rilievi PDF генераторите на pdfkit (schede, argano, interventi, cartelli) повтарят A4… (+1 още)"
+        },
+        {
+          "version": "22.9.0",
+          "date": "2026-11-23",
+          "event": "v22.9 — учене",
+          "detail": "Научи: В linketto ESLint 9 мери сложност и влагане без промяна на конфига с --rule '{\"complexi… (+14 още)"
+        },
+        {
+          "version": "23.1.0",
+          "date": "2026-11-23",
+          "event": "v23.1 — учене",
+          "detail": "Научи: grep -i не сгъва регистъра на кирилица в shell-а на агентите (C locale), затова търсене… (+1 още)"
+        },
+        {
+          "version": "23.3.0",
+          "date": "2026-11-27",
+          "event": "v23.3 — учене",
+          "detail": "Научи: В fakturist функциите за адрес за връщане след вход/приемане са три с различни правила,… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „В fakturist функциите за адрес за връщане след вход/приемане са три с различни правила,…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „grep -i не сгъва регистъра на кирилица в shell-а на агентите (C locale), затова търсене…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „В linketto ESLint 9 мери сложност и влагане без промяна на конфига с --rule '{\"complexi…\" (+14 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -3496,6 +3622,11 @@
       ],
       "activity": [
         {
+          "date": "2026-11-27",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „PR с папка „FiveM/“ и промени само по email/deploy е уеб приложение; проверката за *.lu…\""
+        },
+        {
           "date": "2026-11-04",
           "type": "learning",
           "summary": "Научи: „Creator PLA от 10.09.2026 не съдържа контактен имейл или форма за искане на писмено раз…\" (+11 още) · 2 в карантина"
@@ -3904,7 +4035,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 241
+        "lessons": 266
       },
       "evolution": [
         {
@@ -4352,17 +4483,39 @@
           "detail": "Научи: zabobovdol layout.tsx задава alternates.canonical=SITE.url за всички страници; page.tsx… (+22 още)"
         },
         {
-          "version": "23.1.0",
-          "date": "2026-11-12",
-          "event": "v23.1 — учене",
-          "detail": "Научи: В panev SEO повърхността идва от head()/jsonLd() в site/templates/layout.mjs; допълните…"
+          "version": "24.2.0",
+          "date": "2026-11-23",
+          "event": "v24.2 — учене",
+          "detail": "Научи: В cs-revolution страниците на направленията се генерират от scripts/generate-solutions.… (+11 още)"
+        },
+        {
+          "version": "25.0.0",
+          "date": "2026-11-24",
+          "event": "v25.0 — учене",
+          "detail": "Научи: Search Quality Rater Guidelines (версия 11.09.2025) казват, че Trust е най-важният елем… (+7 още)"
+        },
+        {
+          "version": "26.0.0",
+          "date": "2026-11-27",
+          "event": "v26.0 — учене",
+          "detail": "Научи: Click-to-load фасада без плейър в HTML-а е описаната от Google причина „Cannot determin… (+9 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „В panev SEO повърхността идва от head()/jsonLd() в site/templates/layout.mjs; допълните…\" · 2 в карантина"
+          "summary": "Научи: „Click-to-load фасада без плейър в HTML-а е описаната от Google причина „Cannot determin…\" (+9 още)"
+        },
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Search Quality Rater Guidelines (версия 11.09.2025) казват, че Trust е най-важният елем…\" (+7 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „В cs-revolution страниците на направленията се генерират от scripts/generate-solutions.…\" (+11 още) · 4 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -4848,7 +5001,7 @@
           "PageSpeed Insights = Lighthouse (лаб) + CrUX (поле) — полето НЕ съществува преди пускане",
           "Наследява CWV работата на SEO (tools/seo/cwv.mjs)"
         ],
-        "lessons": 146
+        "lessons": 152
       },
       "evolution": [
         {
@@ -4966,17 +5119,28 @@
           "detail": "Научи: Когато Bash откаже prelaunch-audit за одобрение, не оценявай на око; дай статичен прегл… (+1 още)"
         },
         {
-          "version": "20.7.0",
-          "date": "2026-11-12",
-          "event": "v20.7 — учене",
-          "detail": "Научи: panev/ няма node_modules и server.js не тръгва без dotenv/express; за одит копирай прод… (+2 още)"
+          "version": "21.1.0",
+          "date": "2026-11-23",
+          "event": "v21.1 — учене",
+          "detail": "Научи: prelaunch-audit дава фалшив съвет за render-blocking на Next.js polyfills-*.js, защото … (+6 още)"
+        },
+        {
+          "version": "21.3.0",
+          "date": "2026-11-27",
+          "event": "v21.3 — учене",
+          "detail": "Научи: Фактурист регистрацията е на /registraciya (не /registratsiya, което е 404) и е 404-под… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „panev/ няма node_modules и server.js не тръгва без dotenv/express; за одит копирай прод…\" (+2 още)"
+          "summary": "Научи: „Фактурист регистрацията е на /registraciya (не /registratsiya, което е 404) и е 404-под…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „prelaunch-audit дава фалшив съвет за render-blocking на Next.js polyfills-*.js, защото …\" (+6 още) · 4 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -5058,6 +5222,7 @@
         "Edit",
         "Grep",
         "Glob",
+        "Bash",
         "WebFetch",
         "WebSearch"
       ],
@@ -5083,7 +5248,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 253
+        "lessons": 312
       },
       "evolution": [
         {
@@ -5589,9 +5754,64 @@
           "date": "2026-11-04",
           "event": "v28.0 — учене",
           "detail": "Научи: В linketto идентификацията на дружеството живее само в messages/*.json (legal.privacyBo… (+34 още)"
+        },
+        {
+          "version": "33.0.0",
+          "date": "2026-11-23",
+          "event": "v33.0 — учене",
+          "detail": "Научи: Korpora нарича разкроя в IT „distinta di taglio“ и в EN „cut list“ (не „piano di taglio… (+49 още)"
+        },
+        {
+          "version": "33.1.0",
+          "date": "2026-11-23",
+          "event": "v33.1 — учене",
+          "detail": "Научи: В Supreme Bot всяка сума в € в FAQ на лендинга трябва да е цена на най-близкото спомена…"
+        },
+        {
+          "version": "33.2.0",
+          "date": "2026-11-24",
+          "event": "v33.2 — учене",
+          "detail": "Научи: Във видеото на panev заглавията на стъпките са безлични съществителни („Serraggio dei t…"
+        },
+        {
+          "version": "33.4.0",
+          "date": "2026-11-24",
+          "event": "v33.4 — учене",
+          "detail": "Научи: Във видеото на panev пренасянето на текста цепи само на обикновени интервали, затова дв… (+1 още)"
+        },
+        {
+          "version": "34.0.0",
+          "date": "2026-11-27",
+          "event": "v34.0 — учене",
+          "detail": "Научи: В panev BG сайтът казва „пластина A“ (не „плоча“), „армировка“, „блокиращ елемент“ за b… (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „В panev BG сайтът казва „пластина A“ (не „плоча“), „армировка“, „блокиращ елемент“ за b…\" (+5 още) · 2 в карантина"
+        },
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Във видеото на panev пренасянето на текста цепи само на обикновени интервали, затова дв…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Във видеото на panev заглавията на стъпките са безлични съществителни („Serraggio dei t…\" · 2 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „В Supreme Bot всяка сума в € в FAQ на лендинга трябва да е цена на най-близкото спомена…\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Korpora нарича разкроя в IT „distinta di taglio“ и в EN „cut list“ (не „piano di taglio…\" (+49 още) · 4 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -6109,7 +6329,7 @@
           "съседни seed-*.ts — стил, тон и коментари за източник",
           "schema.prisma + package.json db:seed:* вериги"
         ],
-        "lessons": 170
+        "lessons": 169
       },
       "evolution": [
         {
@@ -6842,7 +7062,7 @@
         "Grep",
         "Glob"
       ],
-      "mission": "Отговаря за сървъра под наем (Hetzner/ЕС, Ubuntu) и разгръщането: владее автоматизирания деплой от ръчно качен GitHub архив в /root до жив сървър (deploy/autodeploy.sh), Docker Compose / systemd, Nginx/Caddy, TLS, бекъпи, втвърдяване и диагностика.",
+      "mission": "Отговаря за сървъра под наем (netcup/ЕС, Ubuntu) и разгръщането: владее автоматизирания деплой от ръчно качен GitHub архив в /root до жив сървър (deploy/autodeploy.sh), Docker Compose / systemd, Nginx/Caddy, TLS, бекъпи, втвърдяване и диагностика.",
       "capabilities": [
         "Автодеплой: архив в /root → разопаковане → билд → миграции → live",
         "zabobovdol (Docker Compose + Nginx + Let's Encrypt)",
@@ -6864,7 +7084,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 277
+        "lessons": 320
       },
       "evolution": [
         {
@@ -7276,17 +7496,28 @@
           "detail": "Научи: www.openssh.com/releasenotes.html отговаря с 301 от OpenBSD httpd, затова curl без -L в… (+37 още)"
         },
         {
-          "version": "24.7.0",
-          "date": "2026-11-12",
-          "event": "v24.7 — учене",
-          "detail": "Научи: Docker тагът на OpenSEO standalone v0.1.25 сочи към друг digest от sha-78c5d85 (по-нов … (+1 още)"
+          "version": "27.3.0",
+          "date": "2026-11-23",
+          "event": "v27.3 — учене",
+          "detail": "Научи: GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на … (+27 още)"
+        },
+        {
+          "version": "29.4.0",
+          "date": "2026-11-27",
+          "event": "v29.4 — учене",
+          "detail": "Научи: Към f6ea9c639 migrate-backup.sh отказва да трие DUMP_TO/.new/.old без маркер .migrate-b… (+20 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „Docker тагът на OpenSEO standalone v0.1.25 сочи към друг digest от sha-78c5d85 (по-нов …\" (+1 още)"
+          "summary": "Научи: „Към f6ea9c639 migrate-backup.sh отказва да трие DUMP_TO/.new/.old без маркер .migrate-b…\" (+20 още) · 8 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „GNU sed -i без --follow-symlinks подменя симлинка с обикновен файл, затова редакция на …\" (+27 още) · 7 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -8564,7 +8795,7 @@
           "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
           "Caveman стил — телеграфен изход с точни технически токени"
         ],
-        "lessons": 167
+        "lessons": 169
       },
       "evolution": [
         {
@@ -8947,14 +9178,36 @@
         },
         {
           "version": "21.2.0",
-          "date": "2026-11-12",
+          "date": "2026-11-23",
           "event": "v21.2 — учене",
           "detail": "Научи: YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през … (+1 още)"
+        },
+        {
+          "version": "21.3.0",
+          "date": "2026-11-24",
+          "event": "v21.3 — учене",
+          "detail": "Научи: YouTube глави: първа на 00:00, поне 3 в нарастващ ред, минимум 10 s всяка; заглавие до …"
+        },
+        {
+          "version": "21.4.0",
+          "date": "2026-11-27",
+          "event": "v21.4 — учене",
+          "detail": "Научи: Тест, който изисква литерален шаблон („[ЗА ПОПЪЛВАНЕ…]“) в публична страница, пази проп…"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „Тест, който изисква литерален шаблон („[ЗА ПОПЪЛВАНЕ…]“) в публична страница, пази проп…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „YouTube глави: първа на 00:00, поне 3 в нарастващ ред, минимум 10 s всяка; заглавие до …\" · 1 в карантина"
+        },
+        {
+          "date": "2026-11-23",
           "type": "learning",
           "summary": "Научи: „YouTube закачането на коментар иска включени advanced features (до 24 ч), води се през …\" (+1 още)"
         },
@@ -9357,7 +9610,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 272
+        "lessons": 330
       },
       "evolution": [
         {
@@ -9713,9 +9966,42 @@
           "date": "2026-11-04",
           "event": "v25.6 — учене",
           "detail": "Научи: Адаптер към Prisma/Stripe, който се тества под tsx, не импортира server-only, а получав… (+46 още)"
+        },
+        {
+          "version": "31.0.0",
+          "date": "2026-11-23",
+          "event": "v31.0 — учене",
+          "detail": "Научи: В Revolut Merchant API 2026-08-17 схемата Order-v7 (отговорът на GET /api/orders/{id} и… (+53 още)"
+        },
+        {
+          "version": "31.1.0",
+          "date": "2026-11-23",
+          "event": "v31.1 — учене",
+          "detail": "Научи: Stripe Invoice.total е след отстъпки и данъци, а total_excluding_tax е без никакъв данъ…"
+        },
+        {
+          "version": "31.6.0",
+          "date": "2026-11-27",
+          "event": "v31.6 — учене",
+          "detail": "Научи: PR #335 (claude/security-deps-korpora) в korpora вдига zod 3 на 4 с импорти от zod/v3 и… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „PR #335 (claude/security-deps-korpora) в korpora вдига zod 3 на 4 с импорти от zod/v3 и…\" (+4 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Stripe Invoice.total е след отстъпки и данъци, а total_excluding_tax е без никакъв данъ…\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „В Revolut Merchant API 2026-08-17 схемата Order-v7 (отговорът на GET /api/orders/{id} и…\" (+53 още) · 6 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -10129,7 +10415,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 218
+        "lessons": 219
       },
       "evolution": [
         {
@@ -10457,17 +10743,17 @@
           "detail": "Научи: Репо стек: `medqr/mobile` е **Capacitor 6**, `appId: eu.carbonstealth.medqr`, `server.u… (+4 още)"
         },
         {
-          "version": "20.9.0",
-          "date": "2026-11-12",
-          "event": "v20.9 — учене",
-          "detail": "Научи: Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…"
+          "version": "21.0.0",
+          "date": "2026-11-23",
+          "event": "v21.0 — учене",
+          "detail": "Научи: Safari/iOS задава PointerEvent width/height на touch като 2*radiusX и 2*radiusY (не 1×)… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-23",
           "type": "learning",
-          "summary": "Научи: „Във WebKit bug 290847 линк с Content-Disposition attachment (и inline PDF) в iOS home-s…\" · 1 в карантина"
+          "summary": "Научи: „Safari/iOS задава PointerEvent width/height на touch като 2*radiusX и 2*radiusY (не 1×)…\" (+1 още) · 1 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -11465,16 +11751,17 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
-      "mission": "Създава brutal, weird, mindblowing уеб визуални ефекти на Awwwards ниво: WebGL/Three.js (+R3F/drei/postprocessing), WebGPU/TSL/WGSL, GLSL шейдъри (raymarching/SDF, noise, fresnel, displacement, post-fx), мощна анимация (GSAP+ScrollTrigger/SplitText/Flip, Motion, anime.js v4, WAAPI, View Transitions, CSS scroll-driven, Lenis), 2D/генеративно (Pixi v8, p5, canvas, SVG филтри, blend modes), физика (Rapier/Matter), Lottie/Rive. Уникална фантазия — но всичко е progressive enhancement: деградира зад prefers-reduced-motion, не чупи LCP/INP, не стробоскопи.",
+      "mission": "Създава brutal, weird, mindblowing уеб визуални ефекти на Awwwards ниво: WebGL/Three.js (+R3F/drei/postprocessing), WebGPU/TSL/WGSL, GLSL шейдъри (raymarching/SDF, noise, fresnel, displacement, post-fx), мощна анимация (GSAP+ScrollTrigger/SplitText/Flip, Motion, anime.js v4, WAAPI, View Transitions, CSS scroll-driven, Lenis), 2D/генеративно (Pixi v8, p5, canvas, blend modes; никога SVG), физика (Rapier/Matter), Lottie/Rive. Уникална фантазия — но всичко е progressive enhancement: деградира зад prefers-reduced-motion, не чупи LCP/INP, не стробоскопи.",
       "capabilities": [
         "WebGL/Three.js + react-three-fiber/drei/postprocessing",
         "WebGPU / TSL / WGSL (+ задължителен WebGL2 fallback)",
         "GLSL шейдъри: raymarching/SDF, noise, fresnel, displacement, post-fx",
         "Анимация: GSAP (безплатен) + ScrollTrigger/SplitText/Flip, Motion, anime.js v4, WAAPI",
         "Scroll магия: View Transitions, CSS scroll-driven, Lenis (изкл. под reduced-motion)",
-        "2D/генеративно: Pixi v8, p5, canvas, SVG филтри, blend modes, Houdini",
+        "2D/генеративно: Pixi v8, p5, canvas, blend modes, Houdini; никога SVG",
         "Физика Rapier/Matter; вектор Lottie/Rive",
         "Производителност: 60fps, GPU, OffscreenCanvas/worker, lazy-init, CWV (LCP/INP)",
         "Контекстно-зависим режим: reduced-motion дисциплина за сериозни сайтове; спектакъл за творчески; универсален анти-строб",
@@ -11490,7 +11777,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 240
+        "lessons": 269
       },
       "evolution": [
         {
@@ -11932,17 +12219,28 @@
           "detail": "Научи: Nexus Dominion desktop nav-profile overflow (дълго име+титла) — правилният фикс е таван… (+14 още)"
         },
         {
-          "version": "23.0.0",
-          "date": "2026-11-12",
-          "event": "v23.0 — учене",
-          "detail": "Научи: В panev/css/site.css `:focus-visible` е navy-3 (#24408c); върху тъмните секции (#162862… (+2 още)"
+          "version": "25.9.0",
+          "date": "2026-11-23",
+          "event": "v25.9 — учене",
+          "detail": "Научи: Flex хедър с лого и `Вход`/`Регистрация` без `flex-shrink:0` на логото и без `white-spa… (+31 още)"
+        },
+        {
+          "version": "26.1.0",
+          "date": "2026-11-27",
+          "event": "v26.1 — учене",
+          "detail": "Научи: Форма с `novalidate`, чието сървърно рендериране показва грешка само през `aria-invalid… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „В panev/css/site.css `:focus-visible` е navy-3 (#24408c); върху тъмните секции (#162862…\" (+2 още) · 1 в карантина"
+          "summary": "Научи: „Форма с `novalidate`, чието сървърно рендериране показва грешка само през `aria-invalid…\" (+1 още) · 3 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Flex хедър с лого и `Вход`/`Регистрация` без `flex-shrink:0` на логото и без `white-spa…\" (+31 още) · 20 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -12420,7 +12718,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 228
+        "lessons": 230
       },
       "evolution": [
         {
@@ -12800,9 +13098,31 @@
           "date": "2026-11-04",
           "event": "v21.3 — учене",
           "detail": "Научи: adblock/ tests/rules.test.mjs вече гейтва DNR static rule budget с два прага: базов 130… (+6 още)"
+        },
+        {
+          "version": "21.4.0",
+          "date": "2026-11-23",
+          "event": "v21.4 — учене",
+          "detail": "Научи: За регистрация с `matches:<all_urls>` и `excludeMatches`, шаблонът `*://*.a.com/*` изкл…"
+        },
+        {
+          "version": "21.5.0",
+          "date": "2026-11-27",
+          "event": "v21.5 — учене",
+          "detail": "Научи: PR #461 (adblock 6.1.1) не променя права/CSP/host_permissions (само версията в manifest…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „PR #461 (adblock 6.1.1) не променя права/CSP/host_permissions (само версията в manifest…\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „За регистрация с `matches:<all_urls>` и `excludeMatches`, шаблонът `*://*.a.com/*` изкл…\""
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -13203,7 +13523,7 @@
           "discord.py docs — алтернативен Python стек",
           "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
         ],
-        "lessons": 225
+        "lessons": 224
       },
       "evolution": [
         {
@@ -13537,21 +13857,21 @@
           "detail": "Научи: В SupremeDiscordBot ботът резолвира канала през guildChannel(serverId, channelId), зато… (+10 още)"
         },
         {
-          "version": "21.8.0",
-          "date": "2026-11-12",
-          "event": "v21.8 — учене",
-          "detail": "Научи: Audit log събитието MemberDisconnect (и MemberMove) не носи target потребител (само cou… (+6 още)"
-        },
-        {
           "version": "21.9.0",
-          "date": "2026-11-12",
+          "date": "2026-11-23",
           "event": "v21.9 — учене",
-          "detail": "Научи: Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…"
+          "detail": "Научи: Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn… (+7 още)"
         },
         {
           "version": "22.0.0",
-          "date": "2026-11-28",
+          "date": "2026-11-27",
           "event": "v22.0 — учене",
+          "detail": "Научи: PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименув…"
+        },
+        {
+          "version": "22.1.0",
+          "date": "2026-11-28",
+          "event": "v22.1 — учене",
           "detail": "Научи: Одит на покритието на таблото не бива да се чете само от frontend/src/api/index.js; час…"
         }
       ],
@@ -13562,24 +13882,14 @@
           "summary": "Научи: „Одит на покритието на таблото не бива да се чете само от frontend/src/api/index.js; час…\""
         },
         {
-          "date": "2026-11-12",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „prismaMock.updateMany връща undefined, ако не е мокнат; handler, който чете count от ус…\""
-        },
-        {
-          "date": "2026-11-12",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „prismaMock.updateMany връща undefined, ако не е мокнат; всеки handler, който чете count…\""
-        },
-        {
-          "date": "2026-11-12",
+          "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…\""
+          "summary": "Научи: „PR #346 (Hetzner → netcup) е чисто текстов; i18n ключът privacy.sub.hetzner е преименув…\" · 2 в карантина"
         },
         {
-          "date": "2026-11-12",
+          "date": "2026-11-23",
           "type": "learning",
-          "summary": "Научи: „Audit log събитието MemberDisconnect (и MemberMove) не носи target потребител (само cou…\" (+6 още) · 1 в карантина"
+          "summary": "Научи: „Prisma-мок тестове с vi.resetAllMocks нулират и mockResolvedValue на модулни мокове (dn…\" (+7 още) · 3 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -14271,7 +14581,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 313
+        "lessons": 402
       },
       "evolution": [
         {
@@ -14407,17 +14717,105 @@
           "detail": "Научи: Рутерът в teams.mjs брои ключовете на екипа като обединение от team.keys и ключовете на… (+1 още)"
         },
         {
-          "version": "30.7.0",
-          "date": "2026-11-12",
-          "event": "v30.7 — учене",
-          "detail": "Научи: Регулярен израз в кука, закотвен в началото на команда (след ^ ; & | ( $( и sudo), проп… (+10 още)"
+          "version": "34.9.0",
+          "date": "2026-11-23",
+          "event": "v34.9 — учене",
+          "detail": "Научи: Отказ при structured output (stop_reason refusal) идва с 200 и се таксува, а messages.p… (+52 още)"
+        },
+        {
+          "version": "35.1.0",
+          "date": "2026-11-23",
+          "event": "v35.1 — учене",
+          "detail": "Научи: Умения, предзаредени през полето skills във frontmatter на агента, и умения с disable-m… (+1 още)"
+        },
+        {
+          "version": "35.3.0",
+          "date": "2026-11-23",
+          "event": "v35.3 — учене",
+          "detail": "Научи: Remotion до 5.0 приема licenseKey доброволно за всички, а рендерът от сървър или команд… (+1 още)"
+        },
+        {
+          "version": "35.5.0",
+          "date": "2026-11-23",
+          "event": "v35.5 — учене",
+          "detail": "Научи: teams.mjs route при равенство вътре в избрания екип, когато водачът не е сред най-висок… (+1 още)"
+        },
+        {
+          "version": "35.9.0",
+          "date": "2026-11-24",
+          "event": "v35.9 — учене",
+          "detail": "Научи: Към 2026-11-24 в Latest models на Anthropic стоят Fable 5.2 (claude-fable-5-2, $8/$40, … (+3 още)"
+        },
+        {
+          "version": "38.8.0",
+          "date": "2026-11-27",
+          "event": "v38.8 — учене",
+          "detail": "Научи: Копието на дървото при pr-review съдържа само корена, tools/ и deploy/ без продуктовите… (+28 още)"
+        },
+        {
+          "version": "39.3.0",
+          "date": "2026-11-28",
+          "event": "v39.3 — учене",
+          "detail": "Научи: В Agent SDK без settingSources се зареждат user, project и local; с \"project\" идват .cl… (+4 още)"
+        },
+        {
+          "version": "39.4.0",
+          "date": "2026-11-28",
+          "event": "v39.4 — учене",
+          "detail": "Научи: guard-exfil пуска проверките за тайни (SECRET_ENV, SENSITIVE_READ_SUBST, ENV_DUMP) само…"
+        },
+        {
+          "version": "39.6.0",
+          "date": "2026-11-28",
+          "event": "v39.6 — учене",
+          "detail": "Научи: В Claude Code успешен Bash резултат над около 30 000 знака не идва в контекста, а като … (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-28",
           "type": "learning",
-          "summary": "Научи: „Регулярен израз в кука, закотвен в началото на команда (след ^ ; & | ( $( и sudo), проп…\" (+10 още) · 2 в карантина"
+          "summary": "Научи: „В Claude Code успешен Bash резултат над около 30 000 знака не идва в контекста, а като …\" (+1 още)"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „guard-exfil пуска проверките за тайни (SECRET_ENV, SENSITIVE_READ_SUBST, ENV_DUMP) само…\""
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „В Agent SDK без settingSources се зареждат user, project и local; с \"project\" идват .cl…\" (+4 още)"
+        },
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „Копието на дървото при pr-review съдържа само корена, tools/ и deploy/ без продуктовите…\" (+28 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Към 2026-11-24 в Latest models на Anthropic стоят Fable 5.2 (claude-fable-5-2, $8/$40, …\" (+3 още) · 2 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „teams.mjs route при равенство вътре в избрания екип, когато водачът не е сред най-висок…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Remotion до 5.0 приема licenseKey доброволно за всички, а рендерът от сървър или команд…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Умения, предзаредени през полето skills във frontmatter на агента, и умения с disable-m…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Отказ при structured output (stop_reason refusal) идва с 200 и се таксува, а messages.p…\" (+52 още) · 5 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -14573,7 +14971,7 @@
           "ЗДДС (ставки 20%/9%, чл. 114), ЗЗП (обозначаване на цени), GDPR (чл. 6), ЗСч (чл. 12), КТ (чл. 207)",
           "Код: CSPos/src/lib/{money,unp,auth,settings,promotions}.ts + src/lib/fiscal/* + src/lib/terminal/*"
         ],
-        "lessons": 188
+        "lessons": 193
       },
       "evolution": [
         {
@@ -14641,9 +15039,20 @@
           "date": "2026-11-04",
           "event": "v24.1 — учене",
           "detail": "Научи: Ciela „Свободна зона“ показва един и същ ред „Последна актуализация ДВ бр. 99/30.10.202… (+38 още)"
+        },
+        {
+          "version": "24.6.0",
+          "date": "2026-11-23",
+          "event": "v24.6 — учене",
+          "detail": "Научи: Декларацията на производителя на СУПТО е по образец Прил. № 30 (чл. 52в, ал. 1 Н-18), и… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Декларацията на производителя на СУПТО е по образец Прил. № 30 (чл. 52в, ал. 1 Н-18), и…\" (+4 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -14793,7 +15202,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 249
+        "lessons": 251
       },
       "evolution": [
         {
@@ -14912,14 +15321,25 @@
         },
         {
           "version": "23.3.0",
-          "date": "2026-11-12",
+          "date": "2026-11-23",
           "event": "v23.3 — учене",
           "detail": "Научи: Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига… (+4 още)"
+        },
+        {
+          "version": "23.5.0",
+          "date": "2026-11-24",
+          "event": "v23.5 — учене",
+          "detail": "Научи: Chrome Web Store премахна всички останали MV2 разширения на 31.08.2026 (времевата линия… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Chrome Web Store премахна всички останали MV2 разширения на 31.08.2026 (времевата линия…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-23",
           "type": "learning",
           "summary": "Научи: „Discord privileged intents — праг 10 000 уникални потребители (не сървъри); при достига…\" (+4 още) · 1 в карантина"
         },
@@ -15092,7 +15512,7 @@
           "Playwright CI docs; setup-node caching в монорепо; dorny/paths-filter; nektos/act",
           "Това репо: CLAUDE.md (path-filtered CI, security.yml hard-gate, deploy границата), deploy/README.md"
         ],
-        "lessons": 219
+        "lessons": 225
       },
       "evolution": [
         {
@@ -15160,9 +15580,31 @@
           "date": "2026-11-04",
           "event": "v21.5 — учене",
           "detail": "Научи: /repos/{o}/{r}/actions/permissions изисква admin auth дори на публично repo — през наши… (+12 още)"
+        },
+        {
+          "version": "21.8.0",
+          "date": "2026-11-23",
+          "event": "v21.8 — учене",
+          "detail": "Научи: Блоков скалар `run: |` в YAML се чупи, ако многоредов низ (напр. `gh pr create --body \"… (+2 още)"
+        },
+        {
+          "version": "22.1.0",
+          "date": "2026-11-27",
+          "event": "v22.1 — учене",
+          "detail": "Научи: PR 509 (otgovorko.yml) е втори нов продуктов workflow с пълна хигиена — checkout и setu… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „PR 509 (otgovorko.yml) е втори нов продуктов workflow с пълна хигиена — checkout и setu…\" (+2 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Блоков скалар `run: |` в YAML се чупи, ако многоредов низ (напр. `gh pr create --body \"…\" (+2 още)"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -15301,7 +15743,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 213
+        "lessons": 228
       },
       "evolution": [
         {
@@ -15393,9 +15835,42 @@
           "date": "2026-11-04",
           "event": "v21.5 — учене",
           "detail": "Научи: Нови чисти решения за предупреждение (console.warn) се изразяват като функция, която вр… (+9 още)"
+        },
+        {
+          "version": "22.9.0",
+          "date": "2026-11-23",
+          "event": "v22.9 — учене",
+          "detail": "Научи: Покритие на тестове, които са обикновени скриптове (не node:test), се мери без c8 — `NO… (+13 още)"
+        },
+        {
+          "version": "23.1.0",
+          "date": "2026-11-24",
+          "event": "v23.1 — учене",
+          "detail": "Научи: Капан върху fenced код в инжекционен eval пада и върху верен отговор, който цитира дока… (+1 още)"
+        },
+        {
+          "version": "23.4.0",
+          "date": "2026-11-27",
+          "event": "v23.4 — учене",
+          "detail": "Научи: zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-27",
+          "type": "learning",
+          "summary": "Научи: „zod 4 запазва подпът `zod/v3` (без срок за премахване), но v3 `ZodType` не е присвоим к…\" (+2 още)"
+        },
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Капан върху fenced код в инжекционен eval пада и върху верен отговор, който цитира дока…\" (+1 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Покритие на тестове, които са обикновени скриптове (не node:test), се мери без c8 — `NO…\" (+13 още) · 2 в карантина"
+        },
         {
           "date": "2026-11-04",
           "type": "learning",
@@ -15560,7 +16035,7 @@
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 229
+        "lessons": 230
       },
       "evolution": [
         {
@@ -15618,28 +16093,17 @@
           "detail": "Научи: Фикстурата за инжекция в уеб страница е в tools/agents/evals/fixtures/injection-web-pag… (+13 още)"
         },
         {
-          "version": "21.8.0",
-          "date": "2026-11-12",
-          "event": "v21.8 — учене",
-          "detail": "Научи: SupremeDiscordBot/README.md (ред 333, 350) още твърди „Postgres/Redis bound to localhos… (+1 още)"
-        },
-        {
-          "version": "22.0.0",
-          "date": "2026-11-13",
-          "event": "v22.0 — учене",
-          "detail": "Научи: Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче… (+1 още)"
+          "version": "22.1.0",
+          "date": "2026-11-23",
+          "event": "v22.1 — учене",
+          "detail": "Научи: Пътят до потребителски надпис се сверява в app.json чрез flatten скрипт по префикс; дъл… (+4 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-13",
+          "date": "2026-11-23",
           "type": "learning",
-          "summary": "Научи: „Всички файлове в frontend/src/data/*.js се четат от marketingTruth.test.js като публиче…\" (+1 още)"
-        },
-        {
-          "date": "2026-11-12",
-          "type": "learning",
-          "summary": "Научи: „SupremeDiscordBot/README.md (ред 333, 350) още твърди „Postgres/Redis bound to localhos…\" (+1 още)"
+          "summary": "Научи: „Пътят до потребителски надпис се сверява в app.json чрез flatten скрипт по префикс; дъл…\" (+4 още)"
         },
         {
           "date": "2026-11-04",
@@ -15744,7 +16208,8 @@
         "Grep",
         "Glob",
         "WebFetch",
-        "WebSearch"
+        "WebSearch",
+        "Skill"
       ],
       "mission": "Инженер по наблюдаемост и надеждност (SRE): отговаря дали системата е здрава в ПРОДУКЦИЯ и как разбираме навреме, когато не е. Владее трите стълба (metrics/logs/traces + профилиране) през OpenTelemetry (OTLP, семантични конвенции) и стека Prometheus/Grafana/Loki/Tempo; четирите златни сигнала + RED/USE; канона на Google SRE (SLI/SLO/error budget, аларми по СИМПТОМ не по причина, multi-window burn-rate); управление на инциденти (blameless postmortem, on-call, MTTR), runbook-и, toil, health/readiness probes, синтетичен+RUM мониторинг (Core Web Vitals). Различен от VPS-аджията (машина/деплой) и Конвейерът (CI). Аларми по симптом; всеки SLO има error budget; нула PII в телеметрия.",
       "capabilities": [
@@ -15774,7 +16239,7 @@
           "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
           "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
         ],
-        "lessons": 222
+        "lessons": 218
       },
       "evolution": [
         {
@@ -16144,7 +16609,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 182
+        "lessons": 263
       },
       "evolution": [
         {
@@ -16190,28 +16655,149 @@
           "detail": "Научи: guard-exfil DATA_FILE_SEND блокира curl с --data поле на име password/token дори към lo… (+2 още)"
         },
         {
-          "version": "27.7.0",
-          "date": "2026-11-12",
-          "event": "v27.7 — учене",
-          "detail": "Научи: Инжекционен eval spec с маркери, които само назовават темата (име на пакет, пазач, „под… (+4 още)"
+          "version": "32.3.0",
+          "date": "2026-11-23",
+          "event": "v32.3 — учене",
+          "detail": "Научи: Когато ръчно действие носи id-то на външната операция, която човекът е сверил, и ядрото… (+50 още)"
         },
         {
-          "version": "27.9.0",
-          "date": "2026-11-13",
-          "event": "v27.9 — учене",
-          "detail": "Научи: Модулите на SupremeDiscordBot backend могат да се пробват в паметта без запис на файлов… (+1 още)"
+          "version": "32.4.0",
+          "date": "2026-11-23",
+          "event": "v32.4 — учене",
+          "detail": "Научи: openai/skills security-threat-model записва доклада като `<repo>-threat-model.md` без д…"
+        },
+        {
+          "version": "32.5.0",
+          "date": "2026-11-23",
+          "event": "v32.5 — учене",
+          "detail": "Научи: useGLTF от @react-three/drei без втори аргумент задава Draco декодер от https://www.gst…"
+        },
+        {
+          "version": "32.6.0",
+          "date": "2026-11-23",
+          "event": "v32.6 — учене",
+          "detail": "Научи: tools/agents/verifier.mjs приема /dev/stdin като файл, затова агент без право на запис …"
+        },
+        {
+          "version": "32.7.0",
+          "date": "2026-11-23",
+          "event": "v32.7 — учене",
+          "detail": "Научи: Поука, която описва текущо състояние на наш код („X се вика преди гейта“), остарява с п…"
+        },
+        {
+          "version": "32.8.0",
+          "date": "2026-11-23",
+          "event": "v32.8 — учене",
+          "detail": "Научи: Опровержение, което оборва само примера в източника на поука-правило (вече поправения с…"
+        },
+        {
+          "version": "32.9.0",
+          "date": "2026-11-23",
+          "event": "v32.9 — учене",
+          "detail": "Научи: Express 4 router.use(fn) без път задава path '/' и Layer с end:false, затова middleware…"
+        },
+        {
+          "version": "33.0.0",
+          "date": "2026-11-23",
+          "event": "v33.0 — учене",
+          "detail": "Научи: Обикновен btree индекс в PostgreSQL обслужва закотвен LIKE 'prefix%' само при C локал; …"
+        },
+        {
+          "version": "33.1.0",
+          "date": "2026-11-23",
+          "event": "v33.1 — учене",
+          "detail": "Научи: Поука за разминаване между два източника в репото (домейн, име, стойност) се опровергав…"
+        },
+        {
+          "version": "33.3.0",
+          "date": "2026-11-23",
+          "event": "v33.3 — учене",
+          "detail": "Научи: Агент, който работи на Windows хост, се проверява с Windows правопис ($env:NAME, %NAME%… (+1 още)"
+        },
+        {
+          "version": "35.5.0",
+          "date": "2026-11-24",
+          "event": "v35.5 — учене",
+          "detail": "Научи: Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо… (+21 още)"
+        },
+        {
+          "version": "35.9.0",
+          "date": "2026-11-27",
+          "event": "v35.9 — учене",
+          "detail": "Научи: Express маршрут от вида r.post('/:x', express.json({limit}), handler) парсва тялото пре… (+3 още)"
+        },
+        {
+          "version": "36.1.0",
+          "date": "2026-11-28",
+          "event": "v36.1 — учене",
+          "detail": "Научи: Във fakturist временна интеграционна проба се пуска от scratchpad-а като .mts (ESM) с а… (+1 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-13",
+          "date": "2026-11-28",
           "type": "learning",
-          "summary": "Научи: „Модулите на SupremeDiscordBot backend могат да се пробват в паметта без запис на файлов…\" (+1 още)"
+          "summary": "Научи: „Във fakturist временна интеграционна проба се пуска от scratchpad-а като .mts (ESM) с а…\" (+1 още)"
         },
         {
-          "date": "2026-11-12",
+          "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „Инжекционен eval spec с маркери, които само назовават темата (име на пакет, пазач, „под…\" (+4 още) · 2 в карантина"
+          "summary": "Научи: „Express маршрут от вида r.post('/:x', express.json({limit}), handler) парсва тялото пре…\" (+3 още) · 2 в карантина"
+        },
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Chromium с фиксиран --proxy-server (Playwright proxy) отказва WebTransport/HTTP3 изобщо…\" (+21 още) · 3 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Агент, който работи на Windows хост, се проверява с Windows правопис ($env:NAME, %NAME%…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Поука за разминаване между два източника в репото (домейн, име, стойност) се опровергав…\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Обикновен btree индекс в PostgreSQL обслужва закотвен LIKE 'prefix%' само при C локал; …\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Express 4 router.use(fn) без път задава path '/' и Layer с end:false, затова middleware…\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Опровержение, което оборва само примера в източника на поука-правило (вече поправения с…\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Поука, която описва текущо състояние на наш код („X се вика преди гейта“), остарява с п…\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „tools/agents/verifier.mjs приема /dev/stdin като файл, затова агент без право на запис …\""
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „useGLTF от @react-three/drei без втори аргумент задава Draco декодер от https://www.gst…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „openai/skills security-threat-model записва доклада като `<repo>-threat-model.md` без д…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Когато ръчно действие носи id-то на външната операция, която човекът е сверил, и ядрото…\" (+50 още) · 6 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -16489,7 +17075,7 @@
           "DPR 162/1999 · DM 236/1989 · DM 23/07/2009",
           "Индекс без съдържание: research/norme-ascensori/README.md (нормите — в частното репо)"
         ],
-        "lessons": 197
+        "lessons": 221
       },
       "evolution": [
         {
@@ -16517,17 +17103,17 @@
           "detail": "Научи: DPR 162/1999 Capo II art. 15 c. 4 — manutentore almeno ogni 6 mesi (ascensori) / ogni a… (+1 още)"
         },
         {
-          "version": "19.8.0",
-          "date": "2026-11-12",
-          "event": "v19.8 — учене",
-          "detail": "Научи: Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) ч… (+2 още)"
+          "version": "22.2.0",
+          "date": "2026-11-23",
+          "event": "v22.2 — учене",
+          "detail": "Научи: Процес — в rilievi името `comunicazioni` в locals на шаблона е запазено за съобщенията … (+26 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-23",
           "type": "learning",
-          "summary": "Научи: „Подмяната на етажни врати е modifica costruttiva по DPR 162/1999 (първоначален текст) ч…\" (+2 още)"
+          "summary": "Научи: „Процес — в rilievi името `comunicazioni` в locals на шаблона е запазено за съобщенията …\" (+26 още) · 1 в карантина"
         },
         {
           "date": "2026-11-04",
@@ -16586,7 +17172,7 @@
           "korpora/CLAUDE.md — правилото „CNC никога не е грешен“ (cncBlockers, 422)",
           "GRBL v1.1 — списък на поддържаните G-кодове (github.com/gnea/grbl, README и wiki)"
         ],
-        "lessons": 3
+        "lessons": 207
       },
       "evolution": [
         {
@@ -16596,17 +17182,17 @@
           "detail": "Роден по анализа на AI-джията за липсващи агенти (одобрен от собственика): CAM изходът на Korpora носи физически риск и нямаше собственик. Първата поука — GRBL v1.1 няма G41/G42 — е сверена на живо с GRBL README и wiki."
         },
         {
-          "version": "0.3.0",
-          "date": "2026-11-12",
-          "event": "v0.3 — учене",
-          "detail": "Научи: В Korpora checkHoles (engine/model.js) дава 'error' само за застъпване cup/cup, всяко д… (+1 още)"
+          "version": "20.7.0",
+          "date": "2026-11-23",
+          "event": "v20.7 — учене",
+          "detail": "Научи: Leitz за свредла за дибли Z2/V2 (HW) дава n 3000–9000; примерът в диаграмата за ламинир… (+205 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-23",
           "type": "learning",
-          "summary": "Научи: „В Korpora checkHoles (engine/model.js) дава 'error' само за застъпване cup/cup, всяко д…\" (+1 още)"
+          "summary": "Научи: „Leitz за свредла за дибли Z2/V2 (HW) дава n 3000–9000; примерът в диаграмата за ламинир…\" (+205 още) · 71 в карантина"
         },
         {
           "date": "2026-11-02",
@@ -16654,7 +17240,7 @@
           "Gaming/apps/realtime/src/room.ts — handleAction, часовник и ботове",
           "Gaming/docs/microtransactions.md — §1 „Not gambling“"
         ],
-        "lessons": 1
+        "lessons": 223
       },
       "evolution": [
         {
@@ -16662,9 +17248,20 @@
           "date": "2026-11-02",
           "event": "Раждане",
           "detail": "Роден по анализа на AI-джията за липсващи агенти (одобрен от собственика): правилата на 21-те игри в АСО нямаха собственик, а в паметта на Геймъра се бяха събрали 9 поуки за Gaming без маршрут. Първата поука — chess.js отхвърля ход, който оставя своя цар в шах — е проверена с реален ран срещу двигателя."
+        },
+        {
+          "version": "22.3.0",
+          "date": "2026-11-23",
+          "event": "v22.3 — учене",
+          "detail": "Научи: Офлайн реплика на стаята за избор на e2e seed се прави така - init с `SeededRng(seed)`,… (+221 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Офлайн реплика на стаята за избор на e2e seed се прави така - init с `SeededRng(seed)`,…\" (+221 още) · 78 в карантина"
+        },
         {
           "date": "2026-11-02",
           "type": "birth",
@@ -16709,7 +17306,7 @@
           "ЗДДС, консолидиран текст (dela.bg) — чл. 20б, 21, 66, 82, 96, 97а, 114",
           "Регл. (ЕС) 282/2011, чл. 9а — доставчик при електронен интерфейс"
         ],
-        "lessons": 5
+        "lessons": 226
       },
       "evolution": [
         {
@@ -16719,22 +17316,514 @@
           "detail": "Роден по анализа на AI-джията за липсващи агенти (одобрен от собственика): знанието за ДДС беше пръснато в паметта на Касаджията, Продавача и Правния Разбирач, въпросът за linketto по чл. 9а Регл. 282/2011 остана „за данъчен консултант“, а рутерът пращаше ДДС на Продавача. Първите две поуки (чл. 9а и чл. 20б ЗДДС) са от първоизточници, отворени в деня на раждането."
         },
         {
-          "version": "0.4.0",
-          "date": "2026-11-12",
-          "event": "v0.4 — учене",
-          "detail": "Научи: SAF-T в България е в ДОПК глава осма \"б\" чл. 71з–71к (ДВ бр. 26/2025, в сила 31.03.2025… (+2 още)"
+          "version": "21.6.0",
+          "date": "2026-11-23",
+          "event": "v21.6 — учене",
+          "detail": "Научи: ЗДДС чл. 124 — ал. 2 издадените документи в дневника за продажбите за периода на издава… (+214 още)"
+        },
+        {
+          "version": "22.0.0",
+          "date": "2026-11-23",
+          "event": "v22.0 — учене",
+          "detail": "Научи: ЗДДС чл. 114 ал. 5 — сумите във фактурата могат да са в коя да е валута, но данъчната о… (+3 още)"
+        },
+        {
+          "version": "22.5.0",
+          "date": "2026-11-27",
+          "event": "v22.5 — учене",
+          "detail": "Научи: ППЗДДС чл. 78 ал. 2 — номерата на фактурите и известията на регистрираните лица са десе… (+4 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-11-12",
+          "date": "2026-11-27",
           "type": "learning",
-          "summary": "Научи: „SAF-T в България е в ДОПК глава осма \"б\" чл. 71з–71к (ДВ бр. 26/2025, в сила 31.03.2025…\" (+2 още)"
+          "summary": "Научи: „ППЗДДС чл. 78 ал. 2 — номерата на фактурите и известията на регистрираните лица са десе…\" (+4 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „ЗДДС чл. 114 ал. 5 — сумите във фактурата могат да са в коя да е валута, но данъчната о…\" (+3 още)"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „ЗДДС чл. 124 — ал. 2 издадените документи в дневника за продажбите за периода на издава…\" (+214 още) · 77 в карантина"
         },
         {
           "date": "2026-11-02",
           "type": "birth",
           "summary": "Роден: ДДС и данъчно третиране на продажби и платформени приходи в ЕС, България и Италия — казус с член и източник."
+        }
+      ],
+      "recentLessons": []
+    },
+    {
+      "id": "pronikvacha",
+      "name": "Прониквача",
+      "title": "Оторизиран пентестър — уеб/API/мрежа по подписан ангажимент",
+      "emoji": "🎯",
+      "accent": "#b91c1c",
+      "tagline": "Атакува чужда система — но само в подписания обхват.",
+      "file": ".claude/agents/pronikvacha.md",
+      "model": "opus",
+      "effort": "high",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Bash",
+        "WebFetch",
+        "WebSearch",
+        "Skill"
+      ],
+      "mission": "Оторизиран пентест на чужда (клиентска) система по ПОДПИСАН ангажимент — киберсигурността като продукт. Жизнен цикъл: обхват + ROE → recon → контролиран тест (OWASP WSTG/ASVS, PTES) → доклад с CVSS v4.0 + CWE и минимална поправка → retest. Без активен, подписан ангажимент (Ed25519) не атакува нищо чуждо; оградата (guard-engagement) го държи в allowlist-а, fail-closed. Никога DoS/exfil/трета страна; лични данни → спри, минимизирай, докладвай. Различен от Разбивача (вътрешен red-team на наши системи) и Кодаджията (пасивно ревю). Не е правен съвет.",
+      "capabilities": [
+        "Жизнен цикъл на ангажимента: 14-те полета на обхвата, ROE, recon, тест, доклад, retest (умение pentest-engagement)",
+        "OWASP WSTG (идентификатори по категория) + ASVS 5.0 по ниво + OWASP API Security Top 10",
+        "CVSS v4.0 (база + заплаха + околна среда) и CWE за корена, не само симптома",
+        "Класическо покритие: инжекция, SSRF, счупен достъп (IDOR/ескалация), автентикация/сесии, бизнес-логика (TOCTOU)",
+        "Техническата ограда: оторизация е подписан артефакт, не твърдение (confused-deputy защита); DoS — забрана по всяко време",
+        "Правна рамка през Правния Разбирач: НК чл. 319а · art. 615-ter · Дир. 2013/40/ЕС · ОРЗД чл. 28 · NIS2"
+      ],
+      "knowledge": {
+        "sources": 0,
+        "researchToolUses": 0,
+        "priorArt": [
+          "OWASP WSTG + ASVS 5.0 + API Security Top 10 (.claude/skills/owasp-review/SKILL.md)",
+          "Техническата ограда: tools/security/scope-check.mjs, engagement.mjs, .claude/hooks/guard-engagement.mjs",
+          "FIRST CVSS v4.0 + MITRE CWE за тежест и клас на находката",
+          "Правната рамка: Правния Разбирач (оторизация, обхват на съгласие, NIS2/ОРЗД)",
+          "Границата: Разбивача (вътрешен red-team на наши системи), Кодаджията (white-box код)"
+        ],
+        "lessons": 208
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-11-15",
+          "event": "Раждане",
+          "detail": "Роден за продукта „киберсигурност“ (собственикът го предлага на клиенти): имахме вътрешен red-team (Разбивача, само наши системи, read-only), но нямаше оторизиран пентестър на ЧУЖДА жива система по подписан ангажимент, нито продуктова методика (WSTG/ASVS/PTES, CVSS v4.0, доклад). Прониквача владее жизнения цикъл на ангажимента и притежава механизма за обхват; атакува само в подписания allowlist, зад техническата ограда (fail-closed). Нов екип „Крепостта“ (Сигурност) — водач Разбивача."
+        },
+        {
+          "version": "20.8.0",
+          "date": "2026-11-23",
+          "event": "v20.8 — учене",
+          "detail": "Научи: Nmap шаблоните за време -T0 (paranoid) сканира последователно с 5 минути между пробите,… (+206 още)"
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „Nmap шаблоните за време -T0 (paranoid) сканира последователно с 5 минути между пробите,…\" (+206 още) · 12 в карантина"
+        },
+        {
+          "date": "2026-11-15",
+          "type": "birth",
+          "summary": "Роден: оторизиран пентест на уеб/API/мрежа по подписан ангажимент (WSTG/ASVS/PTES, CVSS v4.0 + CWE), зад техническата ограда."
+        }
+      ],
+      "recentLessons": []
+    },
+    {
+      "id": "strazhata",
+      "name": "Стражата",
+      "title": "Син екип — детекция, реакция, втвърдяване, уведомяване по ОРЗД/NIS2",
+      "emoji": "🛡️",
+      "accent": "#1d4ed8",
+      "tagline": "Открива, реагира и втвърдява — докато Прониквача атакува.",
+      "file": ".claude/agents/strazhata.md",
+      "model": "opus",
+      "effort": "high",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch",
+        "Skill"
+      ],
+      "mission": "Синият екип на „Крепостта“: детекция (detection-as-code по MITRE ATT&CK, тествани аларми), реакция при инцидент със сигурността (умение incident-breach — P1–P4, снимка преди триене, часът на узнаване) и втвърдяване (defense-in-depth, CIS, тайни на сървъра). Каскадата на уведомяване: ОРЗД чл. 33 (72 ч до КЗЛД), NIS2 чл. 23 (24 ч → 72 ч → 1 месец), CRA (от 11.09.2026) — подготвя ги, подава ги човек. Purple-team с Прониквача: всяка атака трябва да произведе детекция. Различен от Наблюдателя (SRE — здраве/наличност) и VPS-аджията (машината). Не е правен съвет.",
+      "capabilities": [
+        "Детекция-като-код: правила по MITRE ATT&CK, тествана симулация, мерен фалшив позитив, покритие (сляпи зони)",
+        "Реакция при инцидент (умение incident-breach): P1–P4, доказателства преди триене, часът на узнаване (ОРЗД чл. 33)",
+        "Каскада на уведомяване: ОРЗД чл. 33/34, NIS2 Дир. (ЕС) 2022/2555 чл. 23 (24 ч/72 ч/1 м), ЗКС чл. 24, CRA от 11.09.2026",
+        "Втвърдяване: defense-in-depth, CIS Benchmarks, allowlist пред denylist, тайни на сървъра (600), ротация",
+        "Purple-team цикъл с Прониквача — всяка атака произвежда детекция; дупка в покритието е находка",
+        "Нула PII/тайни в телеметрия; redact на ръба; бекендът в ЕС"
+      ],
+      "knowledge": {
+        "sources": 0,
+        "researchToolUses": 0,
+        "priorArt": [
+          "Умение incident-breach (редът P1–P4, 72 ч ОРЗД чл. 33, доказателства преди триене)",
+          "MITRE ATT&CK (техники за детекция) + CIS Benchmarks (втвърдяване)",
+          "NIS2 Дир. (ЕС) 2022/2555 чл. 23, ЗКС чл. 24, CRA Рег. (ЕС) 2024/2847 — срокове на уведомяване",
+          "Нашите пластове: tools/security/secret-scan.mjs, guard-куките, .github/workflows/security.yml",
+          "Границата: Наблюдателя (SRE здраве), VPS-аджията (машина), Правния Разбирач (правен текст)"
+        ],
+        "lessons": 238
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-11-15",
+          "event": "Раждане",
+          "detail": "Роден за продукта „киберсигурност“: клиентът иска не само дали е пробит, а дали ще разбере навреме и какво прави тогава. Синият екип като роля не съществуваше — детекцията, реакцията при инцидент и втвърдяването бяха пръснати. Стражата поема умението incident-breach от Наблюдателя (Наблюдателят остава SRE — здраве/наличност), води детекция-като-код по MITRE ATT&CK и каскадата по ОРЗД/NIS2/CRA. Purple-team с Прониквача. Нов екип „Крепостта“."
+        },
+        {
+          "version": "23.8.0",
+          "date": "2026-11-23",
+          "event": "v23.8 — учене",
+          "detail": "Научи: grep -q '^KEY=..*' приема ред KEY=\"\" (две кавички) за зададена стойност, така че провер… (+236 още)"
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-11-23",
+          "type": "learning",
+          "summary": "Научи: „grep -q '^KEY=..*' приема ред KEY=\"\" (две кавички) за зададена стойност, така че провер…\" (+236 още) · 23 в карантина"
+        },
+        {
+          "date": "2026-11-15",
+          "type": "birth",
+          "summary": "Роден: син екип — детекция (ATT&CK), реакция при инцидент (incident-breach), втвърдяване, уведомяване по ОРЗД/NIS2/CRA."
+        }
+      ],
+      "recentLessons": []
+    },
+    {
+      "id": "ai-studio",
+      "name": "AI Studio",
+      "title": "Видео студио — сцени с код, Blender, FFmpeg/NVENC, мастер за Resolve",
+      "emoji": "🎥",
+      "accent": "#c2410c",
+      "tagline": "От сценария до готовия 4K/60 файл — на компютъра на собственика.",
+      "file": ".claude/agents/ai-studio.md",
+      "model": "sonnet",
+      "effort": "medium",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch",
+        "Skill"
+      ],
+      "mission": "Видео продукция на компютъра на собственика (Windows + NVIDIA): сцени с код (нашата HTML линия с render(t) или Remotion), 3D в Blender без интерфейс (Cycles + OptiX), звук до −14 LUFS на два прохода, рендер с FFmpeg и NVENC, мастер DNxHR HQ за безплатния DaVinci Resolve (финалния монтаж прави човек) и файл за YouTube 4K60 по препоръките на YouTube + 9:16 за Социалджията. Само собствени или лицензирани активи; AI глас или образ носи етикет; промо клиповете са замразени; нищо не инсталира сам. Различен от Социалджията (обхват) и Дизайнера (уеб ефекти).",
+      "capabilities": [
+        "Готовност на студиото: tools/video/doctor.mjs (Node, FFmpeg с NVENC/DNxHR/ProRes/loudnorm, Blender, Python, NVIDIA, Resolve, Audacity)",
+        "Готови команди: tools/video/presets.mjs — YouTube 4K60, мастер за Resolve, loudnorm на два прохода, кадри → видео, 9:16",
+        "Сцени с код: HTML render(t) + Playwright или Remotion (безплатен лиценз до 3 души, рендер само от командния ред)",
+        "Blender без интерфейс: Cycles + OptiX, PNG поредица, build.py в git",
+        "Звук: −14 LUFS / −1 dBTP; Audacity за ръчната работа с гласа",
+        "Предаване: мастер DNxHR HQ към Resolve, файл за YouTube и 9:16 към Социалджията; ffprobe проверка",
+        "Предпазители: права и лицензи до файла, AI Act чл. 50 етикет, синтетични данни в записите на екрана, без стробоскоп"
+      ],
+      "knowledge": {
+        "sources": 5,
+        "researchToolUses": 6,
+        "priorArt": [
+          "YouTube — препоръчани настройки за качване (support.google.com/youtube/answer/1722171, 23.11.2026)",
+          "Blackmagic Design — DaVinci Resolve и Studio (безплатният: 8-бита до UHD/60; хардуерно H.264/H.265 — Studio)",
+          "Remotion — LICENSE.md и Telemetry (безплатен до 3 души; телеметрия при рендер в браузъра)",
+          "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
+          "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
+        ],
+        "lessons": 213
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-11-23",
+          "event": "Раждане",
+          "detail": "Роден по заявка на собственика: „искам сам да правя видеа“ — програмите от списъка „Codex Video Production Studio“, но с Claude вместо Codex. Задачата за видео 4K/60 с Blender и DaVinci нямаше собственик (teams.mjs → AI-джията; веригата ff8e8gu спря заради липсата). Носи tools/video (doctor + presets, проверени на реално 4K60 видео) и справочник за инсталирането на Windows + NVIDIA."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-11-24",
+          "event": "v0.2 — учене",
+          "detail": "Научи: Когато `gh api` за чуждо репо върне 403 „add_repo“, SHA и дати на комити се четат през …"
+        },
+        {
+          "version": "1.4.0",
+          "date": "2026-11-28",
+          "event": "v1.4 — учене",
+          "detail": "Научи: В h264_nvenc, hevc_nvenc и av1_nvenc `-preset` е p1 (най-бърз, най-ниско качество) до p… (+11 още)"
+        },
+        {
+          "version": "2.8.0",
+          "date": "2026-11-28",
+          "event": "v2.8 — учене",
+          "detail": "Научи: Remotion CLI по подразбиране кодира h264; CRF диапазон/подразбиране са h264 1–51/18, h2… (+13 още)"
+        },
+        {
+          "version": "3.4.0",
+          "date": "2026-11-28",
+          "event": "v3.4 — учене",
+          "detail": "Научи: Според NVIDIA режимът за ниска латентност (tune ll) изключва B-кадрите, ползва постояне… (+5 още)"
+        },
+        {
+          "version": "4.2.0",
+          "date": "2026-11-28",
+          "event": "v4.2 — учене",
+          "detail": "Научи: loudnorm подразбиране I=-24 (-70..-5), LRA=7 (1..50), TP=-2 (-9..0), linear=true, dual_… (+7 още)"
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-11-28",
+          "event": "v5.0 — учене",
+          "detail": "Научи: YouTube конвертира пълния обхват (full) в ограничен (limited), не препоръчва RGB матриц… (+7 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-11-28",
+          "event": "v6.2 — учене",
+          "detail": "Научи: Аргументите на blender се изпълняват по реда на подаване, затова -o, -F, -x, -s, -e и -… (+11 още)"
+        },
+        {
+          "version": "7.2.0",
+          "date": "2026-11-28",
+          "event": "v7.2 — учене",
+          "detail": "Научи: amix по подразбиране е inputs=2, duration=longest, dropout_transition=2 (секунди), weig… (+9 още)"
+        },
+        {
+          "version": "8.0.0",
+          "date": "2026-11-28",
+          "event": "v8.0 — учене",
+          "detail": "Научи: YouTube прави качването Short, ако е качено на или след 15.10.2024 и е с квадратно или … (+7 още)"
+        },
+        {
+          "version": "8.6.0",
+          "date": "2026-11-28",
+          "event": "v8.6 — учене",
+          "detail": "Научи: С normalize=1 (подразбиране) всеки вход се умножава по теглото си, разделено на сбора н… (+5 още)"
+        },
+        {
+          "version": "8.7.0",
+          "date": "2026-11-28",
+          "event": "v8.7 — учене",
+          "detail": "Научи: Размазан фон за 9:16 се сглобява от split, boxblur и overlay - boxblur има luma_radius=…"
+        },
+        {
+          "version": "9.7.0",
+          "date": "2026-11-28",
+          "event": "v9.7 — учене",
+          "detail": "Научи: Само ProRes 4444 и 4444 XQ носят алфа канал (до 16 бита, математически без загуба в 444… (+9 още)"
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-11-28",
+          "event": "v10.8 — учене",
+          "detail": "Научи: Филтърът subtitles иска FFmpeg с --enable-libass (и libavcodec/libavformat, за да превъ… (+10 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-11-28",
+          "event": "v10.9 — учене",
+          "detail": "Научи: Мек поток в MP4 - таблицата codec_mp4_tags на MP4 муксера съдържа за надписи само mov_t…"
+        },
+        {
+          "version": "12.0.0",
+          "date": "2026-11-28",
+          "event": "v12.0 — учене",
+          "detail": "Научи: Актуалното официално ръководство е DaVinci Resolve 21 Reference Manual (4444 стр., създ… (+10 още)"
+        },
+        {
+          "version": "13.1.0",
+          "date": "2026-11-28",
+          "event": "v13.1 — учене",
+          "detail": "Научи: Data API snippet.title е най-много 100 знака и snippet.description най-много 5000 БАЙТА… (+10 още)"
+        },
+        {
+          "version": "14.2.0",
+          "date": "2026-11-28",
+          "event": "v14.2 — учене",
+          "detail": "Научи: image2 демуксерът има собствена опция `-framerate` (по подразбиране 25), която се слага… (+10 още)"
+        },
+        {
+          "version": "15.5.0",
+          "date": "2026-11-28",
+          "event": "v15.5 — учене",
+          "detail": "Научи: Audacity Noise Reduction има по подразбиране Noise reduction 6 dB, Sensitivity 6.00 (об… (+12 още)"
+        },
+        {
+          "version": "16.6.0",
+          "date": "2026-11-28",
+          "event": "v16.6 — учене",
+          "detail": "Научи: page.screenshot има scale \"css\"|\"device\" с подразбиране \"device\" (един пиксел на device… (+10 още)"
+        },
+        {
+          "version": "17.8.0",
+          "date": "2026-11-28",
+          "event": "v17.8 — учене",
+          "detail": "Научи: YouTube изисква разкриване на AI съдържание, което изглежда реалистично и е генерирано … (+11 още)"
+        },
+        {
+          "version": "17.9.0",
+          "date": "2026-11-28",
+          "event": "v17.9 — учене",
+          "detail": "Научи: page.waitForFunction има polling \"raf\" по подразбиране (число = интервал в мс) и timeou…"
+        },
+        {
+          "version": "19.0.0",
+          "date": "2026-11-28",
+          "event": "v19.0 — учене",
+          "detail": "Научи: bpy.ops.render.render(animation, write_still, ...) — write_still важи само при animatio… (+10 още)"
+        },
+        {
+          "version": "19.9.0",
+          "date": "2026-11-28",
+          "event": "v19.9 — учене",
+          "detail": "Научи: WebGLRenderer подразбиране: antialias=false, alpha=false, preserveDrawingBuffer=false, … (+8 още)"
+        },
+        {
+          "version": "21.1.0",
+          "date": "2026-11-28",
+          "event": "v21.1 — учене",
+          "detail": "Научи: Брой NVENC блокове в матрицата на NVIDIA (колона „Total # of NVENC“) при GeForce - Blac… (+11 още)"
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Брой NVENC блокове в матрицата на NVIDIA (колона „Total # of NVENC“) при GeForce - Blac…\" (+11 още)"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „WebGLRenderer подразбиране: antialias=false, alpha=false, preserveDrawingBuffer=false, …\" (+8 още) · 3 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „bpy.ops.render.render(animation, write_still, ...) — write_still важи само при animatio…\" (+10 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „page.waitForFunction има polling \"raf\" по подразбиране (число = интервал в мс) и timeou…\""
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „YouTube изисква разкриване на AI съдържание, което изглежда реалистично и е генерирано …\" (+11 още)"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „page.screenshot има scale \"css\"|\"device\" с подразбиране \"device\" (един пиксел на device…\" (+10 още)"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Audacity Noise Reduction има по подразбиране Noise reduction 6 dB, Sensitivity 6.00 (об…\" (+12 още)"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „image2 демуксерът има собствена опция `-framerate` (по подразбиране 25), която се слага…\" (+10 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Data API snippet.title е най-много 100 знака и snippet.description най-много 5000 БАЙТА…\" (+10 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Актуалното официално ръководство е DaVinci Resolve 21 Reference Manual (4444 стр., създ…\" (+10 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Мек поток в MP4 - таблицата codec_mp4_tags на MP4 муксера съдържа за надписи само mov_t…\""
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Филтърът subtitles иска FFmpeg с --enable-libass (и libavcodec/libavformat, за да превъ…\" (+10 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Само ProRes 4444 и 4444 XQ носят алфа канал (до 16 бита, математически без загуба в 444…\" (+9 още) · 3 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Размазан фон за 9:16 се сглобява от split, boxblur и overlay - boxblur има luma_radius=…\" · 2 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „С normalize=1 (подразбиране) всеки вход се умножава по теглото си, разделено на сбора н…\" (+5 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „YouTube прави качването Short, ако е качено на или след 15.10.2024 и е с квадратно или …\" (+7 още) · 4 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „amix по подразбиране е inputs=2, duration=longest, dropout_transition=2 (секунди), weig…\" (+9 още) · 2 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Аргументите на blender се изпълняват по реда на подаване, затова -o, -F, -x, -s, -e и -…\" (+11 още)"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „YouTube конвертира пълния обхват (full) в ограничен (limited), не препоръчва RGB матриц…\" (+7 още) · 5 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „loudnorm подразбиране I=-24 (-70..-5), LRA=7 (1..50), TP=-2 (-9..0), linear=true, dual_…\" (+7 още) · 4 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Според NVIDIA режимът за ниска латентност (tune ll) изключва B-кадрите, ползва постояне…\" (+5 още) · 2 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Remotion CLI по подразбиране кодира h264; CRF диапазон/подразбиране са h264 1–51/18, h2…\" (+13 още)"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „В h264_nvenc, hevc_nvenc и av1_nvenc `-preset` е p1 (най-бърз, най-ниско качество) до p…\" (+11 още) · 2 в карантина"
+        },
+        {
+          "date": "2026-11-28",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Аргументите на Blender се изпълняват по реда на подаването, затова -b, -E, -o, -s, -e, …\" (+9)"
+        },
+        {
+          "date": "2026-11-24",
+          "type": "learning",
+          "summary": "Научи: „Когато `gh api` за чуждо репо върне 403 „add_repo“, SHA и дати на комити се четат през …\" · 2 в карантина"
+        },
+        {
+          "date": "2026-11-23",
+          "type": "birth",
+          "summary": "Роден: видео студио — сцени с код, Blender, FFmpeg/NVENC, мастер за Resolve, файл за YouTube 4K60."
         }
       ],
       "recentLessons": []

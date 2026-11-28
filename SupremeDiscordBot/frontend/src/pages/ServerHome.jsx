@@ -19,6 +19,7 @@ import ServerMeta from "../components/ServerCrest";
 import AreaChart from "../components/charts/AreaChart";
 import BarList from "../components/charts/BarList";
 import { useT } from "../contexts/I18nContext";
+import { botInviteUrl } from "../lib/invite";
 
 const PERIODS = [7, 14, 30];
 
@@ -58,7 +59,7 @@ export default function ServerHome() {
         <h2 className="text-lg font-semibold text-cs-text mb-2">{t("overview.notSetup.title")}</h2>
         <p className="text-cs-muted text-sm">{t("overview.notSetup.body")}</p>
         <a
-          href={`https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands&guild_id=${serverId}`}
+          href={botInviteUrl(serverId)}
           target="_blank" rel="noopener noreferrer"
           className="cs-btn-primary mt-4 inline-flex items-center gap-2"
         >
@@ -150,7 +151,7 @@ export default function ServerHome() {
             <div className="grid grid-cols-2 gap-3">
               <QuickAction to={`/dashboard/${serverId}/panels`} icon={Plus} label={t("overview.qa.createPanel")} />
               <QuickAction to={`/dashboard/${serverId}/forms`} icon={FileText} label={t("overview.qa.buildForm")} />
-              <QuickAction to={`/dashboard/${serverId}/automation`} icon={Send} label={t("overview.qa.startGiveaway")} />
+              <QuickAction to={`/dashboard/${serverId}/polls?tab=giveaways`} icon={Send} label={t("overview.qa.startGiveaway")} />
               <QuickAction to={`/dashboard/${serverId}/analytics`} icon={LineChart} label={t("overview.qa.openAnalytics")} />
             </div>
           </section>

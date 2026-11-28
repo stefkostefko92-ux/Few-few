@@ -76,6 +76,9 @@ export const mfaRegenerateCodes = (code) => api.post("/auth/mfa/backup-codes", {
 // ─── v3.4 Админ операции ────────────────────────────────────────────────────
 export const getAdminSystem    = () => api.get("/admin/system").then((r) => r.data);
 export const getAdminSecurity  = () => api.get("/admin/security").then((r) => r.data);
+// Поканата към сървъра за поддръжка — към нея води публичният адрес /support.
+export const getAdminSupportInvite = () => api.get("/admin/support-invite").then((r) => r.data);
+export const setAdminSupportInvite = (url) => api.put("/admin/support-invite", { url }).then((r) => r.data);
 export const adminUnblock      = (scope, key) => api.post("/admin/security/unblock", { scope, key }).then((r) => r.data);
 export const adminRevokeApiKey = (id) => api.delete(`/admin/security/apikeys/${id}`).then((r) => r.data);
 export const adminResetUserMfa = (userId, reason) => api.post(`/admin/users/${userId}/mfa/reset`, { reason }).then((r) => r.data);

@@ -99,7 +99,7 @@ async function checkMenuPage(page, { name, sheetPath, aziendaId, origin }) {
     fail(`${name}: the calculation page is not the current item of the menu`);
   await audit(page, `${name} list`);
   await page.fill('#f-cerca', numero);
-  await page.click('form[role=search] button');
+  await page.click('main form[role=search] button');
   await page.waitForURL(new RegExp(`${sheetPath}/calcolo-argano$`));
 
   await page.goto(`${origin}/calcolo-argano/nuovo`);

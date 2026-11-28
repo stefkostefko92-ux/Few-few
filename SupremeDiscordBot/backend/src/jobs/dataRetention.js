@@ -16,7 +16,7 @@
 // ON ERROR: logs but does NOT throw. Retention run failure must not crash backend.
 
 import { prisma } from "../lib/prisma.js";
-import { effectiveFreeWhere } from "../lib/premium.js";
+import { effectiveFreeWhere, exportWindowClosedWhere } from "../lib/premium.js";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 export const COMPANION_BATTLE_RETENTION_DAYS = 30;
@@ -68,7 +68,14 @@ export async function runRetentionJob() {
         // Only anonymize if the server is not EFFECTIVELY premium — agency
         // seats and trials don't set the raw isPremium flag, and deleting a
         // paying agency customer's transcripts is irreversible data loss.
-        server: effectiveFreeWhere(),
+        //
+        // И НЕ в 30-дневния прозорец за експорт след края на платения период
+        // (А1): клиентът има право да си изтегли съдържанието (чл. 16(4) Дир.
+        // (ЕС) 2019/770; Условията му го обещават). Метлата на архивите в
+        // scheduler.js го зачиташе, тази чистка — не: план, свършил вчера,
+        // означаваше всичко по-старо от 30 дни изтрито още същата нощ.
+        // Доказано срещу жива база в integration/schema.integration.test.js.
+        server: { AND: [effectiveFreeWhere(), exportWindowClosedWhere()] },
         // Skip already-anonymized.
         //
         // ВНИМАНИЕ — СЪЩИЯТ КЛАС, който вече ни удари в секция 3б:
@@ -208,6 +215,8 @@ export async function runRetentionJob() {
           // Плащащ по ДРУГ път (активен agency seat или течащ trial) също не се
           // пипа — статусът в Stripe не покрива тези случаи.
           effectiveFreeWhere(),
+          // И не в прозореца за експорт (А1) — виж секция 1.
+          exportWindowClosedWhere(),
           // Веднъж изчистен → не го пипаме пак (маркерът е и одитната следа).
           { auditLogs: { none: { action: "SERVER_DATA_PURGED" } } },
         ],

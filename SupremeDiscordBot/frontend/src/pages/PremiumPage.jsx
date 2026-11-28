@@ -347,11 +347,19 @@ export default function PremiumPage() {
       {/* Agency управление — само за ЗАВАРЕНИ агенции (вече не се продават). */}
       {myAgency && <AgencyManageCard agency={myAgency} serverId={serverId} t={t} />}
 
-      {/* Export Section (Premium only) */}
-      {isPremium && (
+      {/* Експорт — с Premium и 30 дни след края му (`exportUntil` от бекенда).
+          Преди блокът се показваше само при isPremium: клиент, чийто план е
+          свършил, нямаше откъде да свали данните си, макар Условията да му
+          обещават 30 дни. */}
+      {(isPremium || status?.exportUntil) && (
         <div className="mt-10 max-w-2xl">
           <h2 className="text-lg font-semibold text-cs-text mb-4">{t("premium.dataExport")}</h2>
           <div className="cs-card space-y-4">
+            {!isPremium && status?.exportUntil && (
+              <p className="text-sm text-warning" role="note">
+                {t("premium.exportWindow", { date: fmtDate(status.exportUntil) })}
+              </p>
+            )}
             <p className="text-sm text-cs-muted">
               {t("premium.dataExportDesc")}
             </p>
