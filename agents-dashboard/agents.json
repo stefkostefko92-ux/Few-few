@@ -16588,7 +16588,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 263
+        "lessons": 266
       },
       "evolution": [
         {
@@ -16704,9 +16704,20 @@
           "date": "2026-11-28",
           "event": "v36.1 — учене",
           "detail": "Научи: Във fakturist временна интеграционна проба се пуска от scratchpad-а като .mts (ESM) с а… (+5 още)"
+        },
+        {
+          "version": "36.4.0",
+          "date": "2026-11-28",
+          "event": "v36.4 — учене",
+          "detail": "Научи: Chrome праща HttpOnly SameSite=Strict бисквитка, зададена от http://127.0.0.1:A, и на с… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Chrome праща HttpOnly SameSite=Strict бисквитка, зададена от http://127.0.0.1:A, и на с…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
