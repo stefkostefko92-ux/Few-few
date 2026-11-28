@@ -15,7 +15,9 @@ import { getCurrentSeason, publicSeason } from "../lib/game/seasons.js";
 import { QUEST_TYPES, QUEST_TYPE_KEYS, publicQuest } from "../lib/game/quests.js";
 import { createQuest, cancelQuest } from "../lib/game/questOps.js";
 import { writeAudit } from "../lib/auditLog.js";
-import { notifyBot } from "../services/botNotifier.js";
+import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
+import { createRound } from "../lib/game/trivia.js";
+import { createSpawn } from "../lib/game/companionOps.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
@@ -279,6 +281,51 @@ router.delete("/:serverId/quests/:questId", requireServerAdmin, async (req, res,
     if (!out.ok) return res.status(out.code === "NOT_FOUND" ? 404 : 409).json({ error: out.code });
     await writeAudit({ actorId: req.user.id, action: "GAME_QUEST_CANCELLED", targetId: serverId, metadata: { questId } });
     res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+// ─── Паритет с /trivia и /spawn: „пусни сега“ от таблото (28.11.2026) ─────────
+// Същите функции като командите (createRound / createSpawn); ботът публикува в канала, който
+// търси САМО в този сървър. Ако не публикува, кръгът/появата се затварят веднага — иначе
+// каналът остава „зает“ с нещо, което никой не вижда.
+const COMPANION_ID = /^[a-z0-9-]{2,40}$/;
+const botPosted = (r) => !!r && !r.botError && r.ok !== false;
+
+router.post("/:serverId/trivia/start", requireServerAdmin, async (req, res, next) => {
+  const serverId = req.params.serverId;
+  const channelId = String(req.body?.channelId || "");
+  if (!SNOWFLAKE.test(channelId)) return res.status(400).json({ error: "Choose a channel." });
+  try {
+    const out = await createRound(serverId, channelId, { source: req.body?.source === "KB" ? "KB" : "BANK" });
+    if (!out.ok) return res.status(out.code === "GAME_DISABLED" ? 403 : 409).json({ error: out.code, code: out.code });
+    const posted = await notifyBotVerbose("GAME_TRIVIA", { event: "POST", serverId, round: out.round });
+    if (!botPosted(posted)) {
+      await prisma.triviaRound.updateMany({ where: { id: out.round.id, serverId, closedAt: null }, data: { closedAt: new Date() } });
+      return res.status(502).json({ error: "The bot could not post in that channel.", code: "BOT_ACTION_FAILED" });
+    }
+    await writeAudit({ actorId: req.user.id, serverId, action: "GAME_TRIVIA_STARTED", targetId: out.round.id, metadata: { channelId, via: "dashboard" } });
+    res.status(201).json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+router.post("/:serverId/spawn", requireServerAdmin, async (req, res, next) => {
+  const serverId = req.params.serverId;
+  const channelId = String(req.body?.channelId || "");
+  const companionId = req.body?.companionId == null || req.body.companionId === "" ? null : String(req.body.companionId);
+  if (!SNOWFLAKE.test(channelId)) return res.status(400).json({ error: "Choose a channel." });
+  if (companionId && !COMPANION_ID.test(companionId)) return res.status(400).json({ error: "Unknown companion." });
+  try {
+    const settings = await getGameSettings(serverId);
+    if (!settings?.enabled) return res.status(403).json({ error: "GAME_DISABLED", code: "GAME_DISABLED" });
+    const out = await createSpawn(serverId, channelId, { manual: true, companionId });
+    if (!out.ok) return res.status(409).json({ error: out.code, code: out.code });
+    const posted = await notifyBotVerbose("GAME_SPAWN", { serverId, channelId, data: JSON.parse(JSON.stringify(out)) });
+    if (!botPosted(posted)) {
+      await prisma.companionSpawn.updateMany({ where: { id: out.spawn.id, serverId, caughtAt: null }, data: { expiresAt: new Date() } });
+      return res.status(502).json({ error: "The bot could not post in that channel.", code: "BOT_ACTION_FAILED" });
+    }
+    await writeAudit({ actorId: req.user.id, serverId, action: "GAME_SPAWN_MANUAL", targetId: out.spawn.id, metadata: { channelId, via: "dashboard" } });
+    res.status(201).json({ ok: true });
   } catch (err) { next(err); }
 });
 

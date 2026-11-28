@@ -64,12 +64,12 @@ describe("чл. 15 покрива и „създаденото от мен“", 
     // РЕДЪТ Е ДОГОВОР: същият масив пълни `Promise.all`. Разместване тук без
     // разместване там разменя данните между полета — тихо и правдоподобно
     // (полетата са с еднакъв вид, никой тест няма да гръмне от само себе си).
-    const m = gdpr.match(/polls,\s*giveaways,\s*scheduledMessages,\s*stickyMessages,\s*cannedResponses,\s*webhooks,\s*kbArticles/);
+    const m = gdpr.match(/polls,\s*giveaways,\s*scheduledMessages,\s*stickyMessages,\s*cannedResponses,\s*webhooks,\s*kbArticles,\s*serverBackups/);
     expect(m, "не намирам деструктурирането — преименувано?").not.toBeNull();
     const order = CREATED_BY_MODELS.map(([x]) => x);
     expect(order).toEqual([
       "poll", "giveaway", "scheduledMessage", "stickyMessage",
-      "cannedResponse", "webhook", "kbArticle",
+      "cannedResponse", "webhook", "kbArticle", "serverBackup",
     ]);
   });
 });

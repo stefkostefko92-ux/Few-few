@@ -4,7 +4,7 @@
 //
 //   Преглед
 //   Поддръжка          — тикети, панели, формуляри, кандидатури, готови отговори, база знания
-//   Защита             — верификация, канал-стръв, дневник
+//   Защита             — верификация, канал-стръв, дневник, резервни копия
 //   Общност            — посрещане и роли, анкети и раздавания, съобщения, игра
 //   Данни и интеграции — анализи, webhooks, API ключове
 //   Сървър             — настройки, Premium, команди, помощ
@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { SUPPORT_URL } from "../lib/support";
+import { BackupIcon } from "./RasterIcon";
 
 /** Групите за сървъра `serverId`; `t` е преводачът на таблото. */
 export function buildServerNav(serverId, t) {
@@ -56,6 +57,7 @@ export function buildServerNav(serverId, t) {
         { to: `${base}/verification`, icon: ShieldCheck, label: t("nav.verification") },
         { to: `${base}/bait`, icon: Fish, label: t("nav.bait") },
         { to: `${base}/activity-log`, icon: ScrollText, label: t("nav.activityLog") },
+        { to: `${base}/backups`, icon: BackupIcon, label: t("nav.backups") },
       ],
     },
     {

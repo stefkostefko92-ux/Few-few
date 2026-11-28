@@ -104,6 +104,7 @@ export default function FormsPage() {
   const [confirmState, setConfirmState] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [spawnInputs, setSpawnInputs] = useState({}); // formId → channelId
+  const [labelInputs, setLabelInputs] = useState({}); // formId → текст на бутона (като /form spawn button_label)
 
   const { data: forms = [], isLoading } = useQuery({
     queryKey: ["forms", serverId],
@@ -143,9 +144,10 @@ export default function FormsPage() {
   });
 
   const spawnMut = useMutation({
-    mutationFn: ({ formId, channelId }) => spawnForm(serverId, formId, channelId),
+    mutationFn: ({ formId, channelId, buttonLabel }) => spawnForm(serverId, formId, channelId, buttonLabel),
     onSuccess: (_data, { formId }) => {
       setSpawnInputs((s) => ({ ...s, [formId]: "" }));
+      setLabelInputs((s) => ({ ...s, [formId]: "" }));
       toast.success(t("forms.posted"));
     },
     onError: (err) => toast.error(err?.response?.data?.error || t("forms.postFailed")),
@@ -332,10 +334,18 @@ export default function FormsPage() {
                         <DiscordChannelSelect kind="text" ariaLabel={t("forms.spawnChannelAria")} value={spawnInputs[f.id] || ""}
                           onChange={(v) => setSpawnInputs((s) => ({ ...s, [f.id]: v }))} />
                       </div>
+                      <input
+                        className="cs-input flex-1 min-w-[9rem] sm:flex-none sm:w-36"
+                        maxLength={80}
+                        aria-label={t("forms.spawn.buttonLabel")}
+                        placeholder={t("forms.spawn.buttonPlaceholder")}
+                        value={labelInputs[f.id] || ""}
+                        onChange={(e) => setLabelInputs((s) => ({ ...s, [f.id]: e.target.value }))}
+                      />
                       <button
                         className="cs-btn-primary cs-btn-sm flex items-center gap-1 disabled:opacity-40"
                         disabled={!spawnInputs[f.id] || spawnMut.isPending}
-                        onClick={() => spawnMut.mutate({ formId: f.id, channelId: spawnInputs[f.id].trim() })}
+                        onClick={() => spawnMut.mutate({ formId: f.id, channelId: spawnInputs[f.id].trim(), buttonLabel: (labelInputs[f.id] || "").trim() })}
                       >
                         <Send className="w-3.5 h-3.5" aria-hidden="true" /> {t("common.postToChannel")}
                       </button>
