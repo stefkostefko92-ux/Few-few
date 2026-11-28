@@ -2139,12 +2139,7 @@
         {
           "date": "2026-11-28",
           "type": "quarantine",
-          "summary": "Хипотеза → карантина: „В JavaScript toLowerCase() може да промени дължината на низа (U+0130 става 0069 0307), …\""
-        },
-        {
-          "date": "2026-11-28",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „В JavaScript String.prototype.toLowerCase() може да промени дължината на низа (U+0130 „…\""
+          "summary": "Хипотеза → карантина: „В JavaScript toLowerCase() може да промени дължината на низа (U+0130 става 0069 0307), …\" (+1)"
         },
         {
           "date": "2026-11-28",
@@ -16603,7 +16598,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 261
+        "lessons": 263
       },
       "evolution": [
         {
@@ -16719,9 +16714,20 @@
           "date": "2026-11-27",
           "event": "v35.9 — учене",
           "detail": "Научи: Express маршрут от вида r.post('/:x', express.json({limit}), handler) парсва тялото пре… (+3 още)"
+        },
+        {
+          "version": "36.1.0",
+          "date": "2026-11-28",
+          "event": "v36.1 — учене",
+          "detail": "Научи: Във fakturist временна интеграционна проба се пуска от scratchpad-а като .mts (ESM) с а… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „Във fakturist временна интеграционна проба се пуска от scratchpad-а като .mts (ESM) с а…\" (+1 още)"
+        },
         {
           "date": "2026-11-27",
           "type": "learning",
