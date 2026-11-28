@@ -1467,3 +1467,58 @@ model PlatformSetting {
 
   @@map("platform_settings")
 }
+
+// v57 — резервни копия на структурата на сървър (docs/BACKUP_SPEC.md).
+// БЕЗ външен ключ към Server: копието трябва да надживее изтриването на сървъра в
+// Discord и почистването на данните му — точно тогава е нужно. Срокът се управлява от
+// `expiresAt` (90 дни след махането на бота), не от каскада.
+model ServerBackup {
+  id            String    @id @default(cuid())
+  serverId      String    // Discord ID на сървъра, от който е копието
+  guildName     String    // името в момента на копието — изтрит сървър няма друго име
+  ownerId       String?   // собственикът на сървъра в момента на копието; само той връща в ДРУГ сървър
+  createdBy     String?   // кой натисна „Направи копие“; null = автоматично
+  kind          String    // MANUAL | AUTO
+  data          String    @db.Text // шифровано копие (lib/crypto.js), никога открит текст
+  roleCount     Int
+  categoryCount Int
+  channelCount  Int
+  sizeBytes     Int
+  expiresAt     DateTime? // слага се при махане на бота; null = живо
+  createdAt     DateTime  @default(now())
+
+  @@index([serverId, kind, createdAt])
+  @@index([ownerId])
+  @@index([createdBy])
+  @@index([expiresAt])
+  @@map("server_backups")
+}
+
+// v57 — едно възстановяване от копие. Картата стар → нов ID се пази след всяка стъпка,
+// за да може прекъснато възстановяване да продължи, без да създава вече създаденото.
+model BackupRestore {
+  id             String    @id @default(cuid())
+  backupId       String    // без външен ключ: историята оцелява изтриването на копието
+  sourceServerId String
+  targetServerId String
+  requestedBy    String?   // Discord ID на човека, пуснал възстановяването
+  mode           String    // SAME (липсващото в същия сървър) | NEW (всичко в друг сървър)
+  status         String    @default("PENDING") // PENDING | RUNNING | DONE | FAILED | CANCELLED
+  // = targetServerId, докато тече; null след края. Уникален → едно възстановяване наведнъж
+  // на сървър, пазено от базата, не от проверка преди запис.
+  activeServerId String?   @unique
+  idMap          Json      @default("{}")
+  counts         Json      @default("{}")
+  warnings       Json      @default("[]")
+  attempts       Int       @default(0)
+  heartbeatAt    DateTime?
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([targetServerId, createdAt])
+  @@index([status, heartbeatAt])
+  @@index([requestedBy])
+  @@map("backup_restores")
+}

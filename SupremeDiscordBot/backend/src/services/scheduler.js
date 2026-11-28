@@ -641,6 +641,24 @@ cron.schedule("*/10 * * * *", job("sla-watch", async () => {
 // планировчик. Тук минават през job() като всички останали; часовете са
 // разместени спрямо archive-cleanup (03:00), защото двата пипат същите редове.
 
+// ─── v57 Резервни копия на сървъра (docs/BACKUP_SPEC.md) ────────────────────
+// Всеки час — автоматичните копия по плана; на всеки 2 мин — пазачът на възстановяванията;
+// всяка нощ — изтеклите копия (90 дни след махането на бота) и старата история.
+cron.schedule("17 * * * *", job("server-backups", async () => {
+  const { runAutoBackups } = await import("../jobs/backups.js");
+  const r = await runAutoBackups();
+  if (r.created || r.failed) console.log(`[Scheduler] server-backups: ${JSON.stringify(r)}`);
+}), TZ);
+cron.schedule("*/2 * * * *", job("backup-restore-watchdog", async () => {
+  const { runRestoreWatchdog } = await import("../jobs/backups.js");
+  await runRestoreWatchdog();
+}), TZ);
+cron.schedule("35 3 * * *", job("backup-retention", async () => {
+  const { purgeExpiredBackups } = await import("../lib/backups.js");
+  const r = await purgeExpiredBackups();
+  if (r.backups || r.restores) console.log(`[Scheduler] backup-retention: ${JSON.stringify(r)}`);
+}), TZ);
+
 cron.schedule("15 3 * * *", job("gdpr-retention", async () => {
   const r = await runRetentionJob();
   await jobHeartbeat("gdpr-retention", {

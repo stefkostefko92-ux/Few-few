@@ -58,7 +58,8 @@ beforeEach(() => {
   prismaMock.backupRestore.findMany.mockResolvedValue([]);
   prismaMock.backupRestore.deleteMany.mockResolvedValue({ count: 0 });
   prismaMock.ticket.findMany.mockResolvedValue([]);
-  captureFromBot.mockResolvedValue({ ok: true, snapshot: snap() });
+  // Ботът връща снимка на сървъра, който е поискан (createBackup проверява, че съвпада).
+  captureFromBot.mockImplementation(async (id) => ({ ok: true, snapshot: { ...snap(), guild: { ...snap().guild, id } } }));
   kickRestore.mockResolvedValue({ ok: true });
 });
 
@@ -93,7 +94,7 @@ describe("Б4 автоматичните копия по плана", () => {
     prismaMock.server.findMany.mockResolvedValueOnce([{ id: "1".repeat(18), ownerId: ME }, { id: "2".repeat(18), ownerId: ME }]).mockResolvedValue([]);
     getServerTier.mockResolvedValue({ plan: "free", limits: BASE_LIMITS });
     prismaMock.serverBackup.findFirst.mockResolvedValue(null);
-    captureFromBot.mockResolvedValueOnce({ ok: false, error: "x" }).mockResolvedValue({ ok: true, snapshot: snap() });
+    captureFromBot.mockResolvedValueOnce({ ok: false, error: "x" });
     const out = await runAutoBackups(now);
     expect(out).toMatchObject({ created: 1, failed: 1 });
   });

@@ -116,6 +116,10 @@ export const BASE_LIMITS = {
   levelRoles:         5,
   companionSlots:     1,
   activeQuests:       1,
+  // v57 — резервни копия на сървъра (docs/BACKUP_SPEC.md, Б4). Връщането НЕ зависи от плана (Б6).
+  manualBackups:       2,
+  autoBackupsKept:     1,
+  autoBackupEveryDays: 7,
 };
 
 export const PREMIUM_LIMITS = {
@@ -135,6 +139,10 @@ export const PREMIUM_LIMITS = {
   levelRoles:         100,
   companionSlots:     1000,
   activeQuests:       3,
+  // v57 — резервни копия на сървъра
+  manualBackups:       25,
+  autoBackupsKept:     7,
+  autoBackupEveryDays: 1,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

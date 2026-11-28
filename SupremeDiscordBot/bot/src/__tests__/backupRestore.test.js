@@ -39,7 +39,8 @@ function sourceGuild() {
       permissionOverwrites: { cache: coll([]) } },
     { id: ID(23), type: 11, name: "нишка", parentId: ID(20), rawPosition: 0, isThread: () => true, permissionOverwrites: { cache: coll([]) } },
   ]);
-  return { id: G, name: "Източник", ownerId: "111111111111111111", roles, channels };
+  // Формата на discord.js: guild.roles.cache / guild.channels.cache.
+  return { id: G, name: "Източник", ownerId: "111111111111111111", roles: { cache: roles }, channels: { cache: channels } };
 }
 
 describe("Б1/Б3 снимката", () => {

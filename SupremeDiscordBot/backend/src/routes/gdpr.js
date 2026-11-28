@@ -61,6 +61,8 @@ const CREATED_BY_MODELS = [
   ["cannedResponse", "createdBy", { id: true, serverId: true, name: true, createdAt: true }],
   ["webhook", "createdBy", { id: true, serverId: true, name: true, createdAt: true }],
   ["kbArticle", "createdBy", { id: true, serverId: true, title: true, createdAt: true }],
+  // v57 — ръчно направените резервни копия. Само сводка — никога `data` (съдържанието на сървъра).
+  ["serverBackup", "createdBy", { id: true, serverId: true, guildName: true, kind: true, createdAt: true }],
 ];
 export { CREATED_BY_MODELS };
 
@@ -81,7 +83,9 @@ router.get("/export", subjectRightsLimiter, async (req, res, next) => {
     const [user, servers, tickets, ticketMessages, applications, auditLogs, apiKeys, sessions,
            verificationAttempts, formCooldowns, pollVotes, giveawayEntries, memberships, roleSnapshots,
            // „Създадено от мен" — редът СЪВПАДА с масива CREATED_BY_MODELS по-долу.
-           polls, giveaways, scheduledMessages, stickyMessages, cannedResponses, webhooks, kbArticles] = await Promise.all([
+           polls, giveaways, scheduledMessages, stickyMessages, cannedResponses, webhooks, kbArticles, serverBackups,
+           // v57 — копията, на които човекът е собственик (само сводка)
+           serverBackupsOwned] = await Promise.all([
       prisma.user.findUnique({ where: { id: userId } }),
       // Server membership — relation is `members` (ServerMember[]), not `users`
       prisma.server.findMany({
@@ -162,6 +166,8 @@ router.get("/export", subjectRightsLimiter, async (req, res, next) => {
           .then(() => prisma[model].findMany({ where: { [field]: userId }, select }))
           .catch(() => []),
       ),
+      Promise.resolve().then(() => prisma.serverBackup.findMany({ where: { ownerId: userId },
+        select: { id: true, serverId: true, guildName: true, kind: true, createdAt: true, expiresAt: true } })).catch(() => []),
     ]);
 
     const payload = {
@@ -221,7 +227,10 @@ router.get("/export", subjectRightsLimiter, async (req, res, next) => {
           canned_responses: cannedResponses,
           webhooks,
           kb_articles: kbArticles,
+          server_backups: serverBackups,
         },
+        // v57 — резервни копия на сървъри, на които човекът е бил собственик (само сводка).
+        server_backups_owned: serverBackupsOwned,
       },
       metadata: {
         gdpr_articles_addressed: ["Article 15 (right of access)", "Article 20 (right to data portability)"],
