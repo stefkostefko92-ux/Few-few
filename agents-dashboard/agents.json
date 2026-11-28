@@ -1267,7 +1267,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 819
+        "lessons": 821
       },
       "evolution": [
         {
@@ -2139,9 +2139,20 @@
           "date": "2026-11-28",
           "event": "v77.2 — учене",
           "detail": "Научи: В SupremeDiscordBot bot/src/index.js всички /internal/* маршрути са зад глобален app.us… (+1 още)"
+        },
+        {
+          "version": "77.4.0",
+          "date": "2026-11-28",
+          "event": "v77.4 — учене",
+          "detail": "Научи: В discord.js 14.28.1 permissionOverwrites.create/delete с низ ID първо го резолвва като… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „В discord.js 14.28.1 permissionOverwrites.create/delete с низ ID първо го резолвва като…\" (+1 още)"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
