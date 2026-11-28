@@ -1,6 +1,8 @@
 // Текстовете на бота: процент, оставащо време, известия и /infosemki — на български.
 import type { AlertGroup, AlertKind, BatchLike, RuleLike } from './alerts.js';
+import { seedCards, type SeedCard } from './cards.js';
 import { expiresAt, msLeft, percentAt } from './decay.js';
+import { healthOf, type HealthStage } from './health.js';
 
 export const MESSAGE_LIMIT = 2000;
 
@@ -24,6 +26,24 @@ export function formatPercent(percent: number): string {
 export function formatNumber(value: number): string {
   return numberFormat.format(value);
 }
+
+export function formatSeeds(n: number): string {
+  return `${formatNumber(n)} ${n === 1 ? 'семка' : 'семки'}`;
+}
+
+export function formatBatches(n: number): string {
+  return `${formatNumber(n)} ${n === 1 ? 'партида' : 'партиди'}`;
+}
+
+// Цветът на здравето като в „Партиди“ (зелено → жълто → оранжево → червено → кафяво, изтекла — черно).
+const HEALTH_DOTS: Readonly<Record<HealthStage, string>> = {
+  fresh: '🟢',
+  healthy: '🟡',
+  aging: '🟠',
+  spoiling: '🔴',
+  rotting: '🟤',
+  dead: '⚫',
+};
 
 export function formatDuration(ms: number): string {
   if (ms <= 0) return '0 мин';
@@ -51,14 +71,23 @@ export function seedLabel(labels: SeedLabels, key: string): string {
   return labels[key] ?? key;
 }
 
-// Ред за една партида: брой, процент, оставащо време и кога изтича.
+// Точката на здравето на партидата.
+export function healthDot(batch: BatchLike, now: Date): string {
+  const p = percentAt(batch, batch.rate, now);
+  return HEALTH_DOTS[healthOf(p, msLeft(batch, batch.rate, now) <= 0).stage];
+}
+
+// Партидата като ред в „Партиди“: брой семки, здраве, процент, колко остава и кога изтича. Без номера —
+// хората в канала гледат вида и броя, не номера.
 export function batchStatus(batch: BatchLike, now: Date): string {
   const left = msLeft(batch, batch.rate, now);
-  const percent = formatPercent(percentAt(batch, batch.rate, now));
-  if (left <= 0) return `×${batch.count} — **${percent}** · изтекла`;
+  const p = percentAt(batch, batch.rate, now);
+  const seeds = `**${formatSeeds(batch.count)}**`;
+  const health = healthOf(p, left <= 0);
+  if (left <= 0) return `${seeds} · ${health.label}`;
   const end = expiresAt(batch, batch.rate);
   return (
-    `×${batch.count} — **${percent}** · остават ${formatDuration(left)} · ` +
+    `${seeds} · ${health.label} · **${formatPercent(p)}** · остават ${formatDuration(left)} · ` +
     `изтича ${discordTime(end, 'f')} (${discordTime(end, 'R')})`
   );
 }
@@ -85,6 +114,8 @@ export function chunkLines(lines: readonly string[], limit = MESSAGE_LIMIT): str
 export interface AlertPart {
   content: string;
   batchIds: number[];
+  // снимките под съобщението — по една за вид в тази част (src/domain/cards.ts)
+  cards: SeedCard[];
 }
 
 export function buildAlertParts(group: AlertGroup, labels: SeedLabels, now: Date): AlertPart[] {
@@ -96,53 +127,30 @@ export function buildAlertParts(group: AlertGroup, labels: SeedLabels, now: Date
   }
   const parts: AlertPart[] = [];
   const header = group.message ?? '**Семките изтичат**';
-  let current: AlertPart = { content: `<@&${group.roleId}> ${header}`, batchIds: [] };
+  let current: AlertPart = { content: `<@&${group.roleId}> ${header}`, batchIds: [], cards: [] };
   for (const { batch, rules } of byBatch.values()) {
     const thresholds = rules.map((r) => formatThreshold(r.kind, r.threshold)).join(', ');
     const line =
-      `• **${seedLabel(labels, batch.seedTypeKey)}** #${batch.id} ${batchStatus(batch, now)} · праг ${thresholds}`.slice(
+      `${healthDot(batch, now)} **${seedLabel(labels, batch.seedTypeKey)}** · ${batchStatus(batch, now)} · праг ${thresholds}`.slice(
         0,
         MESSAGE_LIMIT - 100,
       );
     if (current.batchIds.length > 0 && current.content.length + 1 + line.length > MESSAGE_LIMIT) {
       parts.push(current);
-      current = { content: line, batchIds: [batch.id] };
+      current = { content: line, batchIds: [batch.id], cards: [] };
     } else {
       current.content += `\n${line}`;
       current.batchIds.push(batch.id);
     }
   }
   if (current.batchIds.length > 0) parts.push(current);
+  for (const part of parts) {
+    const inPart = part.batchIds.flatMap((id) => byBatch.get(id)?.batch ?? []);
+    part.cards = seedCards(inPart, labels, now);
+  }
   return parts;
 }
 
 export function buildAlertMessages(group: AlertGroup, labels: SeedLabels, now: Date): string[] {
   return buildAlertParts(group, labels, now).map((p) => p.content);
-}
-
-export function buildInfoMessages(
-  batches: readonly BatchLike[],
-  labels: SeedLabels,
-  now: Date,
-): string[] {
-  if (batches.length === 0) return ['Няма въведени семки.'];
-  const order = Object.keys(labels);
-  const typeKeys = [...new Set(batches.map((b) => b.seedTypeKey))].sort(
-    (a, b) => rank(order, a) - rank(order, b),
-  );
-  const total = batches.reduce((sum, b) => sum + b.count, 0);
-  const lines = [`**Семки** — ${batches.length} партиди, ${total} бр.`];
-  for (const key of typeKeys) {
-    lines.push('', `**${seedLabel(labels, key)}**`);
-    const ofType = batches
-      .filter((b) => b.seedTypeKey === key)
-      .sort((a, b) => expiresAt(a, a.rate).getTime() - expiresAt(b, b.rate).getTime());
-    for (const b of ofType) lines.push(`#${b.id} ${batchStatus(b, now)}`);
-  }
-  return chunkLines(lines);
-}
-
-function rank(order: readonly string[], key: string): number {
-  const i = order.indexOf(key);
-  return i === -1 ? order.length : i;
 }

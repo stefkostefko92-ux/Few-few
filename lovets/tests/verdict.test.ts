@@ -296,3 +296,26 @@ test('всяка причина има български текст', () => {
   const v = evaluateContact(target({ market: 'IT' }), ctx());
   for (const r of [...v.reasons, ...v.requirements]) assert.ok(r.text.length > 10, r.code);
 });
+
+test('Италия, имейл със съгласие: изискване за „Comunicazione commerciale“ (d.lgs. 70/2003 чл. 8)', () => {
+  const v = evaluateContact(
+    {
+      market: 'IT',
+      channel: 'email',
+      value: 'info@ditta.it',
+      sourceUrl: 'https://ditta.it/contatti',
+    },
+    {
+      now: new Date('2026-11-27T10:00:00Z'),
+      suppressed: false,
+      consents: [
+        { channel: 'email', givenAt: new Date('2026-10-01T10:00:00Z'), withdrawnAt: null },
+      ],
+      registry: null,
+      policy: DEFAULT_POLICY,
+    },
+  );
+  assert.equal(v.decision, 'allowed');
+  assert.ok(v.requirements.some((r) => r.code === 'it_commercial_marker'));
+  assert.equal(v.sourceUrl, 'https://ditta.it/contatti', 'източникът стига до черновата');
+});

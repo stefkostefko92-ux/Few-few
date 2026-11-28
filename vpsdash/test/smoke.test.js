@@ -91,7 +91,7 @@ const GET_ROUTES = [
   '/api/compose/ps?project=demo', '/api/compose/logs?project=demo&lines=5', '/api/docker/logs?id=demo&lines=5',
   '/api/databases/sqlite/check?file=/tmp/csd-smoke-няма.db',
   '/api/accesslog', '/api/accesslog/files', '/api/backups/health', '/api/redis', '/api/volumes',
-  '/api/alerts/maintenance', '/api/alerts/digest', '/api/backups/schedule', '/api/backups/panel',
+  '/api/alerts/maintenance', '/api/alerts/digest', '/api/alerts/business', '/api/backups/schedule', '/api/backups/panel',
   '/api/disk', '/api/reclaim', '/api/traffic', '/api/ports', '/api/desktop', '/api/updates/health',
   '/api/volumes/archives', '/api/files?path=/tmp', '/api/services/status?unit=cron.service',
   '/api/webserver/coverage',

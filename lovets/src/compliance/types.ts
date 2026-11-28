@@ -76,6 +76,7 @@ export type RequirementCode =
   | 'sender_identity'
   | 'unsubscribe_link'
   | 'unsolicited_subject_marker'
+  | 'it_commercial_marker'
   | 'call_identity'
   | 'manual_only';
 
@@ -96,6 +97,8 @@ export interface Verdict {
   market: Market;
   channel: Channel;
   normalizedValue: string | null;
+  /** Източникът, с който е направена проверката (черновата го цитира по чл. 14(2)(f) ОРЗД). */
+  sourceUrl: string | null;
   decision: Decision;
   reasons: Reason[];
   requirements: Requirement[];

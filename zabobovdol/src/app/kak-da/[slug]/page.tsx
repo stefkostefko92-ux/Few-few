@@ -236,6 +236,13 @@ export default async function FaqPage({
                     Примерна снимка за онагледяване. Реалният екран може да изглежда
                     малко по-различно според телефона и версията на приложението.
                   </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Знаците на приложенията са търговски марки на собствениците им; сайтът не е
+                    свързан с тях.{" "}
+                    <Link href="/iztochnici" className="text-brand-700 underline underline-offset-2">
+                      Източници на изображенията
+                    </Link>
+                  </p>
                 </figure>
               )}
             </div>

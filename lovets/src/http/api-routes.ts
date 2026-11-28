@@ -1,6 +1,9 @@
 import { Router, type Response } from 'express';
 import type { ZodError } from 'zod';
 import { checkContact } from '../check/service.js';
+import type { AppConfig } from '../config.js';
+import { composeFirstEmail } from '../draft/first-email.js';
+import { suggestSlots } from '../draft/slots.js';
 import { fingerprint } from '../registry/fingerprint.js';
 import { exportRpoList, parseKzpSnapshot, parseRegistryResults } from '../registry/imports.js';
 import { consentKey, suppressionKeys } from '../registry/keys.js';
@@ -8,6 +11,8 @@ import type { ComplianceStore } from '../store/types.js';
 import {
   CheckBody,
   ConsentBody,
+  FirstEmailBody,
+  SlotsQuery,
   KzpSnapshotBody,
   RegistryResultsBody,
   RpoExportBody,
@@ -18,6 +23,7 @@ export interface ApiDeps {
   store: ComplianceStore;
   pepper: string;
   now: () => Date;
+  config: Pick<AppConfig, 'publicUrl' | 'noticeUrl' | 'unsubKey' | 'retentionMonths'>;
 }
 
 function invalid(res: Response, error: ZodError): void {
@@ -41,6 +47,53 @@ export function apiRoutes(deps: ApiDeps): Router {
     if (!body.success) return invalid(res, body.error);
     const results = await checkContact(body.data, deps);
     res.json({ results });
+  });
+
+  /**
+   * Черновата на първия имейл. Проверката се пуска НАНОВО тук — клиентът не носи присъда. Черновата не
+   * се пази: връща се за копиране (собственикът праща от своята поща). Отказ → 409 с код.
+   */
+  r.post('/drafts/first-email', async (req, res) => {
+    const body = FirstEmailBody.safeParse(req.body);
+    if (!body.success) return invalid(res, body.error);
+    const b = body.data;
+    const verdicts = await checkContact(
+      { query: b.query, market: b.market, sourceUrl: b.sourceUrl },
+      deps,
+    );
+    const verdict = verdicts.find((v) => v.market === b.market);
+    if (!verdict)
+      return void res
+        .status(409)
+        .json({ error: 'Няма проверка за този пазар.', code: 'not_allowed' });
+    const result = composeFirstEmail(
+      {
+        verdict,
+        sourceUrl: b.sourceUrl,
+        seenAt: b.seenAt,
+        topic: b.topic,
+        offer: b.offer,
+        senderName: b.senderName,
+        slots: b.slots,
+        ...(b.recipientName ? { recipientName: b.recipientName } : {}),
+      },
+      { ...deps.config, pepper: deps.pepper },
+      deps.now(),
+    );
+    if (!result.ok) {
+      return void res.status(409).json({
+        error: 'Черновата не може да се направи.',
+        code: result.code,
+        missing: result.missing ?? [],
+      });
+    }
+    res.json(result.draft);
+  });
+
+  r.get('/drafts/slots', (req, res) => {
+    const q = SlotsQuery.safeParse(req.query);
+    if (!q.success) return invalid(res, q.error);
+    res.json({ slots: suggestSlots(deps.now(), q.data.market).map((d) => d.toISOString()) });
   });
 
   /** Резултат от проверка: файл с грешен ред се отказва цял — без частичен внос (fail-closed). */

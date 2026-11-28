@@ -251,16 +251,19 @@ export function lintShell(src, rel) {
   // не се мести, старите релийзи не се чистят. `bash -n` минава — той проверява
   // синтаксис, не дали името сочи към нещо. Сензорът: всяко голо извикване на
   // име с долна черта (нашата конвенция за помощни функции — `deploy_x`,
-  // `x_indexnow`, `x_ping_y`) трябва да има `име() {` в същия файл. Външни
-  // команди с долна черта не ползваме, а вградените са без нея.
+  // `x_indexnow`, `x_ping_y`) трябва да има `име() {` в същия файл. Вградените
+  // команди са без долна черта; външните с долна черта са в изрично изброени
+  // (EXTERNAL_CMDS — инструментите на PostgreSQL). `x+=(…)` е добавяне към масив.
   {
+    const EXTERNAL_CMDS = new Set(["pg_restore", "pg_dump", "pg_dumpall", "pg_isready", "pg_ctl", "pg_ctlcluster",
+      "pg_lsclusters", "pg_basebackup", "pg_upgrade", "pg_upgradecluster", "pg_createcluster", "pg_dropcluster"]);
     const defined = new Set([...src.matchAll(/^[ \t]*([A-Za-z_][A-Za-z0-9_]*)\s*\(\)\s*\{/gm)].map((m) => m[1]));
     const missing = new Map();
-    const CALL = /^[ \t]*([a-z][a-z0-9]*_[a-z0-9_]+)\b(?![=(])/gm;
+    const CALL = /^[ \t]*([a-z][a-z0-9]*_[a-z0-9_]+)\b(?![=(+])/gm;
     let m;
     while ((m = CALL.exec(src)) !== null) {
       const name = m[1];
-      if (defined.has(name)) continue;
+      if (defined.has(name) || EXTERNAL_CMDS.has(name)) continue;
       const n = src.slice(0, m.index).split("\n").length;
       if (!missing.has(name)) missing.set(name, n);
     }

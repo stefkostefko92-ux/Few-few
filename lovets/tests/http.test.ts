@@ -22,6 +22,10 @@ const config: AppConfig = {
   cookieSecure: false,
   httpPort: 0,
   trustProxy: false,
+  unsubKey: null,
+  publicUrl: ORIGIN,
+  noticeUrl: null,
+  retentionMonths: 6,
 };
 const OWNER_EMAIL = 'owner@lovets.example';
 const OWNER_PASSWORD = fake('pass');

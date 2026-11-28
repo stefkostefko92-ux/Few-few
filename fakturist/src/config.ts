@@ -55,6 +55,14 @@ const schema = z.object({
   /** Адресът за връзка на публичната страница и в JSON-LD. */
   CONTACT_EMAIL: z.string().email().default('info@carbonstealth.eu'),
   PRIVACY_EMAIL: z.string().email().default('privacy@carbonstealth.eu'),
+  /**
+   * Токенът за `/internal/weekly` — сборовете за петъчния отчет на vpsdash (32 байта в hex). Празен —
+   * крайната точка я няма (404). Само за локален извикващ: заявка през nginx е скрита (src/stats/internal-access.ts).
+   */
+  INTERNAL_STATS_TOKEN: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    hexKey('INTERNAL_STATS_TOKEN').optional(),
+  ),
 });
 
 export type AppConfig = z.infer<typeof schema>;

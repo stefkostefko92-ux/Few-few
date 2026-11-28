@@ -210,7 +210,7 @@ export function AdminShell({
           className="flex items-center gap-3 border-b border-white/10 px-5 py-4 hover:bg-white/[0.04]"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/bobov-dol-grb-mark.png" alt="" width={36} height={44} className="h-11 w-auto" />
+          <img src="/brand/za-bobov-dol-mark.png" alt="" width={44} height={44} className="h-11 w-11" />
           <span className="leading-tight">
             <span className="block font-display text-lg font-bold text-white">За Бобов дол</span>
             <span className="block text-sm text-brand-200">Администрация</span>

@@ -1,0 +1,36 @@
+[Unit]
+# Седмичната ПРОБА на бекъпа извън машината: restic check + пробно възстановяване на дъмповете.
+# Скриптът и migrate-backup.sh живеят ЕДИН ДО ДРУГ в /usr/local/sbin (виж tools/vps/README.md);
+# конфигът е /etc/offsite-backup.env. Пуска го offsite-verify.timer. Лог: journalctl -u offsite-verify -n 80
+Description=Проба на бекъпа извън машината (restic check + възстановяване)
+Documentation=file:///opt/few-few/current/tools/vps/README.md
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/offsite-backup.sh verify
+# Чете част от данните от хранилището и възстановява всички дъмпове в /var/tmp.
+TimeoutStartSec=4h
+Nice=10
+CPUSchedulingPolicy=batch
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+UMask=0077
+
+# --- Пясъчник ---
+# Чете ЦЕЛИЯ сървър и вика docker/runuser за дъмповете, затова е root без ограничени
+# capabilities. SQLite в WAL режим иска запис до файла (-shm) при отваряне, а pm2 save пише в
+# /root/.pm2 — затова ProtectSystem=full (само /usr, /boot и /etc са read-only), не strict.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true

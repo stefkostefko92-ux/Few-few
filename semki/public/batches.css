@@ -1,0 +1,227 @@
+/* Партиди: добавяне, лентата с видовете и масовите действия, редовете с редакция. Плюс .lead. */
+
+.lead {
+  max-width: 75ch;
+  margin: -0.25rem 0 1.25rem;
+}
+
+.lead strong {
+  color: var(--bone);
+  font-weight: 600;
+}
+
+/* ── нова партида / ново правило ── */
+.add {
+  margin-bottom: 1.25rem;
+}
+
+.add-sum {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.add-sum::before {
+  content: '+';
+  font: 700 1.3rem/1 var(--font-num);
+  color: var(--ash);
+}
+
+.add[open] .add-sum {
+  margin-bottom: 0.9rem;
+}
+
+.add[open] .add-sum::before {
+  content: '−';
+}
+
+/* ── лентата с видовете и масовите действия ── */
+.toolbar {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 58px);
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  margin: 0 calc(-1 * var(--gutter)) 1.25rem;
+  padding: 0.6rem var(--gutter);
+  background: color-mix(in srgb, var(--night) 90%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--rule);
+}
+
+.chips {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-width: 0;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: var(--panel);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+#bulk-btn[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ── групите партиди ── */
+.bgroup {
+  margin-bottom: 1.75rem;
+  scroll-margin-top: 130px;
+}
+
+.bgroup-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.bgroup-head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: 700 1.6rem/1 var(--font-num);
+}
+
+.bgroup-head .push {
+  margin-left: auto;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.brow {
+  position: relative;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--h);
+  border-radius: 12px;
+  background: var(--panel);
+  scroll-margin-top: 140px;
+}
+
+.brow.is-target {
+  border-color: var(--bone);
+  border-left-color: var(--h);
+}
+
+.brow-main {
+  display: grid;
+  grid-template-columns: auto 3.2rem 3.6rem 7.5rem minmax(9rem, 1.4fr) minmax(7rem, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+  padding: 0.65rem 7.5rem 0.65rem 0.75rem;
+  min-height: 56px;
+}
+
+.brow-id {
+  color: var(--ash);
+}
+
+.brow-count {
+  font-weight: 650;
+}
+
+.brow-main .health {
+  justify-self: start;
+}
+
+.brow-life {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.brow-pct {
+  font: 750 1.35rem/1 var(--font-num);
+}
+
+.brow-left {
+  font-size: 0.92rem;
+}
+
+.pick {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+}
+
+.brow-edit > summary {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.75rem;
+}
+
+.brow-edit[open] > summary {
+  background: var(--panel-2);
+}
+
+.edit-body {
+  border-top: 1px solid var(--rule);
+  padding: 0.9rem 0.9rem 1rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.edit-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+@media (max-width: 860px) {
+  .brow-main {
+    grid-template-columns: auto auto auto 1fr;
+    padding-right: 0.75rem;
+  }
+
+  .brow-main .health {
+    justify-self: end;
+  }
+
+  .brow-life,
+  .brow-left,
+  .brow-exp {
+    grid-column: 2 / -1;
+  }
+
+  .brow-life {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .brow-edit > summary {
+    position: static;
+    margin: 0 0.75rem 0.65rem 2.9rem;
+  }
+}

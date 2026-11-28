@@ -60,6 +60,9 @@ test('менюто: до 25 партиди, първо изтичащите, о�
   assert.equal(select.options[0]?.default, true);
   assert.equal(select.options.filter((o) => o.default).length, 1);
   for (const o of select.options) assert.ok(o.label.length <= 100);
+  // като ред в „Партиди“: вид, брой семки, здраве, процент, колко остава — без номера на партидата
+  assert.equal(select.options[0]?.label, 'Amnesia · 5 семки · Гние · 5,00% · остават 8 ч 20 мин');
+  for (const o of select.options) assert.doesNotMatch(o.label, /#\d/);
   const go = json[1]?.components[0];
   assert.ok(go && 'label' in go);
   assert.match(go.label ?? '', /\(1\)/);

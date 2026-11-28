@@ -36,7 +36,7 @@ file holds only what is true across all products. Keep it that way.
 | `FiveM/` | Thraex PVP — директория на българските FiveM RP сървъри | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind | BG · жив статус от `info.json`/`dynamic.json` · **от `players.json` само имената, идентификаторите никога** (лични данни) · thraex.carbonstealth.eu |
 | `ospedalitrasparenti/` | Ospedali Trasparenti — ETL + статичен сайт + разследване на финансите на публичните болници в Италия (BDAP/MEF + dati.salute) | Node ≥20 · plain JS ESM · нула зависимости | IT · отчет за всяка SSN структура · сигнали и аномалии · официални open data |
 | `mascot/` | Маскотът на Carbon Stealth — бранд персонаж | SVG (3 нива на детайл) · генериран React компонент · plain JS ESM · нула зависимости | BG · бранд асет, **не** продукт с деплой · продуктите копират каквото ползват |
-| `vpsdash/` | Carbon Stealth VPS Dashboard — контролен панел за сървъра → `vpsdash/CLAUDE.md` | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · един сървър (federation по избор) · owner: VPS-аджията |
+| `vpsdash/` | Carbon Stealth VPS Dashboard — контролен панел за сървъра → `vpsdash/CLAUDE.md` | Node ≥20 · `node:http` · vanilla ES modules · нула зависимости | BG · systemd на 127.0.0.1 зад Nginx+TLS · owner: VPS-аджията |
 | `piuma/` | Piuma — Instagram контент-двигател (чернова → човешко одобрение → публикуване) + управлявани страници | Node 22 · TS · Express 5 · Prisma · PostgreSQL · BullMQ + Redis · Anthropic SDK | BG/EN/IT · официален Instagram Platform API · агентът — само чернови · акаунти се създават **ръчно** (ToS на Meta) |
 | `agentgw/` | Агентски шлюз — нашите агенти за сайтовете от ЕС сървър чрез агентски ключове | Node 22 · TS · Express 5 · Prisma · PostgreSQL · Vertex SDK · уиджет | BG/EN/IT · Claude **само през Vertex AI в ЕС** · публичните агенти — нула инструменти · разговорите не се пазят |
 | `korpora/` | Korpora — корпусни мебели в браузъра (3D, разкрой, чертежи за пробиване, DXF/G-code) | Node 22 · TS · Express 5 · Prisma · PostgreSQL · three.js · Docker | BG/EN/IT · korpora.carbonstealth.eu · плановете се активират **ръчно** · каталогът е в репото **само шифрован** |
@@ -45,7 +45,8 @@ file holds only what is true across all products. Keep it that way.
 | `lovets/` | Ловец — вътрешно B2B търсене на клиенти + „може ли да пишем/звъним“ (КЗП, RPO) | Node 22 · TS · Express 5 · Prisma · PostgreSQL | BG/IT · само собственикът · порт 4360 |
 | `cs-revolution/` | Carbon Stealth — фирменият сайт (уеб агенция и софтуер) | Vite · React 18 SPA (началната) + ~400 статични страници от Python генератори · PHP API · живи сцени от Blender (`public/js/cs-live.js`) | IT/EN/BG · carbonstealth.eu · деплой от клон `deploy-live` с `deploy-all.sh` (**не** през autodeploy) · **логото не се променя** |
 | `semki/` | Semki Bot — Discord бот за изтичането на семките във FiveM + дашборд с вход през Discord | Node 22 · TS · Express 5 · discord.js v14 · Prisma · PostgreSQL · Docker | BG · vps2.carbonstealth.eu (порт от 4340, `HTTP_PORT`) |
-| `liftcon/` | LiftCon — консултации за асансьори (оглед, контрол, оферти) → `liftcon/CLAUDE.md` | статичен генератор + Node 22 · TS · Express 5 · Prisma · PostgreSQL · Brevo · Docker | IT · liftcon.it (порт 4370) · **никога** verifica ufficiale/certificazione |
+| `liftcon/` | LiftCon — консултации за асансьори → `liftcon/CLAUDE.md` | статичен генератор + Node 22 · TS · Express 5 · Prisma · Brevo | IT · liftcon.it (порт 4370) · **никога** verifica ufficiale/certificazione |
+| `otgovorko/` | Отговорко — поддръжка → `otgovorko/CLAUDE.md` | Vertex ЕС | 4380 |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
@@ -94,8 +95,8 @@ hooks, skills).
 - **Promo clips are frozen — any product** (owner, 2026-10-15): no re-render, proposal or "replace
   the clip" step on any version/UI/copy change; only on the owner's explicit request. Not covered:
   video that is a product feature (e.g. Piuma's content engine).
-- **Never SVG — any product** (owner, 2026-11-04): drawings, charts, icons — never SVG. Illustrations → 3D
-  (three.js, bundled, no CDN); charts → `<canvas>`; icons → raster. Shipped SVG stays until the owner asks.
+- **Never SVG — any product** (owner, 2026-11-04): illustrations → 3D (three.js, bundled, no CDN), charts →
+  `<canvas>`, icons → raster. Shipped SVG too (2026-11-27): one PR per product, `docs/svg-migration.md`.
 - **CI unwatched while jobs don't start** (owner, 2026-11-02): no wait/re-run/fix/comment.
   Proof = local gate (product or `tools/agents/gate.mjs`) + `secret-scan`.
 - **Deploy commands ⇒ merge into `main` first — mandatory, every project** (owner, 2026-11-15): unmerged
@@ -138,7 +139,7 @@ Shared glossary `ф:р · PI · LT · QG · RM · SC · ИоМ` — internal not
 
 ## Skills — `.claude/skills/`
 
-Ours (BG, vetted; 66; metadata only until triggered): procedures (deploy · quality-gate · verify · commit-pr …), guardrails (fiscal-bg · stripe-payment · revolut-payment · gdpr-launch · owasp-review …), SEO/perf, domain, **външни, адаптирани** (17) и **правни** (15) — пълният ростер е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
+Ours (BG, vetted; 67; metadata only until triggered): procedures (deploy · quality-gate · verify · commit-pr …), guardrails (fiscal-bg · stripe-payment · revolut-payment · gdpr-launch · owasp-review …), SEO/perf, domain, **външни, адаптирани** (17) и **правни** (15) — пълният ростер е в `tools/agents/CLAUDE.md`, произходът в `.claude/skills/THIRD_PARTY_NOTICES.md`. Gate: `tools/skills/lint.mjs` + `trigger-check.mjs --check`.
 **Own BG skills; never import third-party wholesale**; външно — само с изрично „да“ от собственика (`tools/agents/CLAUDE.md`).
 
 **Guard hooks (8):** `guard-prompt` · `guard-dangerous` (only catastrophic Bash) · `guard-secrets` (before the write) ·

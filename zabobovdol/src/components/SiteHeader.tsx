@@ -283,10 +283,10 @@ export function SiteHeader({ icons }: { icons: Record<string, ReactNode> }) {
           <Link href="/" className="flex min-w-0 items-center gap-3 rounded-lg" onClick={close}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/brand/bobov-dol-grb-mark.png"
+              src="/brand/za-bobov-dol-mark.png"
               alt=""
-              width={34}
-              height={49}
+              width={44}
+              height={44}
               className="h-11 w-auto shrink-0"
             />
             <span className="min-w-0 leading-tight">
