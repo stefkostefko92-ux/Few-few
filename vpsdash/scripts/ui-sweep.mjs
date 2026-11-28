@@ -9,9 +9,11 @@
 // Пуска се РЪЧНО (иска Playwright, който не е зависимост на продукта):
 //   node scripts/ui-sweep.mjs
 import { spawn } from 'node:child_process';
+import { HUBS } from '../public/nav.js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+const ALL_SECTIONS = HUBS.reduce((n, h) => n + h.sections.length, 0);
 
 const PW_PATH = process.env.CSD_PLAYWRIGHT || '/opt/node22/lib/node_modules/playwright/index.mjs';
 let chromium;
@@ -56,31 +58,44 @@ try {
     await pg.fill('#login-user', 'admin');
     await pg.fill('#login-pass', pw);
     await pg.click('button[type=submit]');
-    await pg.waitForSelector('nav', { timeout: 15000 });
-    const labels = await pg.locator('#nav button span:nth-child(2)').allTextContents();
-    for (const label of labels) {
-      await pg.click(`#nav button:has-text("${label}")`, { timeout: 8000 });
-      // Чака СКЕЛЕТЪТ да си отиде, не фиксирано време: „Ъпдейти" пита apt (~2 s)
-      // и при кратко чакане се мереше скелетът — а той няма текст, значи гейтът
-      // щеше да вика „празен изглед" за напълно здрава секция.
-      try {
-        await pg.waitForFunction(() => !document.querySelector('#view .skeleton'), null, { timeout: 25000 });
-      } catch {
-        problems.push(`[${lang}] ${label}: не се дорендва за 25 s`);
-        continue;
+    await pg.waitForSelector('#hubs .hub-btn', { timeout: 15000 });
+    // Навигацията е хъб → секции (v1.19): обиколката минава през ИСТИНСКИЯ път —
+    // рейла и лентата със секции — не през скрит списък. Секция, до която не се
+    // стига с щракане, е находка, не подробност.
+    const labels = [];
+    for (const hub of await pg.locator('#hubs .hub-btn').evaluateAll((bs) => bs.map((b) => b.dataset.hub))) {
+      await pg.click(`#hubs .hub-btn[data-hub="${hub}"]`, { timeout: 8000 });
+      // Мишката излиза от рейла като човек: разгънатият при посочване рейл
+      // покрива началото на лентата със секции.
+      await pg.mouse.move(900, 400);
+      await pg.waitForFunction((h) => document.getElementById('secs').dataset.hub === h, hub, { timeout: 8000 });
+      for (const [id, label] of await pg.locator('#secs .sec-btn').evaluateAll((bs) => bs.map((b) => [b.dataset.id, b.textContent.trim()]))) {
+        labels.push(label);
+        await pg.click(`#secs .sec-btn[data-id="${id}"]`, { timeout: 8000 });
+        // Чака СКЕЛЕТЪТ да си отиде, не фиксирано време: „Ъпдейти" пита apt (~2 s)
+        // и при кратко чакане се мереше скелетът — а той няма текст, значи гейтът
+        // щеше да вика „празен изглед" за напълно здрава секция.
+        try {
+          await pg.waitForFunction(() => !document.querySelector('#view .skeleton'), null, { timeout: 25000 });
+        } catch {
+          problems.push(`[${lang}] ${label}: не се дорендва за 25 s`);
+          continue;
+        }
+        await pg.waitForTimeout(200);
+        const txt = ((await pg.locator('#view').textContent()) || '').trim();
+        // „Грешка: …" е как `go()` съобщава провалил се рендер — точно това търсим.
+        // На чужд език префиксът е преведен, затова се търси и по двата варианта.
+        if (/^(Грешка|Error|Errore):/.test(txt)) problems.push(`[${lang}] ${label}: ${txt.slice(0, 100)}`);
+        if (!txt) problems.push(`[${lang}] ${label}: празен изглед`);
       }
-      await pg.waitForTimeout(200);
-      const txt = ((await pg.locator('#view').textContent()) || '').trim();
-      // „Грешка: …" е как `go()` съобщава провалил се рендер — точно това търсим.
-      // На чужд език префиксът е преведен, затова се търси и по двата варианта.
-      if (/^(Грешка|Error|Errore):/.test(txt)) problems.push(`[${lang}] ${label}: ${txt.slice(0, 100)}`);
-      if (!txt) problems.push(`[${lang}] ${label}: празен изглед`);
     }
     const missing = await pg.evaluate(() => [...(window.__i18nMissing || [])]);
     if (missing.length) {
       problems.push(`[${lang}] непреведени низове: ${missing.length}`);
       if (process.env.CSD_SWEEP_LIST) fs.appendFileSync(process.env.CSD_SWEEP_LIST, missing.map((m) => lang + '\t' + JSON.stringify(m)).join('\n') + '\n');
     }
+    // Всяка секция трябва да е стигната с щракане през рейла и лентата.
+    if (labels.length < ALL_SECTIONS) problems.push(`[${lang}] обиколени ${labels.length} от ${ALL_SECTIONS} секции — някоя не се стига от менюто`);
     console.log(`[${lang}] обиколени секции: ${labels.length}, непреведени: ${missing.length}`);
     await pg.close();
   }

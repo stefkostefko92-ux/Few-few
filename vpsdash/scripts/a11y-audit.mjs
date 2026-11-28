@@ -102,7 +102,7 @@ const AUDIT = `() => {
     return rgb(getComputedStyle(document.body).backgroundColor) || [255, 255, 255];
   };
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
-  for (const n of document.querySelectorAll('#view *, .topbar *, #nav *')) {
+  for (const n of document.querySelectorAll('#view *, .topbar *, #hubs *, #secs *')) {
     if (!visible(n)) continue;
     const own = [...n.childNodes].some((c) => c.nodeType === 3 && c.textContent.trim());
     if (!own) continue;
@@ -143,14 +143,14 @@ try {
   await pg.fill('#login-user', 'admin');
   await pg.fill('#login-pass', pw);
   await pg.click('button[type=submit]');
-  await pg.waitForSelector('nav', { timeout: 15000 });
+  await pg.waitForSelector('#hubs .hub-btn', { timeout: 15000 });
 
   // 7. Езикът на документа следва избора — иначе екранният четец чете
   // българските думи с английска фонетика (или обратното).
   for (const lang of ['bg', 'en', 'it']) {
     await pg.evaluate((l) => { localStorage.setItem('csd.lang', l); }, lang);
     await pg.reload({ waitUntil: 'domcontentloaded' });
-    await pg.waitForSelector('nav', { timeout: 15000 });
+    await pg.waitForSelector('#hubs .hub-btn', { timeout: 15000 });
     const got = await pg.evaluate(() => document.documentElement.lang);
     if (!got || !got.toLowerCase().startsWith(lang)) {
       problems.push({ rule: 'lang-на-документа', sel: 'html', extra: `избран ${lang}, а lang="${got}"`, where: 'общо' });
@@ -158,20 +158,20 @@ try {
   }
   await pg.evaluate(() => localStorage.setItem('csd.lang', 'bg'));
   await pg.reload({ waitUntil: 'domcontentloaded' });
-  await pg.waitForSelector('nav', { timeout: 15000 });
+  await pg.waitForSelector('#hubs .hub-btn', { timeout: 15000 });
 
   // 6. Достижимост с Tab: първите ~40 спирки трябва да включват навигацията.
   const reached = await pg.evaluate(() => {
     const focusable = [...document.querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])')]
       .filter((n) => { const r = n.getBoundingClientRect(); return r.width && r.height; });
-    const navButtons = [...document.querySelectorAll('#nav button')];
+    const navButtons = [...document.querySelectorAll('#hubs button, #secs button')];
     return { total: focusable.length, navInTab: navButtons.every((n) => n.tabIndex >= 0 && !n.disabled) };
   });
-  if (!reached.navInTab) problems.push({ rule: 'навигация-извън-Tab', sel: '#nav', extra: '', where: 'общо' });
+  if (!reached.navInTab) problems.push({ rule: 'навигация-извън-Tab', sel: '#hubs / #secs', extra: '', where: 'общо' });
 
   // Видим фокус: сравнява очертанието на фокусиран срещу нефокусиран бутон.
   const focusVisible = await pg.evaluate(() => {
-    const btn = document.querySelector('#nav button');
+    const btn = document.querySelector('#hubs button');
     if (!btn) return true;
     const before = getComputedStyle(btn).outlineWidth + '|' + getComputedStyle(btn).boxShadow;
     btn.focus();
@@ -179,16 +179,23 @@ try {
     btn.blur();
     return before !== after;
   });
-  if (!focusVisible) problems.push({ rule: 'фокусът-не-се-вижда', sel: '#nav button', extra: '', where: 'общо' });
+  if (!focusVisible) problems.push({ rule: 'фокусът-не-се-вижда', sel: '#hubs button', extra: '', where: 'общо' });
 
-  const labels = await pg.locator('#nav button span:nth-child(2)').allTextContents();
-  for (const label of labels) {
-    await pg.click(`#nav button:has-text("${label}")`, { timeout: 8000 });
-    try {
-      await pg.waitForFunction(() => !document.querySelector('#view .skeleton'), null, { timeout: 25000 });
-    } catch { /* бавната секция се одитира каквато е */ }
-    await pg.waitForTimeout(150);
-    for (const p of await runAudit(pg)) problems.push({ ...p, where: label });
+  // Хъб → секции (v1.19): одитът стига до всяка секция през рейла и лентата.
+  for (const hub of await pg.locator('#hubs .hub-btn').evaluateAll((bs) => bs.map((b) => b.dataset.hub))) {
+    await pg.click(`#hubs .hub-btn[data-hub="${hub}"]`, { timeout: 8000 });
+    // Мишката излиза от рейла като човек: разгънатият при посочване рейл
+    // покрива началото на лентата със секции.
+    await pg.mouse.move(900, 400);
+    await pg.waitForFunction((h) => document.getElementById('secs').dataset.hub === h, hub, { timeout: 8000 });
+    for (const [id, label] of await pg.locator('#secs .sec-btn').evaluateAll((bs) => bs.map((b) => [b.dataset.id, b.textContent.trim()]))) {
+      await pg.click(`#secs .sec-btn[data-id="${id}"]`, { timeout: 8000 });
+      try {
+        await pg.waitForFunction(() => !document.querySelector('#view .skeleton'), null, { timeout: 25000 });
+      } catch { /* бавната секция се одитира каквато е */ }
+      await pg.waitForTimeout(150);
+      for (const p of await runAudit(pg)) problems.push({ ...p, where: label });
+    }
   }
 } finally {
   await b.close();
