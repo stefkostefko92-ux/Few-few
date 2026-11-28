@@ -63,7 +63,7 @@ export default function LandingNav({ links, ui, onSignIn, inviteUrl, addLabel, e
         <div
           id="landing-mobile-menu"
           ref={panelRef}
-          className="xl:hidden absolute left-0 right-0 top-full z-50 mx-4 rounded-xl border border-cs-line bg-cs-surface/95 backdrop-blur p-2 shadow-2xl"
+          className="xl:hidden absolute left-0 right-0 top-full z-50 mx-4 cs-dropdown p-2 shadow-2xl"
         >
           {links.map((l) => (
             <a key={l.href} href={l.href} {...ext(l)} onClick={close} className="block rounded-lg px-4 py-3 text-base text-cs-text no-underline hover:bg-cs-panel">

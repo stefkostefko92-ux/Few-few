@@ -12,6 +12,7 @@ import {
   ChevronRight, ShieldCheck, Server, BadgeCheck, Play, Plus, Check, Lock, ArrowRight,
   Ticket, FileText, SmilePlus, Gift, ScrollText, CalendarClock, Webhook, Discord,
 } from "./icons";
+import HeroReactor from "./HeroReactor.jsx";
 import { BOT_KEYS } from "../i18n/landingConcept";
 
 // Всяка карта води към страницата на функцията (английски — както футъра).
@@ -76,6 +77,9 @@ export function ConceptHero({ c, inviteUrl, onDashboard, notice = null }) {
         </div>
 
         <div className="relative mx-auto w-full max-w-[34rem] lg:max-w-none">
+          {/* 3D реакторът („Токсична броня“) кръжи ЗАД стражаря — зарежда се лениво,
+              само ако браузърът е свободен и човекът не е поискал по-малко движение. */}
+          <HeroReactor className="absolute -inset-[14%] pointer-events-none" />
           {/* Артът е декорация (празен alt): заглавието вече казва всичко. */}
           <div aria-hidden="true" className="hero-art relative aspect-[692/616]">
             <img
@@ -92,7 +96,7 @@ export function ConceptHero({ c, inviteUrl, onDashboard, notice = null }) {
             href={inviteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="hero-art-card absolute flex items-center gap-3 rounded-xl border border-cs-line bg-cs-surface/85 backdrop-blur-md pl-3 pr-5 py-3 no-underline shadow-cs-lift hover:border-cs-cyan/50 transition-colors"
+            className="hero-art-card absolute flex items-center gap-3 cs-dropdown pl-3 pr-5 py-3 no-underline hover:border-cs-cyan/60 transition-colors"
           >
             <span className="w-11 h-11 rounded-lg bg-[#5865F2] text-white flex items-center justify-center flex-none">
               <DiscordIcon className="w-6 h-6" />

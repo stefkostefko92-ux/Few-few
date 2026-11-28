@@ -88,7 +88,7 @@ export default function ServerHome() {
         </div>
 
         {/* Един филтър-ред над всичко, което скоупва — сегментиран превключвател. */}
-        <div className="inline-flex items-center gap-1 rounded-xl border border-cs-line bg-cs-surface/70 p-1" role="group" aria-label={t("overview.timeRange")}>
+        <div className="inline-flex items-center gap-1 cs-panel p-1" role="group" aria-label={t("overview.timeRange")}>
           {PERIODS.map((p) => (
             <button
               key={p}
