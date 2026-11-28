@@ -2137,6 +2137,11 @@
       ],
       "activity": [
         {
+          "date": "2026-11-28",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „curl --proto-redir =https ограничава само схемата на пренасочването, не хоста; при -L п…\""
+        },
+        {
           "date": "2026-11-27",
           "type": "learning",
           "summary": "Научи: „В live-run worktree за PR 510 продуктовите папки lovets/ и otgovorko/ липсват, затова п…\" (+82 още) · 18 в карантина"
