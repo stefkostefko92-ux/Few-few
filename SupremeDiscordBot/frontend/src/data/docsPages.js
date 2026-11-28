@@ -337,11 +337,13 @@ export const DOCS_PAGES = [
         id: "claim-and-priority",
         heading: "Claim a ticket and set its priority",
         list: [
-          "Claim (Premium): click Claim in the ticket, run `/ticket claim`, or use Claim ticket in Support → Tickets. Only an open ticket can be claimed, and you cannot take over someone else's claim. `/ticket unclaim` releases it.",
+          "Claim (Premium): click Claim in the ticket, run `/ticket claim`, or use Claim ticket in Support → Tickets. Only an open ticket can be claimed, and you cannot take over someone else's claim. `/ticket unclaim` or Release ticket in the dashboard releases it.",
           "Priority (Free): `/ticket priority` sets Low, Normal, High or Urgent. A panel's Default ticket priority sets the starting value. The priority shows on the ticket's first message when it is not Normal.",
           "Rename (Premium): `/rename` changes the channel name.",
           "Escalate (Premium): `/escalate` moves the ticket to another panel and its support team.",
+          "People: `/ticket add` and `/ticket remove` let a member see and write in the ticket, or take that away.",
         ],
+        note: "All of these also work from the dashboard: in Support → Tickets, click Manage on an open ticket. Search a member by name instead of copying an ID. The bot makes the change in Discord first, so if Discord refuses (for example, the bot's role lacks Manage Channels), nothing is saved.",
       },
       {
         id: "closing",
