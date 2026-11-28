@@ -522,6 +522,10 @@
     "4c7815449c67f248d09b7937de129a87a28fd751": [
       "ai-djiyata",
       "kodadjiyata"
+    ],
+    "a4552724c6f5da1d5fe8024d35fd9724078042f7": [
+      "ai-djiyata",
+      "kodadjiyata"
     ]
   },
   "runs": [
@@ -2563,6 +2567,22 @@
       "agent": "ai-djiyata",
       "verdict": "блокер",
       "costUsd": 1.42,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 513,
+      "sha": "a4552724c6f5da1d5fe8024d35fd9724078042f7",
+      "agent": "kodadjiyata",
+      "verdict": "поправки",
+      "costUsd": 1.22,
+      "date": "2026-11-28"
+    },
+    {
+      "pr": 513,
+      "sha": "a4552724c6f5da1d5fe8024d35fd9724078042f7",
+      "agent": "ai-djiyata",
+      "verdict": "поправки",
+      "costUsd": 1.8,
       "date": "2026-11-28"
     }
   ]

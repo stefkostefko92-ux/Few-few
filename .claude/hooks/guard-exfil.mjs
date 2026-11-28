@@ -36,7 +36,9 @@ const NET_INTERPRETER_INLINE =
 // Прегледът на #513 (AI-джията, блокер, 28.11.2026): нашите инструменти за четене навън (doc/yt/reddit в
 // tools/research) теглят вътре с curl/fetch, затова командата им не съдържа нито един глагол отгоре — тайна
 // в адреса излизаше невидимо. Те са мрежов канал по име; самото четене на документация не носи тайни и минава.
-const NET_OUR_TOOL = /\b(node|deno|bun)\b[^\n]*\btools[\\/]research[\\/](doc|yt|reddit)\.mjs\b/i;
+// По ИМЕТО на файла, не по пътя (2-ри кръг на #513): `cd tools/research && node doc.mjs`, `tools//research`,
+// `tools/./research` и `\` на Windows заобикаляха шаблона с пълния път.
+const NET_OUR_TOOL = /\b(node|deno|bun)\b[^\n]*(?:^|[\s\\/"'=])(doc|yt|reddit)\.mjs\b/i;
 const isNetChannel = (s) => NET_SEND.test(s) || NET_INTERPRETER.test(s) || NET_INTERPRETER_INLINE.test(s) || NET_OUR_TOOL.test(s);
 // Референция към тайна env-променлива ($NAME или ${NAME}), която изглежда секретна.
 // Case-insensitive (red-team F2: $mytoken минаваше; малки букви също са тайна).

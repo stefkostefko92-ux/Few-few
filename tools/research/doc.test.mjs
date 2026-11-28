@@ -101,6 +101,10 @@ test("#513: частни, loopback, link-local, CGNAT, ULA и метаданни
     "100.64.0.1", "0.0.0.0", "::1", "::", "fc00::1", "fd12::1", "fe80::1", "::ffff:127.0.0.1", "::ffff:10.0.0.1"]) {
     assert.equal(isPrivateIp(ip), true, ip);
   }
+  for (const ip of ["198.18.0.1", "198.19.255.1", "192.0.2.1", "198.51.100.7", "203.0.113.9", "192.0.0.8",
+    "64:ff9b::7f00:1", "2002:7f00:1::1", "::7f00:1", "::127.0.0.1"]) {
+    assert.equal(isPrivateIp(ip), true, `2-ри кръг: ${ip}`);
+  }
   for (const ip of ["79.124.17.100", "8.8.8.8", "172.32.0.1", "100.128.0.1", "2606:4700::1111"]) {
     assert.equal(isPrivateIp(ip), false, ip);
   }
@@ -135,4 +139,20 @@ test("#513: незатворени тагове не дават квадрати
   const out = htmlToText("<p>видимо</p>" + "<script>x".repeat(40000) + "<style>y".repeat(40000));
   assert.equal(out, "видимо");
   assert.ok(Date.now() - t0 < 1500, `бавно: ${Date.now() - t0} ms`);
+});
+
+test("#513 (2-ри кръг): „İ“ и други букви, които сменят дължината си, не разместват отместванията", () => {
+  const text = "İİİ начало ЦЕЛТА е тук";
+  const s = section(text, { find: "целта", chars: 5 });
+  assert.equal(s.text, "ЦЕЛТА");
+  assert.equal(htmlToText("<p>İİ</p><SCRIPT>скрито</SCRIPT><p>видимо</p>"), "İİ\n\nвидимо");
+});
+
+test("#513 (2-ри кръг): парчето по подразбиране и таванът се събират в изхода на Bash (30 000 знака)", () => {
+  const big = "абв\n".repeat(20000);
+  const part = section(big, {});
+  const out = render({ url: "https://ffmpeg.org/f.html", fetchedAt: "2026-11-28", part });
+  assert.ok(out.length < 30000, `изходът е ${out.length} знака`);
+  const max = section(big, { chars: 999999 });
+  assert.ok(render({ url: "https://ffmpeg.org/f.html", fetchedAt: "2026-11-28", part: max }).length < 30000, "и с най-голямото --chars");
 });

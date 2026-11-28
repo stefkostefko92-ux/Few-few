@@ -24,8 +24,11 @@ import { envelope, clean } from "./sources.mjs";
 import { detectUrlExfil } from "../../.claude/hooks/guard-exfil.mjs";
 
 const UA = "Mozilla/5.0 (compatible; CarbonStealthDocReader/1.0; documentation research)";
-const DEFAULT_CHARS = 30_000;
-const MAX_CHARS = 120_000;
+// Изходът на Bash се реже около 30 000 знака — парче + плик (префикс „│ “ на ред) трябва да се събират в него,
+// иначе краят се губи, а подсказката за следващото отместване изглежда вярна (2-ри кръг на #513).
+const DEFAULT_CHARS = 18_000;
+const MAX_CHARS = 22_000;
+const MAX_OUT = 26_000; // знаци + префиксите на редовете; заглавката на плика е под 1 000
 const MAX_BYTES = 25 * 1024 * 1024;
 const MAX_REDIRS = 5;
 
@@ -55,12 +58,16 @@ export function isPrivateIp(ip) {
   const mapped = s.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/);
   if (mapped) s = mapped[1];
   if (isIP(s) === 4) {
-    const [a, b] = v4(s);
+    const [a, b, c] = v4(s);
     return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224;
+      (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224 ||
+      (a === 198 && (b === 18 || b === 19)) || // тестови мрежи (RFC 2544)
+      (a === 192 && b === 0 && (c === 0 || c === 2)) || (a === 198 && b === 51 && c === 100) || (a === 203 && b === 0 && c === 113);
   }
   if (isIP(s) === 6) {
-    return s === "::" || s === "::1" || /^f[cd]/.test(s) || /^fe[89ab]/.test(s) || /^ff/.test(s) || /^::ffff:/.test(s);
+    // NAT64 (64:ff9b::/96), 6to4 (2002::/16) и IPv4-съвместим (::a.b.c.d) носят вграден IPv4 — като частни (2-ри кръг).
+    return s === "::" || s === "::1" || /^f[cd]/.test(s) || /^fe[89ab]/.test(s) || /^ff/.test(s) || /^::ffff:/.test(s) ||
+      /^64:ff9b:/.test(s) || /^2002:/.test(s) || /^::[0-9a-f]{1,4}(:[0-9a-f]{1,4})?$/.test(s) || /^::\d/.test(s);
   }
   return true; // непознат формат → като частен (fail closed)
 }
@@ -106,7 +113,6 @@ const BLOCK = new Set(["p", "div", "tr", "table", "thead", "tbody", "ul", "ol", 
  */
 export function htmlToText(html) {
   const s = String(html ?? "");
-  const lower = s.toLowerCase();
   let out = "";
   let i = 0;
   while (i < s.length) {
@@ -131,7 +137,12 @@ export function htmlToText(html) {
     const closing = m[1] === "/";
     const name = m[2].toLowerCase();
     if (!closing && DROP.has(name)) {
-      const end = lower.indexOf(`</${name}`, i);
+      // Търсене без значение на регистъра по ОРИГИНАЛНИЯ низ: toLowerCase() сменя дължината на „İ“ и
+      // разместваше отместванията (2-ри кръг на #513). Регекс с lastIndex — линейно.
+      const re = new RegExp(`</${name}`, "gi");
+      re.lastIndex = i;
+      const hit = re.exec(s);
+      const end = hit ? hit.index : -1;
       if (end < 0) break; // незатворен — всичко до края е скрипт/навигация
       const close = s.indexOf(">", end);
       if (close < 0) break;
@@ -170,12 +181,22 @@ export function section(text, { find, offset = 0, chars = DEFAULT_CHARS } = {}) 
   const total = text.length;
   let start = Math.max(0, Math.min(total, Number(offset) || 0));
   if (find) {
-    const i = text.toLowerCase().indexOf(String(find).toLowerCase(), start);
-    if (i < 0) return null;
-    start = i;
+    const re = new RegExp(reEsc(String(find)), "giu"); // индексите са по оригиналния текст (не по toLowerCase)
+    re.lastIndex = start;
+    const hit = re.exec(text);
+    if (!hit) return null;
+    start = hit.index;
   }
   const n = Math.max(1, Math.min(MAX_CHARS, Number(chars) || DEFAULT_CHARS));
-  const end = Math.min(total, start + n);
+  // Цената в изхода: всеки ред получава префикс „│ “ от плика — при много къси редове парчето се надуваше
+  // над лимита на Bash (2-ри кръг на #513). Спираме, когато знаците ИЛИ цената стигнат тавана.
+  let end = start;
+  let cost = 0;
+  const stop = Math.min(total, start + n);
+  while (end < stop && cost < MAX_OUT) {
+    cost += text.charCodeAt(end) === 10 ? 3 : 1;
+    end++;
+  }
   return { start, end, total, text: text.slice(start, end) };
 }
 
@@ -195,6 +216,8 @@ async function publicAddress(host) {
   try {
     addrs = await lookup(host, { all: true, verbatim: true });
   } catch (e) {
+    // Зад прокси локалният DNS може да липсва — тогава адреса го решава проксито (2-ри кръг на #513).
+    if (proxied() && ["ENOTFOUND", "EAI_AGAIN", "ESERVFAIL"].includes(e.code)) return null;
     throw new Error(`DNS: ${host} не се отваря (${e.code || e.message})`);
   }
   if (!addrs.length || addrs.some((a) => isPrivateIp(a.address))) throw new Error(`адрес: ${host} сочи към частна или вътрешна мрежа`);
