@@ -17475,7 +17475,7 @@
           "microsoft/winget-pkgs — id-тата за Node LTS, FFmpeg (Gyan), Blender, Audacity",
           "Нашите промо линии: cs-revolution/marketing/youtube-promo, fakturist/promo, scuolabulgara/promo"
         ],
-        "lessons": 133
+        "lessons": 144
       },
       "evolution": [
         {
@@ -17579,9 +17579,20 @@
           "date": "2026-11-28",
           "event": "v13.1 — учене",
           "detail": "Научи: Data API snippet.title е най-много 100 знака и snippet.description най-много 5000 БАЙТА… (+10 още)"
+        },
+        {
+          "version": "14.2.0",
+          "date": "2026-11-28",
+          "event": "v14.2 — учене",
+          "detail": "Научи: image2 демуксерът има собствена опция `-framerate` (по подразбиране 25), която се слага… (+10 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-11-28",
+          "type": "learning",
+          "summary": "Научи: „image2 демуксерът има собствена опция `-framerate` (по подразбиране 25), която се слага…\" (+10 още) · 1 в карантина"
+        },
         {
           "date": "2026-11-28",
           "type": "learning",
